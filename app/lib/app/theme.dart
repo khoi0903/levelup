@@ -6,7 +6,7 @@ class AppTheme {
   AppTheme._();
 
   static ThemeData get lightTheme {
-    final baseTextTheme = GoogleFonts.beVietnamProTextTheme();
+    final baseTextTheme = GoogleFonts.plusJakartaSansTextTheme();
 
     return ThemeData(
       useMaterial3: true,
@@ -15,7 +15,7 @@ class AppTheme {
         brightness: Brightness.light,
         primary: AppColors.primary,
         onPrimary: Colors.white,
-        secondary: AppColors.accent,
+        secondary: AppColors.accentLink,
         onSecondary: Colors.white,
         error: Colors.redAccent,
         onError: Colors.white,
@@ -33,11 +33,11 @@ class AppTheme {
           minimumSize: const Size(0, 52),
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppColors.radiusButton),
           ),
           textStyle: const TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ),
@@ -45,9 +45,9 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.textPrimary,
           minimumSize: const Size(0, 48),
-          side: const BorderSide(color: AppColors.border, width: 1.5),
+          side: const BorderSide(color: AppColors.btnBorder, width: 1.5),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppColors.radiusButton),
           ),
           textStyle: const TextStyle(
             fontSize: 15,
@@ -56,20 +56,20 @@ class AppTheme {
         ),
       ),
       cardTheme: CardThemeData(
-        color: AppColors.surface,
+        color: AppColors.cardNormalBg,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.border, width: 1),
+          borderRadius: BorderRadius.circular(AppColors.radiusCard),
+          side: const BorderSide(color: AppColors.cardNormalBorder, width: 1.5),
         ),
       ),
       chipTheme: ChipThemeData(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(AppColors.radiusPill),
           side: const BorderSide(color: AppColors.border, width: 1.5),
         ),
-        backgroundColor: AppColors.surface,
-        selectedColor: AppColors.primaryLight,
+        backgroundColor: AppColors.cardNormalBg,
+        selectedColor: AppColors.cardSelectedBg,
         labelStyle: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w500,
@@ -77,7 +77,7 @@ class AppTheme {
         ),
         secondaryLabelStyle: const TextStyle(
           fontSize: 14,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
           color: AppColors.primaryDark,
         ),
       ),

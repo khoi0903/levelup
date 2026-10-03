@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/onboarding_header.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../domain/models/onboarding_models.dart';
@@ -83,148 +85,160 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const OnboardingHeader(currentStep: 2),
-              const SizedBox(height: 22),
-              const Text(
-                AppStrings.bodyTitle,
-                style: TextStyle(
-                  fontSize: 26,
-                  height: 1.25,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                AppStrings.bodySubtitle,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        AppStrings.genderLabel,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _GenderButton(
-                              label: AppStrings.genderMale,
-                              isSelected: state.gender == Gender.male,
-                              onTap: () => controller.setGender(Gender.male),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _GenderButton(
-                              label: AppStrings.genderFemale,
-                              isSelected: state.gender == Gender.female,
-                              onTap: () => controller.setGender(Gender.female),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _GenderButton(
-                              label: AppStrings.genderOther,
-                              isSelected: state.gender == Gender.other,
-                              onTap: () => controller.setGender(Gender.other),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _NumberInputField(
-                              label: AppStrings.birthYearLabel,
-                              controller: _yearController,
-                              onChanged: (_) => _syncState(),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _NumberInputField(
-                              label: AppStrings.heightLabel,
-                              controller: _heightController,
-                              onChanged: (_) => _syncState(),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _NumberInputField(
-                              label: AppStrings.weightLabel,
-                              controller: _weightController,
-                              onChanged: (_) => _syncState(),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _NumberInputField(
-                              label: AppStrings.goalWeightLabel,
-                              controller: _goalWeightController,
-                              onChanged: (_) => _syncState(),
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (goalWeight != null && estimatedWeeks != null) ...[
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 14),
-                          decoration: BoxDecoration(
-                            color: AppColors.accentLight,
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Text(
-                            AppStrings.bodyGoalNotice(goalWeight, estimatedWeeks),
-                            style: const TextStyle(
-                              fontSize: 14,
-                              height: 1.5,
-                              color: AppColors.accentDark,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
+      body: GradientBackground(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const OnboardingHeader(currentStep: 2),
+                const SizedBox(height: 22),
+                const Text(
+                  AppStrings.bodyTitle,
+                  style: TextStyle(
+                    fontSize: 26,
+                    height: 1.25,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
                   ),
                 ),
-              ),
-              PrimaryButton(
-                label: AppStrings.btnContinue,
-                onPressed: isBodyValid
-                    ? () {
-                        _syncState();
-                        context.push('/onboarding/training');
-                      }
-                    : null,
-              ),
-            ],
+                const SizedBox(height: 8),
+                const Text(
+                  AppStrings.bodySubtitle,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          AppStrings.genderLabel,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _GenderButton(
+                                label: AppStrings.genderMale,
+                                isSelected: state.gender == Gender.male,
+                                onTap: () => controller.setGender(Gender.male),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _GenderButton(
+                                label: AppStrings.genderFemale,
+                                isSelected: state.gender == Gender.female,
+                                onTap: () => controller.setGender(Gender.female),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _GenderButton(
+                                label: AppStrings.genderOther,
+                                isSelected: state.gender == Gender.other,
+                                onTap: () => controller.setGender(Gender.other),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _NumberInputField(
+                                label: AppStrings.birthYearLabel,
+                                controller: _yearController,
+                                onChanged: (_) => _syncState(),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _NumberInputField(
+                                label: AppStrings.heightLabel,
+                                controller: _heightController,
+                                onChanged: (_) => _syncState(),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _NumberInputField(
+                                label: AppStrings.weightLabel,
+                                controller: _weightController,
+                                onChanged: (_) => _syncState(),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _NumberInputField(
+                                label: AppStrings.goalWeightLabel,
+                                controller: _goalWeightController,
+                                onChanged: (_) => _syncState(),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (goalWeight != null && estimatedWeeks != null) ...[
+                          const SizedBox(height: 16),
+                          GlassCard(
+                            isSelected: true,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 18, vertical: 14),
+                            borderRadius: AppColors.radiusButton,
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.insights_rounded,
+                                  color: AppColors.accent,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    AppStrings.bodyGoalNotice(goalWeight, estimatedWeeks),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      height: 1.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                PrimaryButton(
+                  label: AppStrings.btnContinue,
+                  onPressed: isBodyValid
+                      ? () {
+                          _syncState();
+                          context.push('/onboarding/training');
+                        }
+                      : null,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -245,26 +259,18 @@ class _GenderButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return GlassCard(
+      isSelected: isSelected,
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        height: 48,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryLight : AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
-            width: isSelected ? 2.0 : 1.5,
-          ),
-        ),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      borderRadius: AppColors.radiusButton,
+      child: Center(
         child: Text(
           label,
           style: TextStyle(
             fontSize: 15,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            color: isSelected ? AppColors.primaryDark : AppColors.textPrimary,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected ? AppColors.accentLink : AppColors.textPrimary,
           ),
         ),
       ),
@@ -292,20 +298,14 @@ class _NumberInputField extends StatelessWidget {
           label,
           style: const TextStyle(
             fontSize: 14,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
-        Container(
-          height: 48,
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border, width: 1.5),
-          ),
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+        GlassCard(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+          borderRadius: AppColors.radiusButton,
           child: TextField(
             controller: controller,
             keyboardType: TextInputType.number,
@@ -314,11 +314,11 @@ class _NumberInputField extends StatelessWidget {
             style: const TextStyle(
               fontSize: 16,
               color: AppColors.textPrimary,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
             decoration: const InputDecoration(
               isDense: true,
-              contentPadding: EdgeInsets.zero,
+              contentPadding: EdgeInsets.symmetric(vertical: 10),
               border: InputBorder.none,
             ),
           ),
