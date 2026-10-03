@@ -1,0 +1,253 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_strings.dart';
+import '../../../../core/widgets/onboarding_header.dart';
+import '../../../../core/widgets/primary_button.dart';
+import '../../../../core/widgets/secondary_button.dart';
+import '../controllers/onboarding_controller.dart';
+
+class ObPlanScreen extends ConsumerWidget {
+  const ObPlanScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final planAsync = ref.watch(weeklyPlanFutureProvider);
+    final state = ref.watch(onboardingControllerProvider);
+    final controller = ref.read(onboardingControllerProvider.notifier);
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const OnboardingHeader(currentStep: 7),
+              const SizedBox(height: 18),
+              const Text(
+                AppStrings.planTitle,
+                style: TextStyle(
+                  fontSize: 26,
+                  height: 1.25,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                AppStrings.planSubtitle,
+                style: TextStyle(
+                  fontSize: 15,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    children: [
+                      // Kế hoạch tuần 1 card
+                      planAsync.when(
+                        data: (plan) => Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.border, width: 1.0),
+                          ),
+                          child: Column(
+                            children: List.generate(plan.sessions.length, (index) {
+                              final session = plan.sessions[index];
+                              final isLast = index == plan.sessions.length - 1;
+
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 14),
+                                decoration: BoxDecoration(
+                                  border: isLast
+                                      ? null
+                                      : const Border(
+                                          bottom: BorderSide(
+                                            color: AppColors.borderLight,
+                                            width: 1.0,
+                                          ),
+                                        ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 44,
+                                      height: 44,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primaryLight,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        session.dayLabel,
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.primaryDark,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            session.title,
+                                            style: const TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.textPrimary,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            '${session.durationMinutes} phút · ${session.exerciseCount} động tác',
+                                            style: const TextStyle(
+                                              fontSize: 13,
+                                              color: AppColors.textSecondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ),
+                        ),
+                        loading: () => const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(24.0),
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                        error: (error, stack) => const SizedBox.shrink(),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Injury notice
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.accentLight,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: const [
+                            Icon(
+                              Icons.check,
+                              size: 18,
+                              color: AppColors.accent,
+                            ),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                AppStrings.planInjuryNotice,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.accentDark,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Buddy invite box
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: AppColors.placeholderDark,
+                            width: 1.0,
+                            style: BorderStyle.solid,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              AppStrings.buddyInviteTitle,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              AppStrings.buddyInviteSubtitle,
+                              style: TextStyle(
+                                fontSize: 14,
+                                height: 1.5,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: SecondaryButton(
+                                    label: state.buddyInvited ? 'Đã mời' : AppStrings.btnInviteBuddy,
+                                    height: 44,
+                                    isDark: true,
+                                    onPressed: () {
+                                      controller.setBuddyInvited(true);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Đã tạo link mời buddy!'),
+                                          duration: Duration(seconds: 1),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: SecondaryButton(
+                                    label: AppStrings.btnLater,
+                                    height: 44,
+                                    isDark: false,
+                                    onPressed: () {
+                                      controller.setBuddyInvited(false);
+                                      context.push('/onboarding/notify');
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
+              ),
+              PrimaryButton(
+                label: AppStrings.btnContinue,
+                onPressed: () => context.push('/onboarding/notify'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
