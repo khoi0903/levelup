@@ -368,6 +368,12 @@ coll("weekly_reviews", {
                 totalMinutes: { bsonType: "number" }, avgRpe: { bsonType: "number" },
                 wins: { bsonType: "array", items: { bsonType: "object" } },   // [{type:"pr", label:"Squat +2kg"}]
                 improvement: { bsonType: "string" },
+                win: { bsonType: "string" },                   // 1 chiến thắng (AI hoặc câu mẫu)
+                nextWeekSummary: { bsonType: "string" },
+                source: { enum: ["ai", "rules"] },
+                weightChangeKg: { bsonType: "number" },
+                nutrition: { bsonType: "object", properties: { daysLogged: { bsonType: "number" },
+                             avgKcal: { bsonType: ["number", "null"] } } },
                 recommendation: { enum: ["increase", "keep", "decrease"] },
                 proposedPlanId: { bsonType: "objectId" },
                 decision: { enum: ["pending", "accepted", "adjusted", "dismissed"] },
@@ -426,7 +432,17 @@ dbx.food_recognitions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 60 * 6
 coll("coach_messages", {
   bsonType: "object", required: ["userId", "role", "content", "createdAt"],
   properties: { userId: { bsonType: "objectId" }, role: { enum: ["user", "coach", "event"] },
-                content: { bsonType: "string" }, card: { bsonType: "object" },   // thẻ hành động
+                content: { bsonType: "string" },
+                card: { bsonType: "object", required: ["type", "status"],          // thẻ hành động, AI chỉ đề xuất
+                        properties: { type: { enum: ["adjust_session", "add_injury"] },
+                                      status: { enum: ["proposed", "applied", "dismissed"] },
+                                      planId: { bsonType: "objectId" }, sessionId: { bsonType: "objectId" },
+                                      change: { enum: ["light", "quick5", "swap_exercise", "rest"] },
+                                      fromExerciseId: { bsonType: "objectId" }, toExerciseId: { bsonType: "objectId" },
+                                      reason: { bsonType: "string" }, adjustedReason: { bsonType: "string" },
+                                      injury: { bsonType: "object", required: ["bodyArea"],
+                                                properties: { bodyArea: BODY_AREA, note: { bsonType: "string" } } },
+                                      appliedAt: { bsonType: "date" } } },
                 trigger: { bsonType: "string" },                                 // "missed_2", "weekly_review", "user"
                 relatedSessionId: { bsonType: "objectId" }, model: { bsonType: "string" },
                 tokensIn: { bsonType: "number" }, tokensOut: { bsonType: "number" }, createdAt: { bsonType: "date" } }
