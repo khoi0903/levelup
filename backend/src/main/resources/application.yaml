@@ -25,6 +25,14 @@ levelup:
     # Model dùng chung cho coach, tổng kết tuần, nhận diện món ăn
     model: ${LEVELUP_AI_MODEL:claude-opus-5-5}
     timeout-seconds: 20
+  jobs:
+    # Header X-Job-Secret của POST /jobs/tick; để trống thì endpoint luôn trả 403
+    secret: ${JOB_SECRET:}
+  demo:
+    # POST /demo/{action}: tắt hẳn ngoài bản demo (DEMO_MODE=true để bật)
+    enabled: ${DEMO_MODE:false}
+    # uid được dùng nút giả lập, phân cách bằng dấu phẩy; "demo*" là mọi uid bắt đầu bằng "demo"
+    uids: ${DEMO_UIDS:}
 
 management:
   endpoints:

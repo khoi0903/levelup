@@ -40,6 +40,9 @@ public class MongoNotificationGateway implements NotificationGateway {
     /** Khớp notifications.type trong mongo/init.js: không giới hạn danh sách, để module mới gửi được type mới. */
     private static final java.util.regex.Pattern TYPE = java.util.regex.Pattern.compile("[a-z0-9_]{1,40}");
 
+    /** Thông báo hẹn quá chừng này mà chưa gửi được thì bỏ push. */
+    static final java.time.Duration SCHEDULE_TTL = java.time.Duration.ofHours(12);
+
     private final MongoTemplate mongo;
     private final PushSender push;
     private final Clock clock;
@@ -88,7 +91,7 @@ public class MongoNotificationGateway implements NotificationGateway {
                 return insert(notification) ? Result.STORED_ONLY : Result.DUPLICATE;
             }
             case QUIET_HOURS -> {
-                // TODO: job gửi các thông báo đã hẹn (sentAt trống, scheduledFor đã tới), bỏ nếu quá hạn
+                // /jobs/tick gửi lại lúc quietEnd (dispatchDue)
                 notification.append("channel", "push")
                     .append("scheduledFor", Date.from(NotificationRules.nextQuietEnd(now, zone, quietEnd)));
                 return insert(notification) ? Result.QUIET_HOURS : Result.DUPLICATE;
@@ -114,6 +117,61 @@ public class MongoNotificationGateway implements NotificationGateway {
             return Result.DUPLICATE;
         }
 
+        return deliver(userId, devices, notification.getObjectId("_id"), title, body, data, localDate)
+            ? Result.SENT : Result.STORED_ONLY;
+    }
+
+    /**
+     * Gửi các thông báo đã hẹn (giờ yên lặng) khi tới scheduledFor. Quá {@link #SCHEDULE_TTL} thì bỏ push,
+     * chỉ giữ trong app. Hết lượt trong ngày thì để lần tick sau. Job /jobs/tick gọi cho từng người dùng.
+     *
+     * @return số thông báo đã gửi
+     */
+    public int dispatchDue(ObjectId userId) {
+        Instant now = clock.instant();
+        List<Document> due = mongo.find(Query.query(Criteria.where("userId").is(userId).and("channel").is("push")
+            .and("sentAt").exists(false).and("scheduledFor").lte(Date.from(now))), Document.class, "notifications");
+        if (due.isEmpty()) {
+            return 0;
+        }
+        Document user = mongo.findById(userId, Document.class, "users");
+        if (user == null) {
+            return 0;
+        }
+        Document settings = user.get("notificationSettings", new Document());
+        List<Document> devices = user.getList("devices", Document.class, List.of());
+        ZoneId zone = LocalDates.zone(user.getString("timezone"));
+        String localDate = LocalDates.today(zone.getId(), clock).toString();
+        boolean quiet = NotificationRules.isQuiet(now.atZone(zone).toLocalTime(),
+            NotificationRules.time(settings.getString("quietStart"), NotificationRules.DEFAULT_QUIET_START),
+            NotificationRules.time(settings.getString("quietEnd"), NotificationRules.DEFAULT_QUIET_END));
+        boolean pushEnabled = !Boolean.FALSE.equals(settings.getBoolean("pushEnabled"));
+        int maxPerDay = NotificationRules.maxPerDay(settings.get("maxPerDay"));
+
+        int sent = 0;
+        for (Document n : due) {
+            ObjectId id = n.getObjectId("_id");
+            boolean expired = n.getDate("scheduledFor").toInstant().plus(SCHEDULE_TTL).isBefore(now);
+            if (expired || !pushEnabled || devices.isEmpty()) {
+                mongo.updateFirst(Query.query(Criteria.where("_id").is(id)), Update.update("channel", "in_app"),
+                    "notifications");
+                continue;
+            }
+            if (quiet || maxPerDay == 0 || !takeDailySlot(userId, localDate, maxPerDay)) {
+                continue;
+            }
+            Map<String, String> data = new java.util.HashMap<>();
+            n.get("data", new Document()).forEach((k, v) -> data.put(k, String.valueOf(v)));
+            if (deliver(userId, devices, id, n.getString("title"), n.getString("body"), data, localDate)) {
+                sent++;
+            }
+        }
+        return sent;
+    }
+
+    /** Gửi tới mọi thiết bị, xóa token hết hạn. Không thiết bị nào nhận thì trả lượt và chỉ giữ trong app. */
+    private boolean deliver(ObjectId userId, List<Document> devices, ObjectId notificationId, String title,
+                            String body, Map<String, String> data, String localDate) {
         boolean delivered = false;
         for (Document device : devices) {
             String token = device.getString("token");
@@ -128,16 +186,14 @@ public class MongoNotificationGateway implements NotificationGateway {
             }
             delivered |= outcome == PushSender.Outcome.SENT;
         }
+        Query byId = Query.query(Criteria.where("_id").is(notificationId));
         if (!delivered) {
-            // Không thiết bị nào nhận: trả lượt, tin vẫn nằm trong app
             releaseDailySlot(userId, localDate);
-            mongo.updateFirst(Query.query(Criteria.where("_id").is(notification.getObjectId("_id"))),
-                Update.update("channel", "in_app"), "notifications");
-            return Result.STORED_ONLY;
+            mongo.updateFirst(byId, Update.update("channel", "in_app"), "notifications");
+            return false;
         }
-        mongo.updateFirst(Query.query(Criteria.where("_id").is(notification.getObjectId("_id"))),
-            Update.update("sentAt", Date.from(clock.instant())), "notifications");
-        return Result.SENT;
+        mongo.updateFirst(byId, Update.update("sentAt", Date.from(clock.instant())), "notifications");
+        return true;
     }
 
     /** false khi trùng dedupeKey. */
