@@ -136,6 +136,11 @@ class _ObWhyScreenState extends ConsumerState<ObWhyScreen> {
                           decoration: const InputDecoration(
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.all(14),
+                            hintText: AppStrings.whyCustomDefault,
+                            hintStyle: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 15,
+                            ),
                           ),
                         ),
                       ),

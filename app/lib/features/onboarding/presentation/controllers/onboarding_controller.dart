@@ -15,6 +15,10 @@ class OnboardingController extends StateNotifier<OnboardingState> {
     state = state.copyWith(goal: goal);
   }
 
+  void setGender(Gender gender) {
+    state = state.copyWith(gender: gender);
+  }
+
   void updateBodyInfo({
     Gender? gender,
     int? birthYear,
@@ -22,12 +26,25 @@ class OnboardingController extends StateNotifier<OnboardingState> {
     int? startWeightKg,
     int? goalWeightKg,
   }) {
-    state = state.copyWith(
-      gender: gender,
+    state = OnboardingState(
+      goal: state.goal,
+      gender: gender ?? state.gender,
       birthYear: birthYear,
       heightCm: heightCm,
       startWeightKg: startWeightKg,
       goalWeightKg: goalWeightKg,
+      experience: state.experience,
+      location: state.location,
+      equipment: state.equipment,
+      injuries: state.injuries,
+      weekdays: state.weekdays,
+      timeSlot: state.timeSlot,
+      sessionMinutes: state.sessionMinutes,
+      motivationReasons: state.motivationReasons,
+      motivationText: state.motivationText,
+      coachStyle: state.coachStyle,
+      buddyInvited: state.buddyInvited,
+      pushEnabled: state.pushEnabled,
     );
   }
 
@@ -41,19 +58,18 @@ class OnboardingController extends StateNotifier<OnboardingState> {
     );
   }
 
-  void toggleEquipment(String item) {
-    final list = List<String>.from(state.equipment);
-    if (item == 'Không có') {
-      state = state.copyWith(equipment: ['Không có']);
-      return;
-    }
-    list.remove('Không có');
+  void toggleEquipment(Equipment item) {
+    final list = List<Equipment>.from(state.equipment);
     if (list.contains(item)) {
       list.remove(item);
     } else {
       list.add(item);
     }
     state = state.copyWith(equipment: list);
+  }
+
+  void clearEquipment() {
+    state = state.copyWith(equipment: const []);
   }
 
   void toggleInjury(BodyArea area) {
@@ -73,9 +89,7 @@ class OnboardingController extends StateNotifier<OnboardingState> {
   void toggleWeekday(int day) {
     final list = List<int>.from(state.weekdays);
     if (list.contains(day)) {
-      if (list.length > 1) {
-        list.remove(day);
-      }
+      list.remove(day);
     } else {
       list.add(day);
     }

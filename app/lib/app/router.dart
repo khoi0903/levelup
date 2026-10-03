@@ -11,8 +11,8 @@ import '../features/onboarding/presentation/screens/ob_training_screen.dart';
 import '../features/onboarding/presentation/screens/ob_why_screen.dart';
 import '../features/workout/presentation/screens/workout_screen.dart';
 
-final appRouter = GoRouter(
-  initialLocation: '/onboarding/goal',
+GoRouter createAppRouter({String initialLocation = '/onboarding/goal'}) => GoRouter(
+  initialLocation: initialLocation,
   routes: [
     GoRoute(
       path: '/onboarding/goal',
@@ -74,3 +74,5 @@ final appRouter = GoRouter(
     ),
   ],
 );
+
+final appRouter = createAppRouter();

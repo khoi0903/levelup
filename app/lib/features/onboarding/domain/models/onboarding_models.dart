@@ -25,6 +25,13 @@ enum WorkoutLocation {
   outdoor,
 }
 
+enum Equipment {
+  dumbbell,
+  mat,
+  resistance_band,
+  pullup_bar,
+}
+
 enum CoachStyle {
   strict,
   supportive,
@@ -50,42 +57,42 @@ enum TimeSlot {
 }
 
 class OnboardingState {
-  final UserGoal goal;
-  final Gender gender;
-  final int birthYear;
-  final int heightCm;
-  final int startWeightKg;
-  final int goalWeightKg;
-  final Experience experience;
-  final WorkoutLocation location;
-  final List<String> equipment;
+  final UserGoal? goal;
+  final Gender? gender;
+  final int? birthYear;
+  final int? heightCm;
+  final int? startWeightKg;
+  final int? goalWeightKg;
+  final Experience? experience;
+  final WorkoutLocation? location;
+  final List<Equipment> equipment;
   final List<BodyArea> injuries;
   final List<int> weekdays; // 1 = T2, 7 = CN
-  final TimeSlot timeSlot;
-  final int sessionMinutes;
+  final TimeSlot? timeSlot;
+  final int? sessionMinutes;
   final List<String> motivationReasons;
   final String motivationText;
-  final CoachStyle coachStyle;
+  final CoachStyle? coachStyle;
   final bool buddyInvited;
   final bool pushEnabled;
 
   const OnboardingState({
-    this.goal = UserGoal.lose_fat,
-    this.gender = Gender.male,
-    this.birthYear = 1998,
-    this.heightCm = 170,
-    this.startWeightKg = 70,
-    this.goalWeightKg = 65,
-    this.experience = Experience.beginner,
-    this.location = WorkoutLocation.home,
-    this.equipment = const ['Tạ đơn', 'Thảm'],
-    this.injuries = const [BodyArea.lower_back],
-    this.weekdays = const [1, 3, 5],
-    this.timeSlot = TimeSlot.evening,
-    this.sessionMinutes = 15,
-    this.motivationReasons = const ['Tự tin hơn khi soi gương', 'Mặc vừa đồ cũ'],
-    this.motivationText = 'Muốn mặc lại chiếc sơ mi cũ trước Tết',
-    this.coachStyle = CoachStyle.supportive,
+    this.goal,
+    this.gender,
+    this.birthYear,
+    this.heightCm,
+    this.startWeightKg,
+    this.goalWeightKg,
+    this.experience,
+    this.location,
+    this.equipment = const [],
+    this.injuries = const [],
+    this.weekdays = const [],
+    this.timeSlot,
+    this.sessionMinutes,
+    this.motivationReasons = const [],
+    this.motivationText = '',
+    this.coachStyle,
     this.buddyInvited = false,
     this.pushEnabled = true,
   });
@@ -99,7 +106,7 @@ class OnboardingState {
     int? goalWeightKg,
     Experience? experience,
     WorkoutLocation? location,
-    List<String>? equipment,
+    List<Equipment>? equipment,
     List<BodyArea>? injuries,
     List<int>? weekdays,
     TimeSlot? timeSlot,

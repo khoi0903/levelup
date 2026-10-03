@@ -30,11 +30,11 @@ class ObTrainingScreen extends ConsumerWidget {
     ];
 
     final equipmentOptions = [
-      AppStrings.equipmentNone,
-      AppStrings.equipmentDumbbell,
-      AppStrings.equipmentMat,
-      AppStrings.equipmentBand,
-      AppStrings.equipmentPullupBar,
+      (null, AppStrings.equipmentNone),
+      (Equipment.dumbbell, AppStrings.equipmentDumbbell),
+      (Equipment.mat, AppStrings.equipmentMat),
+      (Equipment.resistance_band, AppStrings.equipmentBand),
+      (Equipment.pullup_bar, AppStrings.equipmentPullupBar),
     ];
 
     final injuryOptions = [
@@ -145,11 +145,21 @@ class ObTrainingScreen extends ConsumerWidget {
                         spacing: 8,
                         runSpacing: 8,
                         children: equipmentOptions.map((item) {
-                          final isSelected = state.equipment.contains(item);
+                          final isNone = item.$1 == null;
+                          final isSelected = isNone
+                              ? state.equipment.isEmpty
+                              : state.equipment.contains(item.$1);
+
                           return SelectionChip(
-                            label: item,
+                            label: item.$2,
                             isSelected: isSelected,
-                            onTap: () => controller.toggleEquipment(item),
+                            onTap: () {
+                              if (isNone) {
+                                controller.clearEquipment();
+                              } else {
+                                controller.toggleEquipment(item.$1!);
+                              }
+                            },
                           );
                         }).toList(),
                       ),
@@ -202,7 +212,9 @@ class ObTrainingScreen extends ConsumerWidget {
               ),
               PrimaryButton(
                 label: AppStrings.btnContinue,
-                onPressed: () => context.push('/onboarding/schedule'),
+                onPressed: (state.experience != null && state.location != null)
+                    ? () => context.push('/onboarding/schedule')
+                    : null,
               ),
             ],
           ),
