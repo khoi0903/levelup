@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import jakarta.servlet.Filter;
 
+import vn.levelup.common.LocalDates;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;
@@ -111,8 +112,12 @@ class BuddyFlowTest {
     }
 
     private String workout(String exerciseId) {
-        Instant end = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-        Instant start = end.minus(12, ChronoUnit.MINUTES);
+        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        // Buổi tập phải nằm trong "hôm nay" giờ Việt Nam, kể cả khi test chạy ngay sau nửa đêm
+        Instant midnight = now.atZone(LocalDates.DEFAULT_ZONE).toLocalDate()
+            .atStartOfDay(LocalDates.DEFAULT_ZONE).toInstant();
+        Instant start = now.minus(12, ChronoUnit.MINUTES).isBefore(midnight) ? midnight : now.minus(12, ChronoUnit.MINUTES);
+        Instant end = start.plus(12, ChronoUnit.MINUTES);
         return """
             {"clientId":"buddy-%s","startedAt":"%s","endedAt":"%s","variant":"normal","rpe":6,
              "sets":[{"exerciseId":"%s","setIndex":1,"reps":10}]}"""
