@@ -124,8 +124,9 @@ class ObGoalScreen extends ConsumerWidget {
                 onPressed: () => context.push('/onboarding/body'),
               ),
               const SizedBox(height: 14),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   const Text(
                     AppStrings.alreadyHaveAccount,

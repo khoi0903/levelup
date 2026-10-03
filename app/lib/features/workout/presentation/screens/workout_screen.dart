@@ -138,194 +138,208 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-
-                  // Video Placeholder
-                  Container(
-                    height: 220,
-                    decoration: BoxDecoration(
-                      color: AppColors.placeholder,
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(
-                              Icons.play_circle_outline,
-                              size: 44,
-                              color: AppColors.textMuted,
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Video Placeholder
+                          Container(
+                            height: 220,
+                            decoration: BoxDecoration(
+                              color: AppColors.placeholder,
+                              borderRadius: BorderRadius.circular(18),
                             ),
-                            SizedBox(height: 6),
-                            Text(
-                              AppStrings.workoutVideoPlaceholder,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Icon(
+                                      Icons.play_circle_outline,
+                                      size: 44,
+                                      color: AppColors.textMuted,
+                                    ),
+                                    SizedBox(height: 6),
+                                    Text(
+                                      AppStrings.workoutVideoPlaceholder,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: AppColors.textMuted,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Positioned(
+                                  right: 12,
+                                  bottom: 12,
+                                  child: InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        _isPlayingVideo = !_isPlayingVideo;
+                                      });
+                                    },
+                                    borderRadius: BorderRadius.circular(22),
+                                    child: Container(
+                                      width: 44,
+                                      height: 44,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        _isPlayingVideo
+                                            ? Icons.pause
+                                            : Icons.play_arrow,
+                                        color: AppColors.textPrimary,
+                                        size: 20,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Tên bài & Đổi bài
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      AppStrings.workoutExName,
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Hiệp $_currentSet/$_totalSets · Lần trước: 10 lần × 6kg',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Chức năng đổi bài sẽ hỗ trợ ở sprint kế tiếp'),
+                                      duration: Duration(seconds: 1),
+                                    ),
+                                  );
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8),
+                                  child: Text(
+                                    AppStrings.btnChangeExercise,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Tạ (kg) & Số lần counters
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _CounterCard(
+                                  label: AppStrings.weightKgLabel,
+                                  value: _weightKg,
+                                  onDecrement: () {
+                                    if (_weightKg > 0) {
+                                      setState(() => _weightKg -= 1);
+                                    }
+                                  },
+                                  onIncrement: () {
+                                    setState(() => _weightKg += 1);
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _CounterCard(
+                                  label: AppStrings.repsLabel,
+                                  value: _reps,
+                                  onDecrement: () {
+                                    if (_reps > 1) {
+                                      setState(() => _reps -= 1);
+                                    }
+                                  },
+                                  onIncrement: () {
+                                    setState(() => _reps += 1);
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Form cue
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: AppColors.accentLight,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: const Text(
+                              AppStrings.formCue,
                               style: TextStyle(
                                 fontSize: 14,
-                                color: AppColors.textMuted,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Positioned(
-                          right: 12,
-                          bottom: 12,
-                          child: InkWell(
-                            onTap: () {
-                              setState(() {
-                                _isPlayingVideo = !_isPlayingVideo;
-                              });
-                            },
-                            borderRadius: BorderRadius.circular(22),
-                            child: Container(
-                              width: 44,
-                              height: 44,
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                _isPlayingVideo
-                                    ? Icons.pause
-                                    : Icons.play_arrow,
-                                color: AppColors.textPrimary,
-                                size: 20,
+                                height: 1.5,
+                                color: AppColors.accentDark,
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
+                          const SizedBox(height: 10),
 
-                  // Tên bài & Đổi bài
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            AppStrings.workoutExName,
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
+                          // Footer info
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: const [
+                              Expanded(
+                                child: Text(
+                                  AppStrings.restAfterSet,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                AppStrings.voiceGuideOn,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Hiệp $_currentSet/$_totalSets · Lần trước: 10 lần × 6kg',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
+                          const SizedBox(height: 16),
                         ],
                       ),
-                      InkWell(
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Chức năng đổi bài sẽ hỗ trợ ở sprint kế tiếp'),
-                              duration: Duration(seconds: 1),
-                            ),
-                          );
-                        },
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8),
-                          child: Text(
-                            AppStrings.btnChangeExercise,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Tạ (kg) & Số lần counters
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _CounterCard(
-                          label: AppStrings.weightKgLabel,
-                          value: _weightKg,
-                          onDecrement: () {
-                            if (_weightKg > 0) {
-                              setState(() => _weightKg -= 1);
-                            }
-                          },
-                          onIncrement: () {
-                            setState(() => _weightKg += 1);
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _CounterCard(
-                          label: AppStrings.repsLabel,
-                          value: _reps,
-                          onDecrement: () {
-                            if (_reps > 1) {
-                              setState(() => _reps -= 1);
-                            }
-                          },
-                          onIncrement: () {
-                            setState(() => _reps += 1);
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Form cue
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: AppColors.accentLight,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Text(
-                      AppStrings.formCue,
-                      style: TextStyle(
-                        fontSize: 14,
-                        height: 1.5,
-                        color: AppColors.accentDark,
-                      ),
                     ),
                   ),
-                  const SizedBox(height: 10),
-
-                  // Footer info
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text(
-                        AppStrings.restAfterSet,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      Text(
-                        AppStrings.voiceGuideOn,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
 
                   // Bottom buttons
                   Row(
@@ -350,20 +364,24 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Icon(Icons.camera_alt_outlined, size: 20),
-                                SizedBox(width: 8),
-                                Text(
-                                  AppStrings.btnCountCamera,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Icon(Icons.camera_alt_outlined, size: 20),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    AppStrings.btnCountCamera,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -380,12 +398,16 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
                             ),
-                            child: const Text(
-                              AppStrings.btnFinishSet,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                            child: const FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                AppStrings.btnFinishSet,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ),

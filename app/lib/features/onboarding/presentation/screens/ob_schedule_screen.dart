@@ -150,7 +150,7 @@ class ObScheduleScreen extends ConsumerWidget {
                         crossAxisCount: 2,
                         crossAxisSpacing: 8,
                         mainAxisSpacing: 8,
-                        childAspectRatio: 2.1,
+                        childAspectRatio: 1.85,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         children: timeSlots.map((slot) {
@@ -160,7 +160,7 @@ class ObScheduleScreen extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(14),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 10),
+                                  horizontal: 14, vertical: 8),
                               decoration: BoxDecoration(
                                 color: isSelected
                                     ? AppColors.primaryLight

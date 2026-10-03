@@ -33,27 +33,30 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              AppStrings.homeDate,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text(
+                                AppStrings.homeDate,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 2),
-                            Text(
-                              AppStrings.homeGreeting,
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
+                              SizedBox(height: 2),
+                              Text(
+                                AppStrings.homeGreeting,
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 8),
                         Container(
                           height: 40,
                           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -356,14 +359,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: const [
-                              Text(
-                                AppStrings.caloRemaining,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
+                              Expanded(
+                                child: Text(
+                                  AppStrings.caloRemaining,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textPrimary,
+                                  ),
                                 ),
                               ),
+                              SizedBox(width: 8),
                               Text(
                                 AppStrings.caloValue,
                                 style: TextStyle(
@@ -413,19 +419,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _NavItem(
-                    icon: Icons.home,
-                    label: AppStrings.navToday,
-                    isSelected: _currentNavIndex == 0,
-                    onTap: () => setState(() => _currentNavIndex = 0),
+                  Expanded(
+                    child: _NavItem(
+                      icon: Icons.home,
+                      label: AppStrings.navToday,
+                      isSelected: _currentNavIndex == 0,
+                      onTap: () => setState(() => _currentNavIndex = 0),
+                    ),
                   ),
-                  _NavItem(
-                    icon: Icons.restaurant_menu,
-                    label: AppStrings.navNutrition,
-                    isSelected: _currentNavIndex == 1,
-                    onTap: () => setState(() => _currentNavIndex = 1),
+                  Expanded(
+                    child: _NavItem(
+                      icon: Icons.restaurant_menu,
+                      label: AppStrings.navNutrition,
+                      isSelected: _currentNavIndex == 1,
+                      onTap: () => setState(() => _currentNavIndex = 1),
+                    ),
                   ),
                   // Nút Chụp món ăn ở giữa
                   Transform.translate(
@@ -462,17 +471,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                  _NavItem(
-                    icon: Icons.chat_bubble_outline,
-                    label: AppStrings.navCoach,
-                    isSelected: _currentNavIndex == 2,
-                    onTap: () => setState(() => _currentNavIndex = 2),
+                  Expanded(
+                    child: _NavItem(
+                      icon: Icons.chat_bubble_outline,
+                      label: AppStrings.navCoach,
+                      isSelected: _currentNavIndex == 2,
+                      onTap: () => setState(() => _currentNavIndex = 2),
+                    ),
                   ),
-                  _NavItem(
-                    icon: Icons.bar_chart,
-                    label: AppStrings.navProgress,
-                    isSelected: _currentNavIndex == 3,
-                    onTap: () => setState(() => _currentNavIndex = 3),
+                  Expanded(
+                    child: _NavItem(
+                      icon: Icons.bar_chart,
+                      label: AppStrings.navProgress,
+                      isSelected: _currentNavIndex == 3,
+                      onTap: () => setState(() => _currentNavIndex = 3),
+                    ),
                   ),
                 ],
               ),

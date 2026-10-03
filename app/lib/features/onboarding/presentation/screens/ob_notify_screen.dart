@@ -41,171 +41,184 @@ class ObNotifyScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
 
-              // Mock notifications preview container
-              Container(
-                height: 250,
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                  color: AppColors.borderLight,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Notification Card 1 (Active)
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color.fromRGBO(27, 33, 30, 0.10),
-                            blurRadius: 20,
-                            offset: Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(
-                              Icons.notifications_active,
-                              color: Colors.white,
-                              size: 22,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  AppStrings.notifyMockTitle1,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                                SizedBox(height: 2),
-                                Text(
-                                  AppStrings.notifyMockBody1,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    height: 1.45,
-                                    color: AppColors.textMuted,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Notification Card 2 (Faded)
-                    Opacity(
-                      opacity: 0.7,
-                      child: Container(
-                        padding: const EdgeInsets.all(14),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Mock notifications preview container
+                      Container(
+                        height: 260,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(16),
+                          color: AppColors.borderLight,
+                          borderRadius: BorderRadius.circular(24),
                         ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            // Notification Card 1 (Active)
                             Container(
-                              width: 40,
-                              height: 40,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 11),
                               decoration: BoxDecoration(
-                                color: AppColors.primary,
-                                borderRadius: BorderRadius.circular(10),
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color.fromRGBO(27, 33, 30, 0.10),
+                                    blurRadius: 20,
+                                    offset: Offset(0, 6),
+                                  ),
+                                ],
                               ),
-                              child: const Icon(
-                                Icons.chat_bubble,
-                                color: Colors.white,
-                                size: 20,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Icon(
+                                      Icons.notifications_active,
+                                      color: Colors.white,
+                                      size: 22,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: const [
+                                        Text(
+                                          AppStrings.notifyMockTitle1,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                        ),
+                                        SizedBox(height: 2),
+                                        Text(
+                                          AppStrings.notifyMockBody1,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            height: 1.45,
+                                            color: AppColors.textMuted,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  AppStrings.notifyMockTitle2,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textPrimary,
-                                  ),
+                            const SizedBox(height: 10),
+
+                            // Notification Card 2 (Faded)
+                            Opacity(
+                              opacity: 0.7,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 11),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
-                                SizedBox(height: 2),
-                                Text(
-                                  AppStrings.notifyMockBody2,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    height: 1.45,
-                                    color: AppColors.textMuted,
-                                  ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Icon(
+                                        Icons.chat_bubble,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: const [
+                                          Text(
+                                            AppStrings.notifyMockTitle2,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.textPrimary,
+                                            ),
+                                          ),
+                                          SizedBox(height: 2),
+                                          Text(
+                                            AppStrings.notifyMockBody2,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              height: 1.45,
+                                              color: AppColors.textMuted,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 24),
+
+                      const Text(
+                        AppStrings.notifyTitle,
+                        style: TextStyle(
+                          fontSize: 26,
+                          height: 1.25,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        AppStrings.notifySubtitle,
+                        style: TextStyle(
+                          fontSize: 15,
+                          height: 1.5,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // 3 cam kết
+                      _NotifyFeatureItem(text: AppStrings.notifyPoint1),
+                      const SizedBox(height: 12),
+                      _NotifyFeatureItem(text: AppStrings.notifyPoint2),
+                      const SizedBox(height: 12),
+                      _NotifyFeatureItem(text: AppStrings.notifyPoint3),
+                      const SizedBox(height: 16),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
 
-            const Text(
-              AppStrings.notifyTitle,
-              style: TextStyle(
-                fontSize: 26,
-                height: 1.25,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+              PrimaryButton(
+                label: AppStrings.btnEnableNotification,
+                onPressed: () {
+                  controller.setPushEnabled(true);
+                  context.push('/onboarding/start');
+                },
               ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              AppStrings.notifySubtitle,
-              style: TextStyle(
-                fontSize: 15,
-                height: 1.5,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // 3 cam kết
-            _NotifyFeatureItem(text: AppStrings.notifyPoint1),
-            const SizedBox(height: 12),
-            _NotifyFeatureItem(text: AppStrings.notifyPoint2),
-            const SizedBox(height: 12),
-            _NotifyFeatureItem(text: AppStrings.notifyPoint3),
-
-            const Spacer(),
-            PrimaryButton(
-              label: AppStrings.btnEnableNotification,
-              onPressed: () {
-                controller.setPushEnabled(true);
-                context.push('/onboarding/start');
-              },
-            ),
           ],
         ),
       ),

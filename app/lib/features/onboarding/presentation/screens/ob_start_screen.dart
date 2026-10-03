@@ -97,14 +97,17 @@ class ObStartScreen extends StatelessWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  item.$1,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                    color: AppColors.textPrimary,
+                                Expanded(
+                                  child: Text(
+                                    item.$1,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.textPrimary,
+                                    ),
                                   ),
                                 ),
+                                const SizedBox(width: 8),
                                 Text(
                                   item.$2,
                                   style: const TextStyle(
