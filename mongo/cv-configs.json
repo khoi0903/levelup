@@ -1,0 +1,19 @@
+{
+  "bodyweight-squat": {
+    "activeVersion": 1,
+    "configs": [
+      {
+        "version": 1,
+        "cameraPosition": "side",
+        "config": {
+          "joints": ["hip", "knee", "ankle"],
+          "downBelow": 95,
+          "upAbove": 160,
+          "minConfidence": 0.6,
+          "minRepMs": 600,
+          "formRules": [{ "code": "shallow_depth", "maxDepthAngle": 100 }]
+        }
+      }
+    ]
+  }
+}
