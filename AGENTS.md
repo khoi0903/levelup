@@ -61,8 +61,9 @@ Không sửa thư mục do agent khác phụ trách trong cùng lúc. Cần sử
   `google_mlkit_pose_detection`, `firebase_auth`, `firebase_messaging`.
 - Chia theo tính năng trong `lib/features/<tên>/{data,domain,presentation}`.
 - Giao diện bám **file Figma của team, trang "Yes"** (đọc qua Figma MCP):
-  https://www.figma.com/design/SPR387u9dcll7Ora7KH8b5/Untitled
-  Wireframe trong `docs/figma-export/` chỉ để hiểu luồng màn hình, màu sắc đã cũ.
+  https://www.figma.com/design/SPR387u9dcll7Ora7KH8b5/Untitled?node-id=68-263
+  (các trang "Page 1/2/3" là bản cũ màu cam, không dùng). Wireframe trong `docs/figma-export/`
+  chỉ để hiểu luồng màn hình, màu sắc đã cũ.
 
 ## MongoDB khi phát triển
 - Chạy: `cd mongo && docker compose up -d`
