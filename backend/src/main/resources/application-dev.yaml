@@ -4,9 +4,9 @@
 levelup:
   auth:
     dev-tokens: true
-  # Flutter web (flutter run -d chrome) chạy ở localhost với cổng ngẫu nhiên
+  # Flutter web: localhost (cổng ngẫu nhiên) và điện thoại mở qua Wi-Fi (192.168.x.x)
   cors:
-    allowed-origin-patterns: http://localhost:*,http://127.0.0.1:*
+    allowed-origin-patterns: http://localhost:*,http://127.0.0.1:*,http://192.168.*.*:*
 
 # Cổng 8080 trên máy dev đã bị chương trình khác dùng
 server:
