@@ -7,6 +7,11 @@ spring:
     mongodb:
       # Index và validator do mongo/init.js quản lý, không để Spring tự tạo
       auto-index-creation: false
+  servlet:
+    multipart:
+      # Ảnh món ăn (POST /meals/recognize) tối đa 2 MB
+      max-file-size: 2MB
+      max-request-size: 3MB
 
 server:
   port: ${PORT:8080}
@@ -25,6 +30,9 @@ levelup:
     # Model dùng chung cho coach, tổng kết tuần, nhận diện món ăn
     model: ${LEVELUP_AI_MODEL:claude-opus-5-5}
     timeout-seconds: 20
+  nutrition:
+    # Số lần chụp món gọi AI mỗi ngày (ảnh đã nhận diện rồi thì không tính)
+    daily-photo-limit: 10
 
 management:
   endpoints:

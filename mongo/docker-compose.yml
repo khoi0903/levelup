@@ -45,7 +45,7 @@ services:
       - ./load-seed.js:/scripts/load-seed.js:ro
       - ./cv-configs.json:/scripts/cv-configs.json:ro
       - ./seed:/seed:ro
-    # Tạo collection, rồi nạp dữ liệu mẫu (bài tập + cấu hình camera)
+    # Tạo collection, rồi nạp dữ liệu mẫu (bài tập + cấu hình camera, món ăn, huy hiệu)
     command: ["mongosh", "mongodb://mongo:27018/fitness?directConnection=true", "/scripts/init.js", "/scripts/load-seed.js"]
     restart: "no"
 

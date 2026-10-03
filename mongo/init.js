@@ -407,6 +407,7 @@ coll("foods", {
 });
 dbx.foods.createIndex({ searchName: "text", aliases: "text" }, { default_language: "none" });
 dbx.foods.createIndex({ barcode: 1 }, { unique: true, partialFilterExpression: { barcode: { $type: "string" } } });
+dbx.foods.createIndex({ searchName: 1 }, { unique: true, partialFilterExpression: { source: "curated" } });  // seed upsert
 
 coll("meal_logs", {
   bsonType: "object", required: ["userId", "localDate", "meal", "method", "kcal", "items"],
@@ -434,6 +435,7 @@ coll("food_recognitions", {
                 costUsd: { bsonType: "number" }, createdAt: { bsonType: "date" } }
 });
 dbx.food_recognitions.createIndex({ imageSha256: 1 });                      // cache: cùng ảnh không gọi AI lại
+dbx.food_recognitions.createIndex({ userId: 1, imageSha256: 1 });          // cache theo từng người dùng
 dbx.food_recognitions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 180 });
 
 // ---------------------------------------------------------------------
