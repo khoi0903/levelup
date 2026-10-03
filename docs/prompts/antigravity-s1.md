@@ -7,6 +7,15 @@ Mở thư mục **`D:\levelup-worktrees\app-ui`** trong Antigravity (đã đứn
 
 Bạn là Flutter developer của dự án app fitness cho người Việt. Repo đã có sẵn.
 
+## Thiết kế: ưu tiên Figma
+Bản thiết kế chính là file Figma của team, **trang "Yes"**:
+https://www.figma.com/design/SPR387u9dcll7Ora7KH8b5/Untitled
+- Nếu đã kết nối Figma MCP: đọc trang "Yes", lấy màu, font, khoảng cách, bo góc, icon từ Figma.
+  Màu và font trong mục "Theme" bên dưới chỉ là bản wireframe cũ, **bỏ qua nếu Figma khác**.
+  Gom các giá trị lấy từ Figma vào `lib/app/theme.dart`, không viết cứng màu trong từng màn.
+- Nếu chưa kết nối được Figma: dừng lại và báo, đừng tự đoán theo wireframe cũ.
+- Wireframe HTML trong `docs/figma-export/` chỉ dùng để hiểu thứ tự màn và luồng bấm.
+
 ## Đọc trước khi làm
 1. `AGENTS.md` – quy ước bắt buộc của cả dự án. Đọc hết.
 2. `docs/01-user-flows.html` – flow F1 (onboarding) và F2 (vòng lặp ngày).
