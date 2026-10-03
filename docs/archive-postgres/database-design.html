@@ -1,0 +1,1239 @@
+<title>Database App Fitness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F3F5F6; --surface:#FFFFFF; --ink:#172026; --muted:#56636D; --line:#D9DFE3; --code:#EEF2F4;
+  --accent:#C4461F; --accent-soft:#FCEBE4; --teal:#1E7465; --teal-soft:#E1F0EC; --warn:#946200; --warn-soft:#FBF1DA;
+  --body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#101518; --surface:#171E22; --ink:#E4EBEF; --muted:#9AA8B1; --line:#29333A; --code:#1C252A;
+    --accent:#F2764E; --accent-soft:#3A2219; --teal:#5CC2AE; --teal-soft:#15302A; --warn:#E3B45A; --warn-soft:#342914;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#101518; --surface:#171E22; --ink:#E4EBEF; --muted:#9AA8B1; --line:#29333A; --code:#1C252A;
+  --accent:#F2764E; --accent-soft:#3A2219; --teal:#5CC2AE; --teal-soft:#15302A; --warn:#E3B45A; --warn-soft:#342914;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.65;padding:0 20px}
+.wrap{max-width:940px;margin:0 auto;padding-block:40px 80px}
+h1,h2,h3{line-height:1.25;text-wrap:balance;margin:0;font-weight:700}
+h1{font-size:clamp(28px,5vw,38px);letter-spacing:-.01em}
+h2{font-size:23px;margin-bottom:6px}
+h3{font-size:16.5px;margin:20px 0 8px}
+p{margin:0 0 12px;max-width:70ch}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.lede{color:var(--muted);font-size:17px;margin-top:12px}
+header{display:grid;gap:4px;margin-bottom:24px}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.facts span{font-size:13px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px}
+.facts b{font-variant-numeric:tabular-nums}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 0;margin-bottom:8px;overflow-x:auto;white-space:nowrap}
+nav a{display:inline-block;font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:999px}
+nav a:hover,nav a:focus-visible{background:var(--teal-soft);color:var(--teal);outline:none}
+section{padding-top:36px;scroll-margin-top:60px}
+.sub{color:var(--muted);margin-bottom:12px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--bg)}
+td:first-child{font-weight:600;white-space:nowrap}
+code{font-family:var(--mono);font-size:12.5px;background:var(--code);padding:1px 6px;border-radius:5px}
+.diagram{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;margin:12px 0}
+.diagram pre{margin:0;background:transparent}
+pre.sql{margin:0;padding:16px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.55;background:var(--code);border-radius:10px;white-space:pre}
+.rule{background:var(--teal-soft);border-radius:10px;padding:14px 18px;margin:14px 0}
+.rule strong{color:var(--teal)}
+.warn{background:var(--warn-soft);border-radius:10px;padding:14px 18px;margin:14px 0}
+.warn strong{color:var(--warn)}
+ul{padding-left:20px;margin:6px 0 12px}
+li{margin-bottom:5px}
+details{border:1px solid var(--line);border-radius:10px;background:var(--surface);margin-top:12px}
+summary{cursor:pointer;padding:14px 16px;font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:12px}
+summary:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:10px}
+.sqlbox{padding:0 16px 16px;display:grid;gap:10px}
+.copy{justify-self:start;font:600 13px var(--body);color:var(--surface);background:var(--ink);border:0;border-radius:8px;padding:8px 14px;cursor:pointer}
+.copy:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.status{font-size:13px;color:var(--teal);min-height:1.2em}
+footer{margin-top:48px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Fitness app · MVP · PostgreSQL</span>
+  <h1>Thiết kế database cho các flow MVP</h1>
+  <p class="lede">Schema bám theo 8 flow và 27 màn hình wireframe: onboarding, vòng lặp tập hằng ngày, hệ thống động lực, dinh dưỡng và AI coach.</p>
+  <div class="facts">
+    <span><b>51</b> bảng</span>
+    <span><b>8</b> nhóm</span>
+    <span>PostgreSQL 15+ / Supabase</span>
+    <span>Múi giờ mặc định Asia/Ho_Chi_Minh</span>
+  </div>
+</header>
+
+<nav aria-label="Mục lục">
+  <a href="#rules">Quy ước</a>
+  <a href="#erd-user">Người dùng</a>
+  <a href="#erd-train">Tập luyện</a>
+  <a href="#erd-cam">Đếm bằng camera</a>
+  <a href="#erd-motiv">Động lực</a>
+  <a href="#erd-food">Dinh dưỡng</a>
+  <a href="#erd-coach">Coach, thông báo</a>
+  <a href="#flows">Flow → bảng</a>
+  <a href="#jobs">Job nền</a>
+  <a href="#queries">Truy vấn mẫu</a>
+  <a href="#privacy">Bảo mật</a>
+  <a href="#sql">Toàn bộ SQL</a>
+</nav>
+
+<section id="rules">
+  <h2>Quy ước chung</h2>
+  <ul>
+    <li><b>Khóa chính</b> là <code>uuid</code>, sinh bằng <code>gen_random_uuid()</code>. Dùng Supabase thì <code>users.id</code> trỏ tới <code>auth.users.id</code>.</li>
+    <li><b>Thời điểm</b> lưu <code>timestamptz</code> (UTC). <b>"Ngày"</b> của người dùng lưu riêng ở cột <code>local_date</code>, tính theo <code>users.timezone</code> lúc ghi. Streak, check-in, giới hạn thông báo đều đếm theo <code>local_date</code>, nên người tập lúc 23h30 không bị tính sang ngày hôm sau.</li>
+    <li><b>Tuần</b> luôn bắt đầu Thứ Hai (<code>week_start</code>).</li>
+    <li><b>Enum</b> cho các giá trị cố định dùng trong logic (lý do bỏ buổi, trạng thái buổi tập). Mã tự do như dụng cụ hay lý do động lực dùng <code>text</code> để thêm mới không cần migration.</li>
+    <li><b>Xóa tài khoản:</b> đặt <code>deleted_at</code>, sau 30 ngày job xóa hẳn. Mọi bảng con đều <code>on delete cascade</code>.</li>
+  </ul>
+  <div class="rule"><strong>Hai loại dữ liệu:</strong> bảng <b>sự kiện</b> (<code>workout_logs</code>, <code>notifications</code>, <code>skip_reports</code>) chỉ thêm, không sửa, và là nguồn sự thật. Bảng <b>trạng thái</b> (<code>streak_state</code>, <code>reengagement_state</code>, <code>personal_records</code>) là số tổng hợp để màn hình đọc nhanh, luôn tính lại được từ bảng sự kiện.</div>
+</section>
+
+<section id="erd-user">
+  <span class="eyebrow">Nhóm 1</span>
+  <h2>Người dùng và hồ sơ</h2>
+  <p class="sub">Lưu toàn bộ dữ liệu thu ở onboarding (F1), cài đặt thông báo, chia sẻ với buddy và sự đồng ý xử lý dữ liệu.</p>
+  <div class="diagram"><pre class="mermaid">
+erDiagram
+  users ||--|| user_profiles : "hồ sơ"
+  users ||--o{ user_motivation_reasons : "lý do"
+  users ||--o{ user_equipment : "dụng cụ"
+  users ||--o{ user_injuries : "chấn thương"
+  users ||--o{ user_availability : "lịch rảnh"
+  users ||--|| notification_settings : "thông báo"
+  users ||--o{ device_tokens : "thiết bị"
+  users ||--|| sharing_settings : "chia sẻ"
+  users ||--|| subscriptions : "gói"
+  users ||--o{ user_consents : "đồng ý"
+  users {
+    uuid id PK
+    citext email
+    text timezone
+    timestamptz deleted_at
+  }
+  user_profiles {
+    uuid user_id PK
+    goal_type goal
+    numeric height_cm
+    numeric goal_weight_kg
+    coach_style coach_style
+    text motivation_text
+  }
+  user_injuries {
+    uuid id PK
+    uuid user_id FK
+    body_area body_area
+    boolean active
+  }
+  notification_settings {
+    uuid user_id PK
+    time checkin_time
+    time quiet_start
+    smallint max_per_day
+  }
+  </pre></div>
+</section>
+
+<section id="erd-train">
+  <span class="eyebrow">Nhóm 2–4</span>
+  <h2>Bài tập, kế hoạch và buổi tập</h2>
+  <p class="sub">Tách rõ <b>kế hoạch</b> (<code>planned_sessions</code>: coach định cho tập gì) với <b>thực tế</b> (<code>workout_logs</code>: người dùng đã tập gì). Bản 5 phút ngoài kế hoạch vẫn là một <code>workout_log</code>, chỉ không gắn <code>planned_session_id</code>.</p>
+  <div class="diagram"><pre class="mermaid">
+erDiagram
+  exercises ||--o{ exercise_equipment : "cần"
+  exercises ||--o{ exercise_contraindications : "tránh khi đau"
+  exercises ||--o{ exercise_alternatives : "thay bằng"
+  workout_templates ||--o{ workout_template_items : "gồm"
+  exercises ||--o{ workout_template_items : ""
+  users ||--o{ training_plans : "mỗi tuần"
+  training_plans ||--o{ planned_sessions : "gồm"
+  planned_sessions ||--o{ planned_session_items : "động tác"
+  planned_sessions |o--o{ workout_logs : "thực hiện"
+  workout_logs ||--o{ set_logs : "hiệp"
+  set_logs |o--o| personal_records : "kỷ lục"
+  users ||--o{ daily_checkins : "mỗi sáng"
+  planned_sessions {
+    uuid id PK
+    uuid plan_id FK
+    date scheduled_date
+    session_variant variant
+    planned_status status
+    uuid rescheduled_from_id FK
+  }
+  workout_logs {
+    uuid id PK
+    uuid planned_session_id FK
+    date local_date
+    integer duration_sec
+    smallint rpe
+    boolean counts_for_streak
+  }
+  set_logs {
+    uuid id PK
+    uuid workout_log_id FK
+    smallint reps
+    numeric weight_kg
+    boolean is_pr
+  }
+  daily_checkins {
+    uuid user_id PK
+    date local_date PK
+    energy_level energy
+    sleep_bucket sleep
+  }
+  </pre></div>
+  <p><code>counts_for_streak</code> là cột tự tính: <code>duration_sec >= 300</code>. Quy tắc "mỗi buổi từ 5 phút đều được tính" nằm ngay trong database, app không tự quyết.</p>
+</section>
+
+<section id="erd-cam">
+  <span class="eyebrow">Nhóm 2 · mở rộng</span>
+  <h2>Đếm số lần bằng camera</h2>
+  <p class="sub">Nhận diện tư thế chạy ngay trên điện thoại. Server chỉ giữ <b>cấu hình</b> cho từng bài và <b>kết quả</b> của từng hiệp, không nhận và không lưu video.</p>
+  <div class="diagram"><pre class="mermaid">
+erDiagram
+  exercises ||--o{ exercise_cv_configs : "phiên bản cấu hình"
+  exercise_cv_configs |o--o{ set_logs : "dùng để đếm"
+  set_logs ||--o{ form_issues : "lỗi tư thế"
+  exercises {
+    uuid id PK
+    boolean cv_supported
+  }
+  exercise_cv_configs {
+    uuid id PK
+    uuid exercise_id FK
+    integer version
+    camera_position camera_position
+    jsonb config
+    boolean is_active
+  }
+  set_logs {
+    uuid id PK
+    smallint reps
+    rep_source rep_source
+    smallint reps_detected
+    numeric avg_confidence
+    smallint form_score
+  }
+  form_issues {
+    uuid id PK
+    uuid set_log_id FK
+    smallint rep_index
+    text issue_code
+    smallint severity
+  }
+  </pre></div>
+  <ul>
+    <li><code>exercise_cv_configs.config</code> chứa khớp cần theo dõi và ngưỡng góc (ví dụ squat: gối dưới 95° là xuống, trên 160° là lên). Chỉnh ngưỡng chỉ cần thêm phiên bản mới, không cần phát hành lại app.</li>
+    <li><code>set_logs.reps</code> vẫn là số cuối cùng. <code>reps_detected</code> là số camera đếm. Nếu người dùng sửa số thì <code>rep_source = 'camera_corrected'</code>.</li>
+    <li><b>Đo độ chính xác theo từng phiên bản cấu hình:</b> tỷ lệ hiệp bị sửa và mức lệch trung bình giữa <code>reps_detected</code> và <code>reps</code>.</li>
+  </ul>
+  <pre class="sql">select c.exercise_id, c.version,
+       count(*) as sets,
+       round(100.0 * avg((s.rep_source = 'camera_corrected')::int), 1) as pct_corrected,
+       round(avg(abs(s.reps - s.reps_detected)), 2) as avg_error
+from set_logs s
+join exercise_cv_configs c on c.id = s.cv_config_id
+where s.rep_source &lt;&gt; 'manual'
+group by c.exercise_id, c.version
+order by pct_corrected desc;</pre>
+</section>
+
+<section id="erd-motiv">
+  <span class="eyebrow">Nhóm 5</span>
+  <h2>Hệ thống động lực</h2>
+  <p class="sub">Streak tuần (F4), bỏ buổi và nhắc quay lại (F3), buddy (F5), cột mốc (F7), tổng kết tuần (F6).</p>
+  <div class="diagram"><pre class="mermaid">
+erDiagram
+  users ||--o{ weekly_streaks : "mỗi tuần"
+  users ||--|| streak_state : "tổng hợp"
+  users ||--o{ streak_freeze_events : "nhận, dùng thẻ"
+  users ||--|| reengagement_state : "bậc nhắc"
+  planned_sessions |o--o{ skip_reports : "lý do bỏ"
+  users ||--o{ buddy_invites : "mời"
+  users ||--o{ buddy_pairs : "ghép cặp"
+  buddy_pairs ||--o{ buddy_actions : "cổ vũ, nhắc"
+  achievements ||--o{ user_achievements : ""
+  users ||--o{ user_achievements : "đạt"
+  users ||--o{ weekly_reviews : "chủ nhật"
+  weekly_reviews |o--o| training_plans : "đề xuất tuần sau"
+  weekly_streaks {
+    uuid user_id PK
+    date week_start PK
+    smallint target_sessions
+    smallint completed_sessions
+    week_status status
+  }
+  streak_state {
+    uuid user_id PK
+    integer current_weeks
+    integer best_weeks
+    smallint freezes_available
+  }
+  reengagement_state {
+    uuid user_id PK
+    reengage_stage stage
+    smallint consecutive_missed
+    smallint messages_in_stage
+  }
+  skip_reports {
+    uuid id PK
+    skip_reason reason
+    skip_action action
+  }
+  buddy_pairs {
+    uuid id PK
+    uuid user_a FK
+    uuid user_b FK
+    integer shared_streak_weeks
+  }
+  weekly_reviews {
+    uuid id PK
+    date week_start
+    jsonb wins
+    review_reco recommendation
+    review_decision decision
+  }
+  </pre></div>
+  <ul>
+    <li><code>reengagement_state.stage</code> đi theo đúng các bậc của F3: <code>active</code> → <code>missed_1</code> → <code>missed_2</code> → <code>lapsed_7</code> → <code>lapsed_14</code> → <code>dormant</code>. Có <code>workout_log</code> mới thì quay về <code>active</code>.</li>
+    <li><code>buddy_pairs</code> luôn lưu <code>user_a &lt; user_b</code>, nên mỗi cặp chỉ có một dòng. Unique index một phần giới hạn nút "Nhắc bạn" 1 lần mỗi ngày ngay ở database.</li>
+    <li><code>skip_reports</code> là dữ liệu thật trả lời câu hỏi "vì sao mất động lực", thay cho khảo sát.</li>
+  </ul>
+</section>
+
+<section id="erd-food">
+  <span class="eyebrow">Nhóm 4, 6</span>
+  <h2>Dinh dưỡng và chỉ số cơ thể</h2>
+  <p class="sub">Mỗi bữa (<code>meal_logs</code>) gồm nhiều thành phần (<code>meal_items</code>) để người dùng sửa từng món, ví dụ đổi cơm từ 1 đĩa sang ½ đĩa.</p>
+  <div class="diagram"><pre class="mermaid">
+erDiagram
+  users ||--o{ meal_logs : "ghi bữa"
+  meal_logs ||--o{ meal_items : "gồm"
+  foods |o--o{ meal_items : "tra cứu"
+  meal_logs |o--o{ food_recognitions : "AI nhận diện"
+  users ||--o{ nutrition_targets : "mục tiêu"
+  users ||--o{ water_logs : "nước"
+  users ||--o{ daily_usage : "lượt dùng"
+  users ||--o{ body_measurements : "cân, đo"
+  users ||--o{ progress_photos : "ảnh"
+  foods {
+    uuid id PK
+    text name_vi
+    text_array aliases
+    numeric kcal
+    text barcode
+  }
+  meal_logs {
+    uuid id PK
+    date local_date
+    meal_type meal
+    input_method method
+    integer kcal_min
+    integer kcal_max
+    integer kcal
+  }
+  meal_items {
+    uuid id PK
+    uuid food_id FK
+    numeric quantity
+    boolean user_edited
+  }
+  food_recognitions {
+    uuid id PK
+    text image_sha256
+    jsonb raw_result
+    numeric cost_usd
+  }
+  </pre></div>
+  <ul>
+    <li><code>foods</code> là kho món Việt do team tự xây (<code>source = 'curated'</code>). Tìm bằng <code>pg_trgm</code> và <code>unaccent</code> để gõ "com tam" vẫn ra "Cơm tấm".</li>
+    <li><code>meal_items.user_edited</code> cho biết AI đoán sai bao nhiêu. Đây là số liệu để cải thiện nhận diện.</li>
+    <li><code>food_recognitions.image_sha256</code> dùng để không gọi AI lại với cùng một ảnh. <code>cost_usd</code> theo dõi chi phí mỗi lượt chụp.</li>
+    <li><code>nutrition_targets.kcal</code> có ràng buộc <code>&gt;= 1200</code> ở database. Mức sàn 1500 kcal cho nam được app kiểm tra thêm.</li>
+  </ul>
+</section>
+
+<section id="erd-coach">
+  <span class="eyebrow">Nhóm 7–8</span>
+  <h2>AI coach, thông báo và đo lường</h2>
+  <div class="diagram"><pre class="mermaid">
+erDiagram
+  users ||--o{ coach_messages : "chat"
+  users ||--o{ coach_memory : "coach nhớ"
+  coach_messages |o--o{ coach_memory : "nguồn"
+  users ||--o{ notifications : "nhận"
+  coach_messages |o--o{ notifications : "kèm tin"
+  planned_sessions |o--o{ notifications : "liên quan"
+  users ||--o{ events : "tracking"
+  users ||--o{ experiment_assignments : "A/B"
+  coach_messages {
+    uuid id PK
+    msg_role role
+    text content
+    jsonb card
+    text trigger
+    integer tokens_out
+  }
+  coach_memory {
+    uuid user_id PK
+    text key PK
+    text value
+    timestamptz expires_at
+  }
+  notifications {
+    uuid id PK
+    notif_type type
+    date local_date
+    timestamptz sent_at
+    timestamptz opened_at
+    text action
+    text ab_variant
+  }
+  </pre></div>
+  <ul>
+    <li>Mỗi người dùng có <b>một luồng chat duy nhất</b> với coach. Tin do hệ thống chủ động gửi (bỏ buổi, tổng kết tuần) cũng nằm trong <code>coach_messages</code>, phân biệt bằng cột <code>trigger</code>.</li>
+    <li><code>card</code> (jsonb) chứa thẻ hành động như "Toàn thân nhanh · 10 phút" kèm các nút.</li>
+    <li><code>coach_memory</code> là những điều coach cần nhớ lâu dài, ví dụ "đau vai phải từ 26/9". Mỗi lần gọi AI chỉ gửi kèm phần trí nhớ này và vài tin gần nhất, không gửi cả lịch sử chat, để tiết kiệm chi phí.</li>
+    <li><code>notifications</code> vừa dùng để giới hạn 2 thông báo mỗi ngày, vừa là nguồn đo "% quay lại sau tin F3" (<code>opened_at</code>, <code>action</code>, <code>ab_variant</code>).</li>
+  </ul>
+</section>
+
+<section id="flows">
+  <h2>Flow nào dùng bảng nào</h2>
+  <div class="tbl"><table>
+    <tr><th>Flow</th><th>Ghi vào</th><th>Đọc từ</th></tr>
+    <tr><td>F1 Onboarding</td><td><code>users</code>, <code>user_profiles</code>, <code>user_motivation_reasons</code>, <code>user_equipment</code>, <code>user_injuries</code>, <code>user_availability</code>, <code>notification_settings</code>, <code>device_tokens</code>, <code>user_consents</code>, <code>nutrition_targets</code>, <code>training_plans</code>, <code>planned_sessions</code>, <code>buddy_invites</code></td><td><code>exercises</code>, <code>workout_templates</code>, <code>exercise_contraindications</code></td></tr>
+    <tr><td>F2 Vòng lặp ngày</td><td><code>daily_checkins</code>, <code>planned_sessions</code> (đổi variant), <code>workout_logs</code>, <code>set_logs</code>, <code>personal_records</code></td><td><code>planned_session_items</code>, <code>set_logs</code> lần trước ("Lần trước: 10 × 6kg")</td></tr>
+    <tr><td>F2b Đếm bằng camera</td><td><code>set_logs</code> (<code>rep_source</code>, <code>reps_detected</code>, <code>form_score</code>), <code>form_issues</code>, <code>user_consents</code> (kind <code>camera</code>)</td><td><code>exercises.cv_supported</code>, <code>exercise_cv_configs</code> đang bật</td></tr>
+    <tr><td>F3 Bỏ buổi</td><td><code>planned_sessions.status</code>, <code>skip_reports</code>, <code>reengagement_state</code>, <code>coach_messages</code>, <code>notifications</code></td><td><code>user_profiles.motivation_text</code>, <code>notification_settings</code></td></tr>
+    <tr><td>F4 Streak</td><td><code>weekly_streaks</code>, <code>streak_state</code>, <code>streak_freeze_events</code></td><td><code>workout_logs.counts_for_streak</code></td></tr>
+    <tr><td>F5 Buddy</td><td><code>buddy_invites</code>, <code>buddy_pairs</code>, <code>buddy_actions</code></td><td><code>sharing_settings</code>, <code>workout_logs</code> hôm nay, <code>streak_state</code></td></tr>
+    <tr><td>F6 Tổng kết tuần</td><td><code>weekly_reviews</code>, <code>training_plans</code> (bản nháp tuần sau)</td><td><code>workout_logs</code>, <code>personal_records</code>, <code>body_measurements</code>, <code>meal_logs</code></td></tr>
+    <tr><td>F7 Cột mốc</td><td><code>user_achievements</code></td><td><code>achievements</code>, <code>personal_records</code>, <code>streak_state</code></td></tr>
+    <tr><td>F8 Ghi bữa ăn</td><td><code>meal_logs</code>, <code>meal_items</code>, <code>food_recognitions</code>, <code>daily_usage</code>, <code>water_logs</code></td><td><code>foods</code>, <code>nutrition_targets</code></td></tr>
+    <tr><td>Chat coach</td><td><code>coach_messages</code>, <code>coach_memory</code>, <code>daily_usage</code>, <code>user_injuries</code> (khi báo đau)</td><td>Gần như mọi bảng của người dùng đó</td></tr>
+    <tr><td>Tiến độ</td><td><code>body_measurements</code>, <code>progress_photos</code></td><td><code>personal_records</code>, <code>weekly_streaks</code></td></tr>
+  </table></div>
+</section>
+
+<section id="jobs">
+  <h2>Job chạy nền</h2>
+  <p class="sub">Các job chạy theo <b>giờ địa phương của từng người</b>: mỗi 15 phút, job tìm những người dùng có giờ địa phương rơi vào khung cần xử lý.</p>
+  <div class="tbl"><table>
+    <tr><th>Job</th><th>Khi chạy</th><th>Làm gì</th></tr>
+    <tr><td>Check-in sáng</td><td><code>checkin_time</code> của từng người</td><td>Gửi push nếu còn lượt trong ngày, ghi <code>notifications</code></td></tr>
+    <tr><td>Nhắc trước giờ tập</td><td>30 phút trước <code>scheduled_time</code></td><td>Gửi push kèm tên buổi và một điểm tiến bộ</td></tr>
+    <tr><td>Bỏ buổi lần 1</td><td>20:00</td><td>Buổi hôm nay còn <code>planned</code> và chưa có log từ 5 phút: gợi ý bản 5 phút</td></tr>
+    <tr><td>Chốt ngày</td><td>00:05</td><td>Buổi chưa tập chuyển sang <code>skipped</code>. Cập nhật <code>reengagement_state</code>. Đạt <code>missed_2</code> thì tạo tin coach hỏi lý do</td></tr>
+    <tr><td>Khi lưu buổi tập</td><td>Ngay lúc ghi (trong app hoặc trigger)</td><td>Đánh dấu buổi <code>completed</code>, cộng <code>weekly_streaks</code>, cập nhật kỷ lục, xét huy hiệu, đưa <code>reengagement_state</code> về <code>active</code>, báo buddy</td></tr>
+    <tr><td>Chốt tuần</td><td>Chủ nhật 19:00</td><td>Tuần đạt: <code>achieved</code>. Chưa đạt mà còn thẻ: <code>frozen</code>. Hết thẻ: <code>missed</code> và streak về 0. Cứ 4 tuần liên tiếp thì cộng 1 thẻ. Gọi AI tạo <code>weekly_reviews</code> và kế hoạch nháp</td></tr>
+    <tr><td>Nhắc cân đo</td><td>Thứ Hai 7:30</td><td>Một lần mỗi tuần</td></tr>
+    <tr><td>Xóa tài khoản</td><td>Hằng đêm</td><td>Xóa hẳn tài khoản có <code>deleted_at</code> quá 30 ngày, kèm ảnh trong storage</td></tr>
+  </table></div>
+  <div class="warn"><strong>Chống gửi trùng:</strong> job có thể chạy lại khi lỗi. Trước khi gửi, kiểm tra trong <code>notifications</code> đã có dòng cùng <code>user_id</code>, <code>type</code>, <code>local_date</code> chưa. Nên thêm unique index cho những loại chỉ gửi một lần mỗi ngày.</div>
+</section>
+
+<section id="queries">
+  <h2>Truy vấn mẫu</h2>
+  <h3>Chọn bài phù hợp chấn thương và dụng cụ của người dùng</h3>
+  <pre class="sql">select e.*
+from exercises e
+where e.is_active
+  -- bỏ bài gây áp lực lên vùng đang đau
+  and not exists (
+    select 1 from exercise_contraindications c
+    join user_injuries i on i.body_area = c.body_area and i.active
+    where c.exercise_id = e.id and i.user_id = $1)
+  -- bỏ bài cần dụng cụ người dùng không có
+  and not exists (
+    select 1 from exercise_equipment ee
+    where ee.exercise_id = e.id
+      and ee.equipment_code not in (
+        select equipment_code from user_equipment where user_id = $1));</pre>
+  <h3>Còn được gửi thông báo hôm nay không (tối đa 2 lần)</h3>
+  <pre class="sql">select ns.push_enabled
+   and (select count(*) from notifications n
+        where n.user_id = ns.user_id
+          and n.local_date = $2
+          and n.sent_at is not null) &lt; ns.max_per_day as can_send
+from notification_settings ns
+where ns.user_id = $1;</pre>
+  <h3>Ai cần nhận tin "bỏ buổi lần 1" lúc 20:00</h3>
+  <pre class="sql">select ps.user_id, ps.id as session_id
+from planned_sessions ps
+where ps.scheduled_date = $1          -- ngày hôm nay theo giờ người dùng
+  and ps.status = 'planned'
+  and not exists (
+    select 1 from workout_logs w
+    where w.user_id = ps.user_id
+      and w.local_date = ps.scheduled_date
+      and w.counts_for_streak);</pre>
+  <h3>Lý do bỏ buổi phổ biến nhất 30 ngày qua</h3>
+  <pre class="sql">select reason, count(*) as total,
+       round(100.0 * count(*) / sum(count(*)) over (), 1) as pct
+from skip_reports
+where created_at &gt; now() - interval '30 days'
+group by reason
+order by total desc;</pre>
+</section>
+
+<section id="privacy">
+  <h2>Bảo mật và dữ liệu cá nhân</h2>
+  <ul>
+    <li><b>Row Level Security:</b> bật RLS trên mọi bảng có <code>user_id</code>, chính sách mặc định là <code>user_id = auth.uid()</code>. Bảng thư viện (<code>exercises</code>, <code>foods</code>, <code>achievements</code>) cho mọi người đọc, chỉ admin được ghi.</li>
+    <li><b>Buddy không đọc thẳng bảng của nhau.</b> Tạo một view hoặc hàm riêng chỉ trả về trạng thái tập hôm nay và streak. Các thông tin khác chỉ trả về khi <code>sharing_settings</code> cho phép.</li>
+    <li><b>Camera đếm số lần:</b> không lưu video. Nếu sau này muốn người dùng gửi clip để cải thiện thuật toán, phải xin đồng ý riêng (<code>user_consents.kind = 'cv_training_data'</code>) và tự xóa clip sau một thời gian.</li>
+    <li><b>Ảnh cơ thể và ảnh món ăn</b> để trong bucket riêng tư. App chỉ nhận link có hạn ngắn (signed URL).</li>
+    <li><b>Gửi cho AI ít nhất có thể:</b> không gửi email, số điện thoại, tên thật. Chỉ gửi dữ liệu tập luyện và ăn uống cần cho câu trả lời.</li>
+    <li><b>Dữ liệu sức khỏe là dữ liệu nhạy cảm</b> theo quy định bảo vệ dữ liệu cá nhân của Việt Nam (Nghị định 13/2023/NĐ-CP). Cần xin đồng ý rõ ràng (<code>user_consents</code>), cho người dùng tải về và xóa dữ liệu của mình. Nên nhờ người có chuyên môn pháp lý rà lại trước khi ra mắt.</li>
+  </ul>
+</section>
+
+<section id="sql">
+  <h2>Toàn bộ SQL</h2>
+  <p class="sub">Chạy một lần trên database trống để tạo toàn bộ schema.</p>
+  <details open>
+    <summary>schema.sql <span style="font-weight:400;color:var(--muted);font-size:13px">PostgreSQL 15+</span></summary>
+    <div class="sqlbox">
+      <button type="button" class="copy" id="copy-sql">Sao chép SQL</button>
+      <span class="status" id="copy-status" aria-live="polite"></span>
+      <pre class="sql" id="sql-text">-- =====================================================================
+-- Fitness app MVP · Database schema
+-- PostgreSQL 15+ (chạy được trên Supabase)
+-- Quy ước: id uuid, thời điểm dùng timestamptz (UTC),
+--          "ngày" theo múi giờ người dùng lưu ở cột local_date.
+-- =====================================================================
+
+create extension if not exists pgcrypto;   -- gen_random_uuid()
+create extension if not exists citext;     -- email không phân biệt hoa thường
+create extension if not exists pg_trgm;    -- tìm món ăn gần đúng
+create extension if not exists unaccent;   -- tìm "com tam" ra "cơm tấm"
+
+-- ---------------------------------------------------------------------
+-- ENUM
+-- ---------------------------------------------------------------------
+create type goal_type         as enum ('lose_fat','build_muscle','get_healthier','maintain');
+create type gender_type       as enum ('male','female','other');
+create type experience_level  as enum ('beginner','intermediate','regular');
+create type training_location as enum ('home','gym','outdoor');
+create type coach_style       as enum ('strict','supportive','funny');
+create type time_window       as enum ('early_morning','noon','evening','late_evening');
+create type body_area         as enum ('lower_back','knee','shoulder','neck','wrist','ankle','hip','other');
+create type tracking_type     as enum ('reps','reps_weight','duration');
+create type session_variant   as enum ('normal','light','quick5','advanced');
+create type plan_status       as enum ('draft','active','completed','replaced');
+create type planned_status    as enum ('planned','completed','skipped','rescheduled','rest');
+create type energy_level      as enum ('tired','normal','energized');
+create type sleep_bucket      as enum ('lt6','h6_7','h7_8','gt8');
+create type week_status       as enum ('in_progress','achieved','frozen','missed');
+create type skip_reason       as enum ('busy','tired','pain','bored','forgot','other');
+create type skip_action       as enum ('rescheduled','shortened','reduced_intensity','swapped_exercises','changed_reminder','rest_day','none');
+create type reengage_stage    as enum ('active','missed_1','missed_2','lapsed_7','lapsed_14','dormant');
+create type buddy_status      as enum ('active','ended');
+create type buddy_action      as enum ('cheer','nudge');
+create type review_reco       as enum ('increase','keep','decrease');
+create type review_decision   as enum ('pending','accepted','adjusted','dismissed');
+create type meal_type         as enum ('breakfast','lunch','dinner','snack');
+create type input_method      as enum ('photo','barcode','voice','search','manual');
+create type food_source       as enum ('curated','ai','user');
+create type msg_role          as enum ('user','coach','event');
+create type notif_type        as enum ('checkin','pre_workout','missed_1','missed_2','lapsed','weekly_review',
+                                       'buddy_cheer','buddy_nudge','milestone','meal_reminder');
+create type notif_channel     as enum ('push','in_app');
+create type plan_tier         as enum ('free','premium');
+create type rep_source        as enum ('manual','camera','camera_corrected');
+create type camera_position   as enum ('side','front');
+
+-- =====================================================================
+-- 1. NGƯỜI DÙNG &amp; HỒ SƠ  (F1 Onboarding)
+-- =====================================================================
+create table users (
+  id              uuid primary key default gen_random_uuid(),  -- Supabase: references auth.users(id)
+  email           citext unique,
+  phone           text unique,
+  display_name    text not null,
+  avatar_url      text,
+  timezone        text not null default 'Asia/Ho_Chi_Minh',
+  locale          text not null default 'vi',
+  created_at      timestamptz not null default now(),
+  last_active_at  timestamptz,
+  deleted_at      timestamptz                                  -- xóa mềm, job xóa hẳn sau 30 ngày
+);
+
+create table user_profiles (
+  user_id                  uuid primary key references users(id) on delete cascade,
+  goal                     goal_type not null,
+  gender                   gender_type,
+  birth_year               smallint check (birth_year between 1900 and 2100),
+  height_cm                numeric(5,1) check (height_cm between 80 and 250),
+  start_weight_kg          numeric(5,1) check (start_weight_kg between 20 and 350),
+  goal_weight_kg           numeric(5,1) check (goal_weight_kg between 20 and 350),
+  experience               experience_level not null default 'beginner',
+  location                 training_location not null default 'home',
+  session_minutes          smallint not null default 15 check (session_minutes between 5 and 180),
+  coach_style              coach_style not null default 'supportive',
+  motivation_text          text,              -- lý do người dùng tự viết, AI dùng lại khi họ nản
+  onboarding_completed_at  timestamptz,
+  updated_at               timestamptz not null default now()
+);
+
+-- Các lựa chọn nhiều giá trị ở onboarding
+create table user_motivation_reasons (
+  user_id      uuid not null references users(id) on delete cascade,
+  reason_code  text not null,                 -- 'confidence','fit_old_clothes','play_with_kids',...
+  primary key (user_id, reason_code)
+);
+
+create table user_equipment (
+  user_id         uuid not null references users(id) on delete cascade,
+  equipment_code  text not null,              -- 'dumbbell','mat','resistance_band','pullup_bar'
+  primary key (user_id, equipment_code)
+);
+
+create table user_injuries (
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid not null references users(id) on delete cascade,
+  body_area    body_area not null,
+  note         text,
+  active       boolean not null default true,
+  reported_at  timestamptz not null default now(),
+  resolved_at  timestamptz
+);
+create index user_injuries_active_idx on user_injuries(user_id) where active;
+
+create table user_availability (
+  user_id  uuid not null references users(id) on delete cascade,
+  weekday  smallint not null check (weekday between 1 and 7),   -- 1 = Thứ Hai
+  slot     time_window not null,
+  primary key (user_id, weekday, slot)
+);
+
+create table notification_settings (
+  user_id              uuid primary key references users(id) on delete cascade,
+  push_enabled         boolean not null default false,
+  checkin_time         time not null default '07:30',
+  pre_workout_minutes  smallint not null default 30,
+  quiet_start          time not null default '22:00',
+  quiet_end            time not null default '07:00',
+  max_per_day          smallint not null default 2 check (max_per_day between 0 and 5),
+  updated_at           timestamptz not null default now()
+);
+
+create table device_tokens (
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid not null references users(id) on delete cascade,
+  platform      text not null check (platform in ('ios','android')),
+  token         text not null unique,
+  last_seen_at  timestamptz not null default now()
+);
+
+-- Buddy chỉ thấy những gì người dùng bật (mặc định tắt hết)
+create table sharing_settings (
+  user_id             uuid primary key references users(id) on delete cascade,
+  share_weight        boolean not null default false,
+  share_measurements  boolean not null default false,
+  share_photos        boolean not null default false,
+  share_meals         boolean not null default false
+);
+
+create table subscriptions (
+  user_id             uuid primary key references users(id) on delete cascade,
+  tier                plan_tier not null default 'free',
+  provider            text,                 -- 'app_store','google_play'
+  provider_ref        text,
+  current_period_end  timestamptz,
+  updated_at          timestamptz not null default now()
+);
+
+-- Đồng ý xử lý dữ liệu sức khỏe, ảnh cơ thể, thông báo (lưu lịch sử, không ghi đè)
+create table user_consents (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references users(id) on delete cascade,
+  kind        text not null,                -- 'health_data','body_photos','ai_processing','camera','cv_training_data','marketing'
+  version     text not null,                -- phiên bản điều khoản
+  granted_at  timestamptz not null default now(),
+  revoked_at  timestamptz
+);
+create index user_consents_user_idx on user_consents(user_id, kind);
+
+-- =====================================================================
+-- 2. THƯ VIỆN BÀI TẬP
+-- =====================================================================
+create table exercises (
+  id              uuid primary key default gen_random_uuid(),
+  slug            text not null unique,       -- 'goblet-squat'
+  name_vi         text not null,              -- 'Squat ôm tạ'
+  name_en         text,
+  instructions    text,
+  cues            text[] not null default '{}',   -- 'Giữ lưng thẳng', ...
+  video_url       text,
+  thumbnail_url   text,
+  primary_muscle  text not null,
+  difficulty      smallint not null check (difficulty between 1 and 5),
+  tracking        tracking_type not null,
+  met             numeric(4,1),               -- dùng ước tính kcal
+  cv_supported    boolean not null default false,  -- có nút "Đếm bằng camera"
+  is_active       boolean not null default true
+);
+
+-- Không có dòng nào = bài không cần dụng cụ
+create table exercise_equipment (
+  exercise_id     uuid not null references exercises(id) on delete cascade,
+  equipment_code  text not null,
+  primary key (exercise_id, equipment_code)
+);
+
+-- Bài cần tránh khi người dùng đau vùng này
+create table exercise_contraindications (
+  exercise_id  uuid not null references exercises(id) on delete cascade,
+  body_area    body_area not null,
+  primary key (exercise_id, body_area)
+);
+
+-- Nút "Đổi bài"
+create table exercise_alternatives (
+  exercise_id     uuid not null references exercises(id) on delete cascade,
+  alternative_id  uuid not null references exercises(id) on delete cascade,
+  reason          text,                       -- 'no_equipment','easier','shoulder_friendly'
+  primary key (exercise_id, alternative_id),
+  check (exercise_id &lt;&gt; alternative_id)
+);
+
+-- Cấu hình đếm bằng camera cho từng bài, có phiên bản.
+-- App tải cấu hình đang bật về máy; nhận diện tư thế chạy trên điện thoại.
+create table exercise_cv_configs (
+  id               uuid primary key default gen_random_uuid(),
+  exercise_id      uuid not null references exercises(id) on delete cascade,
+  version          integer not null,
+  camera_position  camera_position not null,
+  config           jsonb not null,   -- {"joints":["hip","knee","ankle"],"down_below":95,"up_above":160,"min_confidence":0.6,"form_rules":[...]}
+  is_active        boolean not null default true,
+  created_at       timestamptz not null default now(),
+  unique (exercise_id, version)
+);
+create unique index exercise_cv_configs_one_active_idx
+  on exercise_cv_configs(exercise_id) where is_active;
+
+create table workout_templates (
+  id            uuid primary key default gen_random_uuid(),
+  slug          text not null unique,
+  name_vi       text not null,
+  focus         text not null,                -- 'full_body','lower_core','cardio'
+  level         experience_level not null,
+  duration_min  smallint not null,
+  variant       session_variant not null default 'normal',
+  is_active     boolean not null default true
+);
+
+create table workout_template_items (
+  template_id   uuid not null references workout_templates(id) on delete cascade,
+  position      smallint not null,
+  exercise_id   uuid not null references exercises(id),
+  sets          smallint,
+  reps          smallint,
+  duration_sec  smallint,
+  rest_sec      smallint not null default 60,
+  primary key (template_id, position)
+);
+
+-- =====================================================================
+-- 3. KẾ HOẠCH &amp; BUỔI TẬP  (F1 kế hoạch tuần 1, F2, F6)
+-- =====================================================================
+create table training_plans (
+  id                uuid primary key default gen_random_uuid(),
+  user_id           uuid not null references users(id) on delete cascade,
+  week_start        date not null,            -- luôn là Thứ Hai
+  status            plan_status not null default 'draft',
+  target_sessions   smallint not null check (target_sessions between 1 and 7),
+  created_by        text not null default 'ai' check (created_by in ('ai','user')),
+  ai_rationale      text,                     -- "Bạn hoàn thành 100%, tăng 5 phút mỗi buổi"
+  source_review_id  uuid,                     -- FK thêm ở cuối file
+  created_at        timestamptz not null default now()
+);
+create unique index training_plans_one_active_idx
+  on training_plans(user_id, week_start) where status = 'active';
+
+create table planned_sessions (
+  id                    uuid primary key default gen_random_uuid(),
+  plan_id               uuid not null references training_plans(id) on delete cascade,
+  user_id               uuid not null references users(id) on delete cascade,
+  template_id           uuid references workout_templates(id),
+  scheduled_date        date not null,
+  scheduled_time        time,
+  title                 text not null,
+  duration_min          smallint not null,
+  variant               session_variant not null default 'normal',
+  status                planned_status not null default 'planned',
+  rescheduled_from_id   uuid references planned_sessions(id),
+  adjusted_reason       text,                 -- 'checkin_tired','pain_shoulder','skip_busy'
+  created_at            timestamptz not null default now(),
+  updated_at            timestamptz not null default now()
+);
+create index planned_sessions_user_date_idx on planned_sessions(user_id, scheduled_date);
+
+create table planned_session_items (
+  id                   uuid primary key default gen_random_uuid(),
+  planned_session_id   uuid not null references planned_sessions(id) on delete cascade,
+  position             smallint not null,
+  exercise_id          uuid not null references exercises(id),
+  target_sets          smallint,
+  target_reps          smallint,
+  target_weight_kg     numeric(5,2),
+  target_duration_sec  smallint,
+  rest_sec             smallint not null default 60,
+  unique (planned_session_id, position)
+);
+
+-- Buổi đã tập thật (có thể không nằm trong kế hoạch, ví dụ bản 5 phút)
+create table workout_logs (
+  id                  uuid primary key default gen_random_uuid(),
+  user_id             uuid not null references users(id) on delete cascade,
+  planned_session_id  uuid references planned_sessions(id) on delete set null,
+  started_at          timestamptz not null,
+  ended_at            timestamptz,
+  local_date          date not null,
+  duration_sec        integer check (duration_sec &gt;= 0),
+  variant             session_variant not null default 'normal',
+  rpe                 smallint check (rpe between 1 and 10),
+  pain_areas          body_area[] not null default '{}',
+  note                text,
+  kcal_estimate       integer,
+  counts_for_streak   boolean generated always as (coalesce(duration_sec, 0) &gt;= 300) stored,  -- từ 5 phút
+  created_at          timestamptz not null default now()
+);
+create index workout_logs_user_date_idx on workout_logs(user_id, local_date desc);
+
+create table set_logs (
+  id              uuid primary key default gen_random_uuid(),
+  workout_log_id  uuid not null references workout_logs(id) on delete cascade,
+  exercise_id     uuid not null references exercises(id),
+  set_index       smallint not null,
+  reps            smallint,                   -- số cuối cùng người dùng xác nhận
+  weight_kg       numeric(5,2),
+  duration_sec    smallint,
+  is_pr           boolean not null default false,
+  rep_source      rep_source not null default 'manual',
+  reps_detected   smallint,                   -- camera đếm được (null nếu đếm tay)
+  cv_config_id    uuid references exercise_cv_configs(id) on delete set null,
+  avg_confidence  numeric(3,2) check (avg_confidence between 0 and 1),
+  form_score      smallint check (form_score between 0 and 100),
+  logged_at       timestamptz not null default now(),
+  unique (workout_log_id, exercise_id, set_index)
+);
+create index set_logs_exercise_idx on set_logs(exercise_id);
+-- Theo dõi độ chính xác: bài nào hay bị người dùng sửa số
+create index set_logs_camera_idx on set_logs(cv_config_id) where rep_source &lt;&gt; 'manual';
+
+-- Lỗi tư thế camera phát hiện ở từng lần
+create table form_issues (
+  id          uuid primary key default gen_random_uuid(),
+  set_log_id  uuid not null references set_logs(id) on delete cascade,
+  rep_index   smallint not null,
+  issue_code  text not null,   -- 'shallow_depth','knee_cave','back_rounding','hips_sagging'
+  severity    smallint not null check (severity between 1 and 3)
+);
+create index form_issues_set_idx on form_issues(set_log_id);
+
+-- Kỷ lục hiện tại, cập nhật khi có set mới vượt kỷ lục
+create table personal_records (
+  user_id      uuid not null references users(id) on delete cascade,
+  exercise_id  uuid not null references exercises(id),
+  metric       text not null check (metric in ('max_weight','max_reps','max_duration','max_volume')),
+  value        numeric(8,2) not null,
+  set_log_id   uuid references set_logs(id) on delete set null,
+  achieved_at  timestamptz not null,
+  primary key (user_id, exercise_id, metric)
+);
+
+-- Check-in buổi sáng: mỗi người một lần mỗi ngày
+create table daily_checkins (
+  user_id     uuid not null references users(id) on delete cascade,
+  local_date  date not null,
+  energy      energy_level not null,
+  sleep       sleep_bucket,
+  created_at  timestamptz not null default now(),
+  primary key (user_id, local_date)
+);
+
+-- =====================================================================
+-- 4. CHỈ SỐ CƠ THỂ  (Tiến độ, F6 nhắc cân đo)
+-- =====================================================================
+create table body_measurements (
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid not null references users(id) on delete cascade,
+  measured_on   date not null,
+  weight_kg     numeric(5,1),
+  waist_cm      numeric(5,1),
+  hip_cm        numeric(5,1),
+  chest_cm      numeric(5,1),
+  arm_cm        numeric(5,1),
+  body_fat_pct  numeric(4,1),
+  source        text not null default 'manual',   -- 'manual','apple_health','health_connect'
+  created_at    timestamptz not null default now(),
+  unique (user_id, measured_on)
+);
+
+-- Ảnh cơ thể: bucket riêng tư, chỉ chủ sở hữu đọc được
+create table progress_photos (
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid not null references users(id) on delete cascade,
+  taken_on      date not null,
+  pose          text not null check (pose in ('front','side','back')),
+  storage_path  text not null,
+  created_at    timestamptz not null default now()
+);
+create index progress_photos_user_idx on progress_photos(user_id, taken_on desc);
+
+-- =====================================================================
+-- 5. HỆ THỐNG ĐỘNG LỰC  (F3 bỏ buổi, F4 streak, F5 buddy, F6, F7)
+-- =====================================================================
+
+-- Một dòng cho mỗi tuần của mỗi người
+create table weekly_streaks (
+  user_id             uuid not null references users(id) on delete cascade,
+  week_start          date not null,
+  target_sessions     smallint not null,
+  completed_sessions  smallint not null default 0,
+  status              week_status not null default 'in_progress',
+  closed_at           timestamptz,
+  primary key (user_id, week_start)
+);
+
+-- Trạng thái tổng hợp để màn hình đọc nhanh
+create table streak_state (
+  user_id            uuid primary key references users(id) on delete cascade,
+  current_weeks      integer not null default 0,
+  best_weeks         integer not null default 0,
+  freezes_available  smallint not null default 0 check (freezes_available between 0 and 2),
+  last_closed_week   date,
+  updated_at         timestamptz not null default now()
+);
+
+create table streak_freeze_events (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references users(id) on delete cascade,
+  week_start  date not null,
+  kind        text not null check (kind in ('earned','used')),
+  created_at  timestamptz not null default now()
+);
+
+-- Lý do bỏ buổi người dùng chọn: dữ liệu thật thay cho khảo sát
+create table skip_reports (
+  id                  uuid primary key default gen_random_uuid(),
+  user_id             uuid not null references users(id) on delete cascade,
+  planned_session_id  uuid references planned_sessions(id) on delete set null,
+  reason              skip_reason not null,
+  note                text,
+  action              skip_action not null default 'none',
+  coach_message_id    uuid,                   -- FK thêm ở cuối file
+  created_at          timestamptz not null default now()
+);
+create index skip_reports_reason_idx on skip_reports(reason, created_at);
+
+-- Người dùng đang ở bậc nào của chuỗi nhắc quay lại
+create table reengagement_state (
+  user_id              uuid primary key references users(id) on delete cascade,
+  stage                reengage_stage not null default 'active',
+  last_workout_at      timestamptz,
+  consecutive_missed   smallint not null default 0,
+  stage_entered_at     timestamptz not null default now(),
+  messages_in_stage    smallint not null default 0,
+  updated_at           timestamptz not null default now()
+);
+
+create table buddy_invites (
+  id           uuid primary key default gen_random_uuid(),
+  inviter_id   uuid not null references users(id) on delete cascade,
+  code         text not null unique,
+  expires_at   timestamptz not null,
+  accepted_by  uuid references users(id) on delete set null,
+  accepted_at  timestamptz,
+  created_at   timestamptz not null default now()
+);
+
+-- user_a &lt; user_b để một cặp chỉ có một dòng
+create table buddy_pairs (
+  id                   uuid primary key default gen_random_uuid(),
+  user_a               uuid not null references users(id) on delete cascade,
+  user_b               uuid not null references users(id) on delete cascade,
+  status               buddy_status not null default 'active',
+  shared_streak_weeks  integer not null default 0,
+  created_at           timestamptz not null default now(),
+  ended_at             timestamptz,
+  check (user_a &lt; user_b)
+);
+create unique index buddy_pairs_active_idx on buddy_pairs(user_a, user_b) where status = 'active';
+
+create table buddy_actions (
+  id          uuid primary key default gen_random_uuid(),
+  pair_id     uuid not null references buddy_pairs(id) on delete cascade,
+  from_user   uuid not null references users(id) on delete cascade,
+  to_user     uuid not null references users(id) on delete cascade,
+  action      buddy_action not null,
+  local_date  date not null,
+  created_at  timestamptz not null default now()
+);
+-- "Nhắc bạn" tối đa 1 lần mỗi ngày
+create unique index buddy_actions_one_nudge_idx
+  on buddy_actions(from_user, to_user, local_date) where action = 'nudge';
+
+create table achievements (
+  code            text primary key,           -- 'sessions_10','first_pr','streak_4w','comeback'
+  name_vi         text not null,
+  description_vi  text not null,
+  category        text not null,              -- 'sessions','strength','body','streak','buddy'
+  threshold       integer
+);
+
+create table user_achievements (
+  user_id           uuid not null references users(id) on delete cascade,
+  achievement_code  text not null references achievements(code),
+  earned_at         timestamptz not null default now(),
+  context           jsonb not null default '{}',   -- {"exercise":"goblet-squat","value":8}
+  shared_at         timestamptz,
+  primary key (user_id, achievement_code)
+);
+
+create table weekly_reviews (
+  id                uuid primary key default gen_random_uuid(),
+  user_id           uuid not null references users(id) on delete cascade,
+  week_start        date not null,
+  sessions_done     smallint not null,
+  sessions_target   smallint not null,
+  total_minutes     integer not null default 0,
+  avg_rpe           numeric(3,1),
+  wins              jsonb not null default '[]',   -- [{"type":"pr","label":"Squat +2kg"}]
+  improvement       text,
+  recommendation    review_reco not null,
+  proposed_plan_id  uuid references training_plans(id) on delete set null,
+  decision          review_decision not null default 'pending',
+  generated_at      timestamptz not null default now(),
+  viewed_at         timestamptz,
+  decided_at        timestamptz,
+  unique (user_id, week_start)
+);
+
+-- =====================================================================
+-- 6. DINH DƯỠNG  (F8)
+-- =====================================================================
+create table foods (
+  id             uuid primary key default gen_random_uuid(),
+  name_vi        text not null,               -- 'Cơm tấm sườn bì chả'
+  aliases        text[] not null default '{}',
+  category       text,
+  serving_desc   text,                        -- '1 đĩa', '1 tô'
+  serving_grams  numeric(6,1),
+  kcal           numeric(6,1) not null,
+  protein_g      numeric(6,1) not null default 0,
+  carbs_g        numeric(6,1) not null default 0,
+  fat_g          numeric(6,1) not null default 0,
+  barcode        text unique,
+  source         food_source not null default 'curated',
+  verified       boolean not null default false,
+  created_at     timestamptz not null default now()
+);
+create index foods_name_trgm_idx on foods using gin (name_vi gin_trgm_ops);
+
+-- Mục tiêu theo thời gian (lưu lịch sử mỗi lần coach chỉnh)
+create table nutrition_targets (
+  id              uuid primary key default gen_random_uuid(),
+  user_id         uuid not null references users(id) on delete cascade,
+  effective_from  date not null,
+  kcal            integer not null check (kcal &gt;= 1200),   -- nam: app chặn thêm ở 1500
+  protein_g       integer not null,
+  carbs_g         integer not null,
+  fat_g           integer not null,
+  water_ml        integer not null default 2000,
+  method          text not null default 'mifflin_st_jeor',
+  created_at      timestamptz not null default now(),
+  unique (user_id, effective_from)
+);
+
+create table meal_logs (
+  id             uuid primary key default gen_random_uuid(),
+  user_id        uuid not null references users(id) on delete cascade,
+  local_date     date not null,
+  eaten_at       timestamptz not null default now(),
+  meal           meal_type not null,
+  method         input_method not null,
+  photo_path     text,
+  ai_confidence  numeric(3,2) check (ai_confidence between 0 and 1),
+  kcal_min       integer,                     -- hiển thị dạng khoảng: 600–700
+  kcal_max       integer,
+  kcal           integer not null,            -- giá trị dùng để cộng tổng
+  protein_g      numeric(6,1) not null default 0,
+  carbs_g        numeric(6,1) not null default 0,
+  fat_g          numeric(6,1) not null default 0,
+  created_at     timestamptz not null default now(),
+  updated_at     timestamptz not null default now()
+);
+create index meal_logs_user_date_idx on meal_logs(user_id, local_date);
+
+create table meal_items (
+  id            uuid primary key default gen_random_uuid(),
+  meal_log_id   uuid not null references meal_logs(id) on delete cascade,
+  food_id       uuid references foods(id) on delete set null,
+  name          text not null,
+  quantity      numeric(6,2) not null default 1,
+  unit          text not null default 'phần',
+  grams         numeric(6,1),
+  kcal          numeric(6,1) not null,
+  protein_g     numeric(6,1) not null default 0,
+  carbs_g       numeric(6,1) not null default 0,
+  fat_g         numeric(6,1) not null default 0,
+  ai_suggested  boolean not null default true,
+  user_edited   boolean not null default false   -- đo độ chính xác của AI
+);
+
+create table water_logs (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references users(id) on delete cascade,
+  local_date  date not null,
+  amount_ml   smallint not null check (amount_ml &gt; 0),
+  logged_at   timestamptz not null default now()
+);
+create index water_logs_user_date_idx on water_logs(user_id, local_date);
+
+-- Mỗi lần gọi AI nhận diện: để cache theo hash ảnh và theo dõi chi phí
+create table food_recognitions (
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid not null references users(id) on delete cascade,
+  meal_log_id   uuid references meal_logs(id) on delete set null,
+  image_sha256  text not null,
+  model         text not null,
+  raw_result    jsonb not null,
+  latency_ms    integer,
+  cost_usd      numeric(8,5),
+  created_at    timestamptz not null default now()
+);
+create index food_recognitions_hash_idx on food_recognitions(image_sha256);
+
+-- Giới hạn gói miễn phí (3 lượt chụp/ngày, ...)
+create table daily_usage (
+  user_id         uuid not null references users(id) on delete cascade,
+  local_date      date not null,
+  photo_scans     smallint not null default 0,
+  coach_messages  smallint not null default 0,
+  primary key (user_id, local_date)
+);
+
+-- =====================================================================
+-- 7. AI COACH &amp; THÔNG BÁO
+-- =====================================================================
+-- Mỗi người dùng một luồng chat duy nhất với coach
+create table coach_messages (
+  id                  uuid primary key default gen_random_uuid(),
+  user_id             uuid not null references users(id) on delete cascade,
+  role                msg_role not null,
+  content             text not null,
+  card                jsonb,                  -- thẻ hành động: {"type":"session","session_id":"...","buttons":[...]}
+  trigger             text,                   -- 'missed_2','weekly_review','user' ...
+  related_session_id  uuid references planned_sessions(id) on delete set null,
+  model               text,
+  tokens_in           integer,
+  tokens_out          integer,
+  created_at          timestamptz not null default now()
+);
+create index coach_messages_user_idx on coach_messages(user_id, created_at desc);
+
+-- Trí nhớ dài hạn của coach: "đau vai phải từ 26/9", "không ăn được hải sản"
+create table coach_memory (
+  user_id            uuid not null references users(id) on delete cascade,
+  key                text not null,
+  value              text not null,
+  source_message_id  uuid references coach_messages(id) on delete set null,
+  updated_at         timestamptz not null default now(),
+  expires_at         timestamptz,
+  primary key (user_id, key)
+);
+
+-- Nhật ký mọi thông báo: dùng để giới hạn 2 lần/ngày và đo tỷ lệ quay lại
+create table notifications (
+  id                  uuid primary key default gen_random_uuid(),
+  user_id             uuid not null references users(id) on delete cascade,
+  type                notif_type not null,
+  channel             notif_channel not null default 'push',
+  local_date          date not null,
+  scheduled_for       timestamptz not null,
+  sent_at             timestamptz,
+  opened_at           timestamptz,
+  action              text,                   -- nút người dùng bấm: 'start_quick','reschedule','rest'
+  related_session_id  uuid references planned_sessions(id) on delete set null,
+  coach_message_id    uuid references coach_messages(id) on delete set null,
+  ab_variant          text,
+  created_at          timestamptz not null default now()
+);
+create index notifications_user_day_idx on notifications(user_id, local_date) where sent_at is not null;
+
+-- =====================================================================
+-- 8. ĐO LƯỜNG
+-- =====================================================================
+-- Khi lượng lớn nên chuyển sang PostHog/Amplitude hoặc partition theo tháng
+create table events (
+  id           bigint generated always as identity primary key,
+  user_id      uuid references users(id) on delete set null,
+  name         text not null,                 -- 'workout_completed','skip_reason',...
+  properties   jsonb not null default '{}',
+  occurred_at  timestamptz not null default now(),
+  app_version  text
+);
+create index events_name_time_idx on events(name, occurred_at);
+
+create table experiment_assignments (
+  user_id         uuid not null references users(id) on delete cascade,
+  experiment_key  text not null,              -- 'f3_ai_vs_fixed'
+  variant         text not null,
+  assigned_at     timestamptz not null default now(),
+  primary key (user_id, experiment_key)
+);
+
+-- =====================================================================
+-- Khóa ngoại vòng
+-- =====================================================================
+alter table training_plans
+  add constraint training_plans_review_fk
+  foreign key (source_review_id) references weekly_reviews(id) on delete set null;
+
+alter table skip_reports
+  add constraint skip_reports_message_fk
+  foreign key (coach_message_id) references coach_messages(id) on delete set null;
+</pre>
+    </div>
+  </details>
+</section>
+
+<footer>Bản thiết kế đầu cho MVP. Các ngưỡng như 5 phút cho streak, 2 thông báo mỗi ngày, 1200 kcal lấy từ tài liệu flow, có thể chỉnh sau khi có dữ liệu thật.</footer>
+</div>
+
+<script>
+(function(){
+  var btn=document.getElementById('copy-sql'), st=document.getElementById('copy-status'), pre=document.getElementById('sql-text');
+  btn.addEventListener('click',function(){
+    var text=pre.textContent;
+    function fallback(){
+      var r=document.createRange(); r.selectNodeContents(pre);
+      var s=window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      st.textContent='Đã chọn toàn bộ SQL, nhấn Ctrl+C để sao chép.';
+    }
+    try{
+      navigator.clipboard.writeText(text).then(function(){ st.textContent='Đã sao chép SQL.'; }, fallback);
+    }catch(e){ fallback(); }
+  });
+})();
+</script>

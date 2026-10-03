@@ -1,0 +1,309 @@
+<title>Kế Hoạch Build Fitness MVP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F3F5F6; --surface:#FFFFFF; --ink:#172026; --muted:#56636D; --line:#D9DFE3; --code:#EEF2F4;
+  --accent:#C4461F; --accent-soft:#FCEBE4; --teal:#1E7465; --teal-soft:#E1F0EC; --warn:#946200; --warn-soft:#FBF1DA;
+  --body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#101518; --surface:#171E22; --ink:#E4EBEF; --muted:#9AA8B1; --line:#29333A; --code:#1C252A;
+    --accent:#F2764E; --accent-soft:#3A2219; --teal:#5CC2AE; --teal-soft:#15302A; --warn:#E3B45A; --warn-soft:#342914;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#101518; --surface:#171E22; --ink:#E4EBEF; --muted:#9AA8B1; --line:#29333A; --code:#1C252A;
+  --accent:#F2764E; --accent-soft:#3A2219; --teal:#5CC2AE; --teal-soft:#15302A; --warn:#E3B45A; --warn-soft:#342914;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.65;padding:0 20px}
+.wrap{max-width:960px;margin:0 auto;padding-block:40px 80px}
+h1,h2,h3{line-height:1.25;text-wrap:balance;margin:0;font-weight:700}
+h1{font-size:clamp(28px,5vw,38px);letter-spacing:-.01em}
+h2{font-size:23px;margin-bottom:6px}
+h3{font-size:16.5px;margin:18px 0 8px}
+p{margin:0 0 12px;max-width:70ch}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.lede{color:var(--muted);font-size:17px;margin-top:12px}
+header{display:grid;gap:4px;margin-bottom:24px}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.facts span{font-size:13px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 0;margin-bottom:8px;overflow-x:auto;white-space:nowrap}
+nav a{display:inline-block;font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:999px}
+nav a:hover,nav a:focus-visible{background:var(--teal-soft);color:var(--teal);outline:none}
+section{padding-top:36px;scroll-margin-top:60px}
+.sub{color:var(--muted);margin-bottom:12px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--bg)}
+td:first-child{font-weight:600;white-space:nowrap}
+code{font-family:var(--mono);font-size:12.5px;background:var(--code);padding:1px 6px;border-radius:5px}
+pre.tree{margin:10px 0;padding:16px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.6;background:var(--code);border-radius:10px}
+.diagram{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;margin:12px 0}
+.diagram pre{margin:0;background:transparent}
+.rule{background:var(--teal-soft);border-radius:10px;padding:14px 18px;margin:14px 0}
+.rule strong{color:var(--teal)}
+.warn{background:var(--warn-soft);border-radius:10px;padding:14px 18px;margin:14px 0}
+.warn strong{color:var(--warn)}
+ul,ol{padding-left:20px;margin:6px 0 12px}
+li{margin-bottom:5px}
+.phase{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:18px 20px;margin:14px 0;display:grid;gap:6px}
+.phase-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
+.phase-head h3{margin:0;font-size:18px}
+.when{font-family:var(--mono);font-size:12.5px;color:var(--teal);background:var(--teal-soft);padding:2px 10px;border-radius:999px;white-space:nowrap}
+.done{border-top:1px dashed var(--line);padding-top:10px;margin-top:4px;font-size:14.5px}
+.done b{color:var(--accent)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.cols ul{margin:0}
+.lbl{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.in{color:var(--teal);font-weight:600}
+.out{color:var(--muted)}
+footer{margin-top:48px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Fitness app · Flutter · Bản demo 10 tuần</span>
+  <h1>Kế hoạch 10 tuần tới bản demo đầy đủ</h1>
+  <p class="lede">Mục tiêu: đủ 8 flow chạy thật trên điện thoại, dữ liệu thật trên Supabase, AI thật. Chưa cần lên store. Bám theo 27 màn hình wireframe và schema database đã có.</p>
+  <div class="facts">
+    <span>Bắt đầu: Thứ Hai 5/10/2026</span>
+    <span>Chốt tính năng: 27/11</span>
+    <span>Bàn giao demo: Thứ Sáu 11/12/2026</span>
+    <span>Team giả định: 5 người</span>
+  </div>
+</header>
+
+<nav aria-label="Mục lục">
+  <a href="#scope">Làm gì, bỏ gì</a>
+  <a href="#stack">Công nghệ</a>
+  <a href="#timeline">Lịch tổng</a>
+  <a href="#sprints">Từng sprint</a>
+  <a href="#demo-tools">Công cụ demo</a>
+  <a href="#script">Kịch bản demo</a>
+  <a href="#structure">Cấu trúc code</a>
+  <a href="#risks">Rủi ro</a>
+  <a href="#after">Sau demo</a>
+</nav>
+
+<section id="scope">
+  <h2>Làm gì và bỏ gì để kịp 10 tuần</h2>
+  <p class="sub">"Demo đầy đủ" nghĩa là mọi flow đều bấm được từ đầu tới cuối trên máy thật. Những thứ chỉ cần khi có người dùng thật trên store thì để sau.</p>
+  <div class="tbl"><table>
+    <tr><th>Phần</th><th>Trong demo</th><th>Để sau demo</th></tr>
+    <tr><td>F1 Onboarding</td><td class="in">Đủ 9 màn, lưu thật</td><td class="out">Đăng nhập số điện thoại (demo chỉ cần Google hoặc email)</td></tr>
+    <tr><td>Thư viện bài tập</td><td class="in">20 bài có video</td><td class="out">Đủ 60 bài</td></tr>
+    <tr><td>F2 Tập luyện</td><td class="in">Đang tập, RPE, kết quả, kỷ lục, check-in</td><td class="out">Lưu offline đầy đủ khi mất mạng</td></tr>
+    <tr><td>Camera đếm số lần</td><td class="in">Chỉ squat, đủ 3 màn</td><td class="out">4 bài còn lại</td></tr>
+    <tr><td>AI coach</td><td class="in">Chat, 3 phong cách, AI tạo và chỉnh kế hoạch</td><td class="out">Tinh chỉnh prompt trên nhiều người dùng</td></tr>
+    <tr><td>F3 Bỏ buổi, F4 Streak</td><td class="in">Đủ logic, chạy bằng job và nút giả lập</td><td class="out">A/B test tin nhắn</td></tr>
+    <tr><td>F5 Buddy</td><td class="in">Ghép cặp bằng mã, cổ vũ, nhắc bạn</td><td class="out">Link mời mở thẳng app qua Zalo</td></tr>
+    <tr><td>F6 Tổng kết tuần, F7 Cột mốc</td><td class="in">Có, AI viết tổng kết</td><td class="out">Ảnh chia sẻ story</td></tr>
+    <tr><td>F8 Dinh dưỡng</td><td class="in">Chụp ảnh tính calo, sửa khẩu phần, 100 món Việt</td><td class="out">Quét mã vạch, đủ 300 món</td></tr>
+    <tr><td>Tiến độ</td><td class="in">Cân đo, biểu đồ</td><td class="out">Ảnh trước và sau</td></tr>
+    <tr><td>Hạ tầng</td><td class="in">Một môi trường Supabase, bản cài qua TestFlight và file APK</td><td class="out">Tách dev và prod, CI/CD đầy đủ, Sentry, PostHog</td></tr>
+    <tr><td>Kinh doanh, pháp lý</td><td class="out">Không làm</td><td class="out">Gói Premium, xóa tài khoản, chính sách riêng tư, nộp store</td></tr>
+  </table></div>
+</section>
+
+<section id="stack">
+  <h2>Công nghệ</h2>
+  <div class="tbl"><table>
+    <tr><th>Phần</th><th>Chọn</th></tr>
+    <tr><td>App</td><td>Flutter 3, <code>flutter_riverpod</code>, <code>go_router</code></td></tr>
+    <tr><td>Backend</td><td>Supabase: Postgres (chạy <code>schema.sql</code>), Auth, Storage, Edge Functions, <code>pg_cron</code></td></tr>
+    <tr><td>AI</td><td>Claude API gọi từ Edge Function: Claude Sonnet 5 cho chat, lập kế hoạch và nhận diện món ăn</td></tr>
+    <tr><td>Camera</td><td><code>camera</code> + <code>google_mlkit_pose_detection</code></td></tr>
+    <tr><td>Thông báo</td><td><code>firebase_messaging</code> + <code>flutter_local_notifications</code></td></tr>
+    <tr><td>Biểu đồ</td><td><code>fl_chart</code></td></tr>
+  </table></div>
+</section>
+
+<section id="timeline">
+  <h2>Lịch tổng</h2>
+  <p class="sub">5 sprint, mỗi sprint 2 tuần. Cuối mỗi sprint (chiều Thứ Sáu) có một buổi demo nội bộ trên máy thật.</p>
+  <div class="diagram"><pre class="mermaid">
+gantt
+  dateFormat YYYY-MM-DD
+  axisFormat %d/%m
+  section Code
+  S1 Nền tảng, onboarding, tập luyện   :s1, 2026-10-05, 14d
+  S2 Kết quả, AI coach, check-in       :s2, after s1, 14d
+  S3 Thông báo, bỏ buổi, streak, buddy :s3, after s2, 14d
+  S4 Dinh dưỡng, tiến độ, tổng kết     :s4, after s3, 14d
+  S5 Chốt, công cụ demo, tổng duyệt    :crit, s5, after s4, 14d
+  Bàn giao demo                        :milestone, 2026-12-11, 0d
+  section Camera
+  Thử squat trên máy thật              :c0, 2026-10-05, 14d
+  Build 3 màn camera                   :c1, 2026-11-16, 14d
+  section Nội dung
+  Quay video 20 bài                    :n1, 2026-10-05, 28d
+  Dữ liệu 100 món Việt                 :n2, 2026-10-12, 35d
+  Dữ liệu demo và kịch bản             :n3, 2026-11-23, 18d
+  </pre></div>
+</section>
+
+<section id="sprints">
+  <h2>Từng sprint</h2>
+
+  <div class="phase">
+    <div class="phase-head"><h3>S1 · Nền tảng, onboarding, tập luyện</h3><span class="when">Tuần 1–2 · 5/10 – 16/10</span></div>
+    <div class="tbl"><table>
+      <tr><th>Ai</th><th>Việc</th></tr>
+      <tr><td>Flutter 1</td><td>Tạo project, theme, router, component dùng chung. Thư viện bài tập và màn Đang tập (đếm tay)</td></tr>
+      <tr><td>Flutter 2</td><td>Đăng nhập, F1 Onboarding 9 màn, lưu hồ sơ. Kế hoạch tuần 1 bằng luật cố định</td></tr>
+      <tr><td>Backend</td><td>Supabase, chạy schema, RLS, seed bài tập. Thử squat với ML Kit trên 3 máy</td></tr>
+      <tr><td>Designer</td><td>Design system, UI cho F1 và F2</td></tr>
+      <tr><td>PM</td><td>Chốt 20 bài, quay video, bắt đầu dữ liệu món ăn</td></tr>
+    </table></div>
+    <p class="done"><b>Demo nội bộ:</b> người mới đi hết onboarding và tập được buổi đầu tiên. <b>Quyết định camera:</b> nếu đếm squat đủ chính xác trên máy tầm trung thì làm tiếp ở S4, không thì để sau demo.</p>
+  </div>
+
+  <div class="phase">
+    <div class="phase-head"><h3>S2 · Kết quả, AI coach, check-in</h3><span class="when">Tuần 3–4 · 19/10 – 30/10</span></div>
+    <div class="tbl"><table>
+      <tr><th>Ai</th><th>Việc</th></tr>
+      <tr><td>Flutter 1</td><td>Chấm RPE, màn Kết quả, kỷ lục. Check-in sáng và đổi buổi tập theo năng lượng</td></tr>
+      <tr><td>Flutter 2</td><td>Màn chat với coach, thẻ hành động trong chat</td></tr>
+      <tr><td>Backend</td><td>Edge Function <code>coach-chat</code> có trí nhớ dài hạn và 3 phong cách. <code>generate-plan</code>: AI tạo kế hoạch theo RPE, check-in và chấn thương</td></tr>
+      <tr><td>Designer</td><td>UI cho coach, động lực (F3–F7)</td></tr>
+      <tr><td>PM</td><td>Viết mẫu tin nhắn coach cho từng tình huống, test prompt</td></tr>
+    </table></div>
+    <p class="done"><b>Demo nội bộ:</b> chat "hôm nay đau vai" thì coach đổi buổi tập, bấm "Dùng buổi này" thì mở đúng buổi mới.</p>
+  </div>
+
+  <div class="phase">
+    <div class="phase-head"><h3>S3 · Thông báo, bỏ buổi, streak, buddy</h3><span class="when">Tuần 5–6 · 2/11 – 13/11</span></div>
+    <div class="tbl"><table>
+      <tr><th>Ai</th><th>Việc</th></tr>
+      <tr><td>Flutter 1</td><td>Push và nhắc trên máy, bấm thông báo mở đúng màn. Màn Streak tuần</td></tr>
+      <tr><td>Flutter 2</td><td>F5 Buddy: mã mời, ghép cặp, cổ vũ, nhắc bạn. F7 huy hiệu và màn ăn mừng</td></tr>
+      <tr><td>Backend</td><td>Job chốt ngày, bậc nhắc quay lại (F3), job chốt tuần, thẻ đóng băng, giới hạn 2 thông báo mỗi ngày</td></tr>
+      <tr><td>Designer</td><td>UI cho dinh dưỡng, tiến độ, 3 màn camera</td></tr>
+      <tr><td>PM</td><td>Tiếp tục dữ liệu món ăn, test chéo các flow đã xong</td></tr>
+    </table></div>
+    <p class="done"><b>Demo nội bộ:</b> bỏ 2 buổi thì coach nhắn hỏi lý do, chọn "Bận" thì lịch tự đổi. Hai máy ghép buddy thấy trạng thái tập của nhau.</p>
+  </div>
+
+  <div class="phase">
+    <div class="phase-head"><h3>S4 · Dinh dưỡng, tiến độ, tổng kết tuần, camera</h3><span class="when">Tuần 7–8 · 16/11 – 27/11</span></div>
+    <div class="tbl"><table>
+      <tr><th>Ai</th><th>Việc</th></tr>
+      <tr><td>Flutter 1</td><td>3 màn camera đếm squat: đặt máy, đang đếm, xác nhận số lần</td></tr>
+      <tr><td>Flutter 2</td><td>F8 chụp món, sửa khẩu phần, trang dinh dưỡng trong ngày. Trang tiến độ, biểu đồ cân nặng</td></tr>
+      <tr><td>Backend</td><td><code>food-recognize</code> đối chiếu với kho món Việt. <code>weekly-review</code>: AI viết tổng kết tuần và đề xuất kế hoạch tuần sau</td></tr>
+      <tr><td>Designer</td><td>Rà toàn bộ UI trên máy thật, sửa chỗ lệch với thiết kế</td></tr>
+      <tr><td>PM</td><td>Xong 100 món, bắt đầu viết kịch bản demo</td></tr>
+    </table></div>
+    <p class="done"><b>Chốt tính năng 27/11:</b> đủ 8 flow chạy được. Từ đây chỉ sửa lỗi và làm đẹp, không thêm tính năng mới.</p>
+  </div>
+
+  <div class="phase">
+    <div class="phase-head"><h3>S5 · Công cụ demo, sửa lỗi, tổng duyệt</h3><span class="when">Tuần 9–10 · 30/11 – 11/12</span></div>
+    <ul>
+      <li><b>Tuần 9:</b> làm màn công cụ demo (mục bên dưới), tài khoản demo có sẵn dữ liệu 4 tuần, sửa lỗi, làm mượt hiệu ứng</li>
+      <li><b>Tuần 10:</b> tổng duyệt kịch bản ít nhất 3 lần trên đúng máy sẽ dùng khi demo. Quay sẵn video dự phòng. Viết tài liệu bàn giao</li>
+      <li><b>Bàn giao gồm:</b> source code, file cài (TestFlight, APK), tài khoản demo, tài liệu cài đặt Supabase, và các tài liệu flow, wireframe, database đã có</li>
+    </ul>
+    <p class="done"><b>Xong khi:</b> người chưa từng xem app vẫn chạy được kịch bản demo mà không gặp lỗi.</p>
+  </div>
+</section>
+
+<section id="demo-tools">
+  <h2>Công cụ demo: phần dễ bị quên nhất</h2>
+  <p>Nhiều flow phụ thuộc vào <b>thời gian</b>: bỏ 2 buổi, chốt tuần vào Chủ nhật, streak 5 tuần, cột mốc 10 buổi. Khi demo không thể chờ vài ngày, nên cần 2 thứ:</p>
+  <div class="cols">
+    <div class="phase">
+      <h3 style="margin:0">Tài khoản demo có sẵn dữ liệu</h3>
+      <ul>
+        <li>Script seed tạo một người dùng đã tập 4 tuần: 9 buổi, streak 3 tuần, 1 kỷ lục mới, cân nặng giảm dần, khoảng 20 bữa ăn</li>
+        <li>Tài khoản thứ hai làm buddy của tài khoản đầu</li>
+        <li>Chạy lại script là về đúng trạng thái ban đầu trước mỗi lần demo</li>
+      </ul>
+    </div>
+    <div class="phase">
+      <h3 style="margin:0">Màn giả lập (ẩn)</h3>
+      <ul>
+        <li>Mở bằng cách chạm 5 lần vào logo, chỉ có trong bản demo</li>
+        <li>Nút: <b>Giả lập bỏ 2 buổi</b>, <b>Chốt tuần ngay</b>, <b>Gửi check-in sáng</b>, <b>Tạo tổng kết tuần</b>, <b>Mở cột mốc 10 buổi</b></li>
+        <li>Mỗi nút gọi đúng job thật ở backend, không làm giả trên giao diện</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="script">
+  <h2>Kịch bản demo gợi ý (khoảng 10 phút)</h2>
+  <ol>
+    <li><b>Vấn đề:</b> 60% người trong khảo sát bỏ app vì mất động lực</li>
+    <li><b>Onboarding</b> bằng một tài khoản mới: chọn mục tiêu, lý do thay đổi, phong cách coach, xem kế hoạch tuần 1</li>
+    <li><b>Tập squat bằng camera:</b> đếm số lần trực tiếp, nhắc tư thế, xác nhận số lần</li>
+    <li><b>Kết quả buổi tập</b> và kỷ lục mới</li>
+    <li>Chuyển sang <b>tài khoản demo có sẵn dữ liệu</b>. Chat "hôm nay đau vai", coach đổi buổi tập</li>
+    <li>Màn giả lập: <b>bỏ 2 buổi</b>. Thông báo tới, coach hỏi lý do, chọn "Bận", lịch tự đổi</li>
+    <li><b>Buddy</b> trên máy thứ hai bấm cổ vũ, máy đầu nhận thông báo</li>
+    <li><b>Chụp một đĩa cơm tấm</b> thật, sửa khẩu phần, coach gợi ý bữa tối</li>
+    <li>Màn giả lập: <b>chốt tuần</b>. Tổng kết tuần do AI viết, bấm Đồng ý kế hoạch tuần sau</li>
+  </ol>
+  <div class="rule"><strong>Chuẩn bị cho ngày demo:</strong> 2 điện thoại đã sạc đầy, 4G dự phòng hoặc phát wifi riêng (không dựa vào wifi ở nơi demo), một đĩa đồ ăn thật hoặc ảnh in để chụp, chỗ đủ rộng và đủ sáng để quay squat, và video quay sẵn toàn bộ kịch bản phòng khi AI hoặc mạng chậm.</div>
+</section>
+
+<section id="structure">
+  <h2>Cấu trúc code</h2>
+  <pre class="tree">fitness_app/
+├── lib/
+│   ├── app/                 # router, theme, khởi tạo Supabase
+│   ├── core/                # local_date, lỗi, widget dùng chung
+│   ├── demo/                # màn giả lập, chỉ bật trong bản demo
+│   └── features/
+│       ├── auth/
+│       ├── onboarding/      # F1
+│       ├── workout/         # F2
+│       ├── camera_counter/  # F2b
+│       ├── coach/
+│       ├── motivation/      # F3–F7
+│       ├── nutrition/       # F8
+│       └── progress/
+supabase/
+├── migrations/0001_init.sql # = schema.sql
+├── seed/                    # bài tập, món ăn, huy hiệu, tài khoản demo
+└── functions/
+    ├── coach-chat/
+    ├── generate-plan/
+    ├── food-recognize/
+    ├── weekly-review/
+    ├── notify-dispatch/
+    └── demo-actions/        # các nút của màn giả lập</pre>
+</section>
+
+<section id="risks">
+  <h2>Rủi ro với lịch 10 tuần</h2>
+  <div class="tbl"><table>
+    <tr><th>Rủi ro</th><th>Cách xử lý</th></tr>
+    <tr><td>Camera đếm chưa đủ chính xác</td><td>Quyết định ngay cuối tuần 2. Nếu dừng, Flutter 1 có thêm 2 tuần ở S4 để làm mượt các flow khác</td></tr>
+    <tr><td>AI trả lời chậm khi demo</td><td>Hiện chữ dần khi AI đang viết (streaming), gọi thử trước giờ demo, có video dự phòng</td></tr>
+    <tr><td>Video bài tập chưa quay kịp</td><td>Dùng hình minh họa tạm cho những bài không xuất hiện trong kịch bản demo</td></tr>
+    <tr><td>Thông báo trên iOS không tới đúng lúc</td><td>Nút giả lập gửi thông báo ngay lập tức, không phụ thuộc giờ hẹn</td></tr>
+    <tr><td>Một người trong team nghỉ</td><td>Thêm việc thì cắt theo thứ tự: tiến độ → buddy → camera. Không cắt AI coach và F3 vì đây là điểm chính của demo</td></tr>
+  </table></div>
+</section>
+
+<section id="after">
+  <h2>Sau demo: để lên store cần thêm khoảng 8–10 tuần</h2>
+  <ul>
+    <li>Đủ 60 bài tập, 300 món Việt, 4 bài camera còn lại</li>
+    <li>Tách môi trường dev và prod, CI/CD, Sentry, PostHog, lưu offline</li>
+    <li>Gói Premium, xóa tài khoản, tải dữ liệu, chính sách riêng tư</li>
+    <li>Beta kín với 100 người đã làm khảo sát, rồi nộp App Store và Google Play</li>
+  </ul>
+</section>
+
+<footer>Ngày tháng tính từ Thứ Hai 5/10/2026 với team 5 người: 2 Flutter, 1 backend kiêm AI, 1 designer, 1 PM kiêm nội dung. Ngày bắt đầu khác thì dời cả lịch theo.</footer>
+</div>

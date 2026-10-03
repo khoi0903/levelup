@@ -1,0 +1,49 @@
+# MongoDB riêng cho app fitness, chạy ở cổng 27018 (không đụng MongoDB khác trên máy).
+# Replica set 1 node để có transaction.
+#
+#   docker compose up -d        # bật (lần đầu tự tạo database fitness từ init.js)
+#   docker compose down         # tắt, giữ dữ liệu
+#   docker compose down -v      # tắt và XÓA dữ liệu
+#
+# Compass / API kết nối: mongodb://localhost:27018/fitness?replicaSet=rs0
+
+services:
+  mongo:
+    image: mongo:8.0
+    container_name: fitness-mongo
+    command: ["mongod", "--replSet", "rs0", "--port", "27018", "--bind_ip_all"]
+    ports:
+      - "127.0.0.1:27018:27018"   # chỉ máy này truy cập được
+    volumes:
+      - fitness-mongo-data:/data/db
+    healthcheck:
+      # Lần đầu: khởi tạo replica set. Chỉ báo "healthy" khi đã ghi được (là primary).
+      test:
+        - CMD
+        - mongosh
+        - --port
+        - "27018"
+        - --quiet
+        - --eval
+        - "try { rs.status() } catch (e) { rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'localhost:27018' }] }) } quit(db.hello().isWritablePrimary ? 0 : 1)"
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 10s
+    restart: unless-stopped
+
+  # Chạy init.js một lần sau khi MongoDB sẵn sàng, xong thì tự thoát.
+  # Chạy lại vẫn an toàn: collection đã có thì chỉ cập nhật validator và index.
+  mongo-init:
+    image: mongo:8.0
+    container_name: fitness-mongo-init
+    depends_on:
+      mongo:
+        condition: service_healthy
+    volumes:
+      - ./init.js:/scripts/init.js:ro
+    command: ["mongosh", "mongodb://mongo:27018/fitness?directConnection=true", "/scripts/init.js"]
+    restart: "no"
+
+volumes:
+  fitness-mongo-data:

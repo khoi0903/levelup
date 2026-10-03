@@ -1,0 +1,22 @@
+# Bí mật
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+**/service-account*.json
+**/firebase-adminsdk*.json
+
+# Java / Maven
+backend/target/
+*.class
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Dữ liệu xuất từ MongoDB
+mongo/*.archive.gz
