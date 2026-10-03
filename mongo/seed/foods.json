@@ -1,0 +1,1802 @@
+[
+  {
+    "nameVi": "Cơm tấm sườn bì chả",
+    "searchName": "com tam suon bi cha",
+    "aliases": [
+      "com tam sai gon",
+      "com suon bi cha"
+    ],
+    "category": "com",
+    "servingDesc": "1 đĩa cơm kèm sườn, bì, chả và nước mắm",
+    "servingGrams": 450.0,
+    "kcal": 750.0,
+    "proteinG": 35.0,
+    "carbsG": 90.0,
+    "fatG": 28.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cơm tấm sườn nướng",
+    "searchName": "com tam suon nuong",
+    "aliases": [
+      "com tam suon",
+      "com suon nuong"
+    ],
+    "category": "com",
+    "servingDesc": "1 đĩa cơm kèm sườn và nước mắm",
+    "servingGrams": 350.0,
+    "kcal": 580.0,
+    "proteinG": 28.0,
+    "carbsG": 75.0,
+    "fatG": 19.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cơm gà luộc",
+    "searchName": "com ga luoc",
+    "aliases": [
+      "com ga luoc xe",
+      "com ga ta"
+    ],
+    "category": "com",
+    "servingDesc": "1 đĩa cơm kèm thịt gà luộc và rau",
+    "servingGrams": 350.0,
+    "kcal": 520.0,
+    "proteinG": 30.0,
+    "carbsG": 70.0,
+    "fatG": 13.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cơm gà xối mỡ",
+    "searchName": "com ga xoi mo",
+    "aliases": [
+      "com ga chien",
+      "com ga gion"
+    ],
+    "category": "com",
+    "servingDesc": "1 đĩa cơm kèm gà xối mỡ và rau",
+    "servingGrams": 400.0,
+    "kcal": 700.0,
+    "proteinG": 32.0,
+    "carbsG": 80.0,
+    "fatG": 28.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cơm gà Hội An",
+    "searchName": "com ga hoi an",
+    "aliases": [
+      "com ga hoi an xe",
+      "com ga xe hoi an"
+    ],
+    "category": "com",
+    "servingDesc": "1 đĩa cơm kèm gà xé và rau",
+    "servingGrams": 350.0,
+    "kcal": 550.0,
+    "proteinG": 28.0,
+    "carbsG": 75.0,
+    "fatG": 15.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cơm rang dưa bò",
+    "searchName": "com rang dua bo",
+    "aliases": [
+      "com chien dua bo",
+      "com rang bo dua chua"
+    ],
+    "category": "com",
+    "servingDesc": "1 đĩa",
+    "servingGrams": 350.0,
+    "kcal": 620.0,
+    "proteinG": 25.0,
+    "carbsG": 80.0,
+    "fatG": 22.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cơm chiên hải sản",
+    "searchName": "com chien hai san",
+    "aliases": [
+      "com rang hai san",
+      "com chien tom muc"
+    ],
+    "category": "com",
+    "servingDesc": "1 đĩa",
+    "servingGrams": 350.0,
+    "kcal": 600.0,
+    "proteinG": 25.0,
+    "carbsG": 80.0,
+    "fatG": 20.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cơm chiên trứng",
+    "searchName": "com chien trung",
+    "aliases": [
+      "com rang trung",
+      "com chien trung ga"
+    ],
+    "category": "com",
+    "servingDesc": "1 đĩa",
+    "servingGrams": 300.0,
+    "kcal": 500.0,
+    "proteinG": 15.0,
+    "carbsG": 70.0,
+    "fatG": 18.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cơm thịt kho trứng",
+    "searchName": "com thit kho trung",
+    "aliases": [
+      "com thit kho tau",
+      "com thit kho hot vit"
+    ],
+    "category": "com",
+    "servingDesc": "1 đĩa cơm kèm thịt kho và 1 trứng",
+    "servingGrams": 400.0,
+    "kcal": 680.0,
+    "proteinG": 28.0,
+    "carbsG": 75.0,
+    "fatG": 30.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cơm cá kho",
+    "searchName": "com ca kho",
+    "aliases": [
+      "com ca kho to",
+      "com ca kho tieu"
+    ],
+    "category": "com",
+    "servingDesc": "1 đĩa cơm kèm cá kho và rau",
+    "servingGrams": 350.0,
+    "kcal": 520.0,
+    "proteinG": 28.0,
+    "carbsG": 70.0,
+    "fatG": 14.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cơm thịt nướng",
+    "searchName": "com thit nuong",
+    "aliases": [
+      "com heo nuong",
+      "com thit heo nuong"
+    ],
+    "category": "com",
+    "servingDesc": "1 đĩa cơm kèm thịt nướng và rau",
+    "servingGrams": 350.0,
+    "kcal": 580.0,
+    "proteinG": 28.0,
+    "carbsG": 75.0,
+    "fatG": 19.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cơm bò lúc lắc",
+    "searchName": "com bo luc lac",
+    "aliases": [
+      "com bo xao luc lac",
+      "com luc lac"
+    ],
+    "category": "com",
+    "servingDesc": "1 đĩa cơm kèm bò lúc lắc",
+    "servingGrams": 400.0,
+    "kcal": 650.0,
+    "proteinG": 30.0,
+    "carbsG": 80.0,
+    "fatG": 23.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cơm sườn bò Hàn Quốc",
+    "searchName": "com suon bo han quoc",
+    "aliases": [
+      "com bo han quoc",
+      "com suon bo nuong"
+    ],
+    "category": "com",
+    "servingDesc": "1 đĩa cơm kèm sườn bò nướng",
+    "servingGrams": 400.0,
+    "kcal": 700.0,
+    "proteinG": 32.0,
+    "carbsG": 80.0,
+    "fatG": 28.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cơm trứng ốp la",
+    "searchName": "com trung op la",
+    "aliases": [
+      "com op la",
+      "com trung chien"
+    ],
+    "category": "com",
+    "servingDesc": "1 đĩa cơm kèm 2 trứng và rau",
+    "servingGrams": 320.0,
+    "kcal": 480.0,
+    "proteinG": 18.0,
+    "carbsG": 65.0,
+    "fatG": 16.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cơm trắng",
+    "searchName": "com trang",
+    "aliases": [
+      "com te",
+      "com nau chin"
+    ],
+    "category": "com",
+    "servingDesc": "1 chén cơm chín",
+    "servingGrams": 150.0,
+    "kcal": 195.0,
+    "proteinG": 4.0,
+    "carbsG": 43.0,
+    "fatG": 0.5,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Thịt kho tàu",
+    "searchName": "thit kho tau",
+    "aliases": [
+      "thit kho trung",
+      "thit kho hot vit"
+    ],
+    "category": "com",
+    "servingDesc": "1 chén thịt kho kèm nửa trứng, không kèm cơm",
+    "servingGrams": 150.0,
+    "kcal": 350.0,
+    "proteinG": 18.0,
+    "carbsG": 8.0,
+    "fatG": 27.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cá basa kho tộ",
+    "searchName": "ca basa kho to",
+    "aliases": [
+      "ca basa kho",
+      "ca kho to basa"
+    ],
+    "category": "com",
+    "servingDesc": "1 khúc cá kèm nước kho, phần ăn được, không kèm cơm",
+    "servingGrams": 150.0,
+    "kcal": 240.0,
+    "proteinG": 23.0,
+    "carbsG": 8.0,
+    "fatG": 13.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Gà kho gừng",
+    "searchName": "ga kho gung",
+    "aliases": [
+      "thit ga kho gung",
+      "ga kho"
+    ],
+    "category": "com",
+    "servingDesc": "1 chén, phần ăn được, không kèm cơm",
+    "servingGrams": 150.0,
+    "kcal": 260.0,
+    "proteinG": 27.0,
+    "carbsG": 8.0,
+    "fatG": 13.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cơm tấm sườn bì",
+    "searchName": "com tam suon bi",
+    "aliases": [
+      "com suon bi",
+      "com tam bi suon"
+    ],
+    "category": "com",
+    "servingDesc": "1 đĩa cơm kèm sườn, bì và nước mắm",
+    "servingGrams": 400.0,
+    "kcal": 650.0,
+    "proteinG": 32.0,
+    "carbsG": 80.0,
+    "fatG": 22.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cơm hến",
+    "searchName": "com hen",
+    "aliases": [
+      "com hen hue",
+      "com hen tron"
+    ],
+    "category": "com",
+    "servingDesc": "1 tô",
+    "servingGrams": 300.0,
+    "kcal": 430.0,
+    "proteinG": 15.0,
+    "carbsG": 60.0,
+    "fatG": 15.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Canh chua cá",
+    "searchName": "canh chua ca",
+    "aliases": [
+      "canh chua ca loc",
+      "canh chua nam bo"
+    ],
+    "category": "mon_canh",
+    "servingDesc": "1 tô nhỏ, phần ăn được gồm cá và nước canh",
+    "servingGrams": 300.0,
+    "kcal": 150.0,
+    "proteinG": 18.0,
+    "carbsG": 12.0,
+    "fatG": 4.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Canh rau ngót thịt bằm",
+    "searchName": "canh rau ngot thit bam",
+    "aliases": [
+      "canh rau ngot thit bam",
+      "canh rau ngot thit"
+    ],
+    "category": "mon_canh",
+    "servingDesc": "1 tô nhỏ",
+    "servingGrams": 250.0,
+    "kcal": 100.0,
+    "proteinG": 10.0,
+    "carbsG": 6.0,
+    "fatG": 4.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Canh bí đao thịt bằm",
+    "searchName": "canh bi dao thit bam",
+    "aliases": [
+      "canh bi thit bam",
+      "canh bi xanh thit bam"
+    ],
+    "category": "mon_canh",
+    "servingDesc": "1 tô nhỏ",
+    "servingGrams": 250.0,
+    "kcal": 110.0,
+    "proteinG": 10.0,
+    "carbsG": 8.0,
+    "fatG": 4.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cơm chay đậu hũ",
+    "searchName": "com chay dau hu",
+    "aliases": [
+      "com chay dau phu",
+      "com chay tau hu"
+    ],
+    "category": "mon_chay",
+    "servingDesc": "1 đĩa cơm kèm đậu hũ chiên và rau",
+    "servingGrams": 350.0,
+    "kcal": 480.0,
+    "proteinG": 16.0,
+    "carbsG": 70.0,
+    "fatG": 15.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Đậu hũ sốt cà chua",
+    "searchName": "dau hu sot ca chua",
+    "aliases": [
+      "dau phu sot ca chua",
+      "tau hu sot ca"
+    ],
+    "category": "mon_chay",
+    "servingDesc": "1 đĩa nhỏ, không kèm cơm",
+    "servingGrams": 200.0,
+    "kcal": 220.0,
+    "proteinG": 14.0,
+    "carbsG": 12.0,
+    "fatG": 13.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Phở bò tái",
+    "searchName": "pho bo tai",
+    "aliases": [
+      "pho tai",
+      "pho bo tai chin"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 tô gồm bánh phở, thịt, rau và nước dùng",
+    "servingGrams": 550.0,
+    "kcal": 430.0,
+    "proteinG": 28.0,
+    "carbsG": 60.0,
+    "fatG": 9.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Phở bò chín",
+    "searchName": "pho bo chin",
+    "aliases": [
+      "pho chin",
+      "pho nam bo"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 tô gồm bánh phở, thịt, rau và nước dùng",
+    "servingGrams": 550.0,
+    "kcal": 450.0,
+    "proteinG": 30.0,
+    "carbsG": 60.0,
+    "fatG": 10.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Phở gà",
+    "searchName": "pho ga",
+    "aliases": [
+      "pho ga ta",
+      "pho ga luoc"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 tô gồm bánh phở, thịt, rau và nước dùng",
+    "servingGrams": 550.0,
+    "kcal": 420.0,
+    "proteinG": 28.0,
+    "carbsG": 58.0,
+    "fatG": 8.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Phở cuốn",
+    "searchName": "pho cuon",
+    "aliases": [
+      "pho cuon bo",
+      "pho cuon ha noi"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 đĩa 6 cuốn kèm nước chấm",
+    "servingGrams": 300.0,
+    "kcal": 400.0,
+    "proteinG": 22.0,
+    "carbsG": 55.0,
+    "fatG": 10.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bún bò Huế",
+    "searchName": "bun bo hue",
+    "aliases": [
+      "bun bo hue gio heo",
+      "bun bo hue dac biet"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 tô gồm bún, thịt, rau và nước dùng",
+    "servingGrams": 600.0,
+    "kcal": 550.0,
+    "proteinG": 30.0,
+    "carbsG": 65.0,
+    "fatG": 19.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bún chả Hà Nội",
+    "searchName": "bun cha ha noi",
+    "aliases": [
+      "bun cha",
+      "bun cha ha noi thit nuong"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 phần bún, chả, rau và nước chấm",
+    "servingGrams": 450.0,
+    "kcal": 580.0,
+    "proteinG": 28.0,
+    "carbsG": 70.0,
+    "fatG": 22.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bún thịt nướng",
+    "searchName": "bun thit nuong",
+    "aliases": [
+      "bun thit nuong sai gon",
+      "bun heo nuong"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 tô kèm rau, đậu phộng và nước mắm",
+    "servingGrams": 400.0,
+    "kcal": 550.0,
+    "proteinG": 25.0,
+    "carbsG": 75.0,
+    "fatG": 17.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bún riêu cua",
+    "searchName": "bun rieu cua",
+    "aliases": [
+      "bun rieu",
+      "bun rieu cua dong"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 tô gồm bún, riêu, đậu hũ, rau và nước dùng",
+    "servingGrams": 550.0,
+    "kcal": 450.0,
+    "proteinG": 22.0,
+    "carbsG": 60.0,
+    "fatG": 14.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bún mắm",
+    "searchName": "bun mam",
+    "aliases": [
+      "bun mam mien tay",
+      "bun mam hai san"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 tô gồm bún, thịt, hải sản, rau và nước dùng",
+    "servingGrams": 600.0,
+    "kcal": 500.0,
+    "proteinG": 30.0,
+    "carbsG": 60.0,
+    "fatG": 16.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bún cá",
+    "searchName": "bun ca",
+    "aliases": [
+      "bun ca nuoc",
+      "bun ca loc"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 tô gồm bún, cá, rau và nước dùng",
+    "servingGrams": 550.0,
+    "kcal": 420.0,
+    "proteinG": 27.0,
+    "carbsG": 60.0,
+    "fatG": 8.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bún cà ri gà",
+    "searchName": "bun ca ri ga",
+    "aliases": [
+      "bun ca ri",
+      "bun cari ga"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 tô gồm bún, gà, khoai và nước cà ri",
+    "servingGrams": 550.0,
+    "kcal": 570.0,
+    "proteinG": 27.0,
+    "carbsG": 65.0,
+    "fatG": 22.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bún đậu mắm tôm",
+    "searchName": "bun dau mam tom",
+    "aliases": [
+      "bun dau",
+      "bun dau thap cam"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 mẹt bún, đậu chiên, thịt luộc, chả cốm và mắm tôm",
+    "servingGrams": 450.0,
+    "kcal": 650.0,
+    "proteinG": 30.0,
+    "carbsG": 65.0,
+    "fatG": 30.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Hủ tiếu Nam Vang",
+    "searchName": "hu tieu nam vang",
+    "aliases": [
+      "hu tiu nam vang",
+      "hu tieu nam vang nuoc"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 tô gồm hủ tiếu, thịt, tôm và nước dùng",
+    "servingGrams": 550.0,
+    "kcal": 460.0,
+    "proteinG": 28.0,
+    "carbsG": 65.0,
+    "fatG": 10.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Hủ tiếu bò kho",
+    "searchName": "hu tieu bo kho",
+    "aliases": [
+      "hu tiu bo kho",
+      "hu tieu bo ham"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 tô gồm hủ tiếu, bò và nước kho",
+    "servingGrams": 550.0,
+    "kcal": 520.0,
+    "proteinG": 30.0,
+    "carbsG": 65.0,
+    "fatG": 16.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Mì Quảng",
+    "searchName": "mi quang",
+    "aliases": [
+      "mi quang ga tom",
+      "mi quang tom thit"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 tô kèm rau, đậu phộng và bánh tráng",
+    "servingGrams": 450.0,
+    "kcal": 550.0,
+    "proteinG": 28.0,
+    "carbsG": 65.0,
+    "fatG": 20.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Mì xào bò",
+    "searchName": "mi xao bo",
+    "aliases": [
+      "mi bo xao",
+      "mi xao thit bo"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 đĩa",
+    "servingGrams": 350.0,
+    "kcal": 580.0,
+    "proteinG": 25.0,
+    "carbsG": 70.0,
+    "fatG": 22.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Mì hoành thánh",
+    "searchName": "mi hoanh thanh",
+    "aliases": [
+      "mi van than",
+      "mi hoanh thanh nuoc"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 tô gồm mì, hoành thánh, thịt và nước dùng",
+    "servingGrams": 500.0,
+    "kcal": 450.0,
+    "proteinG": 23.0,
+    "carbsG": 62.0,
+    "fatG": 12.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Miến gà",
+    "searchName": "mien ga",
+    "aliases": [
+      "mien ga nuoc",
+      "mien ga ta"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 tô gồm miến, gà và nước dùng",
+    "servingGrams": 500.0,
+    "kcal": 360.0,
+    "proteinG": 25.0,
+    "carbsG": 50.0,
+    "fatG": 7.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Miến lươn",
+    "searchName": "mien luon",
+    "aliases": [
+      "mien luon nuoc",
+      "mien luon ha noi"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 tô gồm miến, lươn và nước dùng",
+    "servingGrams": 500.0,
+    "kcal": 400.0,
+    "proteinG": 22.0,
+    "carbsG": 55.0,
+    "fatG": 10.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bánh đa cua",
+    "searchName": "banh da cua",
+    "aliases": [
+      "banh da cua hai phong",
+      "banh da do cua"
+    ],
+    "category": "bun_pho_mi",
+    "servingDesc": "1 tô gồm bánh đa, riêu, rau và nước dùng",
+    "servingGrams": 550.0,
+    "kcal": 460.0,
+    "proteinG": 22.0,
+    "carbsG": 65.0,
+    "fatG": 13.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bánh mì thịt",
+    "searchName": "banh mi thit",
+    "aliases": [
+      "banh mi thit nguoi",
+      "banh mi pate thit"
+    ],
+    "category": "banh_mi",
+    "servingDesc": "1 ổ kèm thịt, pate, bơ và rau",
+    "servingGrams": 200.0,
+    "kcal": 470.0,
+    "proteinG": 20.0,
+    "carbsG": 55.0,
+    "fatG": 19.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bánh mì trứng",
+    "searchName": "banh mi trung",
+    "aliases": [
+      "banh mi op la",
+      "banh mi trung chien"
+    ],
+    "category": "banh_mi",
+    "servingDesc": "1 ổ kèm 2 trứng, rau và sốt",
+    "servingGrams": 200.0,
+    "kcal": 440.0,
+    "proteinG": 18.0,
+    "carbsG": 50.0,
+    "fatG": 19.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bánh mì gà xé",
+    "searchName": "banh mi ga xe",
+    "aliases": [
+      "banh mi ga",
+      "banh mi thit ga xe"
+    ],
+    "category": "banh_mi",
+    "servingDesc": "1 ổ kèm gà xé, rau và sốt",
+    "servingGrams": 180.0,
+    "kcal": 400.0,
+    "proteinG": 22.0,
+    "carbsG": 50.0,
+    "fatG": 12.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bánh mì chả cá",
+    "searchName": "banh mi cha ca",
+    "aliases": [
+      "banh mi cha ca chien",
+      "banh mi cha ca nong"
+    ],
+    "category": "banh_mi",
+    "servingDesc": "1 ổ kèm chả cá, rau và sốt",
+    "servingGrams": 180.0,
+    "kcal": 420.0,
+    "proteinG": 20.0,
+    "carbsG": 52.0,
+    "fatG": 15.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bánh mì xíu mại",
+    "searchName": "banh mi xiu mai",
+    "aliases": [
+      "banh mi xiu mai da lat",
+      "banh mi thit vien"
+    ],
+    "category": "banh_mi",
+    "servingDesc": "1 ổ kèm xíu mại và nước sốt",
+    "servingGrams": 220.0,
+    "kcal": 450.0,
+    "proteinG": 20.0,
+    "carbsG": 55.0,
+    "fatG": 17.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bánh mì chay",
+    "searchName": "banh mi chay",
+    "aliases": [
+      "banh mi dau hu",
+      "banh mi chay nam"
+    ],
+    "category": "banh_mi",
+    "servingDesc": "1 ổ kèm đậu hũ, nấm, rau và sốt",
+    "servingGrams": 180.0,
+    "kcal": 350.0,
+    "proteinG": 12.0,
+    "carbsG": 50.0,
+    "fatG": 11.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Xôi đậu xanh",
+    "searchName": "xoi dau xanh",
+    "aliases": [
+      "xoi dau",
+      "xoi do xanh"
+    ],
+    "category": "xoi",
+    "servingDesc": "1 gói kèm đậu xanh và muối mè",
+    "servingGrams": 200.0,
+    "kcal": 380.0,
+    "proteinG": 10.0,
+    "carbsG": 70.0,
+    "fatG": 7.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Xôi gấc",
+    "searchName": "xoi gac",
+    "aliases": [
+      "xoi gac do",
+      "xoi gac ngot"
+    ],
+    "category": "xoi",
+    "servingDesc": "1 gói",
+    "servingGrams": 200.0,
+    "kcal": 400.0,
+    "proteinG": 6.0,
+    "carbsG": 78.0,
+    "fatG": 7.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Xôi mặn",
+    "searchName": "xoi man",
+    "aliases": [
+      "xoi thap cam",
+      "xoi pate lap xuong"
+    ],
+    "category": "xoi",
+    "servingDesc": "1 hộp kèm chả, lạp xưởng, pate và hành phi",
+    "servingGrams": 250.0,
+    "kcal": 550.0,
+    "proteinG": 18.0,
+    "carbsG": 75.0,
+    "fatG": 20.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Xôi gà",
+    "searchName": "xoi ga",
+    "aliases": [
+      "xoi ga xe",
+      "xoi thit ga"
+    ],
+    "category": "xoi",
+    "servingDesc": "1 hộp kèm gà xé và hành phi",
+    "servingGrams": 250.0,
+    "kcal": 480.0,
+    "proteinG": 22.0,
+    "carbsG": 70.0,
+    "fatG": 12.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bánh tráng trộn",
+    "searchName": "banh trang tron",
+    "aliases": [
+      "banh trang tron sai gon",
+      "banh trang tron trung cut"
+    ],
+    "category": "an_vat",
+    "servingDesc": "1 bịch kèm khô bò, trứng cút và sốt",
+    "servingGrams": 150.0,
+    "kcal": 380.0,
+    "proteinG": 12.0,
+    "carbsG": 55.0,
+    "fatG": 13.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bánh tráng nướng",
+    "searchName": "banh trang nuong",
+    "aliases": [
+      "banh trang nuong da lat",
+      "pizza da lat"
+    ],
+    "category": "an_vat",
+    "servingDesc": "1 cái kèm trứng, xúc xích và sốt",
+    "servingGrams": 120.0,
+    "kcal": 300.0,
+    "proteinG": 10.0,
+    "carbsG": 30.0,
+    "fatG": 15.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Gỏi cuốn tôm thịt",
+    "searchName": "goi cuon tom thit",
+    "aliases": [
+      "goi cuon",
+      "nem cuon tom thit"
+    ],
+    "category": "an_vat",
+    "servingDesc": "1 đĩa 3 cuốn kèm nước chấm",
+    "servingGrams": 180.0,
+    "kcal": 230.0,
+    "proteinG": 14.0,
+    "carbsG": 30.0,
+    "fatG": 6.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Chả giò",
+    "searchName": "cha gio",
+    "aliases": [
+      "nem ran",
+      "cha gio chien"
+    ],
+    "category": "an_vat",
+    "servingDesc": "1 đĩa 3 cuốn kèm nước chấm",
+    "servingGrams": 150.0,
+    "kcal": 350.0,
+    "proteinG": 12.0,
+    "carbsG": 30.0,
+    "fatG": 20.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bánh xèo",
+    "searchName": "banh xeo",
+    "aliases": [
+      "banh xeo nam bo",
+      "banh xeo tom thit"
+    ],
+    "category": "an_vat",
+    "servingDesc": "1 cái lớn kèm rau và nước chấm",
+    "servingGrams": 250.0,
+    "kcal": 420.0,
+    "proteinG": 15.0,
+    "carbsG": 45.0,
+    "fatG": 20.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bánh cuốn",
+    "searchName": "banh cuon",
+    "aliases": [
+      "banh cuon nong",
+      "banh cuon thit"
+    ],
+    "category": "an_vat",
+    "servingDesc": "1 đĩa kèm chả lụa và nước chấm",
+    "servingGrams": 250.0,
+    "kcal": 350.0,
+    "proteinG": 15.0,
+    "carbsG": 50.0,
+    "fatG": 10.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bánh bèo",
+    "searchName": "banh beo",
+    "aliases": [
+      "banh beo chen",
+      "banh beo hue"
+    ],
+    "category": "an_vat",
+    "servingDesc": "1 phần 6 chén kèm tôm, hành phi và nước mắm",
+    "servingGrams": 200.0,
+    "kcal": 280.0,
+    "proteinG": 8.0,
+    "carbsG": 48.0,
+    "fatG": 6.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bánh bột lọc",
+    "searchName": "banh bot loc",
+    "aliases": [
+      "banh loc",
+      "banh bot loc tom thit"
+    ],
+    "category": "an_vat",
+    "servingDesc": "1 đĩa 6 cái kèm nước mắm",
+    "servingGrams": 180.0,
+    "kcal": 300.0,
+    "proteinG": 10.0,
+    "carbsG": 52.0,
+    "fatG": 6.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bánh chưng",
+    "searchName": "banh chung",
+    "aliases": [
+      "banh chung nhan thit",
+      "banh chung dau xanh"
+    ],
+    "category": "an_vat",
+    "servingDesc": "1 miếng, bỏ lá",
+    "servingGrams": 150.0,
+    "kcal": 320.0,
+    "proteinG": 8.0,
+    "carbsG": 50.0,
+    "fatG": 10.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bánh tét",
+    "searchName": "banh tet",
+    "aliases": [
+      "banh tet nhan man",
+      "banh tet dau xanh thit"
+    ],
+    "category": "an_vat",
+    "servingDesc": "1 khoanh, bỏ lá",
+    "servingGrams": 150.0,
+    "kcal": 330.0,
+    "proteinG": 8.0,
+    "carbsG": 52.0,
+    "fatG": 10.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bánh giò",
+    "searchName": "banh gio",
+    "aliases": [
+      "banh gio nong",
+      "banh gio thit"
+    ],
+    "category": "an_vat",
+    "servingDesc": "1 cái, bỏ lá",
+    "servingGrams": 200.0,
+    "kcal": 320.0,
+    "proteinG": 10.0,
+    "carbsG": 42.0,
+    "fatG": 12.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bánh bao nhân thịt",
+    "searchName": "banh bao nhan thit",
+    "aliases": [
+      "banh bao thit trung",
+      "banh bao man"
+    ],
+    "category": "an_vat",
+    "servingDesc": "1 cái kèm trứng cút",
+    "servingGrams": 150.0,
+    "kcal": 330.0,
+    "proteinG": 12.0,
+    "carbsG": 45.0,
+    "fatG": 11.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bột chiên",
+    "searchName": "bot chien",
+    "aliases": [
+      "bot chien trung",
+      "bot chien sai gon"
+    ],
+    "category": "an_vat",
+    "servingDesc": "1 đĩa kèm trứng và nước tương",
+    "servingGrams": 250.0,
+    "kcal": 450.0,
+    "proteinG": 12.0,
+    "carbsG": 55.0,
+    "fatG": 20.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Nem chua rán",
+    "searchName": "nem chua ran",
+    "aliases": [
+      "nem chua chien",
+      "nem ran an vat"
+    ],
+    "category": "an_vat",
+    "servingDesc": "1 phần 5 chiếc nhỏ kèm tương ớt",
+    "servingGrams": 150.0,
+    "kcal": 380.0,
+    "proteinG": 15.0,
+    "carbsG": 35.0,
+    "fatG": 20.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Khoai tây chiên",
+    "searchName": "khoai tay chien",
+    "aliases": [
+      "khoai chien",
+      "khoai tay chien gion"
+    ],
+    "category": "an_vat",
+    "servingDesc": "1 phần nhỏ kèm tương cà",
+    "servingGrams": 100.0,
+    "kcal": 310.0,
+    "proteinG": 4.0,
+    "carbsG": 40.0,
+    "fatG": 15.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Trà sữa trân châu",
+    "searchName": "tra sua tran chau",
+    "aliases": [
+      "tra sua tran chau den",
+      "tra sua bong bong"
+    ],
+    "category": "do_uong",
+    "servingDesc": "1 ly 500ml, đường tiêu chuẩn, gồm trân châu và đá",
+    "servingGrams": 500.0,
+    "kcal": 420.0,
+    "proteinG": 5.0,
+    "carbsG": 75.0,
+    "fatG": 11.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cà phê sữa đá",
+    "searchName": "ca phe sua da",
+    "aliases": [
+      "cafe sua da",
+      "ca phe nau da"
+    ],
+    "category": "do_uong",
+    "servingDesc": "1 ly 200ml kèm sữa đặc và đá",
+    "servingGrams": 200.0,
+    "kcal": 130.0,
+    "proteinG": 3.0,
+    "carbsG": 21.0,
+    "fatG": 4.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cà phê đen không đường",
+    "searchName": "ca phe den khong duong",
+    "aliases": [
+      "cafe den khong duong",
+      "ca phe den da khong duong"
+    ],
+    "category": "do_uong",
+    "servingDesc": "1 ly 150ml, không đường",
+    "servingGrams": 150.0,
+    "kcal": 2.0,
+    "proteinG": 0.2,
+    "carbsG": 0.3,
+    "fatG": 0.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bạc xỉu",
+    "searchName": "bac xiu",
+    "aliases": [
+      "bac siu",
+      "cafe bac xiu"
+    ],
+    "category": "do_uong",
+    "servingDesc": "1 ly 250ml kèm sữa đặc, sữa tươi và đá",
+    "servingGrams": 250.0,
+    "kcal": 180.0,
+    "proteinG": 4.0,
+    "carbsG": 28.0,
+    "fatG": 6.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Nước mía",
+    "searchName": "nuoc mia",
+    "aliases": [
+      "nuoc mia tuoi",
+      "nuoc mia ep"
+    ],
+    "category": "do_uong",
+    "servingDesc": "1 ly 350ml gồm nước mía và đá",
+    "servingGrams": 350.0,
+    "kcal": 180.0,
+    "proteinG": 0.0,
+    "carbsG": 45.0,
+    "fatG": 0.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Nước dừa tươi",
+    "searchName": "nuoc dua tuoi",
+    "aliases": [
+      "nuoc dua",
+      "nuoc dua tuoi nguyen chat"
+    ],
+    "category": "do_uong",
+    "servingDesc": "1 ly 300ml, không đường, không cơm dừa",
+    "servingGrams": 300.0,
+    "kcal": 60.0,
+    "proteinG": 0.5,
+    "carbsG": 14.0,
+    "fatG": 0.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Nước cam ép",
+    "searchName": "nuoc cam ep",
+    "aliases": [
+      "nuoc cam",
+      "cam ep"
+    ],
+    "category": "do_uong",
+    "servingDesc": "1 ly 250ml, không thêm đường",
+    "servingGrams": 250.0,
+    "kcal": 100.0,
+    "proteinG": 1.0,
+    "carbsG": 24.0,
+    "fatG": 0.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Nước chanh đường",
+    "searchName": "nuoc chanh duong",
+    "aliases": [
+      "chanh da",
+      "nuoc chanh da"
+    ],
+    "category": "do_uong",
+    "servingDesc": "1 ly 300ml gồm đường và đá",
+    "servingGrams": 300.0,
+    "kcal": 120.0,
+    "proteinG": 0.0,
+    "carbsG": 30.0,
+    "fatG": 0.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Trà đào cam sả",
+    "searchName": "tra dao cam sa",
+    "aliases": [
+      "tra dao",
+      "tra dao cam sa da"
+    ],
+    "category": "do_uong",
+    "servingDesc": "1 ly 500ml gồm siro, miếng đào và đá",
+    "servingGrams": 500.0,
+    "kcal": 160.0,
+    "proteinG": 0.0,
+    "carbsG": 40.0,
+    "fatG": 0.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Sữa đậu nành có đường",
+    "searchName": "sua dau nanh co duong",
+    "aliases": [
+      "sua dau nanh",
+      "sua dau nanh ngot"
+    ],
+    "category": "do_uong",
+    "servingDesc": "1 ly 250ml",
+    "servingGrams": 250.0,
+    "kcal": 150.0,
+    "proteinG": 6.0,
+    "carbsG": 20.0,
+    "fatG": 5.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Sinh tố bơ",
+    "searchName": "sinh to bo",
+    "aliases": [
+      "sinh to bo sua",
+      "bo xay sua"
+    ],
+    "category": "do_uong",
+    "servingDesc": "1 ly 300ml kèm sữa đặc và đá",
+    "servingGrams": 300.0,
+    "kcal": 300.0,
+    "proteinG": 5.0,
+    "carbsG": 32.0,
+    "fatG": 17.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Sinh tố xoài",
+    "searchName": "sinh to xoai",
+    "aliases": [
+      "sinh to xoai sua",
+      "xoai xay sua"
+    ],
+    "category": "do_uong",
+    "servingDesc": "1 ly 300ml kèm sữa đặc và đá",
+    "servingGrams": 300.0,
+    "kcal": 250.0,
+    "proteinG": 4.0,
+    "carbsG": 45.0,
+    "fatG": 6.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Rau má đậu xanh",
+    "searchName": "rau ma dau xanh",
+    "aliases": [
+      "nuoc rau ma dau xanh",
+      "rau ma dau"
+    ],
+    "category": "do_uong",
+    "servingDesc": "1 ly 350ml có đường, gồm đá",
+    "servingGrams": 350.0,
+    "kcal": 200.0,
+    "proteinG": 4.0,
+    "carbsG": 37.0,
+    "fatG": 4.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Sữa tươi có đường",
+    "searchName": "sua tuoi co duong",
+    "aliases": [
+      "sua tuoi ngot",
+      "sua bo co duong"
+    ],
+    "category": "do_uong",
+    "servingDesc": "1 hộp 250ml",
+    "servingGrams": 250.0,
+    "kcal": 150.0,
+    "proteinG": 6.0,
+    "carbsG": 20.0,
+    "fatG": 5.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Ca cao sữa",
+    "searchName": "ca cao sua",
+    "aliases": [
+      "cacao sua",
+      "ca cao nong"
+    ],
+    "category": "do_uong",
+    "servingDesc": "1 ly 250ml kèm sữa và đường",
+    "servingGrams": 250.0,
+    "kcal": 200.0,
+    "proteinG": 6.0,
+    "carbsG": 28.0,
+    "fatG": 7.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Chuối chín",
+    "searchName": "chuoi chin",
+    "aliases": [
+      "chuoi",
+      "chuoi tieu chin"
+    ],
+    "category": "trai_cay",
+    "servingDesc": "1 quả vừa, phần ăn được",
+    "servingGrams": 100.0,
+    "kcal": 90.0,
+    "proteinG": 1.0,
+    "carbsG": 22.0,
+    "fatG": 0.2,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Táo",
+    "searchName": "tao",
+    "aliases": [
+      "tao tay",
+      "tao tuoi"
+    ],
+    "category": "trai_cay",
+    "servingDesc": "1 quả vừa, phần ăn được",
+    "servingGrams": 150.0,
+    "kcal": 80.0,
+    "proteinG": 0.4,
+    "carbsG": 20.0,
+    "fatG": 0.3,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Cam",
+    "searchName": "cam",
+    "aliases": [
+      "cam tuoi",
+      "cam ngot"
+    ],
+    "category": "trai_cay",
+    "servingDesc": "1 quả vừa, phần ăn được",
+    "servingGrams": 150.0,
+    "kcal": 70.0,
+    "proteinG": 1.3,
+    "carbsG": 16.0,
+    "fatG": 0.2,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Ổi",
+    "searchName": "oi",
+    "aliases": [
+      "oi tuoi",
+      "oi chin"
+    ],
+    "category": "trai_cay",
+    "servingDesc": "1 quả vừa, phần ăn được",
+    "servingGrams": 150.0,
+    "kcal": 100.0,
+    "proteinG": 3.0,
+    "carbsG": 20.0,
+    "fatG": 1.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Xoài chín",
+    "searchName": "xoai chin",
+    "aliases": [
+      "xoai",
+      "xoai cat chin"
+    ],
+    "category": "trai_cay",
+    "servingDesc": "1 phần xoài cắt miếng, bỏ vỏ và hạt",
+    "servingGrams": 165.0,
+    "kcal": 100.0,
+    "proteinG": 1.0,
+    "carbsG": 24.0,
+    "fatG": 0.5,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Dưa hấu",
+    "searchName": "dua hau",
+    "aliases": [
+      "dua hau tuoi",
+      "dua hau do"
+    ],
+    "category": "trai_cay",
+    "servingDesc": "1 miếng lớn, bỏ vỏ",
+    "servingGrams": 200.0,
+    "kcal": 60.0,
+    "proteinG": 1.0,
+    "carbsG": 14.0,
+    "fatG": 0.3,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Thanh long",
+    "searchName": "thanh long",
+    "aliases": [
+      "thanh long ruot trang",
+      "thanh long tuoi"
+    ],
+    "category": "trai_cay",
+    "servingDesc": "1 quả nhỏ, bỏ vỏ",
+    "servingGrams": 200.0,
+    "kcal": 110.0,
+    "proteinG": 2.0,
+    "carbsG": 25.0,
+    "fatG": 0.5,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bưởi",
+    "searchName": "buoi",
+    "aliases": [
+      "buoi tuoi",
+      "buoi ngot"
+    ],
+    "category": "trai_cay",
+    "servingDesc": "1 đĩa múi bưởi, bỏ vỏ và hạt",
+    "servingGrams": 150.0,
+    "kcal": 60.0,
+    "proteinG": 1.0,
+    "carbsG": 14.0,
+    "fatG": 0.2,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Đu đủ chín",
+    "searchName": "du du chin",
+    "aliases": [
+      "du du",
+      "du du chin tuoi"
+    ],
+    "category": "trai_cay",
+    "servingDesc": "1 đĩa cắt miếng, bỏ vỏ và hạt",
+    "servingGrams": 150.0,
+    "kcal": 65.0,
+    "proteinG": 0.8,
+    "carbsG": 15.0,
+    "fatG": 0.3,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Sầu riêng",
+    "searchName": "sau rieng",
+    "aliases": [
+      "sau rieng chin",
+      "sau rieng com"
+    ],
+    "category": "trai_cay",
+    "servingDesc": "1 múi lớn, bỏ vỏ và hạt",
+    "servingGrams": 100.0,
+    "kcal": 145.0,
+    "proteinG": 2.0,
+    "carbsG": 27.0,
+    "fatG": 5.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Chè đậu xanh",
+    "searchName": "che dau xanh",
+    "aliases": [
+      "che dau xanh nuoc cot dua",
+      "che do xanh"
+    ],
+    "category": "trang_mieng",
+    "servingDesc": "1 chén kèm đường và nước cốt dừa",
+    "servingGrams": 250.0,
+    "kcal": 250.0,
+    "proteinG": 7.0,
+    "carbsG": 43.0,
+    "fatG": 6.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Chè đậu đen",
+    "searchName": "che dau den",
+    "aliases": [
+      "che do den",
+      "che dau den nuoc cot dua"
+    ],
+    "category": "trang_mieng",
+    "servingDesc": "1 chén kèm đường và nước cốt dừa",
+    "servingGrams": 250.0,
+    "kcal": 260.0,
+    "proteinG": 7.0,
+    "carbsG": 46.0,
+    "fatG": 6.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Chè thái",
+    "searchName": "che thai",
+    "aliases": [
+      "che thai sau rieng",
+      "che thai thap cam"
+    ],
+    "category": "trang_mieng",
+    "servingDesc": "1 ly gồm trái cây, thạch, sữa và đá",
+    "servingGrams": 300.0,
+    "kcal": 320.0,
+    "proteinG": 4.0,
+    "carbsG": 55.0,
+    "fatG": 9.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Bánh flan",
+    "searchName": "banh flan",
+    "aliases": [
+      "caramen",
+      "banh caramel"
+    ],
+    "category": "trang_mieng",
+    "servingDesc": "1 cái kèm caramel",
+    "servingGrams": 100.0,
+    "kcal": 150.0,
+    "proteinG": 5.0,
+    "carbsG": 22.0,
+    "fatG": 5.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  },
+  {
+    "nameVi": "Sữa chua có đường",
+    "searchName": "sua chua co duong",
+    "aliases": [
+      "yaourt co duong",
+      "sua chua ngot"
+    ],
+    "category": "trang_mieng",
+    "servingDesc": "1 hũ 100g",
+    "servingGrams": 100.0,
+    "kcal": 100.0,
+    "proteinG": 3.5,
+    "carbsG": 15.0,
+    "fatG": 3.0,
+    "source": "curated",
+    "verified": false,
+    "sourceNote": "ước tính"
+  }
+]
