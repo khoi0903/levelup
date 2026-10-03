@@ -83,7 +83,7 @@ coll("users", {
       }
     },
     devices: { bsonType: "array", items: { bsonType: "object",
-               properties: { platform: { enum: ["ios", "android"] }, token: { bsonType: "string" }, lastSeenAt: { bsonType: "date" } } } },
+               properties: { platform: { enum: ["ios", "android", "web"] }, token: { bsonType: "string" }, lastSeenAt: { bsonType: "date" } } } },
     sharing: { bsonType: "object", properties: {                         // buddy thấy gì (mặc định tắt hết)
                weight: { bsonType: "bool" }, measurements: { bsonType: "bool" }, photos: { bsonType: "bool" }, meals: { bsonType: "bool" } } },
     nutritionTargets: { bsonType: "array", items: { bsonType: "object",   // lịch sử, phần tử cuối là hiện tại
@@ -322,7 +322,8 @@ coll("skip_reports", {
   properties: { userId: { bsonType: "objectId" }, planId: { bsonType: "objectId" }, plannedSessionId: { bsonType: "objectId" },
                 reason: { enum: ["busy", "tired", "pain", "bored", "forgot", "other"] },
                 action: { enum: ["rescheduled", "shortened", "reduced_intensity", "swapped_exercises", "changed_reminder", "rest_day", "none"] },
-                note: { bsonType: "string" }, coachMessageId: { bsonType: "objectId" }, createdAt: { bsonType: "date" } }
+                note: { bsonType: "string" }, bodyArea: BODY_AREA,                 // bắt buộc khi reason = pain (API kiểm tra)
+                coachMessageId: { bsonType: "objectId" }, createdAt: { bsonType: "date" } }
 });
 dbx.skip_reports.createIndex({ reason: 1, createdAt: -1 });
 dbx.skip_reports.createIndex({ userId: 1, createdAt: -1 });
@@ -437,7 +438,10 @@ coll("notifications", {
   bsonType: "object", required: ["userId", "type", "channel", "localDate", "scheduledFor"],
   properties: { userId: { bsonType: "objectId" },
                 type: { enum: ["checkin", "pre_workout", "missed_1", "missed_2", "lapsed", "weekly_review",
-                               "buddy_cheer", "buddy_nudge", "milestone", "meal_reminder"] },
+                               "buddy_cheer", "buddy_nudge", "milestone", "meal_reminder",
+                               "missed_session", "streak_risk"] },
+                title: { bsonType: "string" }, body: { bsonType: "string" },
+                data: { bsonType: "object" },                                    // route, id để app mở đúng màn
                 channel: { enum: ["push", "in_app"] }, localDate: DATE_STR,
                 scheduledFor: { bsonType: "date" }, sentAt: { bsonType: "date" }, openedAt: { bsonType: "date" },
                 action: { bsonType: "string" }, relatedSessionId: { bsonType: "objectId" },

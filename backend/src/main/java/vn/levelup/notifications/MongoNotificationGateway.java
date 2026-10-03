@@ -1,0 +1,168 @@
+package vn.levelup.notifications;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import org.bson.Document;
+import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import vn.levelup.common.LocalDates;
+
+/**
+ * Cổng gửi thông báo thật, theo flowchart "Cổng gửi thông báo" trong docs/04-backend-flow.html:
+ * pushEnabled và thiết bị → giờ yên lặng → bộ đếm mỗi ngày (tăng trong cùng một lệnh) →
+ * insert notifications với dedupeKey → gửi push → xóa token hết hạn.
+ *
+ * Chạy ngoài transaction của nơi gọi: lỗi trùng khóa (E11000) là chuyện bình thường ở đây
+ * và không được làm hủy transaction đang ghi dữ liệu khác.
+ */
+@Service
+@Transactional(propagation = Propagation.NOT_SUPPORTED)
+public class MongoNotificationGateway implements NotificationGateway {
+
+    private static final Logger log = LoggerFactory.getLogger(MongoNotificationGateway.class);
+
+    private final MongoTemplate mongo;
+    private final PushSender push;
+    private final Clock clock;
+
+    public MongoNotificationGateway(MongoTemplate mongo, PushSender push, Clock clock) {
+        this.mongo = mongo;
+        this.push = push;
+        this.clock = clock;
+    }
+
+    @Override
+    public Result send(ObjectId userId, String type, String title, String body, String dedupeKey,
+                       Map<String, String> data) {
+        Instant now = clock.instant();
+        Document user = mongo.findById(userId, Document.class, "users");
+        Document settings = user == null ? new Document() : user.get("notificationSettings", new Document());
+        List<Document> devices = user == null ? List.of() : user.getList("devices", Document.class, List.of());
+        ZoneId zone = LocalDates.zone(user == null ? null : user.getString("timezone"));
+        String localDate = LocalDates.today(zone.getId(), clock).toString();
+
+        LocalTime quietStart = NotificationRules.time(settings.getString("quietStart"),
+            NotificationRules.DEFAULT_QUIET_START);
+        LocalTime quietEnd = NotificationRules.time(settings.getString("quietEnd"), NotificationRules.DEFAULT_QUIET_END);
+        boolean quiet = NotificationRules.isQuiet(now.atZone(zone).toLocalTime(), quietStart, quietEnd);
+        boolean pushEnabled = !Boolean.FALSE.equals(settings.getBoolean("pushEnabled"));
+
+        Document notification = new Document("userId", userId)
+            .append("type", type)
+            .append("localDate", localDate)
+            .append("title", title)
+            .append("body", body)
+            .append("createdAt", Date.from(now));
+        if (dedupeKey != null) {
+            notification.append("dedupeKey", dedupeKey);
+        }
+        if (data != null && !data.isEmpty()) {
+            notification.append("data", new Document(data));
+        }
+
+        switch (NotificationRules.gate(pushEnabled, devices.size(), quiet)) {
+            case STORE_ONLY -> {
+                notification.append("channel", "in_app").append("scheduledFor", Date.from(now));
+                return insert(notification) ? Result.STORED_ONLY : Result.DUPLICATE;
+            }
+            case QUIET_HOURS -> {
+                // TODO: job gửi các thông báo đã hẹn (sentAt trống, scheduledFor đã tới), bỏ nếu quá hạn
+                notification.append("channel", "push")
+                    .append("scheduledFor", Date.from(NotificationRules.nextQuietEnd(now, zone, quietEnd)));
+                return insert(notification) ? Result.QUIET_HOURS : Result.DUPLICATE;
+            }
+            case TRY_SEND -> {
+                // fall through
+            }
+        }
+
+        if (dedupeKey != null && mongo.exists(Query.query(Criteria.where("dedupeKey").is(dedupeKey)),
+                "notifications")) {
+            return Result.DUPLICATE;
+        }
+        int maxPerDay = NotificationRules.maxPerDay(settings.get("maxPerDay"));
+        if (maxPerDay == 0 || !takeDailySlot(userId, localDate, maxPerDay)) {
+            log.info("[notify] hết lượt trong ngày user={} type={} key={}", userId, type, dedupeKey);
+            return Result.DAILY_LIMIT;
+        }
+
+        notification.append("channel", "push").append("scheduledFor", Date.from(now));
+        if (!insert(notification)) {
+            releaseDailySlot(userId, localDate);
+            return Result.DUPLICATE;
+        }
+
+        boolean delivered = false;
+        for (Document device : devices) {
+            String token = device.getString("token");
+            if (token == null) {
+                continue;
+            }
+            PushSender.Outcome outcome = push.send(token, device.getString("platform"), title, body,
+                data == null ? Map.of() : data);
+            if (outcome == PushSender.Outcome.TOKEN_EXPIRED) {
+                mongo.updateFirst(Query.query(Criteria.where("_id").is(userId)),
+                    new Update().pull("devices", new Document("token", token)), "users");
+            }
+            delivered |= outcome == PushSender.Outcome.SENT;
+        }
+        if (!delivered) {
+            // Không thiết bị nào nhận: trả lượt, tin vẫn nằm trong app
+            releaseDailySlot(userId, localDate);
+            mongo.updateFirst(Query.query(Criteria.where("_id").is(notification.getObjectId("_id"))),
+                Update.update("channel", "in_app"), "notifications");
+            return Result.STORED_ONLY;
+        }
+        mongo.updateFirst(Query.query(Criteria.where("_id").is(notification.getObjectId("_id"))),
+            Update.update("sentAt", Date.from(clock.instant())), "notifications");
+        return Result.SENT;
+    }
+
+    /** false khi trùng dedupeKey. */
+    private boolean insert(Document notification) {
+        try {
+            mongo.insert(notification, "notifications");
+            return true;
+        } catch (DuplicateKeyException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Tăng daily_stats.notificationsSent nếu còn nhỏ hơn maxPerDay, trong một lệnh.
+     * Hết lượt thì điều kiện không khớp, upsert tạo document thứ hai cho cùng (userId, localDate)
+     * và bị unique index chặn: đó là tín hiệu hết lượt.
+     */
+    private boolean takeDailySlot(ObjectId userId, String localDate, int maxPerDay) {
+        Query query = Query.query(Criteria.where("userId").is(userId).and("localDate").is(localDate)
+            .orOperator(Criteria.where("notificationsSent").lt(maxPerDay),
+                Criteria.where("notificationsSent").exists(false)));
+        try {
+            mongo.upsert(query, new Update().inc("notificationsSent", 1), "daily_stats");
+            return true;
+        } catch (DuplicateKeyException e) {
+            return false;
+        }
+    }
+
+    private void releaseDailySlot(ObjectId userId, String localDate) {
+        mongo.updateFirst(Query.query(Criteria.where("userId").is(userId).and("localDate").is(localDate)
+            .and("notificationsSent").gt(0)), new Update().inc("notificationsSent", -1), "daily_stats");
+    }
+}
