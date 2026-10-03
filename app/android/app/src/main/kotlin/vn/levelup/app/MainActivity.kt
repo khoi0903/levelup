@@ -1,4 +1,4 @@
-package vn.fitnessapp.fitness_app
+package vn.levelup.app
 
 import io.flutter.embedding.android.FlutterActivity
 
