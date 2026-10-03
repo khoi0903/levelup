@@ -64,6 +64,9 @@ Không sửa thư mục do agent khác phụ trách trong cùng lúc. Cần sử
   https://www.figma.com/design/SPR387u9dcll7Ora7KH8b5/Untitled?node-id=68-263
   (các trang "Page 1/2/3" là bản cũ màu cam, không dùng). Wireframe trong `docs/figma-export/`
   chỉ để hiểu luồng màn hình, màu sắc đã cũ.
+  **Màu sắc**: team đã chọn bản dịu mắt (nền gần trắng, thẻ trắng đặc, nút `#4B63E8`), khác
+  trang "Yes". Lấy bố cục từ Figma nhưng màu theo `app/lib/core/constants/app_colors.dart`
+  và `docs/prompts/antigravity-s2-ui-soft.md` cho tới khi Figma được cập nhật.
 
 ## MongoDB khi phát triển
 - Chạy: `cd mongo && docker compose up -d`
