@@ -124,11 +124,49 @@ void main() {
       await tester.tap(find.text('Thử lại'));
       await tester.pump();
     });
+
+    testWidgets(
+        'Lỗi khác (401, 500) hiển thị "Có lỗi xảy ra (mã lỗi)" kèm nút Thử lại',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            userRepositoryProvider.overrideWithValue(
+              FakeUserRepository(
+                errorToThrow: const ApiException(
+                  code: 'INTERNAL_SERVER_ERROR',
+                  statusCode: 500,
+                ),
+              ),
+            ),
+          ],
+          child: MaterialApp.router(
+            theme: AppTheme.lightTheme,
+            routerConfig: createAppRouter(initialLocation: '/'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Màn báo lỗi máy chủ kèm mã lỗi
+      expect(find.text('Có lỗi xảy ra (500)'), findsOneWidget);
+      expect(find.text('Thử lại'), findsOneWidget);
+
+      await tester.tap(find.text('Thử lại'));
+      await tester.pump();
+    });
   });
 
   group('Onboarding Flow and Validation', () {
     testWidgets(
-        'Nút "Tiếp tục" ở màn mục tiêu bị vô hiệu khi chưa chọn gì và kích hoạt khi đã chọn',
+        'Nút "Tiếp tục" ở màn mục tiêu chỉ bật khi đã chọn mục tiêu VÀ tên khác rỗng',
         (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;
@@ -155,25 +193,30 @@ void main() {
           find.widgetWithText(PrimaryButton, AppStrings.btnContinue);
       expect(continueBtnFinder, findsOneWidget);
 
-      // Khi chưa chọn mục tiêu, nút bị vô hiệu (onPressed == null)
+      // 1. Khi chưa nhập tên và chưa chọn mục tiêu, nút bị vô hiệu
       PrimaryButton primaryBtn = tester.widget(continueBtnFinder);
       expect(primaryBtn.onPressed, isNull);
 
-      // Thử bấm khi bị vô hiệu, màn hình không đổi
-      await tester.tap(continueBtnFinder);
-      await tester.pumpAndSettle();
-      expect(find.text(AppStrings.goalTitle), findsOneWidget);
-      expect(find.text(AppStrings.bodyTitle), findsNothing);
-
-      // Chọn một mục tiêu (Giảm mỡ)
+      // 2. Chỉ chọn mục tiêu (chưa nhập tên) -> nút vẫn bị vô hiệu
       await tester.tap(find.text(AppStrings.goalLoseFatTitle));
       await tester.pumpAndSettle();
+      primaryBtn = tester.widget(continueBtnFinder);
+      expect(primaryBtn.onPressed, isNull);
 
-      // Nút đã được kích hoạt (onPressed != null)
+      // 3. Nhập tên toàn khoảng trắng -> nút vẫn bị vô hiệu
+      final nameField = find.byType(TextField).first;
+      await tester.enterText(nameField, '   ');
+      await tester.pumpAndSettle();
+      primaryBtn = tester.widget(continueBtnFinder);
+      expect(primaryBtn.onPressed, isNull);
+
+      // 4. Nhập tên hợp lệ (đã chọn mục tiêu) -> nút được kích hoạt
+      await tester.enterText(nameField, 'Minh Test');
+      await tester.pumpAndSettle();
       primaryBtn = tester.widget(continueBtnFinder);
       expect(primaryBtn.onPressed, isNotNull);
 
-      // Bấm Tiếp tục thành công chuyển sang màn OB-Body
+      // 5. Bấm Tiếp tục thành công chuyển sang màn OB-Body
       await tester.tap(continueBtnFinder);
       await tester.pumpAndSettle();
       expect(find.text(AppStrings.bodyTitle), findsOneWidget);

@@ -146,29 +146,60 @@ class OnboardingState {
   }
 
   Map<String, dynamic> toOnboardingRequestJson() {
-    final slotString = timeSlot?.name ?? 'evening';
+    final trimmedName = displayName.trim();
+    if (trimmedName.isEmpty) {
+      throw StateError('displayName is required and cannot be empty');
+    }
+    if (goal == null) {
+      throw StateError('goal is required');
+    }
+    if (heightCm == null) {
+      throw StateError('heightCm is required');
+    }
+    if (startWeightKg == null) {
+      throw StateError('weightKg (startWeightKg) is required');
+    }
+    if (experience == null) {
+      throw StateError('experience is required');
+    }
+    if (location == null) {
+      throw StateError('location is required');
+    }
+    if (timeSlot == null) {
+      throw StateError('timeSlot is required');
+    }
+    if (weekdays.isEmpty) {
+      throw StateError('availability weekdays is required');
+    }
+    if (sessionMinutes == null) {
+      throw StateError('sessionMinutes is required');
+    }
+    if (coachStyle == null) {
+      throw StateError('coachStyle is required');
+    }
+
     final availabilityList = weekdays.map((day) => {
       'weekday': day,
-      'slot': slotString,
+      'slot': timeSlot!.name,
     }).toList();
 
     return {
-      'displayName': displayName.trim().isNotEmpty ? displayName.trim() : 'Minh',
-      'goal': goal?.name ?? 'lose_fat',
+      'displayName': trimmedName,
+      'goal': goal!.name,
       if (gender != null) 'gender': gender!.name,
       if (birthYear != null) 'birthYear': birthYear,
-      'heightCm': (heightCm ?? 170).toDouble(),
-      'weightKg': (startWeightKg ?? 70).toDouble(),
+      'heightCm': heightCm!.toDouble(),
+      'weightKg': startWeightKg!.toDouble(),
       if (goalWeightKg != null) 'goalWeightKg': goalWeightKg!.toDouble(),
-      'experience': experience?.name ?? 'beginner',
-      'location': location?.name ?? 'home',
+      'experience': experience!.name,
+      'location': location!.name,
       'equipment': equipment.map((e) => e.name).toList(),
       'injuries': injuries.map((i) => i.name).toList(),
       'availability': availabilityList,
-      'sessionMinutes': sessionMinutes ?? 15,
+      'sessionMinutes': sessionMinutes!,
       if (motivationReasons.isNotEmpty) 'motivationReasons': motivationReasons,
-      if (motivationText.isNotEmpty) 'motivationText': motivationText,
-      'coachStyle': coachStyle?.name ?? 'supportive',
+      if (motivationText.trim().isNotEmpty) 'motivationText': motivationText.trim(),
+      'coachStyle': coachStyle!.name,
       'timezone': 'Asia/Ho_Chi_Minh',
     };
   }

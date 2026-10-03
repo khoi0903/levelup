@@ -59,8 +59,9 @@ void main() {
       expect(json['motivationText'], 'Muốn cải thiện sức khỏe trước Tết');
     });
 
-    test('displayName mặc định Minh nếu người dùng không nhập', () {
-      const state = OnboardingState(
+    test('ném StateError khi displayName rỗng hoặc chỉ có khoảng trắng', () {
+      const stateEmpty = OnboardingState(
+        displayName: '',
         goal: UserGoal.build_muscle,
         heightCm: 180,
         startWeightKg: 75,
@@ -71,18 +72,88 @@ void main() {
         sessionMinutes: 30,
         coachStyle: CoachStyle.strict,
       );
+      expect(() => stateEmpty.toOnboardingRequestJson(), throwsStateError);
 
-      final json = state.toOnboardingRequestJson();
+      const stateWhitespace = OnboardingState(
+        displayName: '   ',
+        goal: UserGoal.build_muscle,
+        heightCm: 180,
+        startWeightKg: 75,
+        experience: Experience.regular,
+        location: WorkoutLocation.gym,
+        weekdays: [2, 4],
+        timeSlot: TimeSlot.evening,
+        sessionMinutes: 30,
+        coachStyle: CoachStyle.strict,
+      );
+      expect(() => stateWhitespace.toOnboardingRequestJson(), throwsStateError);
+    });
 
-      expect(json['displayName'], 'Minh');
-      expect(json['goal'], 'build_muscle');
-      expect(json['experience'], 'regular');
-      expect(json['location'], 'gym');
-      expect(json['coachStyle'], 'strict');
-      expect(json['availability'], [
-        {'weekday': 2, 'slot': 'evening'},
-        {'weekday': 4, 'slot': 'evening'},
-      ]);
+    test('ném StateError khi thiếu bất kỳ trường bắt buộc nào', () {
+      // Thiếu goal
+      expect(
+        () => const OnboardingState(
+          displayName: 'Minh',
+          heightCm: 170,
+          startWeightKg: 70,
+          experience: Experience.beginner,
+          location: WorkoutLocation.home,
+          weekdays: [1],
+          timeSlot: TimeSlot.evening,
+          sessionMinutes: 15,
+          coachStyle: CoachStyle.supportive,
+        ).toOnboardingRequestJson(),
+        throwsStateError,
+      );
+
+      // Thiếu heightCm
+      expect(
+        () => const OnboardingState(
+          displayName: 'Minh',
+          goal: UserGoal.lose_fat,
+          startWeightKg: 70,
+          experience: Experience.beginner,
+          location: WorkoutLocation.home,
+          weekdays: [1],
+          timeSlot: TimeSlot.evening,
+          sessionMinutes: 15,
+          coachStyle: CoachStyle.supportive,
+        ).toOnboardingRequestJson(),
+        throwsStateError,
+      );
+
+      // Thiếu startWeightKg
+      expect(
+        () => const OnboardingState(
+          displayName: 'Minh',
+          goal: UserGoal.lose_fat,
+          heightCm: 170,
+          experience: Experience.beginner,
+          location: WorkoutLocation.home,
+          weekdays: [1],
+          timeSlot: TimeSlot.evening,
+          sessionMinutes: 15,
+          coachStyle: CoachStyle.supportive,
+        ).toOnboardingRequestJson(),
+        throwsStateError,
+      );
+
+      // Thiếu weekdays
+      expect(
+        () => const OnboardingState(
+          displayName: 'Minh',
+          goal: UserGoal.lose_fat,
+          heightCm: 170,
+          startWeightKg: 70,
+          experience: Experience.beginner,
+          location: WorkoutLocation.home,
+          weekdays: [],
+          timeSlot: TimeSlot.evening,
+          sessionMinutes: 15,
+          coachStyle: CoachStyle.supportive,
+        ).toOnboardingRequestJson(),
+        throwsStateError,
+      );
     });
   });
 }

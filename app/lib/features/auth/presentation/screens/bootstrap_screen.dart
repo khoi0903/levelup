@@ -36,21 +36,43 @@ class BootstrapScreen extends ConsumerWidget {
               return _buildLoadingWidget();
             }
 
+            final bool isNetworkError =
+                error is ApiException && error.isNetworkError;
+
+            final String errorTitle;
+            final String errorSubtitle;
+            final IconData errorIcon;
+
+            if (isNetworkError) {
+              errorTitle = 'Không kết nối được máy chủ';
+              errorSubtitle =
+                  'Vui lòng kiểm tra lại kết nối mạng hoặc đảm bảo máy chủ backend đang hoạt động.';
+              errorIcon = Icons.cloud_off_rounded;
+            } else {
+              final errorCode = error is ApiException
+                  ? (error.statusCode?.toString() ?? error.code)
+                  : 'ERROR';
+              errorTitle = 'Có lỗi xảy ra ($errorCode)';
+              errorSubtitle =
+                  'Đã xảy ra lỗi trong quá trình tải dữ liệu. Vui lòng thử lại sau.';
+              errorIcon = Icons.error_outline_rounded;
+            }
+
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.cloud_off_rounded,
+                    Icon(
+                      errorIcon,
                       size: 64,
                       color: AppColors.textSecondary,
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Không kết nối được máy chủ',
-                      style: TextStyle(
+                    Text(
+                      errorTitle,
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
@@ -58,9 +80,9 @@ class BootstrapScreen extends ConsumerWidget {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Vui lòng kiểm tra lại kết nối mạng hoặc đảm bảo máy chủ backend đang hoạt động.',
-                      style: TextStyle(
+                    Text(
+                      errorSubtitle,
+                      style: const TextStyle(
                         fontSize: 14,
                         color: AppColors.textSecondary,
                         height: 1.4,

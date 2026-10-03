@@ -23,10 +23,16 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
     super.initState();
     final state = ref.read(onboardingControllerProvider);
     _nameController = TextEditingController(text: state.displayName);
+    _nameController.addListener(_onNameChanged);
+  }
+
+  void _onNameChanged() {
+    ref.read(onboardingControllerProvider.notifier).setDisplayName(_nameController.text);
   }
 
   @override
   void dispose() {
+    _nameController.removeListener(_onNameChanged);
     _nameController.dispose();
     super.dispose();
   }
@@ -181,9 +187,9 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
               ),
               PrimaryButton(
                 label: AppStrings.btnContinue,
-                onPressed: state.goal != null
+                onPressed: (state.goal != null && state.displayName.trim().isNotEmpty)
                     ? () {
-                        controller.setDisplayName(_nameController.text);
+                        controller.setDisplayName(_nameController.text.trim());
                         context.push('/onboarding/body');
                       }
                     : null,
