@@ -12,7 +12,8 @@ public record PlanView(
     List<SessionView> sessions
 ) {
     public record SessionView(String id, String scheduledDate, String scheduledTime, String title,
-                              Integer durationMin, String variant, String status, List<ItemView> items) {}
+                              Integer durationMin, String variant, String status, List<ItemView> items,
+                              String adjustedReason) {}
 
     public record ItemView(String exerciseId, String nameVi, Integer sets, Integer reps,
                            Integer durationSec, Integer restSec) {}
@@ -25,7 +26,7 @@ public record PlanView(
                     .map(i -> new ItemView(i.exerciseId().toHexString(),
                         exerciseNames.get(i.exerciseId().toHexString()),
                         i.targetSets(), i.targetReps(), i.targetDurationSec(), i.restSec()))
-                    .toList()))
+                    .toList(), s.adjustedReason()))
             .toList();
         return new PlanView(plan.id(), plan.weekStart(), plan.status(), plan.targetSessions(), sessions);
     }

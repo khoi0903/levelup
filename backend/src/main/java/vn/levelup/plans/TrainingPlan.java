@@ -29,8 +29,15 @@ public record TrainingPlan(
         Integer durationMin,
         String variant,       // normal | light | quick5 | advanced
         String status,        // planned | completed | skipped | rescheduled | rest
-        List<Item> items
-    ) {}
+        List<Item> items,
+        String adjustedReason
+    ) {
+        /** Các nơi tạo buổi tập mới chưa có lý do điều chỉnh. */
+        public Session(ObjectId id, String scheduledDate, String scheduledTime, String title,
+                       Integer durationMin, String variant, String status, List<Item> items) {
+            this(id, scheduledDate, scheduledTime, title, durationMin, variant, status, items, null);
+        }
+    }
 
     public record Item(
         ObjectId exerciseId,
