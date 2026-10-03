@@ -83,7 +83,7 @@ coll("users", {
       }
     },
     devices: { bsonType: "array", items: { bsonType: "object",
-               properties: { platform: { enum: ["ios", "android"] }, token: { bsonType: "string" }, lastSeenAt: { bsonType: "date" } } } },
+               properties: { platform: { enum: ["ios", "android", "web"] }, token: { bsonType: "string" }, lastSeenAt: { bsonType: "date" } } } },
     sharing: { bsonType: "object", properties: {                         // buddy thấy gì (mặc định tắt hết)
                weight: { bsonType: "bool" }, measurements: { bsonType: "bool" }, photos: { bsonType: "bool" }, meals: { bsonType: "bool" } } },
     nutritionTargets: { bsonType: "array", items: { bsonType: "object",   // lịch sử, phần tử cuối là hiện tại
@@ -322,7 +322,8 @@ coll("skip_reports", {
   properties: { userId: { bsonType: "objectId" }, planId: { bsonType: "objectId" }, plannedSessionId: { bsonType: "objectId" },
                 reason: { enum: ["busy", "tired", "pain", "bored", "forgot", "other"] },
                 action: { enum: ["rescheduled", "shortened", "reduced_intensity", "swapped_exercises", "changed_reminder", "rest_day", "none"] },
-                note: { bsonType: "string" }, coachMessageId: { bsonType: "objectId" }, createdAt: { bsonType: "date" } }
+                note: { bsonType: "string" }, bodyArea: BODY_AREA,                 // bắt buộc khi reason = pain (API kiểm tra)
+                coachMessageId: { bsonType: "objectId" }, createdAt: { bsonType: "date" } }
 });
 dbx.skip_reports.createIndex({ reason: 1, createdAt: -1 });
 dbx.skip_reports.createIndex({ userId: 1, createdAt: -1 });
@@ -452,7 +453,10 @@ coll("coach_messages", {
   properties: { userId: { bsonType: "objectId" }, role: { enum: ["user", "coach", "event"] },
                 content: { bsonType: "string" },
                 card: { bsonType: "object", required: ["type", "status"],          // thẻ hành động, AI chỉ đề xuất
-                        properties: { type: { enum: ["adjust_session", "add_injury"] },
+                        properties: { type: { enum: ["adjust_session", "add_injury", "skip_reasons"] },
+                                      // skip_reasons (F3, missed_2): các nút lý do, app gọi POST /skip-reports
+                                      options: { bsonType: "array", items: { bsonType: "object", required: ["reason", "label"],
+                                                 properties: { reason: { bsonType: "string" }, label: { bsonType: "string" } } } },
                                       status: { enum: ["proposed", "applied", "dismissed"] },
                                       planId: { bsonType: "objectId" }, sessionId: { bsonType: "objectId" },
                                       change: { enum: ["light", "quick5", "swap_exercise", "rest"] },
@@ -470,8 +474,12 @@ dbx.coach_messages.createIndex({ userId: 1, createdAt: -1 });
 coll("notifications", {
   bsonType: "object", required: ["userId", "type", "channel", "localDate", "scheduledFor"],
   properties: { userId: { bsonType: "objectId" },
-                type: { enum: ["checkin", "pre_workout", "missed_1", "missed_2", "lapsed", "weekly_review",
-                               "buddy_cheer", "buddy_nudge", "milestone", "meal_reminder"] },
+                // Không dùng enum: module nào cũng gửi qua NotificationGateway, type mới không được bị từ chối.
+                // Đang dùng: checkin, pre_workout, missed_1, missed_2, missed_session, lapsed, comeback, streak_risk,
+                // weekly_review, buddy_paired, buddy_cheer, buddy_nudge, milestone, meal_reminder
+                type: { bsonType: "string", pattern: "^[a-z0-9_]{1,40}$" },
+                title: { bsonType: "string" }, body: { bsonType: "string" },
+                data: { bsonType: "object" },                                    // route, id để app mở đúng màn
                 channel: { enum: ["push", "in_app"] }, localDate: DATE_STR,
                 scheduledFor: { bsonType: "date" }, sentAt: { bsonType: "date" }, openedAt: { bsonType: "date" },
                 action: { bsonType: "string" }, relatedSessionId: { bsonType: "objectId" },

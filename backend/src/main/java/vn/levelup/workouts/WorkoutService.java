@@ -18,6 +18,7 @@ import java.util.stream.StreamSupport;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -39,22 +40,25 @@ public class WorkoutService {
 
     static final int MAX_DURATION_SEC = 6 * 3600;
     static final int DEFAULT_TARGET = 3;
+    static final String COMEBACK = "comeback_days_7";
     private static final Duration CLOCK_SKEW = Duration.ofMinutes(5);
 
     private final MongoTemplate mongo;
     private final ExerciseRepository exercises;
     private final Clock clock;
+    private final RpeAdjuster rpeAdjuster;
 
-    public WorkoutService(MongoTemplate mongo, ExerciseRepository exercises, Clock clock) {
+    public WorkoutService(MongoTemplate mongo, ExerciseRepository exercises, Clock clock, RpeAdjuster rpeAdjuster) {
         this.mongo = mongo;
         this.exercises = exercises;
         this.clock = clock;
+        this.rpeAdjuster = rpeAdjuster;
     }
 
     /**
      * Lưu buổi tập và mọi thứ đi kèm trong một transaction. App gửi lại cùng clientId
      * (mất mạng, bấm hai lần) thì trả kết quả của lần đầu, không lưu trùng.
-     * Chưa làm ở đây: chỉnh buổi kế tiếp theo RPE, báo buddy (sprint sau).
+     * Chỉnh buổi kế tiếp theo RPE (RpeAdjuster). Chưa làm ở đây: báo buddy.
      */
     @Transactional
     public WorkoutResponse save(User user, WorkoutRequest r) {
@@ -152,7 +156,10 @@ public class WorkoutService {
         // 4. weekly_streaks
         WorkoutResponse.Week week = counts ? addToWeek(userId, weekStart) : readWeek(userId, weekStart);
 
-        // 5. users: quay lại trạng thái active, huy hiệu số buổi
+        // 5. users: quay lại trạng thái active, huy hiệu số buổi, huy hiệu quay lại sau 7 ngày
+        Document previousLog = mongo.findOne(Query.query(Criteria.where("userId").is(userId)
+            .and("_id").ne(logId).and("endedAt").lte(Date.from(r.startedAt())))
+            .with(Sort.by(Sort.Direction.DESC, "endedAt")), Document.class, "workout_logs");
         Update userUpdate = new Update()
             .set("reengagement.stage", "active")
             .set("reengagement.lastWorkoutAt", Date.from(r.endedAt()))
@@ -160,16 +167,26 @@ public class WorkoutService {
             .set("reengagement.messagesInStage", 0)
             .set("lastActiveAt", Date.from(now));
         List<String> earned = new ArrayList<>();
+        Set<String> owned = ownedAchievements(userId);
         if (counts) {
             long counted = mongo.count(Query.query(Criteria.where("userId").is(userId)
                 .and("countsForStreak").is(true)), "workout_logs");
-            WorkoutRules.sessionMilestone(counted, ownedAchievements(userId)).ifPresent(code -> {
-                earned.add(code);
-                userUpdate.push("achievements", new Document("code", code).append("earnedAt", Date.from(now))
-                    .append("context", new Document("workoutLogId", logId)));
-            });
+            WorkoutRules.sessionMilestone(counted, owned).ifPresent(earned::add);
+        }
+        if (previousLog != null && !owned.contains(COMEBACK)
+                && RpeRules.isComeback(previousLog.getDate("endedAt").toInstant(), r.startedAt())) {
+            earned.add(COMEBACK);
+        }
+        if (!earned.isEmpty()) {
+            userUpdate.push("achievements").each(earned.stream().map(code -> new Document("code", code)
+                .append("earnedAt", Date.from(now)).append("context", new Document("workoutLogId", logId)))
+                .toArray());
         }
         mongo.updateFirst(Query.query(Criteria.where("_id").is(userId)), userUpdate, "users");
+
+        // 6. Buổi kế tiếp theo RPE và vùng đau (không chạy khi app gửi lại, vì đã return ở trên)
+        rpeAdjuster.adjustNext(userId, localDate,
+            r.plannedSessionId() == null ? null : new ObjectId(r.plannedSessionId()), r.rpe(), r.painAreas());
 
         return new WorkoutResponse(logId.toHexString(), localDate.toString(), durationSec, counts, false, week,
             recordViews(newRecords, names), achievementViews(earned));

@@ -4,6 +4,11 @@
 levelup:
   auth:
     dev-tokens: true
+  jobs:
+    secret: ${JOB_SECRET:dev-secret}
+  demo:
+    enabled: ${DEMO_MODE:true}
+    uids: ${DEMO_UIDS:demo*}
   # Flutter web: localhost (cổng ngẫu nhiên) và điện thoại mở qua Wi-Fi (192.168.x.x)
   cors:
     allowed-origin-patterns: http://localhost:*,http://127.0.0.1:*,http://192.168.*.*:*

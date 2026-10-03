@@ -90,6 +90,19 @@
 	</dependencies>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<!-- Mẫu tin nhắn coach: một nguồn duy nhất ở docs/content, đóng gói vào classpath:content/ -->
+			<resource>
+				<directory>../docs/content</directory>
+				<targetPath>content</targetPath>
+				<includes>
+					<include>coach-messages.json</include>
+				</includes>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
