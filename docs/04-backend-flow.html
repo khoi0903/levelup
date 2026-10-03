@@ -77,11 +77,11 @@ td.ep{font-family:var(--mono);font-size:13px;font-weight:500;white-space:nowrap}
 
 <div class="wrap">
 <header>
-  <span class="eyebrow">Fitness app · Backend · NestJS + MongoDB</span>
+  <span class="eyebrow">LevelUp · Backend · Spring Boot + MongoDB</span>
   <h1>Luồng xử lý backend</h1>
   <p class="lede">Từng request đi qua những lớp nào, API có những endpoint gì, và luồng dữ liệu của mọi tính năng từ F1 tới F8, kể cả các job chạy nền và công cụ demo.</p>
   <div class="facts">
-    <span>App Flutter → API NestJS → MongoDB</span>
+    <span>App Flutter → API Spring Boot → MongoDB</span>
     <span>Firebase: đăng nhập, lưu ảnh, push</span>
     <span>AI: Claude API</span>
     <span>Job: Cloud Scheduler mỗi 15 phút</span>
@@ -123,7 +123,7 @@ flowchart LR
     Storage["Storage"]
     FCM["Cloud Messaging"]
   end
-  API["API NestJS<br/>Cloud Run"]
+  API["API Spring Boot<br/>Cloud Run"]
   Sched["Cloud Scheduler<br/>15 phút"]
   Mongo[("MongoDB Atlas")]
   Claude["Claude API"]
@@ -144,12 +144,12 @@ flowchart LR
   <p class="sub">Mọi endpoint của app đều đi qua cùng một đường. Phân quyền nằm ở lớp repository nên không ai quên lọc theo người dùng.</p>
   <div class="diagram"><pre class="mermaid">
 flowchart TD
-  R["Request từ app<br/>Authorization: Bearer ID token"] --> G1{"AuthGuard<br/>token Firebase hợp lệ?"}
+  R["Request từ app<br/>Authorization: Bearer ID token"] --> G1{"Spring Security<br/>token Firebase hợp lệ?"}
   G1 -->|Không| E401["401 Cần đăng nhập lại"]
   G1 -->|Có| U["Lấy uid, đổi sang userId<br/>cache 5 phút"]
   U --> RL{"Rate limit<br/>quá 60 request mỗi phút?"}
   RL -->|Có| E429["429 Thử lại sau"]
-  RL -->|Không| V{"ValidationPipe<br/>DTO đúng kiểu?"}
+  RL -->|Không| V{"@Valid<br/>DTO đúng kiểu?"}
   V -->|Sai| E400["400 kèm tên trường sai"]
   V -->|Đúng| C["Controller"]
   C --> S["Service<br/>logic nghiệp vụ, localDate theo múi giờ"]
@@ -157,14 +157,14 @@ flowchart TD
   Rp --> DB[("MongoDB")]
   S --> Ext["Claude, FCM, Storage"]
   S --> Res["Response JSON"]
-  S -.->|lỗi| EF["ExceptionFilter<br/>trả lỗi dễ hiểu, gửi Sentry"]
+  S -.->|lỗi| EF["@ControllerAdvice<br/>trả lỗi dễ hiểu, gửi Sentry"]
   </pre></div>
 </section>
 
 <section id="modules">
-  <h2>Chia module trong NestJS</h2>
+  <h2>Chia module (package Java)</h2>
   <div class="mods">
-    <div class="mod"><b>auth</b><span>Guard kiểm tra token Firebase, đổi uid sang userId</span></div>
+    <div class="mod"><b>auth</b><span>Kiểm tra token Firebase (Spring Security), đổi uid sang userId</span></div>
     <div class="mod"><b>users</b><span>Hồ sơ, cài đặt thông báo, chia sẻ, thiết bị</span></div>
     <div class="mod"><b>onboarding</b><span>Lưu khảo sát, tạo kế hoạch tuần 1</span></div>
     <div class="mod"><b>exercises</b><span>Thư viện bài, lọc theo dụng cụ và chấn thương, cấu hình camera</span></div>

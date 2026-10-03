@@ -66,13 +66,13 @@ footer{margin-top:48px;color:var(--muted);font-size:13px;border-top:1px solid va
 
 <div class="wrap">
 <header>
-  <span class="eyebrow">Fitness app · Backend · MongoDB</span>
+  <span class="eyebrow">LevelUp · Backend · MongoDB</span>
   <h1>Luồng xử lý backend với MongoDB</h1>
   <p class="lede">Kiến trúc hệ thống, cách chia collection, và luồng dữ liệu của từng tính năng chính giữa app Flutter, API, MongoDB, AI và các job nền.</p>
   <div class="facts">
     <span><b>22</b> collection</span>
     <span>MongoDB Atlas, replica set 3 node</span>
-    <span>API: NestJS (TypeScript)</span>
+    <span>API: Java 21 + Spring Boot</span>
     <span>Đăng nhập, lưu ảnh, push: Firebase</span>
   </div>
 </header>
@@ -107,7 +107,7 @@ flowchart LR
     FCM["Cloud Messaging<br/>push"]
   end
   subgraph Cloud["Google Cloud Run"]
-    API["API NestJS"]
+    API["API Spring Boot"]
   end
   Sched["Cloud Scheduler<br/>mỗi 15 phút"]
   Mongo[("MongoDB Atlas<br/>replica set 3 node")]
@@ -126,7 +126,7 @@ flowchart LR
   </pre></div>
   <div class="tbl"><table>
     <tr><th>Thành phần</th><th>Vai trò</th></tr>
-    <tr><td>API NestJS</td><td>Toàn bộ logic nghiệp vụ, phân quyền, gọi AI, job nền. TypeScript có SDK chính thức của cả MongoDB và Claude</td></tr>
+    <tr><td>API Spring Boot</td><td>Toàn bộ logic nghiệp vụ, phân quyền, gọi AI, job nền. Java có SDK chính thức của MongoDB, Firebase và Claude</td></tr>
     <tr><td>MongoDB Atlas</td><td>Chạy dạng replica set 3 node: một node lỗi thì node khác thay ngay, và có transaction để ghi nhiều collection cùng lúc</td></tr>
     <tr><td>Firebase Auth</td><td>Đăng nhập Google, Apple, email. API chỉ tin <code>uid</code> đã kiểm tra từ token</td></tr>
     <tr><td>Firebase Storage</td><td>Ảnh để ở chế độ riêng tư. API tạo link có hạn ngắn khi app cần xem</td></tr>

@@ -1,0 +1,6 @@
+# Profile dev: chạy khi chưa có Firebase.
+# Gửi header "Authorization: Bearer dev-<uid>" thay cho token Firebase thật.
+# Chạy: ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+levelup:
+  auth:
+    dev-tokens: true

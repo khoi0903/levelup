@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: levelup-backend
+  mongodb:
+    uri: ${MONGODB_URI:mongodb://localhost:27018/fitness?replicaSet=rs0}
+  data:
+    mongodb:
+      # Index và validator do mongo/init.js quản lý, không để Spring tự tạo
+      auto-index-creation: false
+
+server:
+  port: ${PORT:8080}
+
+levelup:
+  firebase:
+    project-id: ${FIREBASE_PROJECT_ID:levelup-dev}
+  default-timezone: Asia/Ho_Chi_Minh
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
