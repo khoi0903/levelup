@@ -66,3 +66,11 @@ Không sửa thư mục do agent khác phụ trách trong cùng lúc. Cần sử
 - Chạy: `cd mongo && docker compose up -d`
 - Kết nối: `mongodb://localhost:27018/fitness?replicaSet=rs0`
 - Cổng 27017 trên máy là MongoDB khác, không dùng.
+
+## Làm song song (Git worktree)
+Mỗi agent làm trong một thư mục riêng, đứng sẵn ở nhánh riêng, chung một repo:
+- `D:\fitness-app` – nhánh `main` (Claude Code, review và merge)
+- `D:\levelup-worktrees\<tên-việc>` – nhánh của từng việc
+
+Trong thư mục worktree: **không chạy `git checkout` / `git switch`**, không merge vào `main`.
+Làm xong thì commit trên nhánh của mình và báo để Claude Code review.
