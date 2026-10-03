@@ -1,7 +1,9 @@
-# Camera counter domain
+# Camera counter
 
 Pure Dart; no Flutter, camera, ML Kit or network dependency. Import
 `domain/camera_counter.dart` to use the public API.
+This describes `domain/`; the `data/` layer now connects the native camera and
+ML Kit, and `presentation/` contains an isolated debug screen.
 
 ## Connecting the camera later
 
@@ -75,3 +77,92 @@ From `app/`: `flutter test test/features/camera_counter`.
 Synthetic frames cover standard/shallow squats, jitter, fast motion,
 alternating confidence and sides, missing/invalid geometry, loss/recovery,
 timestamp ordering, JSON validation, and immutable results.
+
+## Native camera session (squats)
+
+```dart
+import 'package:fitness_app/features/camera_counter/data/camera_rep_session.dart';
+import 'package:fitness_app/features/camera_counter/domain/cv_config.dart';
+
+final session = CameraRepSession(config: CvConfig.fromJson(exerciseCvConfig));
+final subscription = session.results.listen((result) {
+  // repCount, personMissing, averageConfidence, formScore, issues, status, error
+  // Use session.cameraController with CameraPreview for the live preview.
+});
+await session.start();
+await session.pause(); // Releases camera, cancels partial rep, retains completed reps.
+await session.start(); // Reopens front camera and resumes this set.
+await session.stop();  // Terminal: releases camera and ML Kit; closes results.
+await subscription.cancel();
+```
+
+Subscribe before `start()`. `latestResult` holds the latest immutable result,
+including before the first camera frame. The stream is broadcast and emits
+camera/processing failures through `result.error`; failed start/pause/stop
+operations also return a failed Future for the UI to handle. Stop is idempotent;
+create a new session after stop to start a new set. Current form scoring supports
+hip–knee–ankle squat configurations only.
+
+The camera opens at medium resolution, front-facing, with audio disabled.
+Android requests camera access with `permission_handler`; iOS uses the camera
+plugin's permission request. Android streams packed NV21 (CameraX supports it),
+iOS streams BGRA. Image metadata compensates Android sensor/device rotation;
+pixel coordinates are copied into domain without normalization or mirroring.
+Unexpected/truncated image formats surface an error instead of feeding corrupt
+data into the detector. No file capture, video recording or upload API is used.
+
+ML Kit runs in stream mode. Only one native inference is in flight; newer frames
+are discarded instead of queued. A Stopwatch supplies both frame-delivery times
+and the 100 ms presence timer, avoiding out-of-order timestamps after async
+inference. Results older than one second are discarded. An empty ML Kit pose
+result becomes an empty PoseFrame, so domain handles the absence normally.
+
+On app background/inactive, call `pause()` to release the camera. On return,
+call `start()` when the user is ready. Dispose the session with `stop()` when
+leaving F2b. An inference completing after pause/stop cannot update the set.
+`personMissing` does not automatically stop detection: keep listening so a
+returning person can be detected; the UI can suspend its workout timer instead.
+
+Platform configuration:
+
+- Android declares CAMERA and uses minSdk at least 24 (camera requires 24,
+  ML Kit requires 21). The camera feature is optional, allowing a useful error
+  when a front camera is unavailable.
+- iOS has NSCameraUsageDescription. The current Xcode deployment target is
+  15.0; **ML Kit requires iOS 15.5 or later**, so the owner must raise that target
+  before building iOS. Runner.xcodeproj and Podfile were outside this task's
+  authorized edit scope. iOS native compilation is unverified on Windows.
+- Only the three authorized direct dependencies were added. The tracked
+  pubspec.lock was kept unchanged because it was outside the allowed files;
+  run `flutter pub get` after pulling this branch to resolve the new packages.
+
+Sources: [camera setup](https://pub.dev/packages/camera),
+[CameraX NV21 support](https://pub.dev/packages/camera_android_camerax),
+[ML Kit platform requirements](https://pub.dev/packages/google_mlkit_pose_detection).
+
+## Run the isolated debug screen on Android
+
+From `app/`, with USB debugging enabled on a connected phone:
+
+```sh
+flutter pub get
+flutter devices
+flutter run -d <device-id> -t lib/features/camera_counter/presentation/debug_counter_main.dart
+```
+
+Allow camera access. Stand far enough away that shoulders, hips, knees and
+ankles are visible; turn sideways to expose the knee angle. Start with two
+upright frames, then squat slowly. The debug default uses downBelow=120 so
+shallow reps can be graded too. Pass another CvConfig to DebugCounterScreen
+to test the actual exercise config (e.g. downBelow=95).
+
+The screen shows preview, rep count, confidence, knee angle, depth score and
+warnings; Pause keeps the count, Continue reopens the camera, and End closes
+the set. Start after End creates a fresh set. Backgrounding the app pauses
+it; tap Continue after returning. This entrypoint does not change the app router.
+
+Device-free native-layer tests cover the adapter (all/missing/low-confidence
+joints), packed-image metadata and rotation, busy-frame dropping, presence
+checks during inference, stale results, pause/resume, initialization races,
+permission failure and resource cleanup. Hardware preview/pose accuracy must
+still be tested on a real phone.

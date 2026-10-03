@@ -334,7 +334,15 @@ coll("buddy_invites", {
                 acceptedBy: { bsonType: "objectId" }, acceptedAt: { bsonType: "date" }, createdAt: { bsonType: "date" } }
 });
 dbx.buddy_invites.createIndex({ code: 1 }, { unique: true });
-dbx.buddy_invites.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });   // tự xóa mã hết hạn
+dbx.buddy_invites.createIndex({ inviterId: 1, expiresAt: -1 });                // mã còn hạn của người mời
+// Tự xóa mã 30 ngày sau khi hết hạn: trong 30 ngày đó nhập mã cũ vẫn báo được "mã đã hết hạn" (410)
+const INVITE_PURGE_SEC = 60 * 60 * 24 * 30;
+const inviteTtl = dbx.buddy_invites.getIndexes().find(i => i.name === "expiresAt_1");
+if (!inviteTtl) {
+  dbx.buddy_invites.createIndex({ expiresAt: 1 }, { expireAfterSeconds: INVITE_PURGE_SEC });
+} else if (inviteTtl.expireAfterSeconds !== INVITE_PURGE_SEC) {
+  dbx.runCommand({ collMod: "buddy_invites", index: { name: "expiresAt_1", expireAfterSeconds: INVITE_PURGE_SEC } });
+}
 
 coll("buddy_pairs", {
   bsonType: "object", required: ["members", "pairKey", "status"],
@@ -345,14 +353,22 @@ coll("buddy_pairs", {
 });
 dbx.buddy_pairs.createIndex({ pairKey: 1 }, { unique: true, partialFilterExpression: { status: "active" } });
 dbx.buddy_pairs.createIndex({ members: 1, status: 1 });
+// Index nhiều khóa (multikey) unique: một người chỉ ở trong tối đa một cặp đang active
+dbx.buddy_pairs.createIndex({ members: 1 }, { unique: true, name: "members_active_unique",
+  partialFilterExpression: { status: "active" } });
 
 coll("buddy_actions", {
   bsonType: "object", required: ["pairId", "fromUser", "toUser", "action", "localDate"],
   properties: { pairId: { bsonType: "objectId" }, fromUser: { bsonType: "objectId" }, toUser: { bsonType: "objectId" },
-                action: { enum: ["cheer", "nudge"] }, localDate: DATE_STR, createdAt: { bsonType: "date" } }
+                action: { enum: ["cheer", "nudge"] }, localDate: DATE_STR, message: { bsonType: "string", maxLength: 140 },
+                createdAt: { bsonType: "date" } }
 });
-dbx.buddy_actions.createIndex({ fromUser: 1, toUser: 1, localDate: 1 },
-  { unique: true, partialFilterExpression: { action: "nudge" } });              // "Nhắc bạn" 1 lần/ngày
+// "Nhắc bạn" và "Cổ vũ": mỗi loại 1 lần/ngày (localDate theo giờ người gửi).
+// Thay index cũ chỉ chặn nudge.
+if (dbx.buddy_actions.getIndexes().some(i => i.name === "fromUser_1_toUser_1_localDate_1")) {
+  dbx.buddy_actions.dropIndex("fromUser_1_toUser_1_localDate_1");
+}
+dbx.buddy_actions.createIndex({ fromUser: 1, toUser: 1, localDate: 1, action: 1 }, { unique: true });
 dbx.buddy_actions.createIndex({ toUser: 1, createdAt: -1 });
 
 coll("achievements", {
@@ -369,6 +385,12 @@ coll("weekly_reviews", {
                 totalMinutes: { bsonType: "number" }, avgRpe: { bsonType: "number" },
                 wins: { bsonType: "array", items: { bsonType: "object" } },   // [{type:"pr", label:"Squat +2kg"}]
                 improvement: { bsonType: "string" },
+                win: { bsonType: "string" },                   // 1 chiến thắng (AI hoặc câu mẫu)
+                nextWeekSummary: { bsonType: "string" },
+                source: { enum: ["ai", "rules"] },
+                weightChangeKg: { bsonType: "number" },
+                nutrition: { bsonType: "object", properties: { daysLogged: { bsonType: "number" },
+                             avgKcal: { bsonType: ["number", "null"] } } },
                 recommendation: { enum: ["increase", "keep", "decrease"] },
                 proposedPlanId: { bsonType: "objectId" },
                 decision: { enum: ["pending", "accepted", "adjusted", "dismissed"] },
@@ -392,6 +414,7 @@ coll("foods", {
 });
 dbx.foods.createIndex({ searchName: "text", aliases: "text" }, { default_language: "none" });
 dbx.foods.createIndex({ barcode: 1 }, { unique: true, partialFilterExpression: { barcode: { $type: "string" } } });
+dbx.foods.createIndex({ searchName: 1 }, { unique: true, partialFilterExpression: { source: "curated" } });  // seed upsert
 
 coll("meal_logs", {
   bsonType: "object", required: ["userId", "localDate", "meal", "method", "kcal", "items"],
@@ -419,6 +442,7 @@ coll("food_recognitions", {
                 costUsd: { bsonType: "number" }, createdAt: { bsonType: "date" } }
 });
 dbx.food_recognitions.createIndex({ imageSha256: 1 });                      // cache: cùng ảnh không gọi AI lại
+dbx.food_recognitions.createIndex({ userId: 1, imageSha256: 1 });          // cache theo từng người dùng
 dbx.food_recognitions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 180 });
 
 // ---------------------------------------------------------------------
@@ -427,7 +451,20 @@ dbx.food_recognitions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 60 * 6
 coll("coach_messages", {
   bsonType: "object", required: ["userId", "role", "content", "createdAt"],
   properties: { userId: { bsonType: "objectId" }, role: { enum: ["user", "coach", "event"] },
-                content: { bsonType: "string" }, card: { bsonType: "object" },   // thẻ hành động
+                content: { bsonType: "string" },
+                card: { bsonType: "object", required: ["type", "status"],          // thẻ hành động, AI chỉ đề xuất
+                        properties: { type: { enum: ["adjust_session", "add_injury", "skip_reasons"] },
+                                      // skip_reasons (F3, missed_2): các nút lý do, app gọi POST /skip-reports
+                                      options: { bsonType: "array", items: { bsonType: "object", required: ["reason", "label"],
+                                                 properties: { reason: { bsonType: "string" }, label: { bsonType: "string" } } } },
+                                      status: { enum: ["proposed", "applied", "dismissed"] },
+                                      planId: { bsonType: "objectId" }, sessionId: { bsonType: "objectId" },
+                                      change: { enum: ["light", "quick5", "swap_exercise", "rest"] },
+                                      fromExerciseId: { bsonType: "objectId" }, toExerciseId: { bsonType: "objectId" },
+                                      reason: { bsonType: "string" }, adjustedReason: { bsonType: "string" },
+                                      injury: { bsonType: "object", required: ["bodyArea"],
+                                                properties: { bodyArea: BODY_AREA, note: { bsonType: "string" } } },
+                                      appliedAt: { bsonType: "date" } } },
                 trigger: { bsonType: "string" },                                 // "missed_2", "weekly_review", "user"
                 relatedSessionId: { bsonType: "objectId" }, model: { bsonType: "string" },
                 tokensIn: { bsonType: "number" }, tokensOut: { bsonType: "number" }, createdAt: { bsonType: "date" } }

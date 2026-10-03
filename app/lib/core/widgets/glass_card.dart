@@ -1,8 +1,7 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 
-class GlassCard extends StatelessWidget {
+class AppCard extends StatelessWidget {
   final Widget child;
   final bool isSelected;
   final VoidCallback? onTap;
@@ -11,7 +10,7 @@ class GlassCard extends StatelessWidget {
   final double? width;
   final double? height;
 
-  const GlassCard({
+  const AppCard({
     super.key,
     required this.child,
     this.isSelected = false,
@@ -29,42 +28,30 @@ class GlassCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(borderRadius),
       border: Border.all(
         color: isSelected ? AppColors.cardSelectedBorder : AppColors.cardNormalBorder,
-        width: 1.5,
+        width: isSelected ? 1.5 : 1.0,
       ),
       boxShadow: [
-        if (isSelected) ...[
+        if (isSelected)
           const BoxShadow(
             color: AppColors.cardSelectedShadow,
             blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-          const BoxShadow(
-            color: AppColors.cardSelectedOuterBorder,
-            blurRadius: 0,
-            spreadRadius: 1.5,
-          ),
-        ] else ...[
+            offset: Offset(0, 6),
+          )
+        else
           const BoxShadow(
             color: AppColors.cardNormalShadow,
             blurRadius: 14,
-            offset: Offset(0, 6),
+            offset: Offset(0, 4),
           ),
-        ],
       ],
     );
 
-    Widget cardBody = ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: Container(
-          width: width,
-          height: height,
-          padding: padding,
-          decoration: decoration,
-          child: child,
-        ),
-      ),
+    Widget cardBody = Container(
+      width: width,
+      height: height,
+      padding: padding,
+      decoration: decoration,
+      child: child,
     );
 
     if (onTap != null) {
@@ -82,11 +69,13 @@ class GlassCard extends StatelessWidget {
   }
 }
 
-class GlassRadio extends StatelessWidget {
+typedef GlassCard = AppCard;
+
+class AppRadio extends StatelessWidget {
   final bool isSelected;
   final double size;
 
-  const GlassRadio({
+  const AppRadio({
     super.key,
     required this.isSelected,
     this.size = 24.0,
@@ -99,7 +88,7 @@ class GlassRadio extends StatelessWidget {
         width: size,
         height: size,
         decoration: const BoxDecoration(
-          color: AppColors.accent,
+          color: AppColors.primary,
           shape: BoxShape.circle,
         ),
         child: const Icon(
@@ -124,3 +113,6 @@ class GlassRadio extends StatelessWidget {
     );
   }
 }
+
+typedef GlassRadio = AppRadio;
+

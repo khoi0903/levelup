@@ -67,9 +67,9 @@ class ObStartScreen extends StatelessWidget {
                       Container(
                         height: 140,
                         width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: AppColors.cardSelectedBg.withValues(alpha: 0.5),
-                          borderRadius: const BorderRadius.vertical(
+                        decoration: const BoxDecoration(
+                          color: AppColors.primaryLight,
+                          borderRadius: BorderRadius.vertical(
                             top: Radius.circular(AppColors.radiusCard),
                           ),
                         ),
@@ -79,7 +79,7 @@ class ObStartScreen extends StatelessWidget {
                             Icon(
                               Icons.fitness_center,
                               size: 36,
-                              color: AppColors.accent,
+                              color: AppColors.primary,
                             ),
                             SizedBox(height: 6),
                             Text(

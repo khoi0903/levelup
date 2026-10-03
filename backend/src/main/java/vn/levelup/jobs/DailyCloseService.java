@@ -142,7 +142,7 @@ public class DailyCloseService {
             .append("userId", userId)
             .append("role", "coach")
             .append("content", text)
-            .append("card", new Document("type", "skip_reasons")
+            .append("card", new Document("type", "skip_reasons").append("status", "proposed")
                 .append("options", SKIP_REASONS.stream().map(Document::new).toList()))
             .append("trigger", "missed_2")
             .append("createdAt", Date.from(clock.instant()));

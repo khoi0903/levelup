@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -85,17 +84,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             height: 38,
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             decoration: BoxDecoration(
-                              color: AppColors.cardSelectedBg,
+                              color: AppColors.surface,
                               borderRadius: BorderRadius.circular(AppColors.radiusPill),
                               border: Border.all(
-                                color: AppColors.cardSelectedBorder,
+                                color: AppColors.border,
                                 width: 1.0,
                               ),
                               boxShadow: const [
                                 BoxShadow(
                                   color: AppColors.cardNormalShadow,
                                   blurRadius: 10,
-                                  offset: Offset(0, 4),
+                                  offset: Offset(0, 2),
                                 ),
                               ],
                             ),
@@ -104,7 +103,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 const Icon(
                                   Icons.local_fire_department,
                                   size: 18,
-                                  color: AppColors.accent,
+                                  color: AppColors.primary,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -178,10 +177,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             Container(
                               height: 100,
                               decoration: BoxDecoration(
-                                color: AppColors.cardSelectedBg.withValues(alpha: 0.5),
+                                color: AppColors.placeholder,
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: AppColors.cardSelectedBorder,
+                                  color: AppColors.border,
                                   width: 1.0,
                                 ),
                               ),
@@ -237,7 +236,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     .join(' · '),
                                 style: const TextStyle(
                                   fontSize: 13,
-                                  color: AppColors.textMuted,
+                                  color: AppColors.textSecondary,
                                 ),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
@@ -248,10 +247,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 10),
                               decoration: BoxDecoration(
-                                color: AppColors.cardSelectedBg,
+                                color: AppColors.primaryLight,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: AppColors.cardSelectedBorder,
+                                  color: AppColors.border,
                                   width: 1.0,
                                 ),
                               ),
@@ -301,16 +300,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               height: 36,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: AppColors.cardSelectedBg,
+                                color: AppColors.primaryLight,
                                 border: Border.all(
-                                  color: AppColors.cardSelectedBorder,
+                                  color: AppColors.border,
                                   width: 1.0,
                                 ),
                               ),
                               child: const Icon(
                                 Icons.person,
                                 size: 20,
-                                color: AppColors.accent,
+                                color: AppColors.primary,
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -351,16 +350,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 padding: const EdgeInsets.symmetric(horizontal: 14),
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
-                                  gradient: _cheered
-                                      ? null
-                                      : AppColors.primaryButtonGradient,
-                                  color: _cheered ? AppColors.accent : null,
+                                  color: _cheered
+                                      ? AppColors.accentLink
+                                      : AppColors.primary,
                                   borderRadius:
                                       BorderRadius.circular(AppColors.radiusPill),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.8),
-                                    width: 1.0,
-                                  ),
                                   boxShadow: const [
                                     BoxShadow(
                                       color: AppColors.btnShadow,
@@ -430,7 +424,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   widthFactor: 0.54,
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      gradient: AppColors.progressGradient,
+                                      color: AppColors.progressFill,
                                       borderRadius: BorderRadius.circular(
                                           AppColors.radiusPill),
                                     ),
@@ -447,94 +441,87 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
 
               // Bottom Navigation Bar
-              ClipRRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                  child: Container(
-                    height: 80,
-                    padding: const EdgeInsets.only(top: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.cardSelectedBg.withValues(alpha: 0.75),
-                      border: const Border(
-                        top: BorderSide(
-                            color: AppColors.cardNormalBorder, width: 1.0),
+              Container(
+                height: 80,
+                padding: const EdgeInsets.only(top: 8),
+                decoration: const BoxDecoration(
+                  color: AppColors.surface,
+                  border: Border(
+                    top: BorderSide(
+                        color: AppColors.border, width: 1.0),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _NavItem(
+                        icon: Icons.home,
+                        label: AppStrings.navToday,
+                        isSelected: _currentNavIndex == 0,
+                        onTap: () => setState(() => _currentNavIndex = 0),
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: _NavItem(
-                            icon: Icons.home,
-                            label: AppStrings.navToday,
-                            isSelected: _currentNavIndex == 0,
-                            onTap: () => setState(() => _currentNavIndex = 0),
-                          ),
-                        ),
-                        Expanded(
-                          child: _NavItem(
-                            icon: Icons.restaurant_menu,
-                            label: AppStrings.navNutrition,
-                            isSelected: _currentNavIndex == 1,
-                            onTap: () => setState(() => _currentNavIndex = 1),
-                          ),
-                        ),
-                        // Nút Chụp món ăn ở giữa
-                        Transform.translate(
-                          offset: const Offset(0, -14),
-                          child: InkWell(
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      'Tính năng chụp món ăn sẽ có ở Sprint sau'),
-                                  duration: Duration(seconds: 1),
-                                ),
-                              );
-                            },
-                            borderRadius: BorderRadius.circular(26),
-                            child: Container(
-                              width: 52,
-                              height: 52,
-                              decoration: BoxDecoration(
-                                gradient: AppColors.primaryButtonGradient,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                    color: AppColors.btnBorder, width: 1.5),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: AppColors.btnShadow,
-                                    blurRadius: 12,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.camera_alt,
-                                color: Colors.white,
-                                size: 26,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: _NavItem(
-                            icon: Icons.chat_bubble_outline,
-                            label: AppStrings.navCoach,
-                            isSelected: _currentNavIndex == 2,
-                            onTap: () => setState(() => _currentNavIndex = 2),
-                          ),
-                        ),
-                        Expanded(
-                          child: _NavItem(
-                            icon: Icons.bar_chart,
-                            label: AppStrings.navProgress,
-                            isSelected: _currentNavIndex == 3,
-                            onTap: () => setState(() => _currentNavIndex = 3),
-                          ),
-                        ),
-                      ],
+                    Expanded(
+                      child: _NavItem(
+                        icon: Icons.restaurant_menu,
+                        label: AppStrings.navNutrition,
+                        isSelected: _currentNavIndex == 1,
+                        onTap: () => setState(() => _currentNavIndex = 1),
+                      ),
                     ),
-                  ),
+                    // Nút Chụp món ăn ở giữa
+                    Transform.translate(
+                      offset: const Offset(0, -14),
+                      child: InkWell(
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  'Tính năng chụp món ăn sẽ có ở Sprint sau'),
+                              duration: Duration(seconds: 1),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(26),
+                        child: Container(
+                          width: 52,
+                          height: 52,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.btnShadow,
+                                blurRadius: 16,
+                                offset: Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            color: Colors.white,
+                            size: 26,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: _NavItem(
+                        icon: Icons.chat_bubble_outline,
+                        label: AppStrings.navCoach,
+                        isSelected: _currentNavIndex == 2,
+                        onTap: () => setState(() => _currentNavIndex = 2),
+                      ),
+                    ),
+                    Expanded(
+                      child: _NavItem(
+                        icon: Icons.bar_chart,
+                        label: AppStrings.navProgress,
+                        isSelected: _currentNavIndex == 3,
+                        onTap: () => setState(() => _currentNavIndex = 3),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -562,20 +549,17 @@ class _WeekDayDot extends StatelessWidget {
           height: 32,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: status == _DayStatus.completed
-                ? AppColors.primaryButtonGradient
-                : null,
             color: status == _DayStatus.completed
-                ? null
+                ? AppColors.primary
                 : (status == _DayStatus.today
-                    ? AppColors.cardSelectedBg
-                    : AppColors.cardNormalBg.withValues(alpha: 0.15)),
+                    ? AppColors.surface
+                    : AppColors.surface),
             border: status == _DayStatus.today
-                ? Border.all(color: AppColors.accent, width: 2.0)
+                ? Border.all(color: AppColors.primary, width: 2.0)
                 : Border.all(
                     color: status == _DayStatus.completed
-                        ? Colors.white.withValues(alpha: 0.8)
-                        : AppColors.cardNormalBorder.withValues(alpha: 0.5),
+                        ? AppColors.primary
+                        : AppColors.border,
                     width: 1.0,
                   ),
             boxShadow: status == _DayStatus.completed
@@ -597,7 +581,7 @@ class _WeekDayDot extends StatelessWidget {
                         height: 8,
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,
-                          color: AppColors.accent,
+                          color: AppColors.primary,
                         ),
                       ),
                     )
@@ -664,3 +648,4 @@ class _NavItem extends StatelessWidget {
     );
   }
 }
+

@@ -7,6 +7,11 @@ spring:
     mongodb:
       # Index và validator do mongo/init.js quản lý, không để Spring tự tạo
       auto-index-creation: false
+  servlet:
+    multipart:
+      # Ảnh món ăn (POST /meals/recognize) tối đa 2 MB
+      max-file-size: 2MB
+      max-request-size: 3MB
 
 server:
   port: ${PORT:8080}
@@ -33,6 +38,12 @@ levelup:
     enabled: ${DEMO_MODE:false}
     # uid được dùng nút giả lập, phân cách bằng dấu phẩy; "demo*" là mọi uid bắt đầu bằng "demo"
     uids: ${DEMO_UIDS:}
+  nutrition:
+    # Số lần chụp món gọi AI mỗi ngày (ảnh đã nhận diện rồi thì không tính)
+    daily-photo-limit: 10
+  coach:
+    # Số tin chat với coach mỗi ngày (theo ngày của người dùng), hết thì 429 COACH_LIMIT
+    daily-limit: 30
 
 management:
   endpoints:

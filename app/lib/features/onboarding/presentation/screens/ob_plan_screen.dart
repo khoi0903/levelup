@@ -139,7 +139,7 @@ class ObPlanScreen extends ConsumerWidget {
                                                     .join(' · '),
                                                 style: const TextStyle(
                                                   fontSize: 12,
-                                                  color: AppColors.textMuted,
+                                                  color: AppColors.textSecondary,
                                                 ),
                                                 maxLines: 2,
                                                 overflow: TextOverflow.ellipsis,

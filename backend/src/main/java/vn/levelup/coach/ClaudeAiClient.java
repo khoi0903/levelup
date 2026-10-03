@@ -71,12 +71,16 @@ public class ClaudeAiClient implements AiClient {
     }
 
     private MessageCreateParams.Builder base(String system, int maxTokens) {
-        return MessageCreateParams.builder()
+        MessageCreateParams.Builder b = MessageCreateParams.builder()
             .model(model)
             .maxTokens(maxTokens)
-            .system(system)
-            // Câu trả lời ngắn cho người dùng: effort thấp đủ dùng, nhanh và rẻ
-            .outputConfig(OutputConfig.builder().effort(OutputConfig.Effort.LOW).build());
+            .system(system);
+        // Câu trả lời ngắn cho người dùng: effort thấp đủ dùng, nhanh và rẻ.
+        // Haiku 4.5 (LEVELUP_AI_MODEL=claude-haiku-4-5, rẻ cho dev) không nhận tham số effort.
+        if (!model.startsWith("claude-haiku")) {
+            b.outputConfig(OutputConfig.builder().effort(OutputConfig.Effort.LOW).build());
+        }
+        return b;
     }
 
     private String call(MessageCreateParams params) {
