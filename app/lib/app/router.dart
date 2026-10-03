@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import '../features/auth/presentation/screens/bootstrap_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 import '../features/onboarding/presentation/screens/ob_body_screen.dart';
 import '../features/onboarding/presentation/screens/ob_coach_screen.dart';
@@ -11,9 +12,14 @@ import '../features/onboarding/presentation/screens/ob_training_screen.dart';
 import '../features/onboarding/presentation/screens/ob_why_screen.dart';
 import '../features/workout/presentation/screens/workout_screen.dart';
 
-GoRouter createAppRouter({String initialLocation = '/onboarding/goal'}) => GoRouter(
+GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
   initialLocation: initialLocation,
   routes: [
+    GoRoute(
+      path: '/',
+      name: 'bootstrap',
+      builder: (context, state) => const BootstrapScreen(),
+    ),
     GoRoute(
       path: '/onboarding/goal',
       name: 'ob_goal',

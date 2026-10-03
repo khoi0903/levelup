@@ -1,0 +1,159 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'api_exceptions.dart';
+
+/// Provider cung cấp token xác thực cho ApiClient.
+/// Khi chuyển sang Firebase Auth ở sprint sau, chỉ cần sửa provider này để lấy idToken thật từ FirebaseAuth.
+typedef AuthTokenProvider = Future<String?> Function();
+
+String defaultDevTokenProvider() {
+  const devUid = String.fromEnvironment('DEV_UID', defaultValue: 'dev-local');
+  return 'dev-$devUid';
+}
+
+final authTokenProvider = Provider<AuthTokenProvider>((ref) {
+  return () async => defaultDevTokenProvider();
+});
+
+final apiBaseUrlProvider = Provider<String>((ref) {
+  return const String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://localhost:8081',
+  );
+});
+
+class ApiClient {
+  final Dio dio;
+
+  ApiClient({
+    required String baseUrl,
+    required AuthTokenProvider tokenProvider,
+  }) : dio = Dio(
+          BaseOptions(
+            baseUrl: baseUrl,
+            connectTimeout: const Duration(seconds: 10),
+            receiveTimeout: const Duration(seconds: 10),
+            sendTimeout: const Duration(seconds: 10),
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+          ),
+        ) {
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final token = await tokenProvider();
+          if (token != null && token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          handler.next(options);
+        },
+        onError: (DioException error, handler) {
+          final response = error.response;
+          if (response != null && response.data is Map<String, dynamic>) {
+            final data = response.data as Map<String, dynamic>;
+            final code =
+                data['code']?.toString() ?? 'HTTP_${response.statusCode}';
+            final rawFields = data['fields'];
+            final Map<String, String> fields = {};
+            if (rawFields is Map) {
+              rawFields.forEach((key, value) {
+                if (key != null && value != null) {
+                  fields[key.toString()] = value.toString();
+                }
+              });
+            }
+            return handler.reject(
+              DioException(
+                requestOptions: error.requestOptions,
+                response: response,
+                type: error.type,
+                error: ApiException(
+                  code: code,
+                  fields: fields,
+                  statusCode: response.statusCode,
+                ),
+              ),
+            );
+          } else {
+            final statusCode = response?.statusCode;
+            final isNetwork = error.type == DioExceptionType.connectionTimeout ||
+                error.type == DioExceptionType.sendTimeout ||
+                error.type == DioExceptionType.receiveTimeout ||
+                error.type == DioExceptionType.connectionError;
+            return handler.reject(
+              DioException(
+                requestOptions: error.requestOptions,
+                response: response,
+                type: error.type,
+                error: ApiException(
+                  code: isNetwork ? 'NETWORK_ERROR' : 'UNKNOWN_ERROR',
+                  fields: const {},
+                  statusCode: statusCode,
+                ),
+              ),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Future<Response<T>> get<T>(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
+    try {
+      return await dio.get<T>(
+        path,
+        queryParameters: queryParameters,
+        options: options,
+      );
+    } on DioException catch (e) {
+      if (e.error is ApiException) {
+        throw e.error as ApiException;
+      }
+      throw ApiException(
+        code: 'NETWORK_ERROR',
+        fields: const {},
+        statusCode: e.response?.statusCode,
+      );
+    }
+  }
+
+  Future<Response<T>> post<T>(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
+    try {
+      return await dio.post<T>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+      );
+    } on DioException catch (e) {
+      if (e.error is ApiException) {
+        throw e.error as ApiException;
+      }
+      throw ApiException(
+        code: 'NETWORK_ERROR',
+        fields: const {},
+        statusCode: e.response?.statusCode,
+      );
+    }
+  }
+}
+
+final apiClientProvider = Provider<ApiClient>((ref) {
+  final baseUrl = ref.watch(apiBaseUrlProvider);
+  final tokenProvider = ref.watch(authTokenProvider);
+  return ApiClient(
+    baseUrl: baseUrl,
+    tokenProvider: tokenProvider,
+  );
+});

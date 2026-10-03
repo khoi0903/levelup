@@ -1,15 +1,31 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/repositories/fake_plan_repository.dart';
+import '../../../../core/api/api_client.dart';
+import '../../data/repositories/api_onboarding_repository.dart';
+import '../../data/repositories/api_plan_repository.dart';
 import '../../domain/models/onboarding_models.dart';
 import '../../domain/models/plan_models.dart';
+import '../../domain/repositories/onboarding_repository.dart';
 import '../../domain/repositories/plan_repository.dart';
 
 final planRepositoryProvider = Provider<PlanRepository>((ref) {
-  return FakePlanRepository();
+  final client = ref.watch(apiClientProvider);
+  return ApiPlanRepository(client);
 });
+
+final onboardingRepositoryProvider = Provider<OnboardingRepository>((ref) {
+  final client = ref.watch(apiClientProvider);
+  return ApiOnboardingRepository(client);
+});
+
+final onboardingResponseProvider =
+    StateProvider<OnboardingResponse?>((ref) => null);
 
 class OnboardingController extends StateNotifier<OnboardingState> {
   OnboardingController() : super(const OnboardingState());
+
+  void setDisplayName(String name) {
+    state = state.copyWith(displayName: name);
+  }
 
   void selectGoal(UserGoal goal) {
     state = state.copyWith(goal: goal);
@@ -27,6 +43,7 @@ class OnboardingController extends StateNotifier<OnboardingState> {
     int? goalWeightKg,
   }) {
     state = OnboardingState(
+      displayName: state.displayName,
       goal: state.goal,
       gender: gender ?? state.gender,
       birthYear: birthYear,
@@ -137,8 +154,11 @@ final onboardingControllerProvider =
   return OnboardingController();
 });
 
-final weeklyPlanFutureProvider = FutureProvider<WeeklyPlan>((ref) async {
+final weeklyPlanFutureProvider = FutureProvider<PlanView>((ref) async {
+  final response = ref.watch(onboardingResponseProvider);
+  if (response?.plan != null) {
+    return response!.plan!;
+  }
   final repo = ref.watch(planRepositoryProvider);
-  final state = ref.watch(onboardingControllerProvider);
-  return repo.generateInitialPlan(state);
+  return repo.getCurrentPlan();
 });

@@ -1,5 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
+import 'plan_models.dart';
+
 enum UserGoal {
   lose_fat,
   build_muscle,
@@ -57,6 +59,7 @@ enum TimeSlot {
 }
 
 class OnboardingState {
+  final String displayName;
   final UserGoal? goal;
   final Gender? gender;
   final int? birthYear;
@@ -77,6 +80,7 @@ class OnboardingState {
   final bool pushEnabled;
 
   const OnboardingState({
+    this.displayName = '',
     this.goal,
     this.gender,
     this.birthYear,
@@ -98,6 +102,7 @@ class OnboardingState {
   });
 
   OnboardingState copyWith({
+    String? displayName,
     UserGoal? goal,
     Gender? gender,
     int? birthYear,
@@ -118,6 +123,7 @@ class OnboardingState {
     bool? pushEnabled,
   }) {
     return OnboardingState(
+      displayName: displayName ?? this.displayName,
       goal: goal ?? this.goal,
       gender: gender ?? this.gender,
       birthYear: birthYear ?? this.birthYear,
@@ -138,4 +144,97 @@ class OnboardingState {
       pushEnabled: pushEnabled ?? this.pushEnabled,
     );
   }
+
+  Map<String, dynamic> toOnboardingRequestJson() {
+    final trimmedName = displayName.trim();
+    if (trimmedName.isEmpty) {
+      throw StateError('displayName is required and cannot be empty');
+    }
+    if (goal == null) {
+      throw StateError('goal is required');
+    }
+    if (heightCm == null) {
+      throw StateError('heightCm is required');
+    }
+    if (startWeightKg == null) {
+      throw StateError('weightKg (startWeightKg) is required');
+    }
+    if (experience == null) {
+      throw StateError('experience is required');
+    }
+    if (location == null) {
+      throw StateError('location is required');
+    }
+    if (timeSlot == null) {
+      throw StateError('timeSlot is required');
+    }
+    if (weekdays.isEmpty) {
+      throw StateError('availability weekdays is required');
+    }
+    if (sessionMinutes == null) {
+      throw StateError('sessionMinutes is required');
+    }
+    if (coachStyle == null) {
+      throw StateError('coachStyle is required');
+    }
+
+    final availabilityList = weekdays.map((day) => {
+      'weekday': day,
+      'slot': timeSlot!.name,
+    }).toList();
+
+    return {
+      'displayName': trimmedName,
+      'goal': goal!.name,
+      if (gender != null) 'gender': gender!.name,
+      if (birthYear != null) 'birthYear': birthYear,
+      'heightCm': heightCm!.toDouble(),
+      'weightKg': startWeightKg!.toDouble(),
+      if (goalWeightKg != null) 'goalWeightKg': goalWeightKg!.toDouble(),
+      'experience': experience!.name,
+      'location': location!.name,
+      'equipment': equipment.map((e) => e.name).toList(),
+      'injuries': injuries.map((i) => i.name).toList(),
+      'availability': availabilityList,
+      'sessionMinutes': sessionMinutes!,
+      if (motivationReasons.isNotEmpty) 'motivationReasons': motivationReasons,
+      if (motivationText.trim().isNotEmpty) 'motivationText': motivationText.trim(),
+      'coachStyle': coachStyle!.name,
+      'timezone': 'Asia/Ho_Chi_Minh',
+    };
+  }
+}
+
+class OnboardingResponse {
+  final String userId;
+  final String displayName;
+  final NutritionTarget? nutritionTarget;
+  final PlanView? plan;
+
+  const OnboardingResponse({
+    required this.userId,
+    required this.displayName,
+    this.nutritionTarget,
+    this.plan,
+  });
+
+  factory OnboardingResponse.fromJson(Map<String, dynamic> json) {
+    return OnboardingResponse(
+      userId: json['userId']?.toString() ?? '',
+      displayName: json['displayName']?.toString() ?? '',
+      nutritionTarget: json['nutritionTarget'] != null
+          ? NutritionTarget.fromJson(json['nutritionTarget'] as Map<String, dynamic>)
+          : null,
+      plan: json['plan'] != null
+          ? PlanView.fromJson(json['plan'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'userId': userId,
+        'displayName': displayName,
+        if (nutritionTarget != null) 'nutritionTarget': nutritionTarget!.toJson(),
+        if (plan != null) 'plan': plan!.toJson(),
+      };
 }
