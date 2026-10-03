@@ -33,7 +33,7 @@ import com.jayway.jsonpath.JsonPath;
 public abstract class FlowTestBase {
 
     private static final String[] USER_COLLECTIONS = {"workout_logs", "training_plans", "weekly_streaks",
-        "personal_records", "daily_stats", "notifications", "skip_reports", "coach_messages"};
+        "personal_records", "daily_stats", "notifications", "skip_reports", "coach_messages", "weekly_reviews"};
 
     @Autowired protected WebApplicationContext context;
     @Autowired protected MongoTemplate mongo;
