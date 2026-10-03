@@ -1,21 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../users/presentation/controllers/user_controller.dart';
+import '../controllers/home_controller.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _cheered = false;
   int _currentNavIndex = 0;
 
   @override
   Widget build(BuildContext context) {
+    final userAsync = ref.watch(userStatusFutureProvider);
+    final planAsync = ref.watch(homePlanProvider);
+
+    final me = userAsync.valueOrNull;
+    final displayName = me?.displayName ?? 'Minh';
+    final streakWeeks = me?.streak?.currentWeeks ?? 5;
+    final dateText = me?.localDate ?? AppStrings.homeDate;
+
+    final plan = planAsync.valueOrNull;
+    final todaySession =
+        (plan?.sessions.isNotEmpty ?? false) ? plan!.sessions.first : null;
+    final totalTarget = plan?.targetSessions ?? 3;
+    final currentSessionsCount = plan?.sessions.length ?? 2;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -36,18 +53,18 @@ class _HomeScreenState extends State<HomeScreen> {
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
+                            children: [
                               Text(
-                                AppStrings.homeDate,
-                                style: TextStyle(
+                                dateText,
+                                style: const TextStyle(
                                   fontSize: 13,
                                   color: AppColors.textSecondary,
                                 ),
                               ),
-                              SizedBox(height: 2),
+                              const SizedBox(height: 2),
                               Text(
-                                AppStrings.homeGreeting,
-                                style: TextStyle(
+                                'Chào buổi chiều, $displayName',
+                                style: const TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.textPrimary,
@@ -65,16 +82,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Row(
-                            children: const [
-                              Icon(
+                            children: [
+                              const Icon(
                                 Icons.local_fire_department,
                                 size: 18,
                                 color: AppColors.primaryDark,
                               ),
-                              SizedBox(width: 4),
+                              const SizedBox(width: 4),
                               Text(
-                                AppStrings.streakWeeks,
-                                style: TextStyle(
+                                '$streakWeeks tuần',
+                                style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.primaryDark,
@@ -100,8 +117,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
-                              Text(
+                            children: [
+                              const Text(
                                 AppStrings.thisWeekTitle,
                                 style: TextStyle(
                                   fontSize: 15,
@@ -110,8 +127,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               Text(
-                                AppStrings.thisWeekSessions,
-                                style: TextStyle(
+                                '$currentSessionsCount/$totalTarget buổi',
+                                style: const TextStyle(
                                   fontSize: 14,
                                   color: AppColors.textSecondary,
                                 ),
@@ -164,31 +181,51 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          const Text(
-                            AppStrings.todayWorkoutHeader,
-                            style: TextStyle(
+                          Text(
+                            todaySession != null &&
+                                    todaySession.scheduledTime.isNotEmpty
+                                ? 'Hôm nay · ${todaySession.scheduledTime}'
+                                : AppStrings.todayWorkoutHeader,
+                            style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: AppColors.primaryDark,
                             ),
                           ),
                           const SizedBox(height: 2),
-                          const Text(
-                            AppStrings.todayWorkoutTitle,
-                            style: TextStyle(
+                          Text(
+                            todaySession?.title ?? AppStrings.todayWorkoutTitle,
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
                               color: AppColors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 2),
-                          const Text(
-                            AppStrings.todayWorkoutMeta,
-                            style: TextStyle(
+                          Text(
+                            todaySession != null
+                                ? '${todaySession.durationMin} phút · ${todaySession.items.length} động tác'
+                                : AppStrings.todayWorkoutMeta,
+                            style: const TextStyle(
                               fontSize: 13,
                               color: AppColors.textSecondary,
                             ),
                           ),
+                          if (todaySession != null &&
+                              todaySession.items.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              todaySession.items
+                                  .map((i) => i.nameVi ?? i.exerciseId)
+                                  .join(' · '),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textMuted,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                           const SizedBox(height: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -237,6 +274,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: OutlinedButton(
                                   onPressed: () => context.push('/workout?quick5=true'),
                                   style: OutlinedButton.styleFrom(
+                                    minimumSize: const Size(0, 48),
                                     foregroundColor: AppColors.textPrimary,
                                     side: const BorderSide(
                                         color: AppColors.border, width: 1.5),

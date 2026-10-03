@@ -101,6 +101,18 @@ class ObPlanScreen extends ConsumerWidget {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
+                                          if (session.scheduledDate.isNotEmpty &&
+                                              session.scheduledTime.isNotEmpty) ...[
+                                            Text(
+                                              '${session.scheduledDate} · ${session.scheduledTime}',
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.primaryDark,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                          ],
                                           Text(
                                             session.title,
                                             style: const TextStyle(
@@ -117,6 +129,20 @@ class ObPlanScreen extends ConsumerWidget {
                                               color: AppColors.textSecondary,
                                             ),
                                           ),
+                                          if (session.items.isNotEmpty) ...[
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              session.items
+                                                  .map((i) => i.nameVi ?? i.exerciseId)
+                                                  .join(' · '),
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: AppColors.textMuted,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
                                         ],
                                       ),
                                     ),

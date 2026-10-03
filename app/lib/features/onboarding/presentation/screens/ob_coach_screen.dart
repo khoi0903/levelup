@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/api/api_exceptions.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/onboarding_header.dart';
@@ -8,11 +9,61 @@ import '../../../../core/widgets/primary_button.dart';
 import '../../domain/models/onboarding_models.dart';
 import '../controllers/onboarding_controller.dart';
 
-class ObCoachScreen extends ConsumerWidget {
+class ObCoachScreen extends ConsumerStatefulWidget {
   const ObCoachScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ObCoachScreen> createState() => _ObCoachScreenState();
+}
+
+class _ObCoachScreenState extends ConsumerState<ObCoachScreen> {
+  bool _isLoading = false;
+
+  Future<void> _submitOnboarding(OnboardingState state) async {
+    setState(() => _isLoading = true);
+    try {
+      final repo = ref.read(onboardingRepositoryProvider);
+      final response = await repo.completeOnboarding(state);
+      ref.read(onboardingResponseProvider.notifier).state = response;
+      if (mounted) {
+        context.push('/onboarding/plan');
+      }
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      final String message;
+      if (e.fields.isNotEmpty) {
+        message = e.fields.entries
+            .map((entry) => '${entry.key}: ${entry.value}')
+            .join('\n');
+      } else if (e.code == 'NETWORK_ERROR') {
+        message = 'Không kết nối được máy chủ';
+      } else {
+        message = e.code;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi: $message'),
+          backgroundColor: Colors.redAccent,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Đã có lỗi xảy ra: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(onboardingControllerProvider);
     final controller = ref.read(onboardingControllerProvider.notifier);
 
@@ -66,13 +117,16 @@ class ObCoachScreen extends ConsumerWidget {
                 child: ListView.separated(
                   physics: const BouncingScrollPhysics(),
                   itemCount: coachStyles.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final item = coachStyles[index];
                     final isSelected = state.coachStyle == item.$1;
 
                     return InkWell(
-                      onTap: () => controller.setCoachStyle(item.$1),
+                      onTap: _isLoading
+                          ? null
+                          : () => controller.setCoachStyle(item.$1),
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
                         padding: const EdgeInsets.all(16),
@@ -154,8 +208,9 @@ class ObCoachScreen extends ConsumerWidget {
               ),
               PrimaryButton(
                 label: AppStrings.btnCreateMyPlan,
-                onPressed: state.coachStyle != null
-                    ? () => context.push('/onboarding/plan')
+                isLoading: _isLoading,
+                onPressed: (state.coachStyle != null && !_isLoading)
+                    ? () => _submitOnboarding(state)
                     : null,
               ),
             ],

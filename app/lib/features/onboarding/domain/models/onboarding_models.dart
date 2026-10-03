@@ -1,5 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
+import 'plan_models.dart';
+
 enum UserGoal {
   lose_fat,
   build_muscle,
@@ -57,6 +59,7 @@ enum TimeSlot {
 }
 
 class OnboardingState {
+  final String displayName;
   final UserGoal? goal;
   final Gender? gender;
   final int? birthYear;
@@ -77,6 +80,7 @@ class OnboardingState {
   final bool pushEnabled;
 
   const OnboardingState({
+    this.displayName = '',
     this.goal,
     this.gender,
     this.birthYear,
@@ -98,6 +102,7 @@ class OnboardingState {
   });
 
   OnboardingState copyWith({
+    String? displayName,
     UserGoal? goal,
     Gender? gender,
     int? birthYear,
@@ -118,6 +123,7 @@ class OnboardingState {
     bool? pushEnabled,
   }) {
     return OnboardingState(
+      displayName: displayName ?? this.displayName,
       goal: goal ?? this.goal,
       gender: gender ?? this.gender,
       birthYear: birthYear ?? this.birthYear,
@@ -138,4 +144,66 @@ class OnboardingState {
       pushEnabled: pushEnabled ?? this.pushEnabled,
     );
   }
+
+  Map<String, dynamic> toOnboardingRequestJson() {
+    final slotString = timeSlot?.name ?? 'evening';
+    final availabilityList = weekdays.map((day) => {
+      'weekday': day,
+      'slot': slotString,
+    }).toList();
+
+    return {
+      'displayName': displayName.trim().isNotEmpty ? displayName.trim() : 'Minh',
+      'goal': goal?.name ?? 'lose_fat',
+      if (gender != null) 'gender': gender!.name,
+      if (birthYear != null) 'birthYear': birthYear,
+      'heightCm': (heightCm ?? 170).toDouble(),
+      'weightKg': (startWeightKg ?? 70).toDouble(),
+      if (goalWeightKg != null) 'goalWeightKg': goalWeightKg!.toDouble(),
+      'experience': experience?.name ?? 'beginner',
+      'location': location?.name ?? 'home',
+      'equipment': equipment.map((e) => e.name).toList(),
+      'injuries': injuries.map((i) => i.name).toList(),
+      'availability': availabilityList,
+      'sessionMinutes': sessionMinutes ?? 15,
+      if (motivationReasons.isNotEmpty) 'motivationReasons': motivationReasons,
+      if (motivationText.isNotEmpty) 'motivationText': motivationText,
+      'coachStyle': coachStyle?.name ?? 'supportive',
+      'timezone': 'Asia/Ho_Chi_Minh',
+    };
+  }
+}
+
+class OnboardingResponse {
+  final String userId;
+  final String displayName;
+  final NutritionTarget? nutritionTarget;
+  final PlanView? plan;
+
+  const OnboardingResponse({
+    required this.userId,
+    required this.displayName,
+    this.nutritionTarget,
+    this.plan,
+  });
+
+  factory OnboardingResponse.fromJson(Map<String, dynamic> json) {
+    return OnboardingResponse(
+      userId: json['userId']?.toString() ?? '',
+      displayName: json['displayName']?.toString() ?? '',
+      nutritionTarget: json['nutritionTarget'] != null
+          ? NutritionTarget.fromJson(json['nutritionTarget'] as Map<String, dynamic>)
+          : null,
+      plan: json['plan'] != null
+          ? PlanView.fromJson(json['plan'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'userId': userId,
+        'displayName': displayName,
+        if (nutritionTarget != null) 'nutritionTarget': nutritionTarget!.toJson(),
+        if (plan != null) 'plan': plan!.toJson(),
+      };
 }

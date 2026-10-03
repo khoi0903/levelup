@@ -8,11 +8,31 @@ import '../../../../core/widgets/primary_button.dart';
 import '../../domain/models/onboarding_models.dart';
 import '../controllers/onboarding_controller.dart';
 
-class ObGoalScreen extends ConsumerWidget {
+class ObGoalScreen extends ConsumerStatefulWidget {
   const ObGoalScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ObGoalScreen> createState() => _ObGoalScreenState();
+}
+
+class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
+  late final TextEditingController _nameController;
+
+  @override
+  void initState() {
+    super.initState();
+    final state = ref.read(onboardingControllerProvider);
+    _nameController = TextEditingController(text: state.displayName);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(onboardingControllerProvider);
     final controller = ref.read(onboardingControllerProvider.notifier);
 
@@ -48,7 +68,7 @@ class ObGoalScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const OnboardingHeader(currentStep: 1),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
               const Text(
                 AppStrings.goalTitle,
                 style: TextStyle(
@@ -58,7 +78,7 @@ class ObGoalScreen extends ConsumerWidget {
                   color: AppColors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               const Text(
                 AppStrings.goalSubtitle,
                 style: TextStyle(
@@ -66,12 +86,52 @@ class ObGoalScreen extends ConsumerWidget {
                   color: AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+              const Text(
+                'Tên hiển thị của bạn',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border, width: 1.5),
+                ),
+                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: TextField(
+                  controller: _nameController,
+                  onChanged: (val) => controller.setDisplayName(val),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                    border: InputBorder.none,
+                    hintText: 'Nhập tên của bạn (vd: Minh)',
+                    hintStyle: TextStyle(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
               Expanded(
                 child: ListView.separated(
                   physics: const BouncingScrollPhysics(),
                   itemCount: goalOptions.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 10),
                   itemBuilder: (context, index) {
                     final item = goalOptions[index];
                     final isSelected = state.goal == item.$1;
@@ -80,7 +140,7 @@ class ObGoalScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 18, vertical: 16),
+                            horizontal: 18, vertical: 14),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? AppColors.primaryLight
@@ -122,7 +182,10 @@ class ObGoalScreen extends ConsumerWidget {
               PrimaryButton(
                 label: AppStrings.btnContinue,
                 onPressed: state.goal != null
-                    ? () => context.push('/onboarding/body')
+                    ? () {
+                        controller.setDisplayName(_nameController.text);
+                        context.push('/onboarding/body');
+                      }
                     : null,
               ),
               const SizedBox(height: 14),
