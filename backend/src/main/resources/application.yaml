@@ -10,6 +10,12 @@ spring:
 
 server:
   port: ${PORT:8080}
+  servlet:
+    encoding:
+      # Ghi rõ "charset=UTF-8" trong Content-Type. Thiếu dòng này, gói http của Dart
+      # đọc JSON theo latin1 và tiếng Việt bị lỗi font.
+      charset: UTF-8
+      force-response: true
 
 levelup:
   firebase:

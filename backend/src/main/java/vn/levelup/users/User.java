@@ -8,8 +8,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * Collection "users". Tên trường khớp validator trong mongo/init.js.
- * Mới khai báo các phần màn hình chính cần; các phần nhúng khác (injuries, devices,
- * coachMemory...) thêm dần theo từng sprint.
+ * Các phần nhúng khác (devices, coachMemory, reengagement...) thêm dần theo từng sprint.
+ * Ghi vào users bằng MongoTemplate ($set từng trường), không save() cả record,
+ * để không xóa mất các trường record này chưa khai báo.
  */
 @Document("users")
 public record User(
@@ -20,6 +21,9 @@ public record User(
     String timezone,
     String locale,
     Profile profile,
+    List<Injury> injuries,
+    List<Availability> availability,
+    List<NutritionTarget> nutritionTargets,
     Streak streak,
     Instant createdAt,
     Instant lastActiveAt
@@ -40,6 +44,14 @@ public record User(
         List<String> equipment,
         Instant onboardingCompletedAt
     ) {}
+
+    public record Injury(String bodyArea, String note, Boolean active, Instant reportedAt) {}
+
+    public record Availability(Integer weekday, String slot) {}
+
+    public record NutritionTarget(
+        String effectiveFrom, Integer kcal, Integer proteinG, Integer carbsG, Integer fatG,
+        Integer waterMl, String method) {}
 
     public record Streak(
         Integer currentWeeks,
