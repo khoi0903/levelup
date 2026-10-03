@@ -4,3 +4,7 @@
 levelup:
   auth:
     dev-tokens: true
+
+# Cổng 8080 trên máy dev đã bị chương trình khác dùng
+server:
+  port: ${PORT:8081}
