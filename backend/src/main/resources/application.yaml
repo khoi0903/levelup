@@ -33,6 +33,9 @@ levelup:
   nutrition:
     # Số lần chụp món gọi AI mỗi ngày (ảnh đã nhận diện rồi thì không tính)
     daily-photo-limit: 10
+  coach:
+    # Số tin chat với coach mỗi ngày (theo ngày của người dùng), hết thì 429 COACH_LIMIT
+    daily-limit: 30
 
 management:
   endpoints:
