@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_strings.dart';
@@ -54,29 +53,30 @@ class OnboardingHeader extends StatelessWidget {
 
     return Row(
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: onBack ?? () => Navigator.of(context).maybePop(),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onBack ?? () => Navigator.of(context).maybePop(),
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: AppColors.cardNormalBg.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.btnBorder, width: 1.2),
+                border: Border.all(color: AppColors.border, width: 1.0),
+                boxShadow: const [
+                  BoxShadow(
+                    color: AppColors.cardNormalShadow,
+                    blurRadius: 10,
+                    offset: Offset(0, 2),
                   ),
-                  child: const Icon(
-                    Icons.chevron_left_rounded,
-                    color: AppColors.textPrimary,
-                    size: 26,
-                  ),
-                ),
+                ],
+              ),
+              child: const Icon(
+                Icons.chevron_left_rounded,
+                color: AppColors.textPrimary,
+                size: 26,
               ),
             ),
           ),
@@ -109,7 +109,7 @@ class _ProgressBar extends StatelessWidget {
     return Container(
       height: 8,
       decoration: BoxDecoration(
-        color: AppColors.progressTrack, // rãnh trắng 40%
+        color: AppColors.progressTrack,
         borderRadius: BorderRadius.circular(AppColors.radiusPill),
       ),
       child: LayoutBuilder(
@@ -121,7 +121,7 @@ class _ProgressBar extends StatelessWidget {
               width: constraints.maxWidth * progress,
               height: 8,
               decoration: BoxDecoration(
-                gradient: AppColors.progressGradient, // gradient #8CA0F2 → #7D93EC → #6D84E8
+                color: AppColors.progressFill,
                 borderRadius: BorderRadius.circular(AppColors.radiusPill),
               ),
             ),
@@ -131,3 +131,4 @@ class _ProgressBar extends StatelessWidget {
     );
   }
 }
+

@@ -45,7 +45,7 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.textPrimary,
           minimumSize: const Size(0, 48),
-          side: const BorderSide(color: AppColors.btnBorder, width: 1.5),
+          side: const BorderSide(color: AppColors.border, width: 1.0),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppColors.radiusButton),
           ),
@@ -60,27 +60,28 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppColors.radiusCard),
-          side: const BorderSide(color: AppColors.cardNormalBorder, width: 1.5),
+          side: const BorderSide(color: AppColors.cardNormalBorder, width: 1.0),
         ),
       ),
       chipTheme: ChipThemeData(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppColors.radiusPill),
-          side: const BorderSide(color: AppColors.border, width: 1.5),
+          side: const BorderSide(color: AppColors.border, width: 1.0),
         ),
         backgroundColor: AppColors.cardNormalBg,
         selectedColor: AppColors.cardSelectedBg,
         labelStyle: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: AppColors.textPrimary,
+          color: AppColors.textSecondary,
         ),
         secondaryLabelStyle: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w700,
-          color: AppColors.primaryDark,
+          color: AppColors.primary,
         ),
       ),
     );
   }
 }
+

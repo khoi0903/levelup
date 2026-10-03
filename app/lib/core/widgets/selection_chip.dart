@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 
@@ -21,11 +20,11 @@ class SelectionChip extends StatelessWidget {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: isSelected ? AppColors.cardSelectedBg : AppColors.cardNormalBg.withValues(alpha: 0.15),
+        color: isSelected ? AppColors.cardSelectedBg : AppColors.surface,
         borderRadius: BorderRadius.circular(AppColors.radiusPill),
         border: Border.all(
-          color: isSelected ? AppColors.cardSelectedBorder : AppColors.cardNormalBorder,
-          width: 1.5,
+          color: isSelected ? AppColors.cardSelectedBorder : AppColors.border,
+          width: isSelected ? 1.5 : 1.0,
         ),
         boxShadow: isSelected
             ? const [
@@ -37,26 +36,20 @@ class SelectionChip extends StatelessWidget {
               ]
             : null,
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppColors.radiusPill),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(AppColors.radiusPill),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: Center(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                      color: isSelected ? AppColors.accentLink : AppColors.textPrimary,
-                    ),
-                  ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppColors.radiusPill),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Center(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? AppColors.accentLink : AppColors.textSecondary,
                 ),
               ),
             ),
@@ -66,3 +59,4 @@ class SelectionChip extends StatelessWidget {
     );
   }
 }
+

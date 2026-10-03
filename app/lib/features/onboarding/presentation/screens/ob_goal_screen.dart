@@ -122,7 +122,7 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
                       hintText: 'Nhập tên của bạn (vd: Minh)',
                       hintStyle: TextStyle(
                         fontSize: 15,
-                        color: AppColors.textMuted,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ),

@@ -136,7 +136,7 @@ class _ObWhyScreenState extends ConsumerState<ObWhyScreen> {
                               contentPadding: EdgeInsets.symmetric(vertical: 10),
                               hintText: AppStrings.whyCustomDefault,
                               hintStyle: TextStyle(
-                                color: AppColors.textMuted,
+                                color: AppColors.textSecondary,
                                 fontSize: 15,
                               ),
                             ),
@@ -155,8 +155,8 @@ class _ObWhyScreenState extends ConsumerState<ObWhyScreen> {
                                 height: 36,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: AppColors.cardNormalBg.withValues(alpha: 0.2),
-                                  border: Border.all(color: AppColors.btnBorder, width: 1.0),
+                                  color: AppColors.primaryLight,
+                                  border: Border.all(color: AppColors.border, width: 1.0),
                                 ),
                                 child: const Icon(
                                   Icons.chat_bubble_outline_rounded,

@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 
@@ -23,46 +22,49 @@ class SecondaryButton extends StatelessWidget {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: isDark ? AppColors.textPrimary : AppColors.cardNormalBg.withValues(alpha: 0.15),
+        color: isDark ? AppColors.textPrimary : AppColors.surface,
         borderRadius: BorderRadius.circular(AppColors.radiusButton),
         border: Border.all(
-          color: isDark ? Colors.transparent : AppColors.btnBorder,
-          width: 1.5,
+          color: isDark ? Colors.transparent : AppColors.border,
+          width: 1.0,
         ),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppColors.radiusButton),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onPressed,
-              borderRadius: BorderRadius.circular(AppColors.radiusButton),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (icon != null) ...[
-                      icon!,
-                      const SizedBox(width: 8),
-                    ],
-                    Flexible(
-                      child: Text(
-                        label,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white : AppColors.textPrimary,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+        boxShadow: isDark
+            ? null
+            : const [
+                BoxShadow(
+                  color: AppColors.cardNormalShadow,
+                  blurRadius: 10,
+                  offset: Offset(0, 2),
                 ),
-              ),
+              ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(AppColors.radiusButton),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (icon != null) ...[
+                  icon!,
+                  const SizedBox(width: 8),
+                ],
+                Flexible(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? Colors.white : AppColors.textSecondary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -70,3 +72,4 @@ class SecondaryButton extends StatelessWidget {
     );
   }
 }
+

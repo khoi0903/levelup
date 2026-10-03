@@ -25,19 +25,16 @@ class PrimaryButton extends StatelessWidget {
       height: height,
       width: double.infinity,
       decoration: BoxDecoration(
-        gradient: isEnabled ? AppColors.primaryButtonGradient : null,
-        color: isEnabled ? null : AppColors.cardNormalBg.withValues(alpha: 0.3),
+        color: isEnabled
+            ? AppColors.primary
+            : AppColors.primary.withValues(alpha: 0.35),
         borderRadius: BorderRadius.circular(AppColors.radiusButton),
-        border: Border.all(
-          color: isEnabled ? AppColors.btnBorder : Colors.white.withValues(alpha: 0.3),
-          width: 1.5,
-        ),
         boxShadow: isEnabled
             ? const [
                 BoxShadow(
                   color: AppColors.btnShadow,
-                  blurRadius: 16,
-                  offset: Offset(0, 6),
+                  blurRadius: 20,
+                  offset: Offset(0, 8),
                 ),
               ]
             : null,
@@ -70,8 +67,10 @@ class PrimaryButton extends StatelessWidget {
                           label,
                           style: TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.w800, // ExtraBold
-                            color: isEnabled ? Colors.white : Colors.white.withValues(alpha: 0.55),
+                            fontWeight: FontWeight.w800,
+                            color: isEnabled
+                                ? Colors.white
+                                : Colors.white.withValues(alpha: 0.65),
                             letterSpacing: 0.2,
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -85,3 +84,4 @@ class PrimaryButton extends StatelessWidget {
     );
   }
 }
+
