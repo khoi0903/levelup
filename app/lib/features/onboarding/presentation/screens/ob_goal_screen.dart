@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/onboarding_header.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../domain/models/onboarding_models.dart';
@@ -66,167 +68,157 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
     ];
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const OnboardingHeader(currentStep: 1),
-              const SizedBox(height: 20),
-              const Text(
-                AppStrings.goalTitle,
-                style: TextStyle(
-                  fontSize: 28,
-                  height: 1.25,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                AppStrings.goalSubtitle,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Tên hiển thị của bạn',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border, width: 1.5),
-                ),
-                alignment: Alignment.center,
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                child: TextField(
-                  controller: _nameController,
-                  onChanged: (val) => controller.setDisplayName(val),
-                  style: const TextStyle(
-                    fontSize: 16,
+      body: GradientBackground(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const OnboardingHeader(currentStep: 1),
+                const SizedBox(height: 20),
+                const Text(
+                  AppStrings.goalTitle,
+                  style: TextStyle(
+                    fontSize: 28,
+                    height: 1.25,
+                    fontWeight: FontWeight.w800,
                     color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                    border: InputBorder.none,
-                    hintText: 'Nhập tên của bạn (vd: Minh)',
-                    hintStyle: TextStyle(
-                      fontSize: 15,
-                      color: AppColors.textSecondary,
-                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.separated(
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: goalOptions.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 10),
-                  itemBuilder: (context, index) {
-                    final item = goalOptions[index];
-                    final isSelected = state.goal == item.$1;
-                    return InkWell(
-                      onTap: () => controller.selectGoal(item.$1),
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 18, vertical: 14),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppColors.primaryLight
-                              : AppColors.surface,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isSelected
-                                ? AppColors.primary
-                                : AppColors.border,
-                            width: isSelected ? 2.0 : 1.5,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.$2,
-                              style: const TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              item.$3,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
+                const SizedBox(height: 6),
+                const Text(
+                  AppStrings.goalSubtitle,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Tên hiển thị của bạn',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                GlassCard(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                  borderRadius: AppColors.radiusButton,
+                  child: TextField(
+                    controller: _nameController,
+                    onChanged: (val) => controller.setDisplayName(val),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(vertical: 12),
+                      border: InputBorder.none,
+                      hintText: 'Nhập tên của bạn (vd: Minh)',
+                      hintStyle: TextStyle(
+                        fontSize: 15,
+                        color: AppColors.textMuted,
                       ),
-                    );
-                  },
-                ),
-              ),
-              PrimaryButton(
-                label: AppStrings.btnContinue,
-                onPressed: (state.goal != null && state.displayName.trim().isNotEmpty)
-                    ? () {
-                        controller.setDisplayName(_nameController.text.trim());
-                        context.push('/onboarding/body');
-                      }
-                    : null,
-              ),
-              const SizedBox(height: 14),
-              Wrap(
-                alignment: WrapAlignment.center,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  const Text(
-                    AppStrings.alreadyHaveAccount,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
                     ),
                   ),
-                  InkWell(
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Tính năng đăng nhập sẽ có ở Sprint sau'),
-                          duration: Duration(seconds: 1),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: ListView.separated(
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: goalOptions.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final item = goalOptions[index];
+                      final isSelected = state.goal == item.$1;
+                      return GlassCard(
+                        isSelected: isSelected,
+                        onTap: () => controller.selectGoal(item.$1),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 16),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.$2,
+                                    style: const TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    item.$3,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            GlassRadio(isSelected: isSelected),
+                          ],
                         ),
                       );
                     },
-                    child: const Text(
-                      AppStrings.logIn,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                PrimaryButton(
+                  label: AppStrings.btnContinue,
+                  onPressed: (state.goal != null && state.displayName.trim().isNotEmpty)
+                      ? () {
+                          controller.setDisplayName(_nameController.text.trim());
+                          context.push('/onboarding/body');
+                        }
+                      : null,
+                ),
+                const SizedBox(height: 14),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    const Text(
+                      AppStrings.alreadyHaveAccount,
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
+                        color: AppColors.textSecondary,
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    InkWell(
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Tính năng đăng nhập sẽ có ở Sprint sau'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        AppStrings.logIn,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.accentLink,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/api/api_exceptions.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/onboarding_header.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../domain/models/onboarding_models.dart';
@@ -86,62 +88,49 @@ class _ObCoachScreenState extends ConsumerState<ObCoachScreen> {
     ];
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const OnboardingHeader(currentStep: 6),
-              const SizedBox(height: 20),
-              const Text(
-                AppStrings.coachTitle,
-                style: TextStyle(
-                  fontSize: 26,
-                  height: 1.25,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+      body: GradientBackground(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const OnboardingHeader(currentStep: 6),
+                const SizedBox(height: 20),
+                const Text(
+                  AppStrings.coachTitle,
+                  style: TextStyle(
+                    fontSize: 26,
+                    height: 1.25,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                AppStrings.coachSubtitle,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: AppColors.textSecondary,
+                const SizedBox(height: 8),
+                const Text(
+                  AppStrings.coachSubtitle,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.separated(
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: coachStyles.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final item = coachStyles[index];
-                    final isSelected = state.coachStyle == item.$1;
+                const SizedBox(height: 16),
+                Expanded(
+                  child: ListView.separated(
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: coachStyles.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 14),
+                    itemBuilder: (context, index) {
+                      final item = coachStyles[index];
+                      final isSelected = state.coachStyle == item.$1;
 
-                    return InkWell(
-                      onTap: _isLoading
-                          ? null
-                          : () => controller.setCoachStyle(item.$1),
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppColors.primaryLight
-                              : AppColors.surface,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isSelected
-                                ? AppColors.primary
-                                : AppColors.border,
-                            width: isSelected ? 2.0 : 1.5,
-                          ),
-                        ),
+                      return GlassCard(
+                        isSelected: isSelected,
+                        onTap: _isLoading
+                            ? null
+                            : () => controller.setCoachStyle(item.$1),
+                        padding: const EdgeInsets.all(18),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -152,42 +141,30 @@ class _ObCoachScreenState extends ConsumerState<ObCoachScreen> {
                                   item.$2,
                                   style: const TextStyle(
                                     fontSize: 17,
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.w700,
                                     color: AppColors.textPrimary,
                                   ),
                                 ),
-                                if (isSelected)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: const Text(
-                                      AppStrings.coachSelectedBadge,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
+                                GlassRadio(isSelected: isSelected),
                               ],
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 12),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 10),
+                                  horizontal: 14, vertical: 12),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? AppColors.surface
-                                    : AppColors.background,
+                                    ? Colors.white.withValues(alpha: 0.6)
+                                    : AppColors.cardNormalBg.withValues(alpha: 0.15),
                                 borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(12),
-                                  topRight: Radius.circular(12),
-                                  bottomRight: Radius.circular(12),
+                                  topLeft: Radius.circular(14),
+                                  topRight: Radius.circular(14),
+                                  bottomRight: Radius.circular(14),
                                   bottomLeft: Radius.circular(4),
+                                ),
+                                border: Border.all(
+                                  color: AppColors.cardNormalBorder.withValues(alpha: 0.6),
+                                  width: 1.0,
                                 ),
                               ),
                               child: Text(
@@ -195,25 +172,25 @@ class _ObCoachScreenState extends ConsumerState<ObCoachScreen> {
                                 style: const TextStyle(
                                   fontSize: 14,
                                   height: 1.5,
-                                  color: AppColors.textMuted,
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
-              PrimaryButton(
-                label: AppStrings.btnCreateMyPlan,
-                isLoading: _isLoading,
-                onPressed: (state.coachStyle != null && !_isLoading)
-                    ? () => _submitOnboarding(state)
-                    : null,
-              ),
-            ],
+                PrimaryButton(
+                  label: AppStrings.btnCreateMyPlan,
+                  isLoading: _isLoading,
+                  onPressed: (state.coachStyle != null && !_isLoading)
+                      ? () => _submitOnboarding(state)
+                      : null,
+                ),
+              ],
+            ),
           ),
         ),
       ),

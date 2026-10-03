@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 
@@ -19,42 +20,51 @@ class SecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
       height: height,
-      child: OutlinedButton(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: isDark ? AppColors.textPrimary : AppColors.surface,
-          foregroundColor: isDark ? Colors.white : AppColors.textPrimary,
-          side: isDark
-              ? BorderSide.none
-              : const BorderSide(color: AppColors.border, width: 1.5),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          elevation: 0,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.textPrimary : AppColors.cardNormalBg.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(AppColors.radiusButton),
+        border: Border.all(
+          color: isDark ? Colors.transparent : AppColors.btnBorder,
+          width: 1.5,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              icon!,
-              const SizedBox(width: 8),
-            ],
-            Flexible(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : AppColors.textPrimary,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppColors.radiusButton),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onPressed,
+              borderRadius: BorderRadius.circular(AppColors.radiusButton),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (icon != null) ...[
+                      icon!,
+                      const SizedBox(width: 8),
+                    ],
+                    Flexible(
+                      child: Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white : AppColors.textPrimary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

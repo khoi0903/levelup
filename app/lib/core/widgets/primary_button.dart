@@ -19,51 +19,68 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    final bool isEnabled = onPressed != null && !isLoading;
+
+    return Container(
       height: height,
       width: double.infinity,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        gradient: isEnabled ? AppColors.primaryButtonGradient : null,
+        color: isEnabled ? null : AppColors.cardNormalBg.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(AppColors.radiusButton),
+        border: Border.all(
+          color: isEnabled ? AppColors.btnBorder : Colors.white.withValues(alpha: 0.3),
+          width: 1.5,
         ),
-        child: isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        boxShadow: isEnabled
+            ? const [
+                BoxShadow(
+                  color: AppColors.btnShadow,
+                  blurRadius: 16,
+                  offset: Offset(0, 6),
                 ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (icon != null) ...[
-                    icon!,
-                    const SizedBox(width: 8),
-                  ],
-                  Flexible(
-                    child: Text(
-                      label,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+              ]
+            : null,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: isEnabled ? onPressed : null,
+          borderRadius: BorderRadius.circular(AppColors.radiusButton),
+          child: Center(
+            child: isLoading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (icon != null) ...[
+                        icon!,
+                        const SizedBox(width: 8),
+                      ],
+                      Flexible(
+                        child: Text(
+                          label,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800, // ExtraBold
+                            color: isEnabled ? Colors.white : Colors.white.withValues(alpha: 0.55),
+                            letterSpacing: 0.2,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+          ),
+        ),
       ),
     );
   }
