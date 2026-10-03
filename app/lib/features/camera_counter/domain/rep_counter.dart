@@ -171,6 +171,18 @@ class RepCounter {
     return result;
   }
 
+  /// Cancel partial motion on an explicit pause, keeping completed reps.
+  /// The next rep must start from two confident up frames again.
+  RepCounterResult discardIncompleteRep() {
+    _state = RepState.up;
+    _armed = false;
+    _activeRep = null;
+    _currentAngle = null;
+    _selectedSide = null;
+    _clearDebounce();
+    return result;
+  }
+
   void _advanceTime(Duration timestamp) {
     if (timestamp < _latestTime) {
       throw ArgumentError('Time must not move backwards');
