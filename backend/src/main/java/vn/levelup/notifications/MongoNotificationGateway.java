@@ -37,6 +37,9 @@ public class MongoNotificationGateway implements NotificationGateway {
 
     private static final Logger log = LoggerFactory.getLogger(MongoNotificationGateway.class);
 
+    /** Khớp notifications.type trong mongo/init.js: không giới hạn danh sách, để module mới gửi được type mới. */
+    private static final java.util.regex.Pattern TYPE = java.util.regex.Pattern.compile("[a-z0-9_]{1,40}");
+
     private final MongoTemplate mongo;
     private final PushSender push;
     private final Clock clock;
@@ -50,6 +53,9 @@ public class MongoNotificationGateway implements NotificationGateway {
     @Override
     public Result send(ObjectId userId, String type, String title, String body, String dedupeKey,
                        Map<String, String> data) {
+        if (type == null || !TYPE.matcher(type).matches()) {
+            throw new IllegalArgumentException("type thông báo phải dạng a-z0-9_ (khớp validator notifications)");
+        }
         Instant now = clock.instant();
         Document user = mongo.findById(userId, Document.class, "users");
         Document settings = user == null ? new Document() : user.get("notificationSettings", new Document());

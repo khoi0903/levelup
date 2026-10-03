@@ -437,9 +437,10 @@ dbx.coach_messages.createIndex({ userId: 1, createdAt: -1 });
 coll("notifications", {
   bsonType: "object", required: ["userId", "type", "channel", "localDate", "scheduledFor"],
   properties: { userId: { bsonType: "objectId" },
-                type: { enum: ["checkin", "pre_workout", "missed_1", "missed_2", "lapsed", "weekly_review",
-                               "buddy_cheer", "buddy_nudge", "milestone", "meal_reminder",
-                               "missed_session", "streak_risk"] },
+                // Không dùng enum: module nào cũng gửi qua NotificationGateway, type mới không được bị từ chối.
+                // Đang dùng: checkin, pre_workout, missed_1, missed_2, missed_session, lapsed, comeback, streak_risk,
+                // weekly_review, buddy_paired, buddy_cheer, buddy_nudge, milestone, meal_reminder
+                type: { bsonType: "string", pattern: "^[a-z0-9_]{1,40}$" },
                 title: { bsonType: "string" }, body: { bsonType: "string" },
                 data: { bsonType: "object" },                                    // route, id để app mở đúng màn
                 channel: { enum: ["push", "in_app"] }, localDate: DATE_STR,

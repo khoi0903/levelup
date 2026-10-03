@@ -77,6 +77,22 @@ class NotificationFlowTest extends FlowTestBase {
         assertEquals(2, ((Number) stats.get("notificationsSent")).intValue());
     }
 
+    /** Validator notifications không được từ chối type của module khác (buddy, reviews...) hay type mới. */
+    @Test
+    void every_module_type_is_accepted_by_validator() throws Exception {
+        onboard();
+        ObjectId userId = userId();
+        noQuietHours(userId, false);
+        List<String> types = List.of("buddy_paired", "buddy_nudge", "buddy_cheer", "weekly_review", "missed_session",
+            "missed_2", "lapsed", "comeback", "streak_risk", "milestone", "type_moi_chua_co");
+        for (String type : types) {
+            assertEquals(Result.STORED_ONLY, gateway.send(userId, type, "T", "B", null, Map.of()), type);
+        }
+        assertEquals(types.size(), mongo.count(Query.query(Criteria.where("userId").is(userId)), "notifications"));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+            () -> gateway.send(userId, "Bad Type", "T", "B", null, Map.of()));
+    }
+
     @Test
     void push_disabled_stores_only_and_expired_token_is_removed() throws Exception {
         onboard();
