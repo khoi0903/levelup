@@ -1,15 +1,22 @@
 package vn.levelup.config;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
  * Mọi endpoint đều cần token, trừ health check và tài liệu API.
  * Token được kiểm tra bởi JwtDecoder trong {@link vn.levelup.auth.FirebaseJwtConfig}.
+ * CORS chỉ mở cho các origin trong levelup.cors.allowed-origin-patterns (profile dev: localhost, cho Flutter web).
  */
 @Configuration
 public class SecurityConfig {
@@ -18,6 +25,7 @@ public class SecurityConfig {
     SecurityFilterChain apiSecurity(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+            .cors(Customizer.withDefaults())
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
@@ -27,5 +35,18 @@ public class SecurityConfig {
                 .anyRequest().authenticated())
             .oauth2ResourceServer(o -> o.jwt(Customizer.withDefaults()));
         return http.build();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource(
+            @Value("${levelup.cors.allowed-origin-patterns:}") List<String> originPatterns) {
+        CorsConfiguration cors = new CorsConfiguration();
+        cors.setAllowedOriginPatterns(originPatterns);
+        cors.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        cors.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        cors.setMaxAge(3600L);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", cors);
+        return source;
     }
 }
