@@ -1,0 +1,107 @@
+[
+  {
+    "code": "sessions_1",
+    "nameVi": "Bước đầu vững vàng",
+    "descriptionVi": "Bạn đã hoàn thành buổi tập đầu tiên, hãy tự hào về bước khởi đầu này!",
+    "category": "sessions",
+    "threshold": 1
+  },
+  {
+    "code": "sessions_10",
+    "nameVi": "Mười buổi tiến bộ",
+    "descriptionVi": "Bạn đã hoàn thành 10 buổi tập, mỗi buổi đều giúp bạn tiến thêm một bước!",
+    "category": "sessions",
+    "threshold": 10
+  },
+  {
+    "code": "sessions_25",
+    "nameVi": "Bền bỉ từng buổi",
+    "descriptionVi": "Bạn đã hoàn thành 25 buổi tập, sự bền bỉ của bạn đang tạo nên thay đổi!",
+    "category": "sessions",
+    "threshold": 25
+  },
+  {
+    "code": "sessions_50",
+    "nameVi": "Năm mươi lần nỗ lực",
+    "descriptionVi": "Bạn đã hoàn thành 50 buổi tập, hãy ghi nhận hành trình đầy nỗ lực của mình!",
+    "category": "sessions",
+    "threshold": 50
+  },
+  {
+    "code": "streak_2",
+    "nameVi": "Hai tuần giữ nhịp",
+    "descriptionVi": "Bạn đã đạt mục tiêu tập luyện 2 tuần liên tiếp, hãy tiếp tục giữ nhịp này!",
+    "category": "streak",
+    "threshold": 2
+  },
+  {
+    "code": "streak_4",
+    "nameVi": "Một tháng bền bỉ",
+    "descriptionVi": "Bạn đã đạt mục tiêu tập luyện 4 tuần liên tiếp, thói quen của bạn đang vững vàng hơn!",
+    "category": "streak",
+    "threshold": 4
+  },
+  {
+    "code": "streak_8",
+    "nameVi": "Tám tuần kiên trì",
+    "descriptionVi": "Bạn đã đạt mục tiêu tập luyện 8 tuần liên tiếp, hãy tự hào về sự kiên trì của mình!",
+    "category": "streak",
+    "threshold": 8
+  },
+  {
+    "code": "strength_pr_1",
+    "nameVi": "Kỷ lục của riêng bạn",
+    "descriptionVi": "Bạn đã lập kỷ lục cá nhân đầu tiên, hãy vui với bước tiến của chính mình!",
+    "category": "strength",
+    "threshold": 1
+  },
+  {
+    "code": "body_waist_cm_1",
+    "nameVi": "Một dấu mốc mới",
+    "descriptionVi": "Vòng eo của bạn đã giảm 1 cm so với lần đo ban đầu, hãy ghi nhận dấu mốc này!",
+    "category": "body",
+    "threshold": 1
+  },
+  {
+    "code": "buddy_pair_1",
+    "nameVi": "Có bạn đồng hành",
+    "descriptionVi": "Bạn đã ghép buddy đầu tiên, hãy cùng nhau giữ động lực mỗi tuần!",
+    "category": "buddy",
+    "threshold": 1
+  },
+  {
+    "code": "buddy_goal_weeks_4",
+    "nameVi": "Cùng nhau bốn tuần",
+    "descriptionVi": "Bạn và buddy đã cùng đạt mục tiêu tập luyện 4 tuần liên tiếp, hãy tiếp tục cổ vũ nhau!",
+    "category": "buddy",
+    "threshold": 4
+  },
+  {
+    "code": "nutrition_log_days_7",
+    "nameVi": "Bảy ngày hiểu bữa ăn",
+    "descriptionVi": "Bạn đã ghi bữa ăn 7 ngày liên tiếp, hãy tiếp tục dành sự quan tâm cho từng bữa ăn!",
+    "category": "nutrition",
+    "threshold": 7
+  },
+  {
+    "code": "comeback_days_7",
+    "nameVi": "Chào mừng bạn trở lại",
+    "descriptionVi": "Bạn đã quay lại tập sau ít nhất 7 ngày nghỉ, hãy bắt đầu lại theo nhịp phù hợp với mình!",
+    "category": "comeback",
+    "threshold": 7
+  },
+  {
+    "code": "streak_freeze_1",
+    "nameVi": "Giữ nhịp linh hoạt",
+    "descriptionVi": "Bạn đã dùng thẻ đóng băng lần đầu để bảo vệ streak tuần, hãy trở lại khi sẵn sàng!",
+    "category": "streak",
+    "threshold": 1
+  },
+  {
+    "code": "checkin_days_7",
+    "nameVi": "Bảy ngày hiện diện",
+    "descriptionVi": "Bạn đã check-in 7 ngày liên tiếp, mỗi lần hiện diện đều đáng được ghi nhận!",
+    "category": "streak",
+    "threshold": 7
+  }
+]
