@@ -279,7 +279,11 @@ class ObScheduleScreen extends ConsumerWidget {
               ),
               PrimaryButton(
                 label: AppStrings.btnContinue,
-                onPressed: () => context.push('/onboarding/why'),
+                onPressed: (state.weekdays.isNotEmpty &&
+                        state.timeSlot != null &&
+                        state.sessionMinutes != null)
+                    ? () => context.push('/onboarding/why')
+                    : null,
               ),
             ],
           ),

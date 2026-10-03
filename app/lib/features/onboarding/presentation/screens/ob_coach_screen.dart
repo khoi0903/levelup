@@ -154,7 +154,9 @@ class ObCoachScreen extends ConsumerWidget {
               ),
               PrimaryButton(
                 label: AppStrings.btnCreateMyPlan,
-                onPressed: () => context.push('/onboarding/plan'),
+                onPressed: state.coachStyle != null
+                    ? () => context.push('/onboarding/plan')
+                    : null,
               ),
             ],
           ),

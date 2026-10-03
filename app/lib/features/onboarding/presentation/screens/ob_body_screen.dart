@@ -26,10 +26,14 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
   void initState() {
     super.initState();
     final state = ref.read(onboardingControllerProvider);
-    _yearController = TextEditingController(text: state.birthYear.toString());
-    _heightController = TextEditingController(text: state.heightCm.toString());
-    _weightController = TextEditingController(text: state.startWeightKg.toString());
-    _goalWeightController = TextEditingController(text: state.goalWeightKg.toString());
+    _yearController =
+        TextEditingController(text: state.birthYear?.toString() ?? '');
+    _heightController =
+        TextEditingController(text: state.heightCm?.toString() ?? '');
+    _weightController =
+        TextEditingController(text: state.startWeightKg?.toString() ?? '');
+    _goalWeightController =
+        TextEditingController(text: state.goalWeightKg?.toString() ?? '');
   }
 
   @override
@@ -42,10 +46,10 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
   }
 
   void _syncState() {
-    final year = int.tryParse(_yearController.text) ?? 1998;
-    final height = int.tryParse(_heightController.text) ?? 170;
-    final weight = int.tryParse(_weightController.text) ?? 70;
-    final goalWeight = int.tryParse(_goalWeightController.text) ?? 65;
+    final year = int.tryParse(_yearController.text);
+    final height = int.tryParse(_heightController.text);
+    final weight = int.tryParse(_weightController.text);
+    final goalWeight = int.tryParse(_goalWeightController.text);
 
     ref.read(onboardingControllerProvider.notifier).updateBodyInfo(
           birthYear: year,
@@ -60,9 +64,23 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
     final state = ref.watch(onboardingControllerProvider);
     final controller = ref.read(onboardingControllerProvider.notifier);
 
-    // Tính số tuần dự kiến dựa trên chênh lệch cân nặng
-    final diff = (state.startWeightKg - state.goalWeightKg).abs();
-    final estimatedWeeks = diff > 0 ? (diff / 0.5).round() : 4;
+    final startWeight = state.startWeightKg;
+    final goalWeight = state.goalWeightKg;
+    final height = state.heightCm;
+
+    final isHeightValid = height != null && height >= 80 && height <= 250;
+    final isWeightValid =
+        startWeight != null && startWeight >= 20 && startWeight <= 350;
+    final isBodyValid = isHeightValid && isWeightValid;
+
+    // Tính số tuần dự kiến dựa trên chênh lệch cân nặng nếu có đủ thông tin
+    final int? estimatedWeeks;
+    if (startWeight != null && goalWeight != null) {
+      final diff = (startWeight - goalWeight).abs();
+      estimatedWeeks = diff > 0 ? (diff / 0.5).round() : 4;
+    } else {
+      estimatedWeeks = null;
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -113,7 +131,7 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
                             child: _GenderButton(
                               label: AppStrings.genderMale,
                               isSelected: state.gender == Gender.male,
-                              onTap: () => controller.updateBodyInfo(gender: Gender.male),
+                              onTap: () => controller.setGender(Gender.male),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -121,7 +139,7 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
                             child: _GenderButton(
                               label: AppStrings.genderFemale,
                               isSelected: state.gender == Gender.female,
-                              onTap: () => controller.updateBodyInfo(gender: Gender.female),
+                              onTap: () => controller.setGender(Gender.female),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -129,7 +147,7 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
                             child: _GenderButton(
                               label: AppStrings.genderOther,
                               isSelected: state.gender == Gender.other,
-                              onTap: () => controller.updateBodyInfo(gender: Gender.other),
+                              onTap: () => controller.setGender(Gender.other),
                             ),
                           ),
                         ],
@@ -174,32 +192,37 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        decoration: BoxDecoration(
-                          color: AppColors.accentLight,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Text(
-                          AppStrings.bodyGoalNotice(state.goalWeightKg, estimatedWeeks),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            height: 1.5,
-                            color: AppColors.accentDark,
+                      if (goalWeight != null && estimatedWeeks != null) ...[
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: AppColors.accentLight,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Text(
+                            AppStrings.bodyGoalNotice(goalWeight, estimatedWeeks),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              height: 1.5,
+                              color: AppColors.accentDark,
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
               ),
               PrimaryButton(
                 label: AppStrings.btnContinue,
-                onPressed: () {
-                  _syncState();
-                  context.push('/onboarding/training');
-                },
+                onPressed: isBodyValid
+                    ? () {
+                        _syncState();
+                        context.push('/onboarding/training');
+                      }
+                    : null,
               ),
             ],
           ),

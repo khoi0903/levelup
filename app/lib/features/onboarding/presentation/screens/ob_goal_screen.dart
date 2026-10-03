@@ -121,7 +121,9 @@ class ObGoalScreen extends ConsumerWidget {
               ),
               PrimaryButton(
                 label: AppStrings.btnContinue,
-                onPressed: () => context.push('/onboarding/body'),
+                onPressed: state.goal != null
+                    ? () => context.push('/onboarding/body')
+                    : null,
               ),
               const SizedBox(height: 14),
               Wrap(
