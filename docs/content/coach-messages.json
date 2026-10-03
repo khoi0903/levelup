@@ -1,0 +1,155 @@
+{
+  "checkin_morning": {
+    "strict": [
+      "{ten}, chọn mức năng lượng của bạn sáng nay.",
+      "Bắt đầu từ hiện tại. Cho biết hôm nay bạn thấy thế nào, {ten}.",
+      "{ten}, chọn một mục tiêu nhỏ cho hôm nay."
+    ],
+    "supportive": [
+      "Chào buổi sáng, {ten} 🌤️ Bạn đang cảm thấy thế nào?",
+      "Một ngày mới, một nhịp riêng của bạn. Chọn mức năng lượng sáng nay nhé 🌱",
+      "{ten}, mình ở đây cùng bạn 💛 Chọn một mục tiêu nhỏ cho hôm nay nhé."
+    ],
+    "funny": [
+      "{ten}, pin sáng nay còn bao nhiêu phần trăm? Chọn mức năng lượng nhé 🔋",
+      "Chào {ten}, trạm check-in đã mở cửa 😄 Hôm nay bạn thấy thế nào?",
+      "Hôm nay không cần mở khóa siêu nhân 🦸 Chọn một mục tiêu nhỏ thôi, {ten}."
+    ]
+  },
+  "pre_workout": {
+    "strict": [
+      "{ten}, buổi {bai_tap} đã sẵn sàng. Bắt đầu khi bạn sẵn sàng.",
+      "Dành {thoi_luong} cho buổi tập này. Nhấn bắt đầu, {ten}.",
+      "Tập theo nhịp của bạn. Bắt đầu {bai_tap}."
+    ],
+    "supportive": [
+      "{ten}, mình đồng hành cùng bạn trong buổi {bai_tap} 💛 Bắt đầu khi sẵn sàng nhé.",
+      "{thoi_luong} dành cho chính bạn 🌱 Nhấn bắt đầu khi thấy sẵn sàng nhé, {ten}.",
+      "Không cần hoàn hảo để bắt đầu ✨ Mở buổi {bai_tap} theo nhịp của bạn nhé."
+    ],
+    "funny": [
+      "{ten}, {bai_tap} đang chờ lên sóng 🎬 Nhấn bắt đầu khi sẵn sàng nhé.",
+      "Lịch hẹn với bản thân dài {thoi_luong} 📅 Nhấn bắt đầu nhé, {ten}.",
+      "Không cần nhạc nền hoành tráng 🎵 Bắt đầu {bai_tap} theo nhịp của bạn nhé."
+    ]
+  },
+  "missed_1": {
+    "strict": [
+      "Lỡ một buổi không xóa tiến bộ. Chọn bản 5 phút hôm nay, {ten}.",
+      "{ten}, hôm nay có thể bắt đầu nhỏ. Thử bản 5 phút.",
+      "Không cần tập bù. Mở bản 5 phút khi bạn sẵn sàng."
+    ],
+    "supportive": [
+      "{ten}, lỡ một buổi cũng không sao 💛 Thử bản 5 phút nếu hôm nay phù hợp nhé.",
+      "Bạn vẫn có thể tiếp tục từ đây 🌱 Chọn bản 5 phút cho hôm nay nhé, {ten}.",
+      "Mình vẫn ở đây cùng bạn 🤗 Mở bản 5 phút khi sẵn sàng nhé."
+    ],
+    "funny": [
+      "Buổi tập cũng có bản mini 😄 Thử bản 5 phút hôm nay nhé, {ten}.",
+      "Không cần tập bù như trả bài 📚 Mở bản 5 phút khi sẵn sàng nhé.",
+      "{ten}, hôm nay thử chế độ gọn nhẹ nhé 🎒 Chọn bản 5 phút."
+    ]
+  },
+  "missed_2": {
+    "strict": [
+      "{ten}, điều gì cản trở hai buổi vừa rồi? Chọn: Bận, Mệt, Đau, Chán, Quên.",
+      "Chọn điều đang cản bạn: Bận, Mệt, Đau, Chán, Quên. Không cần giải thích thêm.",
+      "Để điều chỉnh kế hoạch, chọn điều cản trở: Bận, Mệt, Đau, Chán, Quên."
+    ],
+    "supportive": [
+      "{ten}, mình muốn hiểu để đồng hành tốt hơn 💛 Điều gì cản bạn: Bận, Mệt, Đau, Chán, Quên?",
+      "Hai buổi vừa rồi có thể chưa phù hợp 🌱 Chọn điều cản trở: Bận, Mệt, Đau, Chán, Quên nhé.",
+      "Bạn không cần giải thích dài đâu 🤗 Chọn điều đang cản bạn: Bận, Mệt, Đau, Chán, Quên."
+    ],
+    "funny": [
+      "Kế hoạch cần chỉnh nút nào, {ten}? Chọn điều cản trở: Bận, Mệt, Đau, Chán, Quên 🔧",
+      "Không có bài kiểm tra ở đây 😄 Chọn điều cản bạn: Bận, Mệt, Đau, Chán, Quên.",
+      "Mình mở hộp công cụ chỉnh lịch rồi 🧰 Điều gì cản bạn: Bận, Mệt, Đau, Chán, Quên?"
+    ]
+  },
+  "lapsed_7": {
+    "strict": [
+      "{ten}, bạn từng bắt đầu vì {ly_do}. Chọn một buổi ngắn để quay lại.",
+      "Một tuần nghỉ không xóa lý do {ly_do}. Mở kế hoạch khi bạn sẵn sàng quay lại.",
+      "{ten}, nếu {ly_do} vẫn phù hợp, chọn bản 5 phút để trở lại."
+    ],
+    "supportive": [
+      "{ten}, mình vẫn nhớ lý do của bạn: {ly_do} 💛 Chọn một buổi nhẹ để quay lại khi sẵn sàng nhé.",
+      "Bạn luôn có thể trở lại vì {ly_do} 🌱 Mở kế hoạch khi thấy phù hợp nhé, {ten}.",
+      "Một tuần nghỉ vẫn có chỗ cho khởi đầu mới ✨ Thử bản 5 phút vì {ly_do} nhé."
+    ],
+    "funny": [
+      "{ten}, cửa quay lại vẫn mở 🚪 Chọn một buổi ngắn vì {ly_do} nhé.",
+      "Kế hoạch không giận bạn đâu 😄 Mở lại khi sẵn sàng tiếp tục vì {ly_do} nhé.",
+      "Chương mới có thể dài 5 phút 📖 Thử bản 5 phút vì {ly_do} nhé, {ten}."
+    ]
+  },
+  "workout_done": {
+    "strict": [
+      "{ten}, bạn đã hoàn thành {bai_tap}. Ghi lại cảm nhận sau buổi tập.",
+      "Hoàn thành {thoi_luong} tập luyện. Chọn mức năng lượng sau buổi tập.",
+      "Buổi tập đã xong, {ten}. Ghi một điều bạn thấy ổn hôm nay."
+    ],
+    "supportive": [
+      "{ten}, bạn vừa dành {thoi_luong} cho bản thân 💛 Ghi lại cảm nhận sau buổi tập nhé.",
+      "Bạn đã hoàn thành {bai_tap} rồi 🌱 Chọn mức năng lượng hiện tại nhé, {ten}.",
+      "Mỗi buổi đều có điều đáng ghi nhận ✨ Ghi một điều bạn thấy ổn hôm nay nhé."
+    ],
+    "funny": [
+      "{bai_tap} đã có dấu tích hoàn thành ✅ Chấm mức năng lượng hiện tại nhé, {ten}.",
+      "Hết tập, đến mục bình luận 😄 Ghi lại cảm nhận sau buổi {bai_tap} nhé.",
+      "{thoi_luong} vừa có mặt trong nhật ký hôm nay 📖 Ghi một điều bạn thấy ổn nhé, {ten}."
+    ]
+  },
+  "new_pr": {
+    "strict": [
+      "Kỷ lục cá nhân mới ở {bai_tap}: {so_lieu}. Xem lại tiến bộ của bạn.",
+      "{ten}, bạn vừa đạt mốc mới: {so_lieu}. Ghi lại cảm nhận về mốc này.",
+      "{bai_tap} có kỷ lục cá nhân mới: {so_lieu}. Đánh dấu mốc này trong nhật ký."
+    ],
+    "supportive": [
+      "{ten}, mốc mới của bạn là {so_lieu} ✨ Ghi lại cảm nhận để nhớ khoảnh khắc này nhé.",
+      "Một bước tiến của riêng bạn ở {bai_tap}: {so_lieu} 💛 Xem lại hành trình của mình nhé.",
+      "Kỷ lục cá nhân mới: {so_lieu} 🎉 Đánh dấu mốc này trong nhật ký nhé, {ten}."
+    ],
+    "funny": [
+      "Bảng kỷ lục cá nhân vừa có dòng mới: {so_lieu} 🏆 Xem lại tiến bộ nhé, {ten}.",
+      "{bai_tap} vừa mở khóa mốc {so_lieu} 🔓 Ghi lại cảm nhận về mốc mới nhé.",
+      "Nhật ký sắp có khách mới: kỷ lục {so_lieu} 😄 Đánh dấu mốc này nhé, {ten}."
+    ]
+  },
+  "weekly_win": {
+    "strict": [
+      "{ten}, tuần này bạn hoàn thành {so_buoi} buổi. Chọn một điều bạn muốn giữ cho tuần tới.",
+      "{so_buoi} buổi là dấu mốc tuần này. Xem tổng kết để ghi nhận tiến bộ của bạn.",
+      "Tuần này có {so_buoi} buổi đã hoàn thành. Ghi một điều khiến bạn hài lòng, {ten}."
+    ],
+    "supportive": [
+      "{ten}, tuần này bạn đã có {so_buoi} buổi 💛 Ghi một điều khiến bạn hài lòng nhé.",
+      "Cùng ghi nhận {so_buoi} buổi của tuần này 🌱 Xem tổng kết hành trình của bạn nhé.",
+      "{so_buoi} buổi, từng bước theo nhịp của bạn ✨ Chọn một điều muốn giữ cho tuần tới nhé."
+    ],
+    "funny": [
+      "Bản tin tuần có {so_buoi} buổi lên sóng 📺 Xem tổng kết của bạn nhé, {ten}.",
+      "Nhật ký tuần vừa điểm danh {so_buoi} buổi 📖 Ghi một điều khiến bạn hài lòng nhé.",
+      "{ten}, tuần này có {so_buoi} dấu tích ✅ Chọn một điều muốn mang sang tuần tới nhé."
+    ]
+  },
+  "checkin_tired": {
+    "strict": [
+      "{ten}, hôm nay bạn thấy mệt. Chọn nghỉ hoặc giảm thời lượng buổi tập.",
+      "Kế hoạch có thể điều chỉnh. Chọn mức năng lượng hiện tại, {ten}.",
+      "Không cần cố đủ thời lượng hôm nay. Chọn nghỉ hoặc một buổi ngắn hơn."
+    ],
+    "supportive": [
+      "{ten}, mình nghe bạn nói hôm nay mệt 💛 Chọn nghỉ hoặc giảm thời lượng nhé.",
+      "Bạn có thể đổi nhịp hôm nay 🌱 Chọn mức năng lượng hiện tại để điều chỉnh kế hoạch nhé.",
+      "Một ngày nghỉ cũng có chỗ trong kế hoạch 🤗 Chọn nghỉ hoặc một buổi ngắn hơn nhé, {ten}."
+    ],
+    "funny": [
+      "{ten}, pin thấp thì lịch cũng có nút chỉnh 🔋 Chọn nghỉ hoặc giảm thời lượng nhé.",
+      "Hôm nay kế hoạch có thể co giãn 😄 Chọn mức năng lượng hiện tại nhé, {ten}.",
+      "Lịch tập có nút tạm dừng ⏸️ Chọn nghỉ hoặc một buổi ngắn hơn cho hôm nay nhé."
+    ]
+  }
+}
