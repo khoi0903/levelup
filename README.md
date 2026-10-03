@@ -1,4 +1,4 @@
-# Fitness App
+# LevelUp
 
 App fitness có AI coach cho người Việt. Quy ước làm việc: xem [AGENTS.md](AGENTS.md).
 

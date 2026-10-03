@@ -1,10 +1,10 @@
-# Fitness App – quy ước chung cho mọi AI agent và thành viên
+# LevelUp – quy ước chung cho mọi AI agent và thành viên
 
 File này là nguồn quy ước duy nhất. Claude Code đọc qua `CLAUDE.md` (import file này),
 Antigravity và các agent khác đọc trực tiếp file này. Sửa quy ước thì sửa ở đây.
 
 ## Sản phẩm
-App fitness cho người Việt: tập theo bài có sẵn, AI coach, chụp món ăn tính calo,
+**LevelUp**: app fitness cho người Việt: tập theo bài có sẵn, AI coach, chụp món ăn tính calo,
 đếm số lần bằng camera. Vấn đề cốt lõi: 60% người dùng bỏ app vì mất động lực,
 nên hệ thống động lực (check-in, nhắc khi bỏ buổi, streak tuần, buddy, tổng kết tuần)
 là trọng tâm và luôn miễn phí.
@@ -43,7 +43,7 @@ Không sửa thư mục do agent khác phụ trách trong cùng lúc. Cần sử
 - Video camera không bao giờ rời khỏi điện thoại.
 
 ## Backend (Java)
-- Java 21, Spring Boot, Maven wrapper (`./mvnw`). Package gốc `vn.fitnessapp`.
+- Java 21, Spring Boot, Maven wrapper (`./mvnw`). Package gốc `vn.levelup`.
 - Chia package theo module: `auth`, `users`, `onboarding`, `exercises`, `plans`, `workouts`,
   `checkins`, `coach`, `nutrition`, `motivation`, `notifications`, `jobs`, `demo`.
 - Mỗi module: `*Controller`, `*Service`, `*Repository`, DTO dùng `record`.
@@ -52,6 +52,7 @@ Không sửa thư mục do agent khác phụ trách trong cùng lúc. Cần sử
 - API mô tả bằng OpenAPI (springdoc), app Flutter sinh client từ đó.
 
 ## App (Flutter)
+- Tên hiển thị: `LevelUp`. Application ID (Android) và Bundle ID (iOS): `vn.levelup.app`.
 - `flutter_riverpod`, `go_router`, `drift` (lưu buổi tập offline), `camera` +
   `google_mlkit_pose_detection`, `firebase_auth`, `firebase_messaging`.
 - Chia theo tính năng trong `lib/features/<tên>/{data,domain,presentation}`.

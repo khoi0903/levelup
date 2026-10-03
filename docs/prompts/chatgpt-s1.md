@@ -84,22 +84,19 @@ Trả về DUY NHẤT JSON hợp lệ dạng:
 
 ---
 
-## Prompt 3 · Tên app và icon
+## Prompt 3 · Icon app LevelUp
 
-Kết quả: chọn tên, lưu icon PNG 1024×1024 vào `docs/brand/`
+Kết quả: lưu icon PNG 1024×1024 vào `docs/brand/`
 
 ```
-Tôi đang làm một app tập luyện cho người Việt 20-35 tuổi, có AI coach giúp giữ động lực,
-tập ngắn 10-15 phút, chụp món ăn Việt để tính calo. Tinh thần: thân thiện, kiên trì, không áp lực.
+Tôi đang làm app tập luyện tên "LevelUp" cho người Việt 20-35 tuổi. App có AI coach giúp
+giữ động lực, buổi tập ngắn 10-15 phút tăng dần độ khó theo từng tuần, có streak và huy hiệu,
+chụp món ăn Việt để tính calo. Tinh thần: thân thiện, kiên trì, tiến bộ từng bước, không áp lực.
 
-Bước 1: Đề xuất 10 tên app. Tiêu chí: ngắn (1-2 từ), dễ đọc với cả người Việt và người nước ngoài,
-không trùng tên app fitness nổi tiếng. Mỗi tên kèm một câu giải thích.
-
-Bước 2: Sau khi tôi chọn tên, vẽ icon app 1024×1024:
-- Hình đơn giản, nhận ra được khi thu nhỏ 48px
+Vẽ icon app 1024×1024:
+- Ý tưởng "lên cấp": bậc thang, mũi tên đi lên, hoặc chữ L cách điệu
+- Hình đơn giản, vẫn nhận ra khi thu nhỏ còn 48px
 - Màu chính cam đất #C4461F, màu phụ xanh rêu #1E7465, nền sáng
-- Không chữ, không ảnh người thật, không gradient cầu vồng
+- Không chữ (trừ chữ L cách điệu), không ảnh người thật, không gradient cầu vồng
 - Vẽ 3 phương án khác nhau
 ```
-
-> Trước khi chốt tên, tự kiểm tra trên Google Play và App Store xem đã có app trùng tên chưa.

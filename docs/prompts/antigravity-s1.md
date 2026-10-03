@@ -22,6 +22,10 @@ Bạn là Flutter developer của dự án app fitness cho người Việt. Repo
   (fake) trả dữ liệu mẫu. Sau này chỉ cần thay bằng bản gọi API, không sửa giao diện.
 
 ## Việc cần làm
+0. **Đặt tên app là LevelUp**: tên hiển thị `LevelUp` trên Android (`android:label`)
+   và iOS (`CFBundleDisplayName`). Đổi Application ID Android và Bundle ID iOS thành
+   `vn.levelup.app` (hiện đang là `vn.fitnessapp.fitness_app`). Đổi ngay bây giờ vì sau khi
+   lên store thì không đổi được nữa.
 1. **Cài package** trong `app/pubspec.yaml`: `flutter_riverpod`, `go_router`, `google_fonts`.
    Chưa cài Firebase, camera, drift (để sprint sau).
 2. **Cấu trúc thư mục**:

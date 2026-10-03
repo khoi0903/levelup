@@ -1,0 +1,351 @@
+<title>Flow Động Lực MVP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lexend:wght@500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{
+  --bg:#F5F7F4; --surface:#FFFFFF; --ink:#16201B; --muted:#56635C; --line:#DCE3DE;
+  --accent:#E0562B; --accent-soft:#FCE9E1; --teal:#1E7465; --teal-soft:#E1F0EC;
+  --warn:#B7791F; --warn-soft:#FBF1DD;
+  --display:"Lexend","Be Vietnam Pro",system-ui,sans-serif;
+  --body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#111714; --surface:#18201C; --ink:#E7EEEA; --muted:#9BAAA2; --line:#2A3530;
+    --accent:#F2764E; --accent-soft:#3A2219; --teal:#5CC2AE; --teal-soft:#16302A;
+    --warn:#E3B45A; --warn-soft:#352A15;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#111714; --surface:#18201C; --ink:#E7EEEA; --muted:#9BAAA2; --line:#2A3530;
+  --accent:#F2764E; --accent-soft:#3A2219; --teal:#5CC2AE; --teal-soft:#16302A;
+  --warn:#E3B45A; --warn-soft:#352A15;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.65;padding:0 20px}
+.wrap{max-width:900px;margin:0 auto;padding-block:40px 80px}
+h1,h2,h3{font-family:var(--display);line-height:1.25;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,5vw,40px);font-weight:700;letter-spacing:-.01em}
+h2{font-size:24px;font-weight:600;margin-bottom:6px}
+h3{font-size:17px;font-weight:600;margin:22px 0 8px}
+p{margin:0 0 12px;max-width:68ch}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.lede{color:var(--muted);font-size:17px;margin-top:12px}
+header{display:grid;gap:4px;margin-bottom:28px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 0;margin-bottom:12px;overflow-x:auto;white-space:nowrap}
+nav a{display:inline-block;font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:999px}
+nav a:hover,nav a:focus-visible{background:var(--teal-soft);color:var(--teal);outline:none}
+section{padding-top:36px;scroll-margin-top:60px}
+section>.sub{color:var(--muted);margin-bottom:14px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);margin:10px 0 6px}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--bg)}
+td:first-child{font-weight:600;white-space:nowrap}
+.new{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;padding:1px 7px;border-radius:999px;background:var(--accent-soft);color:var(--accent);margin-left:6px;vertical-align:2px}
+.diagram{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;margin:12px 0}
+.diagram pre{margin:0;background:transparent}
+ol.steps{margin:8px 0;padding-left:22px}
+ol.steps li{margin-bottom:6px;padding-left:4px}
+ol.steps li::marker{font-family:var(--mono);color:var(--teal);font-size:13px}
+.rule{background:var(--teal-soft);border-radius:10px;padding:14px 18px;margin:14px 0}
+.rule strong{color:var(--teal)}
+.warn{background:var(--warn-soft);border-radius:10px;padding:14px 18px;margin:14px 0}
+.warn strong{color:var(--warn)}
+.msgs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:12px 0}
+.msg{background:var(--surface);border:1px solid var(--line);border-radius:14px 14px 14px 4px;padding:12px 14px;font-size:14.5px}
+.msg b{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);font-weight:500;margin-bottom:4px}
+.kpi{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.kpi span{font-size:13px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 11px}
+code{font-family:var(--mono);font-size:12.5px;background:var(--teal-soft);color:var(--teal);padding:1px 6px;border-radius:5px}
+ul{padding-left:20px;margin:6px 0 12px}
+li{margin-bottom:4px}
+footer{margin-top:48px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Fitness app · MVP spec · Hệ thống động lực</span>
+  <h1>Flow người dùng cho hệ thống động lực</h1>
+  <p class="lede">Khảo sát 100 người: 60% bỏ app vì mất động lực. Tài liệu này đưa động lực thành một module lõi của MVP và mô tả từng luồng để team design và dev bám theo.</p>
+</header>
+
+<nav aria-label="Mục lục">
+  <a href="#scope">Phạm vi MVP</a>
+  <a href="#f1">F1 Onboarding</a>
+  <a href="#f2">F2 Vòng lặp ngày</a>
+  <a href="#f3">F3 Bỏ buổi</a>
+  <a href="#f4">F4 Streak mềm</a>
+  <a href="#f5">F5 Buddy</a>
+  <a href="#f6">F6 Tổng kết tuần</a>
+  <a href="#f7">F7 Cột mốc</a>
+  <a href="#f8">F8 Ghi bữa ăn</a>
+  <a href="#ai">Quy tắc tin nhắn AI</a>
+  <a href="#metrics">Đo lường</a>
+</nav>
+
+<section id="scope">
+  <h2>Phạm vi MVP sau khi thêm hệ thống động lực</h2>
+  <p class="sub">Module có nhãn MỚI là phần bổ sung. Các module cũ được chỉnh để phục vụ mục tiêu giữ chân người dùng.</p>
+  <div class="tbl"><table>
+    <tr><th>Module</th><th>Tính năng</th><th>Vai trò với động lực</th></tr>
+    <tr><td>Onboarding</td><td>Khảo sát mục tiêu, thể trạng, lịch rảnh, <b>lý do muốn thay đổi</b>, chọn phong cách coach</td><td>Thu "lý do thật" để AI dùng lại khi người dùng nản</td></tr>
+    <tr><td>Tập luyện</td><td>Thư viện bài có video, chế độ tập có đếm giờ, ghi tạ và số lần, <b>bản 5 phút</b> cho mỗi buổi</td><td>Luôn có lựa chọn đủ nhỏ để không bỏ hẳn</td></tr>
+    <tr><td>AI Coach</td><td>Chat, tạo và điều chỉnh kế hoạch, <b>chủ động nhắn tin theo sự kiện</b></td><td>Đóng vai người theo dõi, không chỉ chờ được hỏi</td></tr>
+    <tr><td>Dinh dưỡng</td><td>Chụp ảnh tính calo (ưu tiên món Việt), sửa khẩu phần, mục tiêu calo và macro</td><td>Gợi ý cụ thể giúp người dùng thấy mình đang làm đúng</td></tr>
+    <tr><td>Khởi đầu dễ <span class="new">MỚI</span></td><td>Tuần 1: 3 buổi × 10–15 phút, tăng dần theo RPE</td><td>Tạo cảm giác "mình làm được" ngay từ đầu</td></tr>
+    <tr><td>Check-in sáng <span class="new">MỚI</span></td><td>1 chạm chọn Mệt / Bình thường / Sung sức</td><td>Buổi tập hợp với sức lúc đó nên ít bị bỏ</td></tr>
+    <tr><td>Streak mềm <span class="new">MỚI</span></td><td>Streak theo tuần, có thẻ đóng băng, bản 5 phút vẫn được tính</td><td>Lỡ một lần không làm mất hết công sức</td></tr>
+    <tr><td>Buddy <span class="new">MỚI</span></td><td>Ghép cặp với bạn, thấy trạng thái của nhau, nút nhắc và cổ vũ</td><td>Có người cùng chịu trách nhiệm (accountability)</td></tr>
+    <tr><td>Tiến bộ tuần <span class="new">MỚI</span></td><td>Tổng kết tuần do AI viết, cột mốc, ảnh chia sẻ</td><td>Người dùng thấy kết quả dù cân nặng chưa đổi</td></tr>
+  </table></div>
+</section>
+
+<section id="f1">
+  <span class="eyebrow">F1</span>
+  <h2>Onboarding: từ lúc tải app tới buổi tập đầu tiên</h2>
+  <p class="sub">Mục tiêu: xong trong dưới 3 phút và người dùng <b>hoàn thành một bài tập ngay trong phiên đầu</b>.</p>
+  <div class="diagram"><pre class="mermaid">
+flowchart TD
+  A["Mở app lần đầu"] --> B["Chọn mục tiêu<br/>Giảm mỡ / Tăng cơ / Khỏe hơn / Giữ dáng"]
+  B --> C["Thông tin cơ bản<br/>tuổi, giới tính, chiều cao, cân nặng"]
+  C --> D["Kinh nghiệm + chấn thương"]
+  D --> E["Nơi tập + dụng cụ"]
+  E --> F["Lịch rảnh: ngày + khung giờ"]
+  F --> G["Vì sao bạn muốn thay đổi?<br/>chọn nhanh + viết thêm"]
+  G --> H["Chọn phong cách coach<br/>Nghiêm khắc / Động viên / Hài hước"]
+  H --> I["AI tạo kế hoạch tuần 1<br/>3 buổi × 10–15 phút"]
+  I --> J{"Mời buddy?"}
+  J -- "Mời" --> K["Gửi link mời"]
+  J -- "Để sau" --> L
+  K --> L["Giải thích lợi ích rồi mới xin quyền thông báo"]
+  L --> M{"Tập thử 5 phút ngay?"}
+  M -- "Có" --> N["Buổi tập 5 phút"]
+  M -- "Hẹn giờ" --> O["Đặt nhắc cho buổi đầu"]
+  N --> P["Chúc mừng + mở streak tuần 1"]
+  O --> P
+  </pre></div>
+  <h3>Chi tiết cần lưu ý</h3>
+  <ol class="steps">
+    <li><b>Câu hỏi "vì sao":</b> đưa sẵn lựa chọn (tự tin hơn, khỏe để chơi với con, mặc vừa đồ cũ, bác sĩ khuyên...) và ô viết thêm. Lưu lại thành <code>user.motivation_reason</code>, AI dùng trong tin nhắn khi người dùng sắp bỏ.</li>
+    <li><b>Kế hoạch tuần 1 cố ý thấp hơn sức</b> của người dùng. Ghi rõ trên màn hình: "Tuần đầu nhẹ để cơ thể làm quen, AI sẽ tăng dần."</li>
+    <li><b>Xin quyền thông báo:</b> hiện màn giải thích trước ("Coach sẽ nhắc bạn đúng giờ đã chọn, tối đa 2 lần mỗi ngày"), rồi mới gọi hộp thoại của hệ điều hành.</li>
+    <li><b>Buổi 5 phút ngay sau onboarding</b> là bước quan trọng nhất của F1. Người đã tập xong một buổi trong ngày đầu có khả năng quay lại cao hơn hẳn.</li>
+  </ol>
+</section>
+
+<section id="f2">
+  <span class="eyebrow">F2</span>
+  <h2>Vòng lặp mỗi ngày</h2>
+  <p class="sub">Luồng chính người dùng đi qua hằng ngày: check-in, được nhắc, tập, nhận phản hồi, AI điều chỉnh.</p>
+  <div class="diagram"><pre class="mermaid">
+flowchart TD
+  A["Sáng: thông báo check-in"] --> B{"Hôm nay bạn thấy sao?"}
+  B -- "Mệt" --> C["Bản nhẹ 10 phút<br/>hoặc giãn cơ phục hồi"]
+  B -- "Bình thường" --> D["Buổi theo kế hoạch"]
+  B -- "Sung sức" --> E["Kế hoạch + phần nâng cao tùy chọn"]
+  B -- "Không trả lời" --> D
+  C --> F["30 phút trước giờ tập: nhắc có ngữ cảnh"]
+  D --> F
+  E --> F
+  F --> G{"Có tập không?"}
+  G -- "Có" --> H["Chế độ tập: video, đếm giờ, ghi tạ và số lần"]
+  G -- "Hết giờ mà chưa tập" --> X["Chuyển sang F3"]
+  H --> I["Chấm độ khó RPE 1–10<br/>+ ghi chú nếu đau"]
+  I --> J["Màn kết quả: so với lần trước,<br/>tiến độ streak tuần, buddy được báo"]
+  J --> K["AI điều chỉnh buổi kế tiếp"]
+  </pre></div>
+  <div class="rule"><strong>Quy tắc điều chỉnh sau mỗi buổi:</strong> RPE ≤ 5 thì buổi sau tăng khoảng 5–10% (thêm tạ, số lần hoặc hiệp). RPE 6–8 thì giữ nguyên. RPE ≥ 9 hoặc có báo đau thì giảm và gợi ý bài thay thế.</div>
+  <h3>Màn kết quả luôn có ít nhất một điểm tiến bộ</h3>
+  <p>Thứ tự ưu tiên: kỷ lục mới (PR) về tạ hoặc số lần, rồi tổng khối lượng tăng, thời gian tập tăng, số buổi trong tuần, và cuối cùng là "bạn đã có mặt" khi không có gì khác. Không bao giờ để màn này chỉ hiện số liệu khô.</p>
+</section>
+
+<section id="f3">
+  <span class="eyebrow">F3</span>
+  <h2>Khi người dùng bỏ buổi</h2>
+  <p class="sub">Luồng quan trọng nhất để giải quyết vấn đề 60%. Nguyên tắc: <b>cường độ nhắc tăng dần nhưng giọng luôn nhẹ nhàng</b>, và AI hỏi lý do để xử lý đúng nguyên nhân.</p>
+  <div class="diagram"><pre class="mermaid">
+flowchart TD
+  A["Bỏ 1 buổi"] --> B["Tối cùng ngày: gợi ý bản 5 phút để giữ tiến độ"]
+  B --> C{"Tập bản 5 phút?"}
+  C -- "Có" --> OK["Tính là 1 buổi, streak an toàn"]
+  C -- "Không" --> D["Dời buổi sang ngày trống gần nhất"]
+  D --> E{"Bỏ 2 buổi liên tiếp?"}
+  E -- "Có" --> F["Coach hỏi: Điều gì cản bạn?"]
+  F --> R1["Bận"] --> S1["Đổi sang buổi 10 phút, dời lịch"]
+  F --> R2["Mệt"] --> S2["Giảm cường độ tuần này"]
+  F --> R3["Đau"] --> S3["Bài thay thế + khuyên nghỉ hoặc đi khám"]
+  F --> R4["Chán"] --> S4["Đổi bài mới hoặc mở thử thách"]
+  F --> R5["Quên"] --> S5["Đề xuất đổi giờ nhắc"]
+  E -- "Vẫn im lặng 5–7 ngày" --> G["Tin quay lại: nhắc lý do từ onboarding,<br/>đề xuất tuần khởi động lại nhẹ hơn"]
+  G --> H{"Quay lại?"}
+  H -- "Có" --> I["Reset kế hoạch nhẹ + huy hiệu Comeback"]
+  H -- "Quá 14 ngày" --> J["Mỗi tuần 1 tin, tối đa 2 tin, rồi dừng"]
+  </pre></div>
+  <div class="warn"><strong>Giới hạn thông báo:</strong> tối đa 2 push mỗi ngày tính cả mọi loại, không gửi từ 22h đến 7h, và dừng hẳn sau chuỗi quay lại. Gửi quá nhiều thì người dùng tắt thông báo hoặc xóa app, tức là mất luôn kênh liên lạc.</div>
+  <p>Lý do người dùng chọn được lưu thành sự kiện <code>skip_reason</code>. Đây là dữ liệu thật để trả lời câu hỏi "vì sao mất động lực" thay cho khảo sát.</p>
+</section>
+
+<section id="f4">
+  <span class="eyebrow">F4</span>
+  <h2>Streak mềm</h2>
+  <p class="sub">Streak tính <b>theo tuần</b> chứ không theo ngày. Kế hoạch tập có sẵn ngày nghỉ, nên streak theo ngày sẽ phạt người dùng vì nghỉ đúng kế hoạch.</p>
+  <div class="diagram"><pre class="mermaid">
+flowchart TD
+  A["Đầu tuần: mục tiêu N buổi"] --> B["Mỗi buổi ≥ 5 phút được tính"]
+  B --> C{"Cuối tuần đạt N buổi?"}
+  C -- "Đạt" --> D["Streak +1 tuần"]
+  D --> E{"Đủ 4 tuần liên tiếp?"}
+  E -- "Có" --> F["Tặng 1 thẻ đóng băng, giữ tối đa 2"]
+  C -- "Chưa đạt" --> G{"Còn thẻ đóng băng?"}
+  G -- "Còn" --> H["Tự dùng thẻ, streak giữ nguyên,<br/>thông báo nhẹ"]
+  G -- "Hết" --> I["Streak về 0, vẫn hiện kỷ lục cũ"]
+  I --> J["Thử thách Comeback: đạt tuần kế tiếp<br/>để nhận huy hiệu"]
+  </pre></div>
+  <ul>
+    <li>Tuần đầu tiên luôn tính là đạt nếu người dùng tập ít nhất 1 buổi. Mục đích là để ai cũng có streak ngay tuần 1.</li>
+    <li>Hiển thị tiến độ tuần dạng vòng tròn "2/3 buổi" ở màn hình chính và trên widget.</li>
+  </ul>
+</section>
+
+<section id="f5">
+  <span class="eyebrow">F5</span>
+  <h2>Buddy: tập cùng bạn</h2>
+  <p class="sub">MVP chỉ cần ghép cặp 1-1 qua link mời. Ghép nhóm ngẫu nhiên với người lạ để sang phiên bản sau.</p>
+  <div class="diagram"><pre class="mermaid">
+flowchart TD
+  A["Người dùng A bấm Mời buddy"] --> B["Tạo link hoặc mã mời"]
+  B --> C["Gửi qua Zalo, Messenger..."]
+  C --> D{"B đã có app?"}
+  D -- "Chưa" --> E["B cài app, onboarding rút gọn"]
+  D -- "Rồi" --> F
+  E --> F["Ghép cặp A và B"]
+  F --> G["Mỗi ngày: thấy trạng thái của nhau<br/>Đã tập / Chưa tập / Nghỉ theo kế hoạch"]
+  G --> H{"B chưa tập, A muốn nhắc?"}
+  H -- "Có" --> I["Nút Nhắc bạn: 1 lần mỗi ngày"]
+  G --> J["B vừa tập xong, A bấm Cổ vũ"]
+  G --> K{"Cả hai đạt mục tiêu tuần?"}
+  K -- "Có" --> L["Huy hiệu đôi + streak chung"]
+  </pre></div>
+  <div class="rule"><strong>Quyền riêng tư:</strong> mặc định buddy chỉ thấy trạng thái đã tập hoặc chưa, và streak. Cân nặng, số đo, ảnh cơ thể, bữa ăn chỉ chia sẻ khi người dùng tự bật từng mục.</div>
+</section>
+
+<section id="f6">
+  <span class="eyebrow">F6</span>
+  <h2>Tổng kết tuần (tối Chủ nhật)</h2>
+  <div class="diagram"><pre class="mermaid">
+flowchart TD
+  A["Tối Chủ nhật: gom dữ liệu tuần"] --> B["AI viết tổng kết"]
+  B --> C["1. Kết quả: số buổi / mục tiêu"]
+  C --> D["2. Chiến thắng tuần: luôn có ít nhất 1"]
+  D --> E["3. Một điều nên cải thiện"]
+  E --> F{"Tỷ lệ hoàn thành"}
+  F -- "100% và RPE TB ≤ 7" --> G["Đề xuất tăng nhẹ"]
+  F -- "60–99%" --> H["Đề xuất giữ nguyên"]
+  F -- "Dưới 60%" --> I["Đề xuất giảm buổi hoặc thời lượng"]
+  G --> J["Người dùng xác nhận hoặc chỉnh"]
+  H --> J
+  I --> J
+  J --> K["Sáng thứ Hai: nhắc cân và đo, 1 lần mỗi tuần"]
+  </pre></div>
+  <p>Chỉ nhắc cân mỗi tuần một lần. Cân mỗi ngày dao động theo lượng nước trong cơ thể và dễ làm người dùng nản dù họ đang đi đúng hướng.</p>
+</section>
+
+<section id="f7">
+  <span class="eyebrow">F7</span>
+  <h2>Cột mốc và giai đoạn chững lại</h2>
+  <div class="diagram"><pre class="mermaid">
+flowchart TD
+  A["Sự kiện được ghi nhận"] --> B{"Loại sự kiện"}
+  B -- "Buổi đầu, 10 buổi, 50 buổi" --> C["Màn ăn mừng + huy hiệu"]
+  B -- "PR tạ hoặc số lần" --> C
+  B -- "Vòng eo giảm, đạt cân mục tiêu" --> C
+  B -- "4 tuần đạt streak liên tiếp" --> C
+  C --> D["Tạo ảnh chia sẻ story"]
+  B -- "Cân không đổi 3 tuần" --> E["AI giải thích chững lại là bình thường"]
+  E --> F["Chỉ ra chỉ số khác đang tiến bộ"]
+  F --> G["Đề xuất chỉnh calo hoặc đổi giáo án"]
+  </pre></div>
+</section>
+
+<section id="f8">
+  <span class="eyebrow">F8</span>
+  <h2>Ghi bữa ăn bằng ảnh</h2>
+  <div class="diagram"><pre class="mermaid">
+flowchart TD
+  A["Bấm chụp món ăn"] --> B["AI nhận diện món + ước lượng khẩu phần"]
+  B --> C["Hiện kết quả dạng khoảng: 550–650 kcal"]
+  C --> D{"Người dùng sửa?"}
+  D -- "Sửa khẩu phần hoặc tên món" --> E["Cập nhật số liệu"]
+  D -- "Đúng rồi" --> F
+  E --> F["Lưu, cập nhật calo và macro còn lại"]
+  F --> G{"Cuối ngày còn thiếu đạm hoặc dư calo?"}
+  G -- "Thiếu đạm" --> H["Gợi ý bữa tối cụ thể"]
+  G -- "Dư calo" --> I["Nhắc nhẹ, không phán xét,<br/>gợi ý đi bộ 20 phút"]
+  </pre></div>
+  <div class="warn"><strong>An toàn:</strong> AI không đặt mục tiêu dưới khoảng 1200 kcal/ngày với nữ và 1500 kcal/ngày với nam. Nếu thấy dấu hiệu ăn quá ít kéo dài, AI dừng gợi ý cắt calo và khuyên gặp chuyên gia.</div>
+</section>
+
+<section id="ai">
+  <h2>Quy tắc tin nhắn của AI coach</h2>
+  <ul>
+    <li><b>Cá nhân hóa thật:</b> dùng tên, số liệu thật của người dùng và lý do họ nêu lúc onboarding.</li>
+    <li><b>Mỗi tin chỉ một hành động</b>, kèm nút bấm (Tập 5 phút / Dời lịch / Nghỉ hôm nay).</li>
+    <li><b>Không trách, không so sánh với người khác</b>, không tạo cảm giác tội lỗi.</li>
+    <li><b>Cho phép nghỉ:</b> "Nghỉ hôm nay" là lựa chọn hợp lệ và không bị phạt.</li>
+  </ul>
+  <h3>Ví dụ: bỏ 2 buổi liên tiếp, theo 3 phong cách coach</h3>
+  <div class="msgs">
+    <div class="msg"><b>Nghiêm khắc</b>Minh, 2 buổi rồi đấy. Không cần 30 phút, chỉ cần 10. Mục tiêu "mặc vừa áo cũ" vẫn đang chờ. Bắt đầu chứ?</div>
+    <div class="msg"><b>Động viên</b>Mấy hôm nay chắc bạn bận lắm. Tuần trước bạn đã squat thêm được 5kg, công sức đó vẫn còn nguyên. Mình làm bản 10 phút nhẹ nhàng nhé?</div>
+    <div class="msg"><b>Hài hước</b>Tạ nhà bạn gửi lời hỏi thăm, nó bảo nhớ bạn. 10 phút thôi, hứa không làm bạn đau quá đâu 😄</div>
+  </div>
+  <h3>Bảng sự kiện kích hoạt tin nhắn</h3>
+  <div class="tbl"><table>
+    <tr><th>Sự kiện</th><th>Thời điểm</th><th>Kênh</th><th>Nội dung chính</th></tr>
+    <tr><td>Check-in sáng</td><td>Giờ dậy người dùng chọn</td><td>Push</td><td>Hỏi năng lượng hôm nay</td></tr>
+    <tr><td>Sắp tới giờ tập</td><td>30 phút trước</td><td>Push</td><td>Tên buổi + thời lượng + 1 điểm tiến bộ</td></tr>
+    <tr><td>Bỏ 1 buổi</td><td>20h cùng ngày</td><td>Push</td><td>Gợi ý bản 5 phút</td></tr>
+    <tr><td>Bỏ 2 buổi</td><td>Sáng hôm sau</td><td>Push + chat</td><td>Hỏi lý do (5 lựa chọn)</td></tr>
+    <tr><td>Im lặng 5–7 ngày</td><td>Khung giờ tập cũ</td><td>Push</td><td>Nhắc lý do + tuần khởi động lại</td></tr>
+    <tr><td>Hoàn thành buổi</td><td>Ngay sau buổi tập</td><td>Trong app</td><td>Khen cụ thể bằng số liệu</td></tr>
+    <tr><td>Đạt cột mốc</td><td>Ngay khi đạt</td><td>Trong app</td><td>Ăn mừng + ảnh chia sẻ</td></tr>
+    <tr><td>Tổng kết tuần</td><td>19h Chủ nhật</td><td>Push + chat</td><td>Báo cáo + kế hoạch tuần sau</td></tr>
+  </table></div>
+</section>
+
+<section id="metrics">
+  <h2>Đo lường hiệu quả</h2>
+  <h3>Chỉ số chính</h3>
+  <div class="kpi">
+    <span>Retention ngày 1 / 7 / 30</span>
+    <span>Tỷ lệ tập buổi đầu trong ngày đăng ký</span>
+    <span>Số buổi tập mỗi tuần mỗi người</span>
+    <span>% tuần đạt mục tiêu</span>
+    <span>% quay lại sau tin F3</span>
+    <span>Retention nhóm có buddy so với không có</span>
+    <span>Tỷ lệ tắt thông báo</span>
+  </div>
+  <h3>Sự kiện cần gắn tracking</h3>
+  <div class="kpi">
+    <span><code>onboarding_step_completed</code></span>
+    <span><code>checkin_submitted</code></span>
+    <span><code>workout_started</code></span>
+    <span><code>workout_completed</code></span>
+    <span><code>session_missed</code></span>
+    <span><code>skip_reason</code></span>
+    <span><code>reengage_sent</code> / <code>reengage_opened</code></span>
+    <span><code>streak_freeze_used</code></span>
+    <span><code>buddy_invited</code> / <code>buddy_paired</code></span>
+    <span><code>weekly_review_viewed</code></span>
+    <span><code>meal_logged</code></span>
+  </div>
+  <div class="rule"><strong>Gợi ý thử nghiệm A/B đầu tiên:</strong> so sánh nhóm có tin nhắn F3 do AI cá nhân hóa với nhóm nhận tin nhắc cố định. Nếu retention ngày 30 của nhóm AI cao hơn rõ rệt thì hệ thống động lực đang hiệu quả.</div>
+</section>
+
+<footer>Bản nháp đầu cho team. Các ngưỡng (RPE, số ngày, giờ gửi) là giá trị khởi điểm, nên chỉnh lại theo dữ liệu thật sau khi ra mắt.</footer>
+</div>
