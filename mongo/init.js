@@ -218,6 +218,7 @@ coll("workout_logs", {
   required: ["userId", "startedAt", "localDate", "variant", "sets"],
   properties: {
     userId: { bsonType: "objectId" },
+    clientId: { bsonType: "string" },                 // app sinh, chống lưu trùng khi gửi lại
     planId: { bsonType: "objectId" }, plannedSessionId: { bsonType: "objectId" },
     startedAt: { bsonType: "date" }, endedAt: { bsonType: "date" },
     localDate: DATE_STR, weekStart: DATE_STR,
@@ -228,6 +229,7 @@ coll("workout_logs", {
     note: { bsonType: "string" },
     kcalEstimate: { bsonType: "number" },
     countsForStreak: { bsonType: "bool" },           // backend đặt = durationSec >= 300
+    newRecords: { bsonType: "array" },               // kỷ lục mới của buổi này, để trả lại khi app gửi trùng
     sets: { bsonType: "array", maxItems: 200, items: { bsonType: "object",
       required: ["exerciseId", "setIndex"],
       properties: {
@@ -248,6 +250,7 @@ coll("workout_logs", {
   }
 });
 dbx.workout_logs.createIndex({ userId: 1, localDate: -1 });
+dbx.workout_logs.createIndex({ userId: 1, clientId: 1 }, { unique: true, partialFilterExpression: { clientId: { $type: "string" } } });   // app gửi lại không lưu trùng
 dbx.workout_logs.createIndex({ userId: 1, weekStart: 1, countsForStreak: 1 });
 dbx.workout_logs.createIndex({ "sets.exerciseId": 1, "sets.repSource": 1 });   // đo độ chính xác camera
 
