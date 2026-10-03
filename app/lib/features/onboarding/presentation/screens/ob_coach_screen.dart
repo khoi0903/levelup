@@ -154,8 +154,8 @@ class _ObCoachScreenState extends ConsumerState<ObCoachScreen> {
                                   horizontal: 14, vertical: 12),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? Colors.white.withValues(alpha: 0.6)
-                                    : AppColors.cardNormalBg.withValues(alpha: 0.15),
+                                    ? AppColors.surface
+                                    : AppColors.background,
                                 borderRadius: const BorderRadius.only(
                                   topLeft: Radius.circular(14),
                                   topRight: Radius.circular(14),
@@ -163,7 +163,7 @@ class _ObCoachScreenState extends ConsumerState<ObCoachScreen> {
                                   bottomLeft: Radius.circular(4),
                                 ),
                                 border: Border.all(
-                                  color: AppColors.cardNormalBorder.withValues(alpha: 0.6),
+                                  color: AppColors.border,
                                   width: 1.0,
                                 ),
                               ),

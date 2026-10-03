@@ -81,7 +81,7 @@ class ObNotifyScreen extends ConsumerWidget {
                                       width: 40,
                                       height: 40,
                                       decoration: BoxDecoration(
-                                        gradient: AppColors.primaryButtonGradient,
+                                        color: AppColors.primary,
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: const Icon(
@@ -123,15 +123,15 @@ class ObNotifyScreen extends ConsumerWidget {
 
                               // Notification Card 2 (Faded)
                               Opacity(
-                                opacity: 0.6,
+                                opacity: 0.7,
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 14, vertical: 12),
                                   decoration: BoxDecoration(
-                                    color: AppColors.cardSelectedBg,
+                                    color: AppColors.surface,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
-                                        color: AppColors.cardSelectedBorder,
+                                        color: AppColors.border,
                                         width: 1.0),
                                   ),
                                   child: Row(
@@ -142,13 +142,13 @@ class ObNotifyScreen extends ConsumerWidget {
                                         width: 40,
                                         height: 40,
                                         decoration: BoxDecoration(
-                                          color: AppColors.accent,
+                                          color: AppColors.primaryLight,
                                           borderRadius:
                                               BorderRadius.circular(12),
                                         ),
                                         child: const Icon(
                                           Icons.chat_bubble,
-                                          color: Colors.white,
+                                          color: AppColors.primary,
                                           size: 20,
                                         ),
                                       ),

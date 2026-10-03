@@ -160,14 +160,14 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                                     Icon(
                                       Icons.play_circle_outline,
                                       size: 44,
-                                      color: AppColors.textMuted,
+                                      color: AppColors.textSecondary,
                                     ),
                                     SizedBox(height: 6),
                                     Text(
                                       AppStrings.workoutVideoPlaceholder,
                                       style: TextStyle(
                                         fontSize: 14,
-                                        color: AppColors.textMuted,
+                                        color: AppColors.textSecondary,
                                       ),
                                     ),
                                   ],
