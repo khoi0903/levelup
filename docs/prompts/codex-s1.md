@@ -1,23 +1,29 @@
 # Prompt cho Codex – Sprint 1
 
 ## Cài và mở Codex
-Dùng Codex CLI (đăng nhập bằng tài khoản ChatGPT Plus), chạy trong thư mục repo:
+Cài một lần (đăng nhập bằng tài khoản ChatGPT Plus):
 ```
 npm install -g @openai/codex
-cd D:\fitness-app
-codex
 ```
-Hoặc dùng extension Codex trong VS Code và mở thư mục `D:\fitness-app`.
-Codex tự đọc `AGENTS.md` ở gốc repo.
+Mỗi việc có **thư mục riêng** (Git worktree), đã đứng sẵn ở đúng nhánh. Ba việc chạy song song được:
 
-Mỗi việc dưới đây là **một phiên Codex riêng, một nhánh riêng**. Dán nguyên khối trong mỗi phần.
+| Việc | Mở Codex trong thư mục | Nhánh |
+|---|---|---|
+| 1 | `D:\levelup-worktrees\codex-seed` | `feat/seed-exercises` |
+| 2 | `D:\levelup-worktrees\codex-content` | `feat/content-coach` |
+| 3 | `D:\levelup-worktrees\codex-camera` | `feat/app-camera-counter` |
+
+Ví dụ: `cd D:\levelup-worktrees\codex-seed` rồi gõ `codex`. Hoặc mở thư mục đó bằng VS Code
+và dùng extension Codex. Codex tự đọc `AGENTS.md` ở gốc thư mục.
+
+Mỗi việc dưới đây là **một phiên Codex riêng, trong thư mục riêng**. Dán nguyên khối trong mỗi phần.
 
 ---
 
 ## Việc 1 · 20 bài tập cho thư viện (`mongo/seed/exercises.json`)
 
 ```
-Tạo nhánh feat/seed-exercises. Đọc AGENTS.md trước.
+Bạn đang ở nhánh feat/seed-exercises, không chuyển nhánh. Đọc AGENTS.md trước.
 Chỉ được tạo hoặc sửa file mongo/seed/exercises.json, không đụng file nào khác.
 
 Đọc validator của collection "exercises" trong mongo/init.js để biết đúng tên trường,
@@ -48,7 +54,7 @@ Kiểm tra JSON hợp lệ và slug không trùng. Commit: "seed: 20 bài tập"
 ## Việc 2 · Mẫu tin nhắn AI coach (`docs/content/coach-messages.json`)
 
 ```
-Tạo nhánh feat/content-coach. Đọc AGENTS.md trước.
+Bạn đang ở nhánh feat/content-coach, không chuyển nhánh. Đọc AGENTS.md trước.
 Chỉ được tạo file docs/content/coach-messages.json.
 
 Viết mẫu tin nhắn cho AI coach của app LevelUp. Vấn đề sản phẩm: 60% người dùng bỏ app vì mất
@@ -72,7 +78,7 @@ Commit: "content: mẫu tin nhắn coach".
 ## Việc 3 · Thuật toán đếm squat (`app/lib/features/camera_counter/`)
 
 ```
-Tạo nhánh feat/app-camera-counter. Đọc AGENTS.md và mục F2b trong docs/04-backend-flow.html.
+Bạn đang ở nhánh feat/app-camera-counter, không chuyển nhánh. Đọc AGENTS.md và mục F2b trong docs/04-backend-flow.html.
 Chỉ được tạo hoặc sửa file trong:
   app/lib/features/camera_counter/
   app/test/features/camera_counter/
@@ -109,6 +115,6 @@ Commit nhỏ theo từng bước.
 ---
 
 ## Quy tắc chung khi dùng Codex
-- Mỗi việc một nhánh, không làm thẳng trên `main`.
+- Mỗi việc một thư mục và một nhánh riêng. Không chạy `git checkout` hay `git switch`, không làm trên `main`.
 - Codex xong thì báo Claude Code review nhánh đó trước khi merge.
 - Không dán API key, mật khẩu, connection string thật vào Codex.

@@ -1,6 +1,7 @@
 # Prompt cho Antigravity – Sprint 1 (app Flutter)
 
-Mở thư mục `D:\fitness-app` trong Antigravity, rồi dán nguyên phần dưới đây.
+Mở thư mục **`D:\levelup-worktrees\app-ui`** trong Antigravity (đã đứng sẵn ở nhánh
+`feat/app-s1-onboarding`), rồi dán nguyên phần dưới đây.
 
 ---
 
@@ -18,7 +19,7 @@ Bạn là Flutter developer của dự án app fitness cho người Việt. Repo
 ## Phạm vi
 - **Chỉ sửa trong thư mục `app/`.** Không đụng `backend/`, `mongo/`, `docs/`, `AGENTS.md`.
 - **Không đụng `app/lib/features/camera_counter/`**: thư mục này do Codex làm.
-- Làm trên nhánh mới `feat/app-s1-onboarding`. Commit nhỏ, dạng `app: thêm màn OB-Body`.
+- Bạn đang ở nhánh `feat/app-s1-onboarding`. Không chuyển nhánh, không chạy `git checkout`. Commit nhỏ, dạng `app: thêm màn OB-Body`.
 - Backend chưa có. Mọi dữ liệu lấy qua **interface repository**, tạm thời dùng bản giả
   (fake) trả dữ liệu mẫu. Sau này chỉ cần thay bằng bản gọi API, không sửa giao diện.
 
