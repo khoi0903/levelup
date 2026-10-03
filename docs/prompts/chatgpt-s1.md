@@ -1,5 +1,9 @@
 # Prompt cho ChatGPT Plus – Sprint 1 (nội dung và hình ảnh)
 
+> **Đã chuyển:** Prompt 1 (bài tập) và Prompt 2 (tin nhắn coach) giờ giao cho **Codex**,
+> vì Codex ghi thẳng file vào repo và tự kiểm tra định dạng. Xem `codex-s1.md`.
+> Trong ChatGPT bản chat chỉ còn dùng **Prompt 3 · Icon** (cần tạo ảnh).
+
 Mỗi prompt dán vào **một cuộc chat riêng**. Kết quả lưu vào đúng file ghi ở cuối mỗi prompt,
 rồi báo Claude Code để kiểm tra và nạp vào database.
 

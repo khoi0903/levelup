@@ -19,10 +19,14 @@ Tài liệu thiết kế trong `docs/`:
 ## Cấu trúc repo và ai phụ trách
 | Thư mục | Nội dung | Phụ trách chính |
 |---|---|---|
-| `app/` | Flutter (Dart) | Antigravity |
+| `app/` (trừ `camera_counter`) | Flutter: giao diện, điều hướng, gọi API | Antigravity |
+| `app/lib/features/camera_counter/` | Thuật toán đếm số lần và bắt lỗi tư thế (Dart thuần) | Codex |
 | `backend/` | Java 21 + Spring Boot, Spring Data MongoDB | Claude Code |
-| `mongo/` | docker-compose, `init.js` tạo collection | Claude Code |
+| `mongo/` (trừ `seed/`) | docker-compose, `init.js` tạo collection | Claude Code |
+| `mongo/seed/`, `docs/content/` | Dữ liệu mẫu: bài tập, món ăn, mẫu tin nhắn coach | Codex |
 | `docs/` | Tài liệu thiết kế | Ai cũng đọc, sửa qua PR |
+
+Claude Code review code của mọi agent trước khi merge vào `main`.
 
 Không sửa thư mục do agent khác phụ trách trong cùng lúc. Cần sửa chéo thì mở PR riêng.
 
