@@ -21,6 +21,10 @@ levelup:
   firebase:
     project-id: ${FIREBASE_PROJECT_ID:levelup-dev}
   default-timezone: Asia/Ho_Chi_Minh
+  ai:
+    # Model dùng chung cho coach, tổng kết tuần, nhận diện món ăn
+    model: ${LEVELUP_AI_MODEL:claude-opus-5-5}
+    timeout-seconds: 20
 
 management:
   endpoints:
