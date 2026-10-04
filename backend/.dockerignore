@@ -1,0 +1,12 @@
+target/
+.mvn/
+mvnw
+mvnw.cmd
+*.log
+.idea/
+.vscode/
+*.iml
+# Không bao giờ đưa khóa vào image
+*.json.key
+*firebase*.json
+.env
