@@ -16,6 +16,7 @@ class CameraRepResult {
     required this.form,
     required this.status,
     required this.error,
+    required this.mode,
   });
 
   final RepCounterResult counter;
@@ -27,16 +28,28 @@ class CameraRepResult {
   double get averageConfidence => counter.averageConfidence;
   int get formScore => form.formScore;
   List<FormIssue> get issues => form.issues;
+
+  /// Chế độ của cấu hình đang chạy: reps (đếm lần) hoặc hold (giữ tư thế).
+  final CvMode mode;
+
+  /// Thời gian giữ đúng tư thế (chỉ khác 0 ở chế độ hold).
+  Duration get holdDuration => counter.holdDuration;
+
+  /// Đang giữ đúng dải ở khung gần nhất (chế độ hold).
+  bool get holding => counter.holding;
+  double? get currentAngle => counter.currentAngle;
+  BodySide? get selectedSide => counter.selectedSide;
 }
 
-/// One squat set. Subscribe before start; latestResult is also always readable.
+/// One set of any camera-supported exercise (reps or hold).
+/// Subscribe before start; latestResult is also always readable.
 ///
 /// start resumes after pause. pause releases the camera and cancels partial
 /// motion while retaining completed reps. stop is terminal: drains in-flight
 /// detection, closes ML Kit, releases camera, then closes the result stream.
 class CameraRepSession {
   CameraRepSession({
-    required CvConfig config,
+    required this.config,
     CameraRepDevice? camera,
     CameraRepPoseDetector? detector,
     Duration Function()? elapsed,
@@ -48,18 +61,13 @@ class CameraRepSession {
     if (presenceInterval <= Duration.zero) {
       throw ArgumentError('presenceInterval must be positive');
     }
-    // FormChecker measures squat knee angles only.
-    if (config.joints[0] != PoseJoint.hip ||
-        config.joints[1] != PoseJoint.knee ||
-        config.joints[2] != PoseJoint.ankle) {
-      throw ArgumentError(
-        'CameraRepSession currently supports hip-knee-ankle squats',
-      );
-    }
     _latest = _snapshot();
   }
 
   final Duration presenceInterval;
+
+  /// Cấu hình đang dùng; UI xem `config.mode` để hiển thị số lần hay thời gian.
+  final CvConfig config;
   final RepCounter _counter;
   final CameraRepDevice _camera;
   final CameraRepPoseDetector _detector;
@@ -233,9 +241,10 @@ class CameraRepSession {
 
   CameraRepResult _snapshot() => CameraRepResult._(
     counter: _counter.result,
-    form: _formChecker.checkSquats(_counter.result.reps),
+    form: _formChecker.check(config, _counter.result),
     status: _status,
     error: _error,
+    mode: config.mode,
   );
 
   void _publish() {

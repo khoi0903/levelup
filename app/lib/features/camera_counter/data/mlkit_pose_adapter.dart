@@ -7,15 +7,25 @@ import '../domain/pose.dart';
 class MlkitPoseAdapter {
   const MlkitPoseAdapter();
 
+  /// 16 khớp domain dùng (vai, khuỷu, cổ tay, hông, gối, cổ chân, gót,
+  /// mũi chân); tên enum domain trùng tên ML Kit. Các điểm mặt, ngón tay bị bỏ.
   static const _types = {
     mlkit.PoseLandmarkType.leftShoulder: PoseLandmarkType.leftShoulder,
     mlkit.PoseLandmarkType.rightShoulder: PoseLandmarkType.rightShoulder,
+    mlkit.PoseLandmarkType.leftElbow: PoseLandmarkType.leftElbow,
+    mlkit.PoseLandmarkType.rightElbow: PoseLandmarkType.rightElbow,
+    mlkit.PoseLandmarkType.leftWrist: PoseLandmarkType.leftWrist,
+    mlkit.PoseLandmarkType.rightWrist: PoseLandmarkType.rightWrist,
     mlkit.PoseLandmarkType.leftHip: PoseLandmarkType.leftHip,
     mlkit.PoseLandmarkType.rightHip: PoseLandmarkType.rightHip,
     mlkit.PoseLandmarkType.leftKnee: PoseLandmarkType.leftKnee,
     mlkit.PoseLandmarkType.rightKnee: PoseLandmarkType.rightKnee,
     mlkit.PoseLandmarkType.leftAnkle: PoseLandmarkType.leftAnkle,
     mlkit.PoseLandmarkType.rightAnkle: PoseLandmarkType.rightAnkle,
+    mlkit.PoseLandmarkType.leftHeel: PoseLandmarkType.leftHeel,
+    mlkit.PoseLandmarkType.rightHeel: PoseLandmarkType.rightHeel,
+    mlkit.PoseLandmarkType.leftFootIndex: PoseLandmarkType.leftFootIndex,
+    mlkit.PoseLandmarkType.rightFootIndex: PoseLandmarkType.rightFootIndex,
   };
 
   /// null means no person; missing joints stay absent, never synthesized.

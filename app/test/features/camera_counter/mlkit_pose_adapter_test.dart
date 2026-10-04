@@ -23,12 +23,12 @@ mlkit.Pose fakePose({double confidence = 0.9}) => mlkit.Pose(
 void main() {
   const adapter = MlkitPoseAdapter();
 
-  test('maps all eight joints, preserving pixels, likelihood and time', () {
+  test('maps all sixteen body joints (incl. elbow, wrist, heel, footIndex), preserving pixels, likelihood and time', () {
     final pose = fakePose();
     const timestamp = Duration(milliseconds: 234);
     final frame = adapter.toFrame(pose, timestamp: timestamp);
     expect(frame.timestamp, timestamp);
-    expect(frame.landmarks.length, 8);
+    expect(frame.landmarks.length, 16);
     for (final type in PoseLandmarkType.values) {
       final sourceType = mlkit.PoseLandmarkType.values.byName(type.name);
       final source = pose.landmarks[sourceType]!;
@@ -45,7 +45,7 @@ void main() {
     pose.landmarks.remove(mlkit.PoseLandmarkType.rightKnee);
     pose.landmarks.remove(mlkit.PoseLandmarkType.leftHip);
     final frame = adapter.toFrame(pose, timestamp: Duration.zero);
-    expect(frame.landmarks.length, 6);
+    expect(frame.landmarks.length, 14);
     expect(frame.landmarks.containsKey(PoseLandmarkType.rightKnee), isFalse);
     expect(frame.landmarks.containsKey(PoseLandmarkType.leftHip), isFalse);
   });
@@ -55,7 +55,7 @@ void main() {
       fakePose(confidence: 0.2),
       timestamp: Duration.zero,
     );
-    expect(frame.landmarks.length, 8);
+    expect(frame.landmarks.length, 16);
     expect(
       frame.landmarks.values.map((point) => point.likelihood),
       everyElement(0.2),
@@ -80,6 +80,6 @@ void main() {
     final pose = fakePose();
     final frame = adapter.toFrame(pose, timestamp: Duration.zero);
     pose.landmarks.clear();
-    expect(frame.landmarks.length, 8);
+    expect(frame.landmarks.length, 16);
   });
 }
