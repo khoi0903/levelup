@@ -8,6 +8,7 @@ import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/secondary_button.dart';
 import '../../../users/presentation/controllers/user_controller.dart';
+import '../../../workout/presentation/controllers/workout_controller.dart';
 import '../controllers/home_controller.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -33,9 +34,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final plan = planAsync.valueOrNull;
     final todaySession =
-        (plan?.sessions.isNotEmpty ?? false) ? plan!.sessions.first : null;
+        plan == null ? null : pickNextSession(plan, localDateString(DateTime.now()));
+    final todayDone = todaySession?.status == 'completed';
     final totalTarget = plan?.targetSessions ?? 3;
-    final currentSessionsCount = plan?.sessions.length ?? 2;
+    final currentSessionsCount = plan == null
+        ? 2
+        : plan.sessions.where((s) => s.status == 'completed').length;
 
     return Scaffold(
       body: GradientBackground(
@@ -269,17 +273,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               children: [
                                 Expanded(
                                   child: PrimaryButton(
-                                    label: AppStrings.btnStart,
+                                    label: todayDone
+                                        ? 'Đã tập xong'
+                                        : AppStrings.btnStart,
                                     height: 48,
-                                    onPressed: () => context.push('/workout'),
+                                    onPressed: todayDone
+                                        ? null
+                                        : () => context.push(todaySession == null
+                                            ? '/workout'
+                                            : '/workout/${todaySession.id}'),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
                                 SecondaryButton(
                                   label: AppStrings.btnOnly5Min,
                                   height: 48,
-                                  onPressed: () =>
-                                      context.push('/workout?quick5=true'),
+                                  onPressed: todayDone
+                                      ? null
+                                      : () => context.push(todaySession == null
+                                          ? '/workout?quick5=true'
+                                          : '/workout/${todaySession.id}?quick5=true'),
                                 ),
                               ],
                             ),
