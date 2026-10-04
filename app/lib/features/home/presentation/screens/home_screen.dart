@@ -16,6 +16,7 @@ import '../../../onboarding/domain/models/plan_models.dart';
 import '../../../streak/presentation/controllers/streak_controller.dart';
 import '../../../users/presentation/controllers/user_controller.dart';
 import '../../../workout/presentation/controllers/workout_controller.dart';
+import '../../../workout/domain/models/workout_session_state.dart';
 import '../controllers/home_controller.dart';
 
 /// Màn hình Trang chủ (Home) - hoàn toàn kết nối API, bỏ dữ liệu giả.
@@ -62,7 +63,10 @@ class HomeScreen extends ConsumerWidget {
     final plan = planAsync.valueOrNull;
     final todayStr = localDateString(DateTime.now());
     final todaySession = plan == null ? null : pickNextSession(plan, todayStr);
-    final todayDone = todaySession?.status == 'completed';
+    // Đã tập xong, hoặc buổi kế tiếp ở ngày sau: tập lúc này là "Tập thêm", không gắn vào lịch
+    final todayDone = todaySession != null &&
+        (todaySession.status == 'completed' ||
+            !canLinkToPlan(todaySession.scheduledDate, DateTime.now()));
 
     final totalTarget = streakAsync.valueOrNull?.thisWeek?.targetSessions ??
         plan?.targetSessions ??
@@ -323,7 +327,7 @@ class HomeScreen extends ConsumerWidget {
           const SizedBox(height: 12),
           Text(
             todaySession != null && todaySession.scheduledTime.isNotEmpty
-                ? 'Hôm nay · ${todaySession.scheduledTime}'
+                ? '${_sessionDayLabel(todaySession.scheduledDate)} · ${todaySession.scheduledTime}'
                 : AppStrings.todayWorkoutHeader,
             style: const TextStyle(
               fontSize: 13,
@@ -726,4 +730,18 @@ class _WeekDayDot extends StatelessWidget {
       ],
     );
   }
+}
+
+/// "Hôm nay", "Ngày mai" hoặc thứ trong tuần của buổi kế tiếp.
+String _sessionDayLabel(String scheduledDate) {
+  final d = DateTime.tryParse(scheduledDate);
+  if (d == null) return 'Hôm nay';
+  final now = DateTime.now();
+  final diff = DateTime(d.year, d.month, d.day)
+      .difference(DateTime(now.year, now.month, now.day))
+      .inDays;
+  if (diff <= 0) return 'Hôm nay';
+  if (diff == 1) return 'Ngày mai';
+  const names = ['Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ nhật'];
+  return names[d.weekday - 1];
 }

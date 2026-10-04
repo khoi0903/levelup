@@ -155,6 +155,17 @@ ApiClient clientWith(RecordingAdapter adapter) {
 }
 
 void main() {
+  test('canLinkToPlan: chỉ buổi hôm nay hoặc buổi bù trong tuần, không gắn buổi ngày sau', () {
+    final sunday = DateTime(2026, 10, 4, 20); // Chủ nhật
+    expect(canLinkToPlan('2026-10-04', sunday), isTrue); // đúng ngày
+    expect(canLinkToPlan('2026-09-30', sunday), isTrue); // tập bù Thứ Tư cùng tuần
+    expect(canLinkToPlan('2026-10-05', sunday), isFalse); // Thứ Hai tuần sau
+    expect(canLinkToPlan('2026-09-27', sunday), isFalse); // tuần trước
+    final monday = DateTime(2026, 10, 5, 7);
+    expect(canLinkToPlan('2026-10-07', monday), isFalse); // Thứ Tư, chưa tới
+    expect(canLinkToPlan('', monday), isFalse);
+  });
+
   group('WorkoutRequest.toJson khớp WorkoutRequest.java', () {
     test('chỉ dùng tên trường backend, đủ mọi trường đã điền', () {
       final json = fullRequest().toJson();
@@ -400,7 +411,7 @@ void main() {
         session: session(status),
         items: const [],
         clientId: 'AbCdEfGh12345678',
-        startedAt: DateTime.utc(2026),
+        startedAt: DateTime(2026, 10, 5, 18),
       );
       expect(state('planned').plannedSessionId, sessionId);
       expect(state('completed').plannedSessionId, isNull);

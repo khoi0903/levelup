@@ -117,9 +117,6 @@ public class WorkoutService {
             .append("sets", r.sets().stream().map(s -> setDocument(s, now, prSets)).toList())
             .append("newRecords", newRecords)
             .append("createdAt", Date.from(now));
-        if (r.plannedSessionId() != null) {
-            log.append("plannedSessionId", new ObjectId(r.plannedSessionId()));
-        }
         putIfPresent(log, "rpe", r.rpe());
         putIfPresent(log, "painAreas", r.painAreas());
         putIfPresent(log, "note", r.note());
@@ -128,10 +125,14 @@ public class WorkoutService {
         TrainingPlan plan = null;
         if (r.plannedSessionId() != null) {
             ObjectId sessionId = new ObjectId(r.plannedSessionId());
+            // Chỉ buổi cùng tuần với buổi tập và không ở tương lai (tập đúng ngày hoặc tập bù).
+            // Tập trước buổi của ngày sau / tuần sau là "tập thêm": lưu log nhưng không đánh dấu lịch.
             Query session = Query.query(Criteria.where("userId").is(userId).and("status").is("active")
-                .and("sessions").elemMatch(Criteria.where("_id").is(sessionId).and("status").is("planned")));
+                .and("sessions").elemMatch(Criteria.where("_id").is(sessionId).and("status").is("planned")
+                    .and("scheduledDate").gte(weekStart).lte(localDate.toString())));
             plan = mongo.findOne(session, TrainingPlan.class);
             if (plan != null) {
+                log.append("plannedSessionId", sessionId);
                 log.append("planId", new ObjectId(plan.id()));
                 mongo.updateFirst(session, Update.update("sessions.$.status", "completed"), TrainingPlan.class);
             }

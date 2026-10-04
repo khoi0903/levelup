@@ -108,8 +108,11 @@ class WorkoutSessionState {
 
   /// Backend chỉ nhận ObjectId; id giả (dữ liệu demo) thì bỏ qua.
   /// Buổi đã hoàn thành mà tập lại ("Tập thêm") thì không gắn vào lịch nữa.
+  /// Buổi của ngày sau (tập trước) cũng là tập thêm: chỉ gắn buổi hôm nay hoặc buổi bù trong tuần.
   String? get plannedSessionId =>
-      _objectId.hasMatch(session.id) && session.status != 'completed'
+      _objectId.hasMatch(session.id) &&
+          session.status != 'completed' &&
+          canLinkToPlan(session.scheduledDate, startedAt)
       ? session.id
       : null;
 
@@ -159,4 +162,16 @@ class WorkoutSessionState {
     result: result ?? this.result,
     error: clearError ? null : (error ?? this.error),
   );
+}
+
+/// Buổi lên lịch [scheduledDate] ("YYYY-MM-DD") được tính vào lịch khi tập lúc [startedAt]:
+/// cùng tuần (tuần bắt đầu Thứ Hai) và không ở tương lai. Khớp quy tắc ở backend.
+bool canLinkToPlan(String scheduledDate, DateTime startedAt) {
+  final scheduled = DateTime.tryParse(scheduledDate);
+  if (scheduled == null) return false;
+  final local = startedAt.toLocal();
+  final today = DateTime(local.year, local.month, local.day);
+  final weekStart = today.subtract(Duration(days: today.weekday - DateTime.monday));
+  final day = DateTime(scheduled.year, scheduled.month, scheduled.day);
+  return !day.isBefore(weekStart) && !day.isAfter(today);
 }
