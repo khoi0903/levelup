@@ -31,7 +31,7 @@ levelup:
     provider: ${LEVELUP_AI_PROVIDER:auto}
     # Model Claude dùng chung cho coach, tổng kết tuần, nhận diện món ăn
     model: ${LEVELUP_AI_MODEL:claude-opus-5-5}
-    gemini-model: ${LEVELUP_GEMINI_MODEL:gemini-2.5-flash}
+    gemini-model: ${LEVELUP_GEMINI_MODEL:gemini-3.5-flash}
     timeout-seconds: 20
   jobs:
     # Header X-Job-Secret của POST /jobs/tick; để trống thì endpoint luôn trả 403

@@ -20,7 +20,7 @@ public class AiConfig {
     @Bean
     AiClient aiClient(@Value("${levelup.ai.provider:auto}") String provider,
                       @Value("${levelup.ai.model:claude-opus-5-5}") String claudeModel,
-                      @Value("${levelup.ai.gemini-model:gemini-2.5-flash}") String geminiModel,
+                      @Value("${levelup.ai.gemini-model:gemini-3.5-flash}") String geminiModel,
                       @Value("${levelup.ai.timeout-seconds:20}") int timeoutSeconds) {
         String chosen = choose(provider, System.getenv("ANTHROPIC_API_KEY"), System.getenv("GEMINI_API_KEY"));
         log.info("AI provider: {}", chosen);
