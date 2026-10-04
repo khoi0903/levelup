@@ -65,6 +65,21 @@ class SettingsFlowTest extends FlowTestBase {
     }
 
     @Test
+    void changing_goal_adds_new_calorie_target() throws Exception {
+        onboard();
+        List<Document> before = user().getList("nutritionTargets", Document.class);
+        DocumentContext after = patchMe("{\"goal\":\"build_muscle\"}", 200);
+        assertEquals("build_muscle", after.read("$.profile.goal"));
+        List<Document> targets = user().getList("nutritionTargets", Document.class);
+        assertEquals(before.size() + 1, targets.size());
+        assertTrue(targets.getLast().getInteger("kcal") > before.getLast().getInteger("kcal"), "tăng cơ ăn nhiều hơn giảm mỡ");
+
+        patchMe("{\"goal\":\"build_muscle\"}", 200);                             // không đổi thì không thêm mốc
+        assertEquals(targets.size(), user().getList("nutritionTargets", Document.class).size());
+        assertEquals("VALIDATION_ERROR", patchMe("{\"goal\":\"fly\"}", 400).read("$.code"));
+    }
+
+    @Test
     void invalid_values_are_rejected() throws Exception {
         onboard();
         assertEquals("NOTHING_TO_UPDATE", patchMe("{}", 400).read("$.code"));

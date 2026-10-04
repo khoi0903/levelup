@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
@@ -21,6 +23,7 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _nameController = TextEditingController();
   String _selectedCoachStyle = 'supportive';
+  String _goal = 'get_healthier';
   int _sessionMinutes = 15;
   bool _notificationsEnabled = true;
   bool _quietHoursEnabled = true;
@@ -30,17 +33,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _sharePhotos = false;
   bool _shareMeals = false;
   final Set<int> _activeWeekdays = {};
+  String _slot = 'evening';
   bool _isInitialized = false;
 
   void _initFields(MeResponse me) {
     if (_isInitialized) return;
     _nameController.text = me.displayName;
     _selectedCoachStyle = me.profile?.coachStyle ?? 'supportive';
-    _sessionMinutes = me.profile?.sessionMinutes ?? 15;
+    _goal = me.profile?.goal ?? 'get_healthier';
+    final minutes = me.profile?.sessionMinutes ?? 15;
+    _sessionMinutes = minutes <= 15 ? 15 : minutes; // bản cũ lưu 10
 
     final notif = me.settings.notifications;
     _notificationsEnabled = notif.pushEnabled;
-    _quietHoursEnabled = notif.quietStart == '22:00' && notif.quietEnd == '07:00';
+    _quietHoursEnabled =
+        notif.quietStart == '22:00' && notif.quietEnd == '07:00';
     _maxPerDay = notif.maxPerDay;
 
     final sharing = me.settings.sharing;
@@ -52,6 +59,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _activeWeekdays.clear();
     for (final slot in me.settings.availability) {
       _activeWeekdays.add(slot.weekday);
+    }
+    if (me.settings.availability.isNotEmpty) {
+      _slot = me.settings.availability.first.slot;
     }
     if (_activeWeekdays.isEmpty) {
       _activeWeekdays.addAll([1, 3, 5]); // Mặc định T2, T4, T6
@@ -72,6 +82,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final settingsState = ref.watch(settingsControllerProvider);
     final settingsNotifier = ref.read(settingsControllerProvider.notifier);
 
+    // Báo lưu thành công bằng SnackBar (tự ẩn), không để banner nằm lại khi đổi tab rồi quay về
+    ref.listen<SettingsState>(settingsControllerProvider, (prev, next) {
+      final message = next.successMessage;
+      if (message == null || message == prev?.successMessage) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              message,
+              key: const ValueKey('settings-success-banner'),
+            ),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      settingsNotifier.clearSuccess();
+    });
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -91,7 +120,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           child: userAsync.when(
             data: (me) {
               _initFields(me);
-              return _buildSettingsList(context, me, settingsState, settingsNotifier);
+              return _buildSettingsList(
+                context,
+                me,
+                settingsState,
+                settingsNotifier,
+              );
             },
             loading: () => const Center(
               child: CircularProgressIndicator(
@@ -124,27 +158,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 32),
       children: [
-        if (state.successMessage != null) ...[
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFDCFCE7),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFF86EFAC), width: 1),
-            ),
-            child: Text(
-              state.successMessage!,
-              key: const ValueKey('settings-success-banner'),
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF166534),
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-        ],
-
         if (state.error != null) ...[
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -264,8 +277,56 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               borderRadius: BorderRadius.circular(14),
               borderSide: const BorderSide(color: AppColors.border),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
           ),
+        ),
+        const SizedBox(height: 20),
+
+        // Mục tiêu: đạt rồi thì đổi mục tiêu mới, calo tính lại từ hôm nay
+        const Text(
+          'Mục tiêu',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'Đổi mục tiêu thì mục tiêu calo tính lại từ hôm nay, lịch tập đổi từ tuần sau.',
+          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: ['lose_fat', 'build_muscle', 'get_healthier', 'maintain']
+              .map((g) {
+                final isSelected = _goal == g;
+                return ChoiceChip(
+                  key: ValueKey('settings-goal-$g'),
+                  label: Text(_formatGoal(g)),
+                  selected: isSelected,
+                  showCheckmark: false,
+                  selectedColor: AppColors.primaryLight,
+                  backgroundColor: AppColors.surface,
+                  side: BorderSide(
+                    color: isSelected ? AppColors.primary : AppColors.border,
+                  ),
+                  labelStyle: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: isSelected
+                        ? AppColors.primary
+                        : AppColors.textPrimary,
+                  ),
+                  onSelected: (_) => setState(() => _goal = g),
+                );
+              })
+              .toList(),
         ),
         const SizedBox(height: 20),
 
@@ -310,11 +371,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         const SizedBox(height: 8),
         Row(
           children: [
-            Expanded(child: _buildMinutesChip(10, '10–15 phút')),
-            const SizedBox(width: 8),
+            // Cùng mốc với onboarding (15/20/30/45)
+            Expanded(child: _buildMinutesChip(15, '10–15 phút')),
+            const SizedBox(width: 6),
             Expanded(child: _buildMinutesChip(20, '20 phút')),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             Expanded(child: _buildMinutesChip(30, '30 phút')),
+            const SizedBox(width: 6),
+            Expanded(child: _buildMinutesChip(45, '45+ phút')),
           ],
         ),
         const SizedBox(height: 20),
@@ -337,7 +401,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           child: const Row(
             children: [
-              Icon(Icons.info_outline_rounded, size: 16, color: AppColors.primary),
+              Icon(
+                Icons.info_outline_rounded,
+                size: 16,
+                color: AppColors.primary,
+              ),
               SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -354,6 +422,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         const SizedBox(height: 10),
         _buildWeekdaySelector(),
+        const SizedBox(height: 12),
+        const Text(
+          'Giờ tập',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        _buildSlotSelector(),
         const SizedBox(height: 20),
 
         // 5. Cài đặt thông báo
@@ -371,10 +450,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           child: Column(
             children: [
               SwitchListTile(
-                title: const Text('Bật thông báo nhắc tập',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                subtitle: const Text('Nhắc trước giờ tập đã hẹn',
-                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                title: const Text(
+                  'Bật thông báo nhắc tập',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+                subtitle: const Text(
+                  'Nhắc trước giờ tập đã hẹn',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 value: _notificationsEnabled,
                 activeThumbColor: AppColors.primary,
                 contentPadding: EdgeInsets.zero,
@@ -382,10 +468,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               const Divider(color: AppColors.border, height: 1),
               SwitchListTile(
-                title: const Text('Giờ yên lặng (22:00 – 07:00)',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                subtitle: const Text('Không gửi thông báo trong thời gian này',
-                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                title: const Text(
+                  'Giờ yên lặng (22:00 – 07:00)',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+                subtitle: const Text(
+                  'Không gửi thông báo trong thời gian này',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 value: _quietHoursEnabled,
                 activeThumbColor: AppColors.primary,
                 contentPadding: EdgeInsets.zero,
@@ -411,8 +504,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           child: Column(
             children: [
               SwitchListTile(
-                title: const Text('Cân nặng hiện tại',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                title: const Text(
+                  'Cân nặng hiện tại',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
                 value: _shareWeight,
                 activeThumbColor: AppColors.primary,
                 contentPadding: EdgeInsets.zero,
@@ -420,8 +515,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               const Divider(color: AppColors.border, height: 1),
               SwitchListTile(
-                title: const Text('Số đo cơ thể',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                title: const Text(
+                  'Số đo cơ thể',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
                 value: _shareMeasurements,
                 activeThumbColor: AppColors.primary,
                 contentPadding: EdgeInsets.zero,
@@ -429,8 +526,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               const Divider(color: AppColors.border, height: 1),
               SwitchListTile(
-                title: const Text('Ảnh chụp tiến độ',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                title: const Text(
+                  'Ảnh chụp tiến độ',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
                 value: _sharePhotos,
                 activeThumbColor: AppColors.primary,
                 contentPadding: EdgeInsets.zero,
@@ -438,8 +537,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               const Divider(color: AppColors.border, height: 1),
               SwitchListTile(
-                title: const Text('Lượng calo đã nạp hôm nay',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                title: const Text(
+                  'Lượng calo đã nạp hôm nay',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
                 value: _shareMeals,
                 activeThumbColor: AppColors.primary,
                 contentPadding: EdgeInsets.zero,
@@ -458,15 +559,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               : () {
                   final newName = _nameController.text.trim();
                   final availabilityList = _activeWeekdays.map((w) {
-                    return UserAvailabilitySlot(weekday: w, slot: 'evening');
-                  }).toList()
-                    ..sort((a, b) => a.weekday.compareTo(b.weekday));
+                    return UserAvailabilitySlot(weekday: w, slot: _slot);
+                  }).toList()..sort((a, b) => a.weekday.compareTo(b.weekday));
 
                   notifier.saveSettings(
                     displayName: newName.isNotEmpty ? newName : null,
                     coachStyle: _selectedCoachStyle,
+                    goal: _goal,
                     sessionMinutes: _sessionMinutes,
-                    availability: availabilityList.isNotEmpty ? availabilityList : null,
+                    availability: availabilityList.isNotEmpty
+                        ? availabilityList
+                        : null,
                     notifications: NotificationsUpdate(
                       pushEnabled: _notificationsEnabled,
                       quietStart: _quietHoursEnabled ? '22:00' : '00:00',
@@ -487,7 +590,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         // Đăng xuất (xóa token dev)
         Center(
           child: TextButton.icon(
-            icon: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 20),
+            icon: const Icon(
+              Icons.logout_rounded,
+              color: Colors.redAccent,
+              size: 20,
+            ),
             label: const Text(
               'Đăng xuất',
               style: TextStyle(
@@ -565,6 +672,48 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  Widget _buildSlotSelector() {
+    const slots = [
+      (
+        'early_morning',
+        AppStrings.slotEarlyMorningTitle,
+        AppStrings.slotEarlyMorningTime,
+      ),
+      ('noon', AppStrings.slotNoonTitle, AppStrings.slotNoonTime),
+      ('evening', AppStrings.slotEveningTitle, AppStrings.slotEveningTime),
+      (
+        'late_evening',
+        AppStrings.slotLateEveningTitle,
+        AppStrings.slotLateEveningTime,
+      ),
+    ];
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: slots.map((slot) {
+        final (value, title, time) = slot;
+        final isSelected = _slot == value;
+        return ChoiceChip(
+          key: ValueKey('settings-slot-$value'),
+          label: Text('$title · $time'),
+          selected: isSelected,
+          showCheckmark: false,
+          selectedColor: AppColors.primaryLight,
+          backgroundColor: AppColors.surface,
+          side: BorderSide(
+            color: isSelected ? AppColors.primary : AppColors.border,
+          ),
+          labelStyle: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: isSelected ? AppColors.primary : AppColors.textPrimary,
+          ),
+          onSelected: (_) => setState(() => _slot = value),
+        );
+      }).toList(),
+    );
+  }
+
   Widget _buildNavTile({
     required IconData icon,
     required String label,
@@ -629,13 +778,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     desc,
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),

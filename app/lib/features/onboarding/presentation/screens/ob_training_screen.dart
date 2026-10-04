@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/onboarding_header.dart';
+import '../../../../core/widgets/missing_hint.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/selection_chip.dart';
 import '../../domain/models/onboarding_models.dart';
@@ -45,6 +47,12 @@ class ObTrainingScreen extends ConsumerWidget {
       (BodyArea.shoulder, AppStrings.injuryShoulder),
       (BodyArea.other, AppStrings.injuryOther),
     ];
+
+    final String? missing = state.experience == null
+        ? 'Chọn mức kinh nghiệm tập của bạn'
+        : state.location == null
+        ? 'Chọn nơi bạn sẽ tập'
+        : null;
 
     return Scaffold(
       body: GradientBackground(
@@ -89,7 +97,9 @@ class ObTrainingScreen extends ConsumerWidget {
                             return SelectionChip(
                               label: item.$2,
                               isSelected: state.experience == item.$1,
-                              onTap: () => controller.updateTraining(experience: item.$1),
+                              onTap: () => controller.updateTraining(
+                                experience: item.$1,
+                              ),
                             );
                           }).toList(),
                         ),
@@ -112,7 +122,8 @@ class ObTrainingScreen extends ConsumerWidget {
                             return SelectionChip(
                               label: item.$2,
                               isSelected: state.location == item.$1,
-                              onTap: () => controller.updateTraining(location: item.$1),
+                              onTap: () =>
+                                  controller.updateTraining(location: item.$1),
                             );
                           }).toList(),
                         ),
@@ -210,9 +221,11 @@ class ObTrainingScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
+                MissingHint(missing),
                 PrimaryButton(
                   label: AppStrings.btnContinue,
-                  onPressed: (state.experience != null && state.location != null)
+                  onPressed:
+                      (state.experience != null && state.location != null)
                       ? () => context.push('/onboarding/schedule')
                       : null,
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/api/api_client.dart';
 import '../../data/repositories/api_user_repository.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
@@ -13,8 +14,9 @@ final userRepositoryProvider = Provider<UserRepository>((ref) {
 
 final currentUserProvider = StateProvider<MeResponse?>((ref) => null);
 
-final userStatusFutureProvider =
-    FutureProvider.autoDispose<MeResponse>((ref) async {
+final userStatusFutureProvider = FutureProvider.autoDispose<MeResponse>((
+  ref,
+) async {
   final repo = ref.watch(userRepositoryProvider);
   final me = await repo.getMe();
   ref.read(currentUserProvider.notifier).state = me;
@@ -26,11 +28,7 @@ class SettingsState {
   final String? successMessage;
   final dynamic error;
 
-  const SettingsState({
-    this.isSaving = false,
-    this.successMessage,
-    this.error,
-  });
+  const SettingsState({this.isSaving = false, this.successMessage, this.error});
 
   SettingsState copyWith({
     bool? isSaving,
@@ -41,7 +39,9 @@ class SettingsState {
   }) {
     return SettingsState(
       isSaving: isSaving ?? this.isSaving,
-      successMessage: clearSuccess ? null : (successMessage ?? this.successMessage),
+      successMessage: clearSuccess
+          ? null
+          : (successMessage ?? this.successMessage),
       error: clearError ? null : (error ?? this.error),
     );
   }
@@ -58,17 +58,23 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     String? displayName,
     String? timezone,
     String? coachStyle,
+    String? goal,
     int? sessionMinutes,
     List<UserAvailabilitySlot>? availability,
     NotificationsUpdate? notifications,
     SharingUpdate? sharing,
   }) async {
-    state = state.copyWith(isSaving: true, clearSuccess: true, clearError: true);
+    state = state.copyWith(
+      isSaving: true,
+      clearSuccess: true,
+      clearError: true,
+    );
     try {
       final request = SettingsRequest(
         displayName: displayName,
         timezone: timezone,
         coachStyle: coachStyle,
+        goal: goal,
         sessionMinutes: sessionMinutes,
         availability: availability,
         notifications: notifications,
@@ -77,13 +83,18 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
       final updated = await _repository.updateSettings(request);
       _ref.read(currentUserProvider.notifier).state = updated;
       _ref.invalidate(userStatusFutureProvider);
-      state = state.copyWith(isSaving: false, successMessage: 'Đã lưu cài đặt thành công!');
+      state = state.copyWith(
+        isSaving: false,
+        successMessage: 'Đã lưu cài đặt thành công!',
+      );
       return true;
     } catch (e) {
       state = state.copyWith(isSaving: false, error: e);
       return false;
     }
   }
+
+  void clearSuccess() => state = state.copyWith(clearSuccess: true);
 
   Future<void> logout() async {
     await _ref.read(authRepositoryProvider).signOut();
@@ -94,6 +105,6 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 
 final settingsControllerProvider =
     StateNotifierProvider.autoDispose<SettingsNotifier, SettingsState>((ref) {
-  final repo = ref.watch(userRepositoryProvider);
-  return SettingsNotifier(repo, ref);
-});
+      final repo = ref.watch(userRepositoryProvider);
+      return SettingsNotifier(repo, ref);
+    });

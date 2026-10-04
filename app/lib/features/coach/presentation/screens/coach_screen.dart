@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -7,6 +8,7 @@ import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../home/presentation/controllers/home_controller.dart';
 import '../controllers/coach_controller.dart';
+import '../../../users/presentation/controllers/user_controller.dart';
 import '../../domain/models/coach_models.dart';
 
 /// Màn hình Chat với AI Coach (Tab Coach).
@@ -41,12 +43,15 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
     super.dispose();
   }
 
-  void _handleSend() async {
-    final text = _textController.text.trim();
+  void _handleSend([String? preset]) async {
+    final text = (preset ?? _textController.text).trim();
     if (text.isEmpty) return;
 
     _textController.clear();
     final ok = await ref.read(coachChatProvider.notifier).sendMessage(text);
+    if (!ok && mounted && _textController.text.isEmpty) {
+      _textController.text = text; // gửi lỗi: trả lại chữ để gửi lại
+    }
     if (ok && _scrollController.hasClients) {
       _scrollController.animateTo(
         0.0,
@@ -94,7 +99,10 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
               if (state.error != null) ...[
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   decoration: const BoxDecoration(
                     color: Color(0xFFFEE2E2),
                     border: Border(
@@ -103,8 +111,11 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.info_outline_rounded,
-                          size: 18, color: Color(0xFFDC2626)),
+                      const Icon(
+                        Icons.info_outline_rounded,
+                        size: 18,
+                        color: Color(0xFFDC2626),
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -125,17 +136,28 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                 child: state.isLoading
                     ? const Center(
                         child: CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(AppColors.primary),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.primary,
+                          ),
                         ),
                       )
+                    : state.messages.isEmpty && !state.isSending
+                    ? _buildWelcome(state)
                     : ListView.builder(
                         controller: _scrollController,
                         reverse: true,
                         physics: const BouncingScrollPhysics(),
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                        itemCount: state.messages.length + (state.isLoadingMore ? 1 : 0),
+                        itemCount:
+                            state.messages.length +
+                            (state.isSending ? 1 : 0) +
+                            (state.isLoadingMore ? 1 : 0),
                         itemBuilder: (context, index) {
+                          // Danh sách đảo ngược: index 0 là dưới cùng
+                          if (state.isSending) {
+                            if (index == 0) return _buildTyping();
+                            index -= 1;
+                          }
                           if (index == state.messages.length) {
                             return const Padding(
                               padding: EdgeInsets.symmetric(vertical: 12),
@@ -143,7 +165,9 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                                 child: SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 ),
                               ),
                             );
@@ -161,6 +185,72 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
     );
   }
 
+  /// Chưa có tin nào: coach chào trước và gợi ý vài câu để bắt đầu (không lưu vào lịch sử).
+  Widget _buildWelcome(CoachChatState state) {
+    final name = ref.watch(currentUserProvider)?.displayName ?? '';
+    final greeting = name.isEmpty ? 'Chào bạn!' : 'Chào $name!';
+    const suggestions = [
+      'Hôm nay mình nên tập gì?',
+      'Mình mệt, có nên nghỉ buổi hôm nay không?',
+      'Tối nay ăn gì để đủ đạm?',
+    ];
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      children: [
+        _buildMessageItem(
+          context,
+          CoachMessageView(
+            id: 'welcome',
+            role: 'coach',
+            content:
+                '$greeting Mình là coach của bạn. Bạn có thể hỏi mình về buổi tập, '
+                'đổi lịch khi bận, hay ăn gì cho hợp mục tiêu. Bắt đầu bằng một câu dưới đây nhé:',
+          ),
+          ref.read(coachChatProvider.notifier),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: suggestions
+              .map(
+                (q) => ActionChip(
+                  key: ValueKey('coach-suggestion-$q'),
+                  label: Text(q),
+                  backgroundColor: AppColors.surface,
+                  side: const BorderSide(color: AppColors.border),
+                  labelStyle: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+                  onPressed: state.isSending ? null : () => _handleSend(q),
+                ),
+              )
+              .toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTyping() {
+    return const Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 6),
+        child: Text(
+          'Coach đang trả lời…',
+          key: ValueKey('coach-typing'),
+          style: TextStyle(
+            fontSize: 13,
+            fontStyle: FontStyle.italic,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildMessageItem(
     BuildContext context,
     CoachMessageView msg,
@@ -171,12 +261,14 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Column(
-        crossAxisAlignment:
-            isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: isUser
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment:
-                isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment: isUser
+                ? MainAxisAlignment.end
+                : MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               if (!isUser) ...[
@@ -197,8 +289,10 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
               ],
               Flexible(
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 11,
+                  ),
                   decoration: BoxDecoration(
                     color: isUser ? AppColors.primary : AppColors.surface,
                     borderRadius: BorderRadius.only(
@@ -283,7 +377,10 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                 card.toExerciseName != null) ...[
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(10),
@@ -300,8 +397,11 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                         ),
                       ),
                     ),
-                    const Icon(Icons.arrow_forward_rounded,
-                        size: 14, color: AppColors.primary),
+                    const Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 14,
+                      color: AppColors.primary,
+                    ),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
@@ -350,8 +450,11 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
             ] else ...[
               Row(
                 children: const [
-                  Icon(Icons.check_circle_rounded,
-                      size: 16, color: AppColors.primary),
+                  Icon(
+                    Icons.check_circle_rounded,
+                    size: 16,
+                    color: AppColors.primary,
+                  ),
                   SizedBox(width: 6),
                   Text(
                     'Đã áp dụng vào kế hoạch',
@@ -386,16 +489,20 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
               onSubmitted: (_) => _handleSend(),
               decoration: InputDecoration(
                 hintText: 'Nhắn cho Coach...',
-                hintStyle:
-                    const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                hintStyle: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
                 filled: true,
                 fillColor: AppColors.primaryLight,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
               ),
             ),
           ),
@@ -424,8 +531,11 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                  : const Icon(Icons.arrow_upward_rounded,
-                      color: Colors.white, size: 22),
+                  : const Icon(
+                      Icons.arrow_upward_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
               onPressed: state.isSending ? null : _handleSend,
             ),
           ),

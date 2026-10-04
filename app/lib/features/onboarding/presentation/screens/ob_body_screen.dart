@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/onboarding_header.dart';
+import '../../../../core/widgets/missing_hint.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../domain/models/onboarding_models.dart';
 import '../controllers/onboarding_controller.dart';
@@ -28,14 +30,18 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
   void initState() {
     super.initState();
     final state = ref.read(onboardingControllerProvider);
-    _yearController =
-        TextEditingController(text: state.birthYear?.toString() ?? '');
-    _heightController =
-        TextEditingController(text: state.heightCm?.toString() ?? '');
-    _weightController =
-        TextEditingController(text: state.startWeightKg?.toString() ?? '');
-    _goalWeightController =
-        TextEditingController(text: state.goalWeightKg?.toString() ?? '');
+    _yearController = TextEditingController(
+      text: state.birthYear?.toString() ?? '',
+    );
+    _heightController = TextEditingController(
+      text: state.heightCm?.toString() ?? '',
+    );
+    _weightController = TextEditingController(
+      text: state.startWeightKg?.toString() ?? '',
+    );
+    _goalWeightController = TextEditingController(
+      text: state.goalWeightKg?.toString() ?? '',
+    );
   }
 
   @override
@@ -53,7 +59,9 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
     final weight = int.tryParse(_weightController.text);
     final goalWeight = int.tryParse(_goalWeightController.text);
 
-    ref.read(onboardingControllerProvider.notifier).updateBodyInfo(
+    ref
+        .read(onboardingControllerProvider.notifier)
+        .updateBodyInfo(
           birthYear: year,
           heightCm: height,
           startWeightKg: weight,
@@ -83,6 +91,16 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
     } else {
       estimatedWeeks = null;
     }
+
+    final String? missing = height == null
+        ? 'Nhập chiều cao để tiếp tục'
+        : !isHeightValid
+        ? 'Chiều cao cần từ 80 đến 250 cm'
+        : startWeight == null
+        ? 'Nhập cân nặng hiện tại để tiếp tục'
+        : !isWeightValid
+        ? 'Cân nặng cần từ 20 đến 350 kg'
+        : null;
 
     return Scaffold(
       body: GradientBackground(
@@ -141,7 +159,8 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
                               child: _GenderButton(
                                 label: AppStrings.genderFemale,
                                 isSelected: state.gender == Gender.female,
-                                onTap: () => controller.setGender(Gender.female),
+                                onTap: () =>
+                                    controller.setGender(Gender.female),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -199,7 +218,9 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
                           GlassCard(
                             isSelected: true,
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 18, vertical: 14),
+                              horizontal: 18,
+                              vertical: 14,
+                            ),
                             borderRadius: AppColors.radiusButton,
                             child: Row(
                               children: [
@@ -211,7 +232,10 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
-                                    AppStrings.bodyGoalNotice(goalWeight, estimatedWeeks),
+                                    AppStrings.bodyGoalNotice(
+                                      goalWeight,
+                                      estimatedWeeks,
+                                    ),
                                     style: const TextStyle(
                                       fontSize: 14,
                                       height: 1.5,
@@ -228,6 +252,7 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
                     ),
                   ),
                 ),
+                MissingHint(missing),
                 PrimaryButton(
                   label: AppStrings.btnContinue,
                   onPressed: isBodyValid

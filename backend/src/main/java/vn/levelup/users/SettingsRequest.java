@@ -11,12 +11,13 @@ import vn.levelup.onboarding.OnboardingRequest;
 
 /**
  * PATCH /me: chỉ đổi những trường được gửi (null = giữ nguyên). Giá trị enum khớp validator users.
- * Đổi lịch rảnh hoặc thời lượng buổi chỉ áp dụng cho kế hoạch các tuần sau, không sửa tuần đang tập.
+ * Đổi mục tiêu thì tính lại calo từ hôm nay. Đổi lịch rảnh, thời lượng buổi hoặc mục tiêu chỉ áp dụng cho kế hoạch các tuần sau, không sửa tuần đang tập.
  */
 public record SettingsRequest(
     @Size(min = 1, max = 60) @Pattern(regexp = ".*\\S.*") String displayName,
     @Size(max = 64) String timezone,
     @Pattern(regexp = "strict|supportive|funny") String coachStyle,
+    @Pattern(regexp = "lose_fat|build_muscle|get_healthier|maintain") String goal,
     @Min(5) @Max(180) Integer sessionMinutes,
     @Size(min = 1, max = 7) List<OnboardingRequest.@Valid Slot> availability,
     @Valid Notifications notifications,

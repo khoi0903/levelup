@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/onboarding_header.dart';
+import '../../../../core/widgets/missing_hint.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../domain/models/onboarding_models.dart';
 import '../controllers/onboarding_controller.dart';
@@ -29,7 +31,9 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
   }
 
   void _onNameChanged() {
-    ref.read(onboardingControllerProvider.notifier).setDisplayName(_nameController.text);
+    ref
+        .read(onboardingControllerProvider.notifier)
+        .setDisplayName(_nameController.text);
   }
 
   @override
@@ -48,24 +52,30 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
       (
         UserGoal.lose_fat,
         AppStrings.goalLoseFatTitle,
-        AppStrings.goalLoseFatDesc
+        AppStrings.goalLoseFatDesc,
       ),
       (
         UserGoal.build_muscle,
         AppStrings.goalBuildMuscleTitle,
-        AppStrings.goalBuildMuscleDesc
+        AppStrings.goalBuildMuscleDesc,
       ),
       (
         UserGoal.get_healthier,
         AppStrings.goalGetHealthierTitle,
-        AppStrings.goalGetHealthierDesc
+        AppStrings.goalGetHealthierDesc,
       ),
       (
         UserGoal.maintain,
         AppStrings.goalMaintainTitle,
-        AppStrings.goalMaintainDesc
+        AppStrings.goalMaintainDesc,
       ),
     ];
+
+    final String? missing = state.displayName.trim().isEmpty
+        ? 'Nhập tên bạn muốn được gọi'
+        : state.goal == null
+        ? 'Chọn một mục tiêu để tiếp tục'
+        : null;
 
     return Scaffold(
       body: GradientBackground(
@@ -105,7 +115,10 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
                 ),
                 const SizedBox(height: 8),
                 GlassCard(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 2,
+                  ),
                   borderRadius: AppColors.radiusButton,
                   child: TextField(
                     controller: _nameController,
@@ -141,7 +154,9 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
                         isSelected: isSelected,
                         onTap: () => controller.selectGoal(item.$1),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 16),
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
                         child: Row(
                           children: [
                             Expanded(
@@ -176,11 +191,16 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
+                MissingHint(missing),
                 PrimaryButton(
                   label: AppStrings.btnContinue,
-                  onPressed: (state.goal != null && state.displayName.trim().isNotEmpty)
+                  onPressed:
+                      (state.goal != null &&
+                          state.displayName.trim().isNotEmpty)
                       ? () {
-                          controller.setDisplayName(_nameController.text.trim());
+                          controller.setDisplayName(
+                            _nameController.text.trim(),
+                          );
                           context.push('/onboarding/body');
                         }
                       : null,
@@ -201,7 +221,9 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Tính năng đăng nhập sẽ có ở Sprint sau'),
+                            content: Text(
+                              'Tính năng đăng nhập sẽ có ở Sprint sau',
+                            ),
                             duration: Duration(seconds: 1),
                           ),
                         );

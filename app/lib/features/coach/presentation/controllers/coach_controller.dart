@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/api/api_client.dart';
 import '../../data/repositories/api_coach_repository.dart';
 import '../../domain/models/coach_models.dart';
@@ -75,7 +76,10 @@ class CoachChatNotifier extends StateNotifier<CoachChatState> {
     if (state.isLoadingMore || state.nextBefore == null) return;
     state = state.copyWith(isLoadingMore: true);
     try {
-      final res = await _repository.getHistory(before: state.nextBefore, limit: 20);
+      final res = await _repository.getHistory(
+        before: state.nextBefore,
+        limit: 20,
+      );
       state = state.copyWith(
         isLoadingMore: false,
         messages: [...state.messages, ...res.messages],
@@ -86,19 +90,33 @@ class CoachChatNotifier extends StateNotifier<CoachChatState> {
     }
   }
 
+  /// Tin của người dùng hiện ngay (id "pending-..."), coach trả lời xong thì thay bằng bản từ server.
+  /// Gửi lỗi thì gỡ tin tạm ra, màn hình trả lại chữ vào ô nhập.
   Future<bool> sendMessage(String text) async {
     if (text.trim().isEmpty || state.isSending) return false;
-    state = state.copyWith(isSending: true, clearError: true);
+    final pending = CoachMessageView(
+      id: 'pending-${DateTime.now().microsecondsSinceEpoch}',
+      role: 'user',
+      content: text.trim(),
+      createdAt: DateTime.now(),
+    );
+    state = state.copyWith(
+      isSending: true,
+      clearError: true,
+      messages: [pending, ...state.messages],
+    );
+    List<CoachMessageView> rest() =>
+        state.messages.where((m) => m.id != pending.id).toList();
     try {
       final res = await _repository.sendMessage(text.trim());
       state = state.copyWith(
         isSending: false,
-        messages: [res.reply, res.userMessage, ...state.messages],
+        messages: [res.reply, res.userMessage, ...rest()],
         remainingToday: res.remainingToday,
       );
       return true;
     } catch (e) {
-      state = state.copyWith(isSending: false, error: e);
+      state = state.copyWith(isSending: false, error: e, messages: rest());
       return false;
     }
   }
@@ -123,6 +141,6 @@ class CoachChatNotifier extends StateNotifier<CoachChatState> {
 
 final coachChatProvider =
     StateNotifierProvider.autoDispose<CoachChatNotifier, CoachChatState>((ref) {
-  final repo = ref.watch(coachRepositoryProvider);
-  return CoachChatNotifier(repo);
-});
+      final repo = ref.watch(coachRepositoryProvider);
+      return CoachChatNotifier(repo);
+    });

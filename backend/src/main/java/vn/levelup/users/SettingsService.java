@@ -1,6 +1,8 @@
 package vn.levelup.users;
 
+import java.time.Clock;
 import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,7 +23,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import vn.levelup.common.LocalDates;
 import vn.levelup.notifications.NotificationRules;
+import vn.levelup.nutrition.NutritionCalculator;
 import vn.levelup.onboarding.OnboardingRequest;
 
 /** Đọc và sửa cài đặt người dùng. Ghi bằng $set từng đường dẫn, không ghi đè cả document users. */
@@ -51,6 +55,18 @@ public class SettingsService {
         }
         if (r.sessionMinutes() != null) {
             u.set("profile.sessionMinutes", r.sessionMinutes());
+        }
+        User.Profile p = user.profile();
+        if (r.goal() != null) {
+            u.set("profile.goal", r.goal());
+        }
+        if (r.goal() != null && p != null && !r.goal().equals(p.goal())) {
+            // Mục tiêu mới: thêm mốc calo có hiệu lực từ hôm nay (giữ lịch sử, không sửa mốc cũ)
+            if (p.heightCm() != null && p.startWeightKg() != null) {
+                LocalDate today = LocalDates.today(user.timezone(), Clock.systemUTC());
+                u.push("nutritionTargets", NutritionCalculator.compute(
+                    p.gender(), p.birthYear(), p.heightCm(), p.startWeightKg(), r.goal(), today));
+            }
         }
         if (r.availability() != null) {
             Set<Integer> days = new HashSet<>();

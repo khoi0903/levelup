@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/api/api_exceptions.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/onboarding_header.dart';
+import '../../../../core/widgets/missing_hint.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../domain/models/onboarding_models.dart';
 import '../controllers/onboarding_controller.dart';
@@ -151,7 +153,9 @@ class _ObCoachScreenState extends ConsumerState<ObCoachScreen> {
                             const SizedBox(height: 12),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 12),
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
                               decoration: BoxDecoration(
                                 color: isSelected
                                     ? AppColors.surface
@@ -181,6 +185,11 @@ class _ObCoachScreenState extends ConsumerState<ObCoachScreen> {
                       );
                     },
                   ),
+                ),
+                MissingHint(
+                  state.coachStyle == null
+                      ? 'Chọn phong cách coach bạn thích'
+                      : null,
                 ),
                 PrimaryButton(
                   label: AppStrings.btnCreateMyPlan,

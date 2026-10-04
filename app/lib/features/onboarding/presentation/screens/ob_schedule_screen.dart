@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/onboarding_header.dart';
+import '../../../../core/widgets/missing_hint.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../domain/models/onboarding_models.dart';
 import '../controllers/onboarding_controller.dart';
@@ -32,22 +34,18 @@ class ObScheduleScreen extends ConsumerWidget {
       (
         TimeSlot.early_morning,
         AppStrings.slotEarlyMorningTitle,
-        AppStrings.slotEarlyMorningTime
+        AppStrings.slotEarlyMorningTime,
       ),
-      (
-        TimeSlot.noon,
-        AppStrings.slotNoonTitle,
-        AppStrings.slotNoonTime
-      ),
+      (TimeSlot.noon, AppStrings.slotNoonTitle, AppStrings.slotNoonTime),
       (
         TimeSlot.evening,
         AppStrings.slotEveningTitle,
-        AppStrings.slotEveningTime
+        AppStrings.slotEveningTime,
       ),
       (
         TimeSlot.late_evening,
         AppStrings.slotLateEveningTitle,
-        AppStrings.slotLateEveningTime
+        AppStrings.slotLateEveningTime,
       ),
     ];
 
@@ -57,6 +55,14 @@ class ObScheduleScreen extends ConsumerWidget {
       (30, AppStrings.duration30),
       (45, AppStrings.duration45Plus),
     ];
+
+    final String? missing = state.weekdays.isEmpty
+        ? 'Chọn ít nhất một ngày rảnh trong tuần'
+        : state.timeSlot == null
+        ? 'Chọn khung giờ bạn hay tập'
+        : state.sessionMinutes == null
+        ? 'Chọn thời lượng mỗi buổi'
+        : null;
 
     return Scaffold(
       body: GradientBackground(
@@ -99,19 +105,27 @@ class ObScheduleScreen extends ConsumerWidget {
                             final isSelected = state.weekdays.contains(day.$1);
                             return Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 2.5,
+                                ),
                                 child: GlassCard(
                                   isSelected: isSelected,
                                   onTap: () => controller.toggleWeekday(day.$1),
                                   borderRadius: 14,
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
                                   child: Center(
                                     child: Text(
                                       day.$2,
                                       style: TextStyle(
                                         fontSize: 14,
-                                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                        color: isSelected ? AppColors.accentLink : AppColors.textPrimary,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                        color: isSelected
+                                            ? AppColors.accentLink
+                                            : AppColors.textPrimary,
                                       ),
                                     ),
                                   ),
@@ -146,7 +160,9 @@ class ObScheduleScreen extends ConsumerWidget {
                               onTap: () => controller.setTimeSlot(slot.$1),
                               borderRadius: AppColors.radiusButton,
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 10),
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -189,19 +205,28 @@ class ObScheduleScreen extends ConsumerWidget {
                             final isSelected = state.sessionMinutes == dur.$1;
                             return Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 3),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 3,
+                                ),
                                 child: GlassCard(
                                   isSelected: isSelected,
-                                  onTap: () => controller.setSessionMinutes(dur.$1),
+                                  onTap: () =>
+                                      controller.setSessionMinutes(dur.$1),
                                   borderRadius: 14,
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
                                   child: Center(
                                     child: Text(
                                       dur.$2,
                                       style: TextStyle(
                                         fontSize: 14,
-                                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                        color: isSelected ? AppColors.accentLink : AppColors.textPrimary,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                        color: isSelected
+                                            ? AppColors.accentLink
+                                            : AppColors.textPrimary,
                                       ),
                                     ),
                                   ),
@@ -216,7 +241,9 @@ class ObScheduleScreen extends ConsumerWidget {
                         GlassCard(
                           isSelected: true,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 14),
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           borderRadius: AppColors.radiusButton,
                           child: Row(
                             children: [
@@ -245,9 +272,11 @@ class ObScheduleScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
+                MissingHint(missing),
                 PrimaryButton(
                   label: AppStrings.btnContinue,
-                  onPressed: (state.weekdays.isNotEmpty &&
+                  onPressed:
+                      (state.weekdays.isNotEmpty &&
                           state.timeSlot != null &&
                           state.sessionMinutes != null)
                       ? () => context.push('/onboarding/why')
