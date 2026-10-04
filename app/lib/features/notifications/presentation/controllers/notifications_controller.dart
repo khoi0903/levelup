@@ -38,7 +38,8 @@ String getDevicePlatform() {
 /// Chế độ AUTH_MODE=dev, web hoặc khi Firebase chưa khởi tạo (automated tests): tự động dùng FakePushService để không crash.
 final pushServiceProvider = Provider<PushService>((ref) {
   if (kIsWeb || AuthConstants.isDevMode || Firebase.apps.isEmpty) {
-    return FakePushService();
+    // Không quyền, không token: chế độ dev/web/test không gửi token giả lên backend
+    return FakePushService(permissionGranted: false, mockToken: null);
   }
   return FirebasePushService();
 });
