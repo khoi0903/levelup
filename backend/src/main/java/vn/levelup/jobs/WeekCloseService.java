@@ -25,7 +25,7 @@ import vn.levelup.plans.TrainingPlan;
 /**
  * F4: chốt tuần cho một người dùng theo flowchart "Chốt tuần". Chạy lại an toàn: tuần đã có closedAt
  * thì không làm gì; việc "nhận" tuần để chốt là một lệnh update có điều kiện closedAt chưa có.
- * TODO: buddy (cả hai đạt thì sharedStreakWeeks + 1) khi có module buddy.
+ * Streak chung của buddy tính trong buddies/BuddyWeekListener (một WeekClosedListener).
  */
 @Service
 public class WeekCloseService {

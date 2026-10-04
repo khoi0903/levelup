@@ -349,6 +349,7 @@ coll("buddy_pairs", {
   properties: { members: { bsonType: "array", minItems: 2, maxItems: 2, items: { bsonType: "objectId" } },
                 pairKey: { bsonType: "string" },    // "<idNhỏ>_<idLớn>" để mỗi cặp chỉ có một document
                 status: { enum: ["active", "ended"] }, sharedStreakWeeks: { bsonType: "number" },
+                lastSharedWeek: DATE_STR,          // tuần gần nhất đã tính streak chung (chống tính hai lần)
                 createdAt: { bsonType: "date" }, endedAt: { bsonType: "date" } }
 });
 dbx.buddy_pairs.createIndex({ pairKey: 1 }, { unique: true, partialFilterExpression: { status: "active" } });

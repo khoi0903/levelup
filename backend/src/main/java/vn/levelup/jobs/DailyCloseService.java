@@ -42,13 +42,15 @@ public class DailyCloseService {
     private final MongoTemplate mongo;
     private final NotificationGateway notifications;
     private final CoachTemplates templates;
+    private final RestartWeekService restartWeek;
     private final Clock clock;
 
     public DailyCloseService(MongoTemplate mongo, NotificationGateway notifications, CoachTemplates templates,
-                             Clock clock) {
+                             RestartWeekService restartWeek, Clock clock) {
         this.mongo = mongo;
         this.notifications = notifications;
         this.templates = templates;
+        this.restartWeek = restartWeek;
         this.clock = clock;
     }
 
@@ -126,6 +128,10 @@ public class DailyCloseService {
             askReason(userId, user, lastSkipped, localDate);
             notified.add("missed_2");
         }
+        if (changed && after.startsWith("lapsed_")) {
+            // Vừa vào lapsed_7 / lapsed_14: tuần này thành tuần khởi động lại nhẹ hơn
+            restartWeek.restart(userId, user, LocalDate.parse(localDate));
+        }
         if (ReengagementRules.lapsedMessageDue(after, messagesInStage) && comeBack(userId, user, after, localDate)) {
             notified.add("lapsed");
         }
@@ -156,7 +162,7 @@ public class DailyCloseService {
 
     /**
      * Tin quay lại cho lapsed_7 / lapsed_14. dedupeKey theo tuần: lapsed_14 tối đa một tin mỗi tuần.
-     * TODO: tạo tuần khởi động lại nhẹ hơn (cần module plans/reviews).
+     * Tuần khởi động lại nhẹ hơn do RestartWeekService tạo khi vừa vào bậc lapsed.
      */
     private boolean comeBack(ObjectId userId, Document user, String stage, String localDate) {
         String week = LocalDates.weekStart(LocalDate.parse(localDate)).toString();

@@ -33,14 +33,16 @@ public class JobService {
     private final DailyCloseService dailyClose;
     private final WeekCloseService weekClose;
     private final MongoNotificationGateway notifications;
+    private final ReminderService reminders;
     private final Clock clock;
 
     public JobService(MongoTemplate mongo, DailyCloseService dailyClose, WeekCloseService weekClose,
-                      MongoNotificationGateway notifications, Clock clock) {
+                      MongoNotificationGateway notifications, ReminderService reminders, Clock clock) {
         this.mongo = mongo;
         this.dailyClose = dailyClose;
         this.weekClose = weekClose;
         this.notifications = notifications;
+        this.reminders = reminders;
         this.clock = clock;
     }
 
@@ -76,6 +78,7 @@ public class JobService {
                         weeks++;
                     }
                     sent += notifications.dispatchDue(userId);
+                    sent += reminders.remind(userId, local);
                 } catch (RuntimeException e) {
                     errors++;
                     log.error("[tick] lỗi user={}: {}", userId, e.getMessage(), e);
