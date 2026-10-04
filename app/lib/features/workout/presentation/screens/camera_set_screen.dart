@@ -336,6 +336,28 @@ class _CountingViewState extends ConsumerState<_CountingView>
   String? _error;
   bool _busy = false;
   bool _foreground = true;
+  bool _autoFinishing = false;
+
+  /// Thời gian chờ sau khi đạt mục tiêu, để người tập thấy con số cuối rồi mới chuyển màn.
+  static const autoFinishDelay = Duration(milliseconds: 900);
+
+  /// Đạt mục tiêu của hiệp: đủ số lần (bài đếm lần) hoặc đủ thời gian giữ (plank, wall sit).
+  bool _targetReached(RepSnapshot r) {
+    if (r.isHold) {
+      final target = widget.targetSec;
+      return target != null && target > 0 && r.holdDuration.inSeconds >= target;
+    }
+    final target = widget.targetReps;
+    return target != null && target > 0 && r.repCount >= target;
+  }
+
+  void _maybeAutoFinish(RepSnapshot r) {
+    if (_autoFinishing || _busy || !_targetReached(r)) return;
+    _autoFinishing = true;
+    Future.delayed(autoFinishDelay, () {
+      if (mounted) unawaited(_finish());
+    });
+  }
 
   @override
   void initState() {
@@ -347,7 +369,10 @@ class _CountingViewState extends ConsumerState<_CountingView>
       _latest = session.latest;
       // Đăng ký trước khi start (README camera_counter).
       _sub = session.results.listen((r) {
-        if (mounted) setState(() => _latest = r);
+        if (!mounted) return;
+        setState(() => _latest = r);
+        // Đủ mục tiêu thì tự kết thúc hiệp → màn xác nhận → nghỉ
+        _maybeAutoFinish(r);
       });
       unawaited(_start());
     } catch (e) {

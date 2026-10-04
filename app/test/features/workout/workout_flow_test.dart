@@ -340,6 +340,24 @@ void main() {
       expect(factoryOf(h).created.every((s) => s.stops >= 1), isTrue);
     });
 
+    testWidgets('đủ số lần mục tiêu thì tự kết thúc hiệp, không cần bấm Xong', (
+      tester,
+    ) async {
+      final h = await openCounting(tester, sets: 2);
+      final session = factoryOf(h).created.single;
+      session.emit(const RepSnapshot(
+        repCount: 10,
+        averageConfidence: 0.9,
+        formScore: 90,
+        status: RepCountingStatus.running,
+      ));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+      expect(session.stops, greaterThanOrEqualTo(1));
+      expect(find.text('Camera đếm được 10 lần'), findsOneWidget);
+    });
+
     testWidgets('Chuyển sang đếm tay tắt camera, không lưu hiệp', (
       tester,
     ) async {
