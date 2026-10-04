@@ -9,13 +9,13 @@
     "category": "com",
     "servingDesc": "1 đĩa cơm kèm sườn, bì, chả và nước mắm",
     "servingGrams": 450.0,
-    "kcal": 750.0,
-    "proteinG": 35.0,
-    "carbsG": 90.0,
-    "fatG": 28.0,
+    "kcal": 779.7,
+    "proteinG": 44.8,
+    "carbsG": 79.9,
+    "fatG": 29.4,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 450g = 230g cơm chín (USDA FDC 168878) + 90g thăn heo chín cả nạc/mỡ (USDA FDC 167820) + 30g trứng luộc (USDA FDC 173424) + 15g heo xay chín (USDA FDC 168374) + 20g nạc heo thay phần thịt trong bì; chưa định lượng da (USDA FDC 167820) + 4g bột gạo khô (USDA FDC 169714) + 7g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 10g đường (USDA FDC 169655) + 5g nước mắm (USDA FDC 174531) + 39g dưa leo (USDA FDC 168409). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 779.67/44.83/79.93/29.45. Cập nhật cả bộ số liệu vì có trường lệch >15%. Bì dùng nạc heo thay thế, chả mô hình heo xay + trứng; chưa có phân tích trực tiếp bì/chả và khẩu phần chưa cân."
   },
   {
     "nameVi": "Cơm tấm sườn nướng",
@@ -33,7 +33,7 @@
     "fatG": 19.0,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 350g = 220g cơm chín (USDA FDC 168878) + 90g thăn heo chín cả nạc/mỡ (USDA FDC 167820) + 5g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 10g đường (USDA FDC 169655) + 5g nước mắm (USDA FDC 174531) + 20g dưa leo (USDA FDC 168409). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 591.45/30.89/72.88/18.17. Giữ số cũ: từng trường lệch không quá 15% so với mô hình. Thăn heo có mỡ thay sườn bỏ xương; dầu/sốt và phần ăn giả định."
   },
   {
     "nameVi": "Cơm gà luộc",
@@ -51,7 +51,7 @@
     "fatG": 13.0,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 350g = 220g cơm chín (USDA FDC 168878) + 100g gà hầm có da (USDA FDC 171051) + 20g dưa leo (USDA FDC 168409) + 5g nước mắm (USDA FDC 174531) + 5g đường (USDA FDC 169655). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 529.1/30.98/67.88/13.2. Giữ số cũ: từng trường lệch không quá 15% so với mô hình. Gà hầm có da thay gà luộc; phần ăn giả định."
   },
   {
     "nameVi": "Cơm gà xối mỡ",
@@ -63,13 +63,13 @@
     "category": "com",
     "servingDesc": "1 đĩa cơm kèm gà xối mỡ và rau",
     "servingGrams": 400.0,
-    "kcal": 700.0,
-    "proteinG": 32.0,
-    "carbsG": 80.0,
-    "fatG": 28.0,
+    "kcal": 717.4,
+    "proteinG": 36.9,
+    "carbsG": 76.7,
+    "fatG": 27.7,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 400g = 240g cơm chín (USDA FDC 168878) + 110g gà quay có da (USDA FDC 171450) + 12g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 8g đường (USDA FDC 169655) + 5g nước mắm (USDA FDC 174531) + 25g dưa leo (USDA FDC 168409). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 717.44/36.9/76.7/27.66. Cập nhật cả bộ số liệu vì có trường lệch >15%. Gà quay có da + dầu giữ lại thay gà xối mỡ; phần ăn giả định."
   },
   {
     "nameVi": "Cơm gà Hội An",
@@ -87,7 +87,7 @@
     "fatG": 15.0,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 350g = 220g cơm chín (USDA FDC 168878) + 90g gà hầm có da (USDA FDC 171051) + 5g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 5g đường (USDA FDC 169655) + 5g nước mắm (USDA FDC 174531) + 25g hành tây (USDA FDC 170000). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 558.4/28.66/69.49/16.95. Giữ số cũ: từng trường lệch không quá 15% so với mô hình. Gà hầm có da và dầu mô hình hóa gà xé/cơm nấu nước gà; phần ăn giả định."
   },
   {
     "nameVi": "Cơm rang dưa bò",
@@ -135,13 +135,13 @@
     "category": "com",
     "servingDesc": "1 đĩa",
     "servingGrams": 300.0,
-    "kcal": 500.0,
-    "proteinG": 15.0,
-    "carbsG": 70.0,
-    "fatG": 18.0,
+    "kcal": 470.4,
+    "proteinG": 15.2,
+    "carbsG": 58.3,
+    "fatG": 18.5,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 300g = 200g cơm chín (USDA FDC 168878) + 75g trứng luộc (USDA FDC 173424) + 10g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 10g hành tây (USDA FDC 170000) + 5g nước mắm (USDA FDC 174531). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 470.4/15.18/58.3/18.53. Cập nhật cả bộ số liệu vì có trường lệch >15%. Trứng luộc + dầu giữ lại thay trứng chiên; phần ăn giả định."
   },
   {
     "nameVi": "Cơm thịt kho trứng",
@@ -262,12 +262,12 @@
     "servingDesc": "1 chén cơm chín",
     "servingGrams": 150.0,
     "kcal": 195.0,
-    "proteinG": 4.0,
-    "carbsG": 43.0,
-    "fatG": 0.5,
+    "proteinG": 4.04,
+    "carbsG": 42.26,
+    "fatG": 0.42,
     "source": "curated",
-    "verified": false,
-    "sourceNote": "ước tính"
+    "verified": true,
+    "sourceNote": "Đối chiếu 2026-10-04: USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 150g = 150g cơm chín (USDA FDC 168878). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 195.0/4.04/42.26/0.42. Cập nhật cả bộ số liệu vì có trường lệch >15%. Đối chiếu trực tiếp mật độ dưỡng chất cơm chín USDA; quy đổi 150g phần ăn được, không xác minh trọng lượng chén thực tế."
   },
   {
     "nameVi": "Thịt kho tàu",
@@ -459,13 +459,13 @@
     "category": "bun_pho_mi",
     "servingDesc": "1 tô gồm bánh phở, thịt, rau và nước dùng",
     "servingGrams": 550.0,
-    "kcal": 430.0,
-    "proteinG": 28.0,
-    "carbsG": 60.0,
-    "fatG": 9.0,
+    "kcal": 535.5,
+    "proteinG": 35.1,
+    "carbsG": 69.1,
+    "fatG": 12.8,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: Bảng thành phần thực phẩm Việt Nam, Viện Dinh dưỡng, NXB Y học 2007 (bản FAO VTN_FCT_2007.pdf); USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 550g = 200g bánh phở (VDD 2007 1013, tr.13) + 80g bò chín ít mỡ (USDA FDC 168632) + 230g nước dùng bò (USDA FDC 172883) + 30g hành tây (USDA FDC 170000) + 5g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 5g nước mắm (USDA FDC 174531). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 535.45/35.14/69.14/12.77. Cập nhật cả bộ số liệu vì có trường lệch >15%. Bò chín ít mỡ thay bò tái đã chần; nước dùng và phần ăn giả định."
   },
   {
     "nameVi": "Phở bò chín",
@@ -477,13 +477,13 @@
     "category": "bun_pho_mi",
     "servingDesc": "1 tô gồm bánh phở, thịt, rau và nước dùng",
     "servingGrams": 550.0,
-    "kcal": 450.0,
-    "proteinG": 30.0,
-    "carbsG": 60.0,
-    "fatG": 10.0,
+    "kcal": 581.0,
+    "proteinG": 32.4,
+    "carbsG": 69.1,
+    "fatG": 19.3,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: Bảng thành phần thực phẩm Việt Nam, Viện Dinh dưỡng, NXB Y học 2007 (bản FAO VTN_FCT_2007.pdf); USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 550g = 200g bánh phở (VDD 2007 1013, tr.13) + 80g bò chín cả nạc/mỡ (USDA FDC 169484) + 230g nước dùng bò (USDA FDC 172883) + 30g hành tây (USDA FDC 170000) + 5g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 5g nước mắm (USDA FDC 174531). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 581.05/32.4/69.14/19.31. Cập nhật cả bộ số liệu vì có trường lệch >15%. Bò chín hỗn hợp nạc/mỡ thay nạm; nước dùng và phần ăn giả định."
   },
   {
     "nameVi": "Phở gà",
@@ -495,13 +495,13 @@
     "category": "bun_pho_mi",
     "servingDesc": "1 tô gồm bánh phở, thịt, rau và nước dùng",
     "servingGrams": 550.0,
-    "kcal": 420.0,
-    "proteinG": 28.0,
-    "carbsG": 58.0,
-    "fatG": 8.0,
+    "kcal": 503.8,
+    "proteinG": 28.7,
+    "carbsG": 69.2,
+    "fatG": 11.8,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: Bảng thành phần thực phẩm Việt Nam, Viện Dinh dưỡng, NXB Y học 2007 (bản FAO VTN_FCT_2007.pdf); USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 550g = 200g bánh phở (VDD 2007 1013, tr.13) + 80g gà hầm có da (USDA FDC 171051) + 80g nước dùng gà cô đặc hơn canh thông thường (USDA FDC 172884) + 155g nước/đá hoặc nước hút vào khi nấu (không sinh năng lượng) + 30g hành tây (USDA FDC 170000) + 5g nước mắm (USDA FDC 174531). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 503.75/28.74/69.21/11.84. Cập nhật cả bộ số liệu vì có trường lệch >15%. Nước dùng gà được pha loãng 80g stock + 155g nước; phần ăn giả định."
   },
   {
     "nameVi": "Phở cuốn",
@@ -531,13 +531,13 @@
     "category": "bun_pho_mi",
     "servingDesc": "1 tô gồm bún, thịt, rau và nước dùng",
     "servingGrams": 600.0,
-    "kcal": 550.0,
-    "proteinG": 30.0,
-    "carbsG": 65.0,
-    "fatG": 19.0,
+    "kcal": 641.2,
+    "proteinG": 35.6,
+    "carbsG": 63.6,
+    "fatG": 26.2,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: Bảng thành phần thực phẩm Việt Nam, Viện Dinh dưỡng, NXB Y học 2007 (bản FAO VTN_FCT_2007.pdf); USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; tham khảo VDD 2007 mã 1020 tr.20 (bún 110 kcal, P1.7/C25.7g mỗi 100g; lipid không có số liệu), dùng FDC 168914 đủ macro thay thế; mô hình 600g = 220g bún/sợi gạo chín thay thế (USDA FDC 168914) + 60g bò chín cả nạc/mỡ (USDA FDC 169484) + 40g thăn heo chín cả nạc/mỡ (USDA FDC 167820) + 230g nước dùng bò (USDA FDC 172883) + 30g hành tây (USDA FDC 170000) + 10g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 5g đường (USDA FDC 169655) + 5g nước mắm (USDA FDC 174531). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 641.2/35.65/63.57/26.2. Cập nhật cả bộ số liệu vì có trường lệch >15%. Không gồm giò nguyên xương/huyết; sợi gạo chín thay bún, thịt heo thay giò ăn được; phần ăn giả định."
   },
   {
     "nameVi": "Bún chả Hà Nội",
@@ -549,13 +549,13 @@
     "category": "bun_pho_mi",
     "servingDesc": "1 phần bún, chả, rau và nước chấm",
     "servingGrams": 450.0,
-    "kcal": 580.0,
-    "proteinG": 28.0,
-    "carbsG": 70.0,
-    "fatG": 22.0,
+    "kcal": 680.5,
+    "proteinG": 34.8,
+    "carbsG": 69.3,
+    "fatG": 29.0,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: Bảng thành phần thực phẩm Việt Nam, Viện Dinh dưỡng, NXB Y học 2007 (bản FAO VTN_FCT_2007.pdf); USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; tham khảo VDD 2007 mã 1020 tr.20 (bún 110 kcal, P1.7/C25.7g mỗi 100g; lipid không có số liệu), dùng FDC 168914 đủ macro thay thế; mô hình 450g = 220g bún/sợi gạo chín thay thế (USDA FDC 168914) + 110g heo xay chín (USDA FDC 168374) + 15g đường (USDA FDC 169655) + 5g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 10g nước mắm (USDA FDC 174531) + 40g xà lách (USDA FDC 169249) + 50g nước/đá hoặc nước hút vào khi nấu (không sinh năng lượng). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 680.45/34.84/69.33/29.03. Cập nhật cả bộ số liệu vì có trường lệch >15%. Heo xay chín thay hỗn hợp chả viên/chả miếng; dầu/đường nước chấm tính riêng; phần ăn giả định."
   },
   {
     "nameVi": "Bún thịt nướng",
@@ -567,13 +567,13 @@
     "category": "bun_pho_mi",
     "servingDesc": "1 tô kèm rau, đậu phộng và nước mắm",
     "servingGrams": 400.0,
-    "kcal": 550.0,
-    "proteinG": 25.0,
-    "carbsG": 75.0,
-    "fatG": 17.0,
+    "kcal": 622.7,
+    "proteinG": 31.8,
+    "carbsG": 66.2,
+    "fatG": 25.0,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: Bảng thành phần thực phẩm Việt Nam, Viện Dinh dưỡng, NXB Y học 2007 (bản FAO VTN_FCT_2007.pdf); USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; tham khảo VDD 2007 mã 1020 tr.20 (bún 110 kcal, P1.7/C25.7g mỗi 100g; lipid không có số liệu), dùng FDC 168914 đủ macro thay thế; mô hình 400g = 220g bún/sợi gạo chín thay thế (USDA FDC 168914) + 90g thăn heo chín cả nạc/mỡ (USDA FDC 167820) + 10g đậu phộng rang (USDA FDC 173806) + 7g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 10g đường (USDA FDC 169655) + 8g nước mắm (USDA FDC 174531) + 35g xà lách (USDA FDC 169249) + 20g nước/đá hoặc nước hút vào khi nấu (không sinh năng lượng). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 622.73/31.84/66.24/24.99. Cập nhật cả bộ số liệu vì có trường lệch >15%. Thăn heo nướng thay thịt ướp, sợi gạo chín thay bún; phần ăn giả định."
   },
   {
     "nameVi": "Bún riêu cua",
@@ -585,13 +585,13 @@
     "category": "bun_pho_mi",
     "servingDesc": "1 tô gồm bún, riêu, đậu hũ, rau và nước dùng",
     "servingGrams": 550.0,
-    "kcal": 450.0,
-    "proteinG": 22.0,
-    "carbsG": 60.0,
-    "fatG": 14.0,
+    "kcal": 501.4,
+    "proteinG": 28.2,
+    "carbsG": 55.9,
+    "fatG": 18.5,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: Bảng thành phần thực phẩm Việt Nam, Viện Dinh dưỡng, NXB Y học 2007 (bản FAO VTN_FCT_2007.pdf); USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; tham khảo VDD 2007 mã 1020 tr.20 (bún 110 kcal, P1.7/C25.7g mỗi 100g; lipid không có số liệu), dùng FDC 168914 đủ macro thay thế; mô hình 550g = 200g bún/sợi gạo chín thay thế (USDA FDC 168914) + 30g cua biển chín thay thế riêu cua đồng (USDA FDC 172007) + 20g heo xay chín (USDA FDC 168374) + 20g trứng luộc (USDA FDC 173424) + 30g đậu hũ chiên (USDA FDC 172451) + 60g cà chua sống (USDA FDC 170457) + 180g nước dùng bò (USDA FDC 172883) + 5g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 5g nước mắm (USDA FDC 174531). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 501.35/28.19/55.86/18.51. Cập nhật cả bộ số liệu vì có trường lệch >15%. Cua biển thay cua đồng; heo xay + trứng mô hình riêu, không suy ra món đã kiểm nghiệm; phần ăn giả định."
   },
   {
     "nameVi": "Bún mắm",
@@ -657,13 +657,13 @@
     "category": "bun_pho_mi",
     "servingDesc": "1 mẹt bún, đậu chiên, thịt luộc, chả cốm và mắm tôm",
     "servingGrams": 450.0,
-    "kcal": 650.0,
-    "proteinG": 30.0,
-    "carbsG": 65.0,
-    "fatG": 30.0,
+    "kcal": 795.1,
+    "proteinG": 51.1,
+    "carbsG": 63.2,
+    "fatG": 38.9,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: Bảng thành phần thực phẩm Việt Nam, Viện Dinh dưỡng, NXB Y học 2007 (bản FAO VTN_FCT_2007.pdf); USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; tham khảo VDD 2007 mã 1020 tr.20 (bún 110 kcal, P1.7/C25.7g mỗi 100g; lipid không có số liệu), dùng FDC 168914 đủ macro thay thế; mô hình 450g = 180g bún/sợi gạo chín thay thế (USDA FDC 168914) + 100g đậu hũ chiên (USDA FDC 172451) + 70g thăn heo chín cả nạc/mỡ (USDA FDC 167820) + 40g ham heo chín thay thế chả/lạp xưởng (USDA FDC 167872) + 10g đường (USDA FDC 169655) + 5g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 25g xà lách (USDA FDC 169249) + 10g nước mắm (USDA FDC 174531) + 10g nước/đá hoặc nước hút vào khi nấu (không sinh năng lượng). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 795.15/51.06/63.16/38.93. Cập nhật cả bộ số liệu vì có trường lệch >15%. Ham thay chả cốm, nước mắm thay macro mắm tôm; chưa có dữ liệu đúng chả/mắm, phần ăn giả định."
   },
   {
     "nameVi": "Hủ tiếu Nam Vang",
@@ -675,13 +675,13 @@
     "category": "bun_pho_mi",
     "servingDesc": "1 tô gồm hủ tiếu, thịt, tôm và nước dùng",
     "servingGrams": 550.0,
-    "kcal": 460.0,
-    "proteinG": 28.0,
-    "carbsG": 65.0,
-    "fatG": 10.0,
+    "kcal": 508.6,
+    "proteinG": 28.7,
+    "carbsG": 58.9,
+    "fatG": 16.8,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: Bảng thành phần thực phẩm Việt Nam, Viện Dinh dưỡng, NXB Y học 2007 (bản FAO VTN_FCT_2007.pdf); USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; tham khảo VDD 2007 mã 1020 tr.20 (bún 110 kcal, P1.7/C25.7g mỗi 100g; lipid không có số liệu), dùng FDC 168914 đủ macro thay thế; mô hình 550g = 220g bún/sợi gạo chín thay thế (USDA FDC 168914) + 40g heo xay chín (USDA FDC 168374) + 30g tôm chín (USDA FDC 171971) + 20g trứng luộc (USDA FDC 173424) + 200g nước dùng bò (USDA FDC 172883) + 30g hành tây (USDA FDC 170000) + 5g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 5g nước mắm (USDA FDC 174531). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 508.65/28.67/58.89/16.84. Cập nhật cả bộ số liệu vì có trường lệch >15%. Sợi gạo chín thay hủ tiếu, không gồm gan; phần ăn giả định."
   },
   {
     "nameVi": "Hủ tiếu bò kho",
@@ -693,13 +693,13 @@
     "category": "bun_pho_mi",
     "servingDesc": "1 tô gồm hủ tiếu, bò và nước kho",
     "servingGrams": 550.0,
-    "kcal": 520.0,
-    "proteinG": 30.0,
-    "carbsG": 65.0,
-    "fatG": 16.0,
+    "kcal": 646.3,
+    "proteinG": 33.8,
+    "carbsG": 64.6,
+    "fatG": 27.3,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: Bảng thành phần thực phẩm Việt Nam, Viện Dinh dưỡng, NXB Y học 2007 (bản FAO VTN_FCT_2007.pdf); USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; tham khảo VDD 2007 mã 1020 tr.20 (bún 110 kcal, P1.7/C25.7g mỗi 100g; lipid không có số liệu), dùng FDC 168914 đủ macro thay thế; mô hình 550g = 220g bún/sợi gạo chín thay thế (USDA FDC 168914) + 100g bò chín cả nạc/mỡ (USDA FDC 169484) + 50g cà rốt (USDA FDC 170393) + 165g nước dùng bò (USDA FDC 172883) + 10g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 5g đường (USDA FDC 169655). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 646.3/33.76/64.59/27.3. Cập nhật cả bộ số liệu vì có trường lệch >15%. Sợi gạo chín thay hủ tiếu; thịt/nước dùng và dầu giữ lại giả định."
   },
   {
     "nameVi": "Mì Quảng",
@@ -711,13 +711,13 @@
     "category": "bun_pho_mi",
     "servingDesc": "1 tô kèm rau, đậu phộng và bánh tráng",
     "servingGrams": 450.0,
-    "kcal": 550.0,
-    "proteinG": 28.0,
-    "carbsG": 65.0,
-    "fatG": 20.0,
+    "kcal": 614.9,
+    "proteinG": 32.1,
+    "carbsG": 65.2,
+    "fatG": 24.4,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: Bảng thành phần thực phẩm Việt Nam, Viện Dinh dưỡng, NXB Y học 2007 (bản FAO VTN_FCT_2007.pdf); USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; tham khảo VDD 2007 mã 1020 tr.20 (bún 110 kcal, P1.7/C25.7g mỗi 100g; lipid không có số liệu), dùng FDC 168914 đủ macro thay thế; mô hình 450g = 220g bún/sợi gạo chín thay thế (USDA FDC 168914) + 60g thăn heo chín cả nạc/mỡ (USDA FDC 167820) + 30g tôm chín (USDA FDC 171971) + 10g đậu phộng rang (USDA FDC 173806) + 10g bánh đa nem khô (VDD 2007 1010, tr.10) + 75g nước dùng bò (USDA FDC 172883) + 10g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 30g xà lách (USDA FDC 169249) + 5g nước mắm (USDA FDC 174531). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 614.9/32.14/65.24/24.4. Cập nhật cả bộ số liệu vì có trường lệch >15%. Sợi gạo chín thay mì Quảng, bánh đa nem thay bánh tráng nướng; phần ăn giả định."
   },
   {
     "nameVi": "Mì xào bò",
@@ -825,7 +825,7 @@
     "fatG": 19.0,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: Bảng thành phần thực phẩm Việt Nam, Viện Dinh dưỡng, NXB Y học 2007 (bản FAO VTN_FCT_2007.pdf); USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 200g = 90g bánh mì (VDD 2007 1012, tr.12) + 45g thăn heo chín cả nạc/mỡ (USDA FDC 167820) + 20g pâté gan thay thế (USDA FDC 172930) + 7g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 5g đường (USDA FDC 169655) + 20g dưa leo (USDA FDC 168409) + 10g cà rốt (USDA FDC 170393) + 3g nước mắm (USDA FDC 174531). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 486.18/22.62/54.43/19.63. Giữ số cũ: từng trường lệch không quá 15% so với mô hình. Thịt heo chín/pâté gan thay nhân thịt nguội/pâté quán; không thêm chả, phần ăn giả định."
   },
   {
     "nameVi": "Bánh mì trứng",
@@ -843,7 +843,7 @@
     "fatG": 19.0,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: Bảng thành phần thực phẩm Việt Nam, Viện Dinh dưỡng, NXB Y học 2007 (bản FAO VTN_FCT_2007.pdf); USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 200g = 90g bánh mì (VDD 2007 1012, tr.12) + 80g trứng luộc (USDA FDC 173424) + 10g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 15g dưa leo (USDA FDC 168409) + 3g đường (USDA FDC 169655) + 2g nước mắm (USDA FDC 174531). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 451.06/17.37/51.85/19.22. Giữ số cũ: từng trường lệch không quá 15% so với mô hình. Trứng luộc + dầu giữ lại thay trứng chiên; phần ăn giả định."
   },
   {
     "nameVi": "Bánh mì gà xé",
@@ -927,13 +927,13 @@
     "category": "xoi",
     "servingDesc": "1 gói kèm đậu xanh và muối mè",
     "servingGrams": 200.0,
-    "kcal": 380.0,
-    "proteinG": 10.0,
-    "carbsG": 70.0,
-    "fatG": 7.0,
+    "kcal": 428.1,
+    "proteinG": 8.2,
+    "carbsG": 84.3,
+    "fatG": 5.6,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 200g = 90g gạo nếp khô (USDA FDC 168883) + 70g nước/đá hoặc nước hút vào khi nấu (không sinh năng lượng) + 30g đậu xanh chín (USDA FDC 174257) + 5g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 5g đường (USDA FDC 169655). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 428.05/8.23/84.26/5.61. Cập nhật cả bộ số liệu vì có trường lệch >15%. Tính từ gạo nếp KHÔ, nước hấp hút vào riêng; đậu xanh chín, dầu/đường và hiệu suất nấu giả định."
   },
   {
     "nameVi": "Xôi gấc",
@@ -951,7 +951,7 @@
     "fatG": 7.0,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 200g = 90g gạo nếp khô (USDA FDC 168883) + 79g nước/đá hoặc nước hút vào khi nấu (không sinh năng lượng) + 6g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 15g đường (USDA FDC 169655) + 10g cà rốt (USDA FDC 170393). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 448.19/6.22/89.47/6.52. Giữ số cũ: từng trường lệch không quá 15% so với mô hình. Cà rốt chỉ là proxy macro cho 10g thịt gấc; gạo nếp KHÔ và nước hút vào riêng, chưa xác minh gấc/hiệu suất nấu."
   },
   {
     "nameVi": "Xôi mặn",
@@ -969,7 +969,7 @@
     "fatG": 20.0,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 250g = 85g gạo nếp khô (USDA FDC 168883) + 85g nước/đá hoặc nước hút vào khi nấu (không sinh năng lượng) + 30g thăn heo chín cả nạc/mỡ (USDA FDC 167820) + 20g trứng luộc (USDA FDC 173424) + 10g ham heo chín thay thế chả/lạp xưởng (USDA FDC 167872) + 10g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 5g đường (USDA FDC 169655) + 5g nước mắm (USDA FDC 174531). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 545.4/19.02/74.83/17.67. Giữ số cũ: từng trường lệch không quá 15% so với mô hình. Ham thay chả/lạp xưởng; gạo nếp KHÔ và nước hút vào riêng, topping/hiệu suất nấu giả định."
   },
   {
     "nameVi": "Xôi gà",
@@ -987,7 +987,7 @@
     "fatG": 12.0,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 250g = 85g gạo nếp khô (USDA FDC 168883) + 85g nước/đá hoặc nước hút vào khi nấu (không sinh năng lượng) + 65g gà hầm bỏ da (USDA FDC 171451) + 7g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 5g đường (USDA FDC 169655) + 3g nước mắm (USDA FDC 174531). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 511.83/23.68/74.54/11.83. Giữ số cũ: từng trường lệch không quá 15% so với mô hình. Gạo nếp KHÔ và nước hút vào riêng; gà bỏ da, dầu/hiệu suất nấu giả định."
   },
   {
     "nameVi": "Bánh tráng trộn",
@@ -1035,13 +1035,13 @@
     "category": "an_vat",
     "servingDesc": "1 đĩa 3 cuốn kèm nước chấm",
     "servingGrams": 180.0,
-    "kcal": 230.0,
-    "proteinG": 14.0,
-    "carbsG": 30.0,
-    "fatG": 6.0,
+    "kcal": 235.0,
+    "proteinG": 15.9,
+    "carbsG": 32.6,
+    "fatG": 4.2,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: Bảng thành phần thực phẩm Việt Nam, Viện Dinh dưỡng, NXB Y học 2007 (bản FAO VTN_FCT_2007.pdf); USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; tham khảo VDD 2007 mã 1020 tr.20 (bún 110 kcal, P1.7/C25.7g mỗi 100g; lipid không có số liệu), dùng FDC 168914 đủ macro thay thế; mô hình 180g = 18g bánh đa nem khô (VDD 2007 1010, tr.10) + 50g bún/sợi gạo chín thay thế (USDA FDC 168914) + 30g tôm chín (USDA FDC 171971) + 25g thăn heo chín cả nạc/mỡ (USDA FDC 167820) + 25g xà lách (USDA FDC 169249) + 5g đường (USDA FDC 169655) + 5g nước mắm (USDA FDC 174531) + 22g nước/đá hoặc nước hút vào khi nấu (không sinh năng lượng). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 234.99/15.87/32.56/4.16. Cập nhật cả bộ số liệu vì có trường lệch >15%. Bánh đa nem khô và nước làm mềm tách riêng; gồm nước chấm loãng, không sốt đậu phộng; phần ăn giả định."
   },
   {
     "nameVi": "Chả giò",
@@ -1053,13 +1053,13 @@
     "category": "an_vat",
     "servingDesc": "1 đĩa 3 cuốn kèm nước chấm",
     "servingGrams": 150.0,
-    "kcal": 350.0,
-    "proteinG": 12.0,
-    "carbsG": 30.0,
-    "fatG": 20.0,
+    "kcal": 372.8,
+    "proteinG": 14.7,
+    "carbsG": 27.6,
+    "fatG": 22.9,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: Bảng thành phần thực phẩm Việt Nam, Viện Dinh dưỡng, NXB Y học 2007 (bản FAO VTN_FCT_2007.pdf); USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 150g = 20g bánh đa nem khô (VDD 2007 1010, tr.10) + 35g heo xay chín (USDA FDC 168374) + 15g tôm chín (USDA FDC 171971) + 20g cà rốt (USDA FDC 170393) + 10g nấm chín thay thế mộc nhĩ (USDA FDC 169252) + 5g bột gạo khô (USDA FDC 169714) + 15g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 5g đường (USDA FDC 169655) + 5g nước mắm (USDA FDC 174531) + 20g nước/đá hoặc nước hút vào khi nấu (không sinh năng lượng). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 372.8/14.67/27.64/22.95. Cập nhật cả bộ số liệu vì có trường lệch >15%. Nấm thường thay mộc nhĩ, bột gạo thay phần miến; dầu là lượng giữ lại sau chiên, phần ăn giả định."
   },
   {
     "nameVi": "Bánh xèo",
@@ -1071,13 +1071,13 @@
     "category": "an_vat",
     "servingDesc": "1 cái lớn kèm rau và nước chấm",
     "servingGrams": 250.0,
-    "kcal": 420.0,
-    "proteinG": 15.0,
-    "carbsG": 45.0,
-    "fatG": 20.0,
+    "kcal": 473.6,
+    "proteinG": 17.3,
+    "carbsG": 50.7,
+    "fatG": 22.4,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 250g = 50g bột gạo khô (USDA FDC 169714) + 30g nước cốt dừa (USDA FDC 170172) + 30g thăn heo chín cả nạc/mỡ (USDA FDC 167820) + 20g tôm chín (USDA FDC 171971) + 30g hành tây (USDA FDC 170000) + 10g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 25g xà lách (USDA FDC 169249) + 5g đường (USDA FDC 169655) + 5g nước mắm (USDA FDC 174531) + 45g nước/đá hoặc nước hút vào khi nấu (không sinh năng lượng). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 473.65/17.34/50.73/22.45. Cập nhật cả bộ số liệu vì có trường lệch >15%. Hành/rau thay một phần giá; nước bột và dầu giữ lại giả định, không đo trực tiếp bánh thành phẩm."
   },
   {
     "nameVi": "Bánh cuốn",
@@ -1089,13 +1089,13 @@
     "category": "an_vat",
     "servingDesc": "1 đĩa kèm chả lụa và nước chấm",
     "servingGrams": 250.0,
-    "kcal": 350.0,
-    "proteinG": 15.0,
-    "carbsG": 50.0,
-    "fatG": 10.0,
+    "kcal": 384.1,
+    "proteinG": 18.4,
+    "carbsG": 42.0,
+    "fatG": 15.5,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 250g = 45g bột gạo khô (USDA FDC 169714) + 35g heo xay chín (USDA FDC 168374) + 15g nấm chín thay thế mộc nhĩ (USDA FDC 169252) + 25g ham heo chín thay thế chả/lạp xưởng (USDA FDC 167872) + 5g dầu đậu nành giữ lại trong món (USDA FDC 171411) + 5g đường (USDA FDC 169655) + 5g nước mắm (USDA FDC 174531) + 115g nước/đá hoặc nước hút vào khi nấu (không sinh năng lượng). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 384.05/18.41/42.03/15.45. Cập nhật cả bộ số liệu vì có trường lệch >15%. Ham thay chả lụa, nấm thường thay mộc nhĩ; bột khô và nước hấp tách riêng, phần ăn giả định."
   },
   {
     "nameVi": "Bánh bèo",
@@ -1269,13 +1269,13 @@
     "category": "do_uong",
     "servingDesc": "1 ly 500ml, đường tiêu chuẩn, gồm trân châu và đá",
     "servingGrams": 500.0,
-    "kcal": 420.0,
-    "proteinG": 5.0,
-    "carbsG": 75.0,
-    "fatG": 11.0,
+    "kcal": 371.8,
+    "proteinG": 7.5,
+    "carbsG": 68.7,
+    "fatG": 7.9,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 500g = 150g sữa nguyên kem (USDA FDC 171265) + 35g sữa đặc có đường (USDA FDC 171275) + 20g đường (USDA FDC 169655) + 25g trân châu khô trước khi hút nước (USDA FDC 169717) + 100g trà đen pha (USDA FDC 173227) + 170g nước/đá hoặc nước hút vào khi nấu (không sinh năng lượng). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 371.75/7.54/68.71/7.92. Cập nhật cả bộ số liệu vì có trường lệch >15%. Trân châu 25g KHÔ + 50g nước trong 170g nước/đá thành khoảng 75g chín; dùng sữa thật, không bột béo; chưa đo ly thực tế."
   },
   {
     "nameVi": "Cà phê sữa đá",
@@ -1293,7 +1293,7 @@
     "fatG": 4.0,
     "source": "curated",
     "verified": false,
-    "sourceNote": "ước tính"
+    "sourceNote": "Đối chiếu 2026-10-04: USDA FoodData Central, SR Legacy 2018-04, food.csv + food_nutrient.csv; mô hình 200g = 40g sữa đặc có đường (USDA FDC 171275) + 60g cà phê pha (USDA FDC 171890) + 100g nước/đá hoặc nước hút vào khi nấu (không sinh năng lượng). Tính tổng (gam/100 × giá trị mỗi 100g) cho kcal/P/C/F = 129.0/3.24/21.76/3.49. Giữ số cũ: từng trường lệch không quá 15% so với mô hình. Sữa đặc 40g, cà phê pha 60g, đá 100g; cà phê pha USDA thay cà phê phin, ly chưa cân."
   },
   {
     "nameVi": "Cà phê đen không đường",

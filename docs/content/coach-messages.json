@@ -135,6 +135,125 @@
       "{ten}, tuần này có {so_buoi} dấu tích ✅ Chọn một điều muốn mang sang tuần tới nhé."
     ]
   },
+  "skip_busy": {
+    "strict": [
+      "{ten}, buổi tối nay đã rút còn 10 phút, buổi sau đã dời sang ngày trống. Xem lịch mới.",
+      "Lịch đã đổi: tối nay 10 phút, buổi sau vào ngày trống. Mở kế hoạch để xem lại, {ten}.",
+      "Buổi tối nay còn 10 phút và buổi kế tiếp đã sang ngày trống. Kiểm tra lịch vừa cập nhật."
+    ],
+    "supportive": [
+      "{ten}, mình đã rút buổi tối nay còn 10 phút và dời buổi sau sang ngày trống 💛 Xem lịch mới nhé.",
+      "Lịch bận vẫn có chỗ cho một buổi ngắn 🌱 Tối nay đã còn 10 phút, buổi sau đã sang ngày trống. Mở kế hoạch nhé.",
+      "Mình đã chỉnh lịch theo nhịp của bạn: tối nay 10 phút, buổi sau vào ngày trống 🤗 Xem lại khi tiện nhé, {ten}."
+    ],
+    "funny": [
+      "{ten}, lịch tập đã thu gọn hành lý 🎒 Tối nay còn 10 phút, buổi sau đã sang ngày trống. Xem lịch mới nhé.",
+      "Buổi tối nay đã chuyển sang bản gọn 10 phút 😄 Buổi sau cũng đã tìm được ngày trống. Mở kế hoạch nhé.",
+      "Lịch vừa sắp lại chỗ ngồi 📅 Tối nay 10 phút, buổi kế tiếp vào ngày trống. Xem lại nhé, {ten}."
+    ]
+  },
+  "skip_tired": {
+    "strict": [
+      "{ten}, các buổi còn lại trong tuần đã giảm cường độ. Xem kế hoạch nhẹ hơn.",
+      "Kế hoạch đã chỉnh nhẹ các buổi còn lại. Nghỉ ngơi theo nhu cầu của bạn, {ten}.",
+      "Các buổi còn lại đã nhẹ hơn. Mở lịch để chọn nhịp tập phù hợp hôm nay."
+    ],
+    "supportive": [
+      "{ten}, mình đã giảm cường độ các buổi còn lại 💛 Bạn có thể dành thời gian nghỉ ngơi nhé.",
+      "Mình đã chỉnh các buổi còn lại nhẹ hơn 🌱 Xem kế hoạch mới khi thấy sẵn sàng nhé, {ten}.",
+      "Cảm ơn bạn đã nói mình đang mệt 🤗 Các buổi còn lại đã được giảm cường độ. Nghỉ thêm nếu cần nhé."
+    ],
+    "funny": [
+      "{ten}, lịch đã bật chế độ tiết kiệm pin 🔋 Các buổi còn lại nhẹ hơn rồi. Nghỉ ngơi thêm nếu cần nhé.",
+      "Các buổi còn lại đã hạ một nấc 😄 Mở kế hoạch nhẹ hơn khi bạn sẵn sàng nhé.",
+      "Lịch tuần này đã giảm âm lượng 🎵 Các buổi còn lại nhẹ hơn rồi. Xem lại theo nhịp của bạn nhé, {ten}."
+    ]
+  },
+  "skip_pain": {
+    "strict": [
+      "{ten}, các bài đã được thay để tránh vùng đau. Dừng tập nếu vẫn đau và đi khám nếu đau kéo dài.",
+      "Kế hoạch đã đổi sang bài phù hợp hơn với vùng bạn báo đau. Nếu đau kéo dài, bạn nên đi khám, {ten}.",
+      "Các bài gây tải lên vùng đau đã được thay. Nghỉ nếu còn đau; đi khám nếu tình trạng kéo dài."
+    ],
+    "supportive": [
+      "{ten}, mình đã thay bài để tránh vùng đau 💛 Bạn có thể nghỉ nếu vẫn đau, và nên đi khám nếu đau kéo dài nhé.",
+      "Mình đã đổi sang bài phù hợp hơn với vùng bạn báo đau 🌱 Nếu đau kéo dài, hãy đi khám nhé, {ten}.",
+      "Cảm ơn bạn đã báo để mình thay bài tránh vùng đau 🤗 Dừng tập nếu vẫn đau và đi khám nếu đau kéo dài nhé."
+    ],
+    "funny": [
+      "{ten}, lịch đã bật chế độ né vùng đau 🛠️ Bài đã được thay; nếu đau kéo dài, bạn nên đi khám nhé.",
+      "Bài cũ đã nhường chỗ cho bài tránh vùng đau rồi 🔄 Nghỉ nếu vẫn đau và đi khám nếu đau kéo dài nhé, {ten}.",
+      "Lịch vừa đổi đường để tránh vùng đau 🧭 Bài đã được thay; dừng nếu còn đau và đi khám nếu đau kéo dài nhé."
+    ]
+  },
+  "skip_bored": {
+    "strict": [
+      "{ten}, các buổi còn lại đã đổi bài mới cùng nhóm cơ. Xem bài vừa thay.",
+      "Bài tập đã được đổi, nhóm cơ vẫn theo kế hoạch. Mở lịch để xem phần mới, {ten}.",
+      "Kế hoạch đã có bài khác cho cùng nhóm cơ. Xem hướng dẫn bài mới trước khi tập."
+    ],
+    "supportive": [
+      "{ten}, mình đã đổi bài mới cùng nhóm cơ cho các buổi còn lại 🌱 Xem thử bài vừa thay nhé.",
+      "Muốn đổi không khí cũng hợp lý mà 💛 Bài đã được thay, vẫn cùng nhóm cơ. Mở kế hoạch mới nhé, {ten}.",
+      "Lịch đã có bài mới cùng nhóm cơ ✨ Xem hướng dẫn để làm quen khi bạn sẵn sàng nhé."
+    ],
+    "funny": [
+      "{ten}, danh sách bài vừa có ca khúc mới 🎵 Nhóm cơ vẫn như cũ. Xem bài vừa đổi nhé.",
+      "Kế hoạch đã thay món trong thực đơn tập 😄 Bài mới vẫn cùng nhóm cơ. Mở lịch nhé, {ten}.",
+      "Bài tập mới đã lên sóng 🎬 Vẫn cùng nhóm cơ trong kế hoạch. Xem hướng dẫn trước khi tập nhé."
+    ]
+  },
+  "skip_forgot": {
+    "strict": [
+      "{ten}, thử đặt nhắc trước giờ tập 60 phút. Xác nhận nếu giờ nhắc này phù hợp.",
+      "Đề xuất mới là nhắc trước buổi tập 60 phút. Chọn bật nhắc khi bạn đồng ý, {ten}.",
+      "Bạn có thể đặt nhắc sớm hơn 60 phút để dễ sắp xếp. Xem đề xuất trong cài đặt thông báo."
+    ],
+    "supportive": [
+      "{ten}, mình gợi ý nhắc trước giờ tập 60 phút 💛 Bạn chọn bật nếu thấy phù hợp nhé.",
+      "Một lời nhắc sớm có thể giúp bạn dễ thu xếp hơn 🌱 Thử đặt trước giờ tập 60 phút nhé, {ten}.",
+      "Mình đã đề xuất nhắc trước buổi tập 60 phút 🤗 Bạn xác nhận giờ nhắc nếu muốn dùng nhé."
+    ],
+    "funny": [
+      "{ten}, cho lịch tập thêm một chiếc chuông nhé 🔔 Thử đặt nhắc trước giờ tập 60 phút.",
+      "Trí nhớ có thể nhờ lịch phụ một tay 📅 Chọn nhắc trước buổi tập 60 phút nếu hợp với bạn nhé.",
+      "Buổi tập có thể gửi lời chào sớm 60 phút 😄 Bật nhắc nếu bạn muốn nhé, {ten}."
+    ]
+  },
+  "skip_other": {
+    "strict": [
+      "{ten}, mình đã ghi nhận lý do của bạn. Tiếp tục khi bạn thấy sẵn sàng.",
+      "Cảm ơn bạn đã chia sẻ, {ten}. Xem kế hoạch để chọn buổi phù hợp.",
+      "Lý do của bạn đã được ghi nhận. Chọn một bước nhỏ khi thấy thuận tiện."
+    ],
+    "supportive": [
+      "{ten}, mình đã ghi nhận điều bạn chia sẻ 💛 Bạn có thể tiếp tục theo nhịp của mình nhé.",
+      "Mỗi ngày có hoàn cảnh riêng 🌱 Cảm ơn bạn đã cho mình biết. Xem kế hoạch khi sẵn sàng nhé, {ten}.",
+      "Bạn không cần giải thích thêm đâu 🤗 Mình đã ghi nhận lý do. Chọn một bước nhỏ khi thấy phù hợp nhé."
+    ],
+    "funny": [
+      "{ten}, lịch tập vẫn dành chỗ cho bạn 📅 Lý do đã được ghi nhận. Mở lại khi sẵn sàng nhé.",
+      "Mình đã nhận tin từ bạn rồi 📬 Chọn một bước nhỏ khi hôm nay có chỗ nhé, {ten}.",
+      "Kế hoạch vẫn chờ tới lượt lên sóng 🎬 Cảm ơn bạn đã chia sẻ. Tiếp tục khi thấy phù hợp nhé."
+    ]
+  },
+  "checkin_energized": {
+    "strict": [
+      "{ten}, hôm nay bạn thấy sung sức. Bắt đầu buổi theo kế hoạch.",
+      "Năng lượng hôm nay tốt, {ten}. Giữ nhịp tập phù hợp với cơ thể.",
+      "Bạn đã ghi nhận mức năng lượng sung sức. Khởi động trước buổi tập."
+    ],
+    "supportive": [
+      "{ten}, vui khi hôm nay bạn thấy sung sức 🌤️ Bắt đầu buổi theo kế hoạch nhé.",
+      "Một ngày có thêm năng lượng 🌱 Giữ nhịp tập thoải mái cho mình nhé, {ten}.",
+      "Mình đã nhận check-in sung sức của bạn ✨ Khởi động để vào buổi tập nhé."
+    ],
+    "funny": [
+      "{ten}, pin hôm nay khá đầy rồi 🔋 Bắt đầu buổi theo kế hoạch nhé.",
+      "Trạm check-in vừa nhận tín hiệu sung sức 📡 Khởi động để vào buổi tập nhé, {ten}.",
+      "Hôm nay lịch tập có bạn đồng hành nhiều năng lượng 😄 Giữ nhịp thoải mái nhé, {ten}."
+    ]
+  },
   "checkin_tired": {
     "strict": [
       "{ten}, hôm nay bạn thấy mệt. Chọn nghỉ hoặc giảm thời lượng buổi tập.",
