@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/api/api_client.dart';
 import '../../data/repositories/api_user_repository.dart';
 import '../../domain/models/me_response.dart';
+import '../../domain/models/settings_request.dart';
 import '../../domain/repositories/user_repository.dart';
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
@@ -17,4 +18,80 @@ final userStatusFutureProvider =
   final me = await repo.getMe();
   ref.read(currentUserProvider.notifier).state = me;
   return me;
+});
+
+class SettingsState {
+  final bool isSaving;
+  final String? successMessage;
+  final dynamic error;
+
+  const SettingsState({
+    this.isSaving = false,
+    this.successMessage,
+    this.error,
+  });
+
+  SettingsState copyWith({
+    bool? isSaving,
+    String? successMessage,
+    dynamic error,
+    bool clearSuccess = false,
+    bool clearError = false,
+  }) {
+    return SettingsState(
+      isSaving: isSaving ?? this.isSaving,
+      successMessage: clearSuccess ? null : (successMessage ?? this.successMessage),
+      error: clearError ? null : (error ?? this.error),
+    );
+  }
+}
+
+class SettingsNotifier extends StateNotifier<SettingsState> {
+  final UserRepository _repository;
+  final Ref _ref;
+
+  SettingsNotifier(this._repository, this._ref) : super(const SettingsState());
+
+  /// PATCH /me: gửi các trường thay đổi, cập nhật provider GET /me.
+  Future<bool> saveSettings({
+    String? displayName,
+    String? timezone,
+    String? coachStyle,
+    int? sessionMinutes,
+    List<UserAvailabilitySlot>? availability,
+    NotificationsUpdate? notifications,
+    SharingUpdate? sharing,
+  }) async {
+    state = state.copyWith(isSaving: true, clearSuccess: true, clearError: true);
+    try {
+      final request = SettingsRequest(
+        displayName: displayName,
+        timezone: timezone,
+        coachStyle: coachStyle,
+        sessionMinutes: sessionMinutes,
+        availability: availability,
+        notifications: notifications,
+        sharing: sharing,
+      );
+      final updated = await _repository.updateSettings(request);
+      _ref.read(currentUserProvider.notifier).state = updated;
+      _ref.invalidate(userStatusFutureProvider);
+      state = state.copyWith(isSaving: false, successMessage: 'Đã lưu cài đặt thành công!');
+      return true;
+    } catch (e) {
+      state = state.copyWith(isSaving: false, error: e);
+      return false;
+    }
+  }
+
+  void logout() {
+    _ref.read(currentUserProvider.notifier).state = null;
+    _ref.invalidate(userStatusFutureProvider);
+  }
+}
+
+final settingsControllerProvider =
+    StateNotifierProvider.autoDispose<SettingsNotifier, SettingsState>((ref) {
+  final repo = ref.watch(userRepositoryProvider);
+  return SettingsNotifier(repo, ref);
 });

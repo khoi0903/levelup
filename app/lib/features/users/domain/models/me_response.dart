@@ -1,3 +1,5 @@
+import '../../../workout/domain/models/workout_models.dart';
+
 class UserProfile {
   final String? goal;
   final String? gender;
@@ -105,6 +107,129 @@ class UserStreak {
       };
 }
 
+class UserNotificationsSettings {
+  final bool pushEnabled;
+  final String? checkinTime;
+  final int? preWorkoutMinutes;
+  final String quietStart;
+  final String quietEnd;
+  final int maxPerDay;
+
+  const UserNotificationsSettings({
+    this.pushEnabled = true,
+    this.checkinTime,
+    this.preWorkoutMinutes,
+    this.quietStart = '22:00',
+    this.quietEnd = '07:00',
+    this.maxPerDay = 2,
+  });
+
+  factory UserNotificationsSettings.fromJson(Map<String, dynamic> json) {
+    return UserNotificationsSettings(
+      pushEnabled: json['pushEnabled'] as bool? ?? true,
+      checkinTime: json['checkinTime'] as String?,
+      preWorkoutMinutes: (json['preWorkoutMinutes'] as num?)?.toInt(),
+      quietStart: json['quietStart'] as String? ?? '22:00',
+      quietEnd: json['quietEnd'] as String? ?? '07:00',
+      maxPerDay: (json['maxPerDay'] as num?)?.toInt() ?? 2,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'pushEnabled': pushEnabled,
+        if (checkinTime != null) 'checkinTime': checkinTime,
+        if (preWorkoutMinutes != null) 'preWorkoutMinutes': preWorkoutMinutes,
+        'quietStart': quietStart,
+        'quietEnd': quietEnd,
+        'maxPerDay': maxPerDay,
+      };
+}
+
+class UserSharingSettings {
+  final bool weight;
+  final bool measurements;
+  final bool photos;
+  final bool meals;
+
+  const UserSharingSettings({
+    this.weight = false,
+    this.measurements = false,
+    this.photos = false,
+    this.meals = false,
+  });
+
+  factory UserSharingSettings.fromJson(Map<String, dynamic> json) {
+    return UserSharingSettings(
+      weight: json['weight'] as bool? ?? false,
+      measurements: json['measurements'] as bool? ?? false,
+      photos: json['photos'] as bool? ?? false,
+      meals: json['meals'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'weight': weight,
+        'measurements': measurements,
+        'photos': photos,
+        'meals': meals,
+      };
+}
+
+class UserAvailabilitySlot {
+  final int weekday; // 1-7
+  final String slot; // early_morning | morning | noon | afternoon | evening | late_evening
+
+  const UserAvailabilitySlot({
+    required this.weekday,
+    required this.slot,
+  });
+
+  factory UserAvailabilitySlot.fromJson(Map<String, dynamic> json) {
+    return UserAvailabilitySlot(
+      weekday: (json['weekday'] as num?)?.toInt() ?? 1,
+      slot: json['slot']?.toString() ?? 'evening',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'weekday': weekday,
+        'slot': slot,
+      };
+}
+
+class UserSettings {
+  final UserNotificationsSettings notifications;
+  final UserSharingSettings sharing;
+  final List<UserAvailabilitySlot> availability;
+
+  const UserSettings({
+    this.notifications = const UserNotificationsSettings(),
+    this.sharing = const UserSharingSettings(),
+    this.availability = const [],
+  });
+
+  factory UserSettings.fromJson(Map<String, dynamic> json) {
+    return UserSettings(
+      notifications: json['notifications'] != null
+          ? UserNotificationsSettings.fromJson(json['notifications'] as Map<String, dynamic>)
+          : const UserNotificationsSettings(),
+      sharing: json['sharing'] != null
+          ? UserSharingSettings.fromJson(json['sharing'] as Map<String, dynamic>)
+          : const UserSharingSettings(),
+      availability: (json['availability'] as List<dynamic>?)
+              ?.map((e) => UserAvailabilitySlot.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'notifications': notifications.toJson(),
+        'sharing': sharing.toJson(),
+        'availability': availability.map((a) => a.toJson()).toList(),
+      };
+}
+
 class MeResponse {
   final String id;
   final String displayName;
@@ -113,6 +238,8 @@ class MeResponse {
   final String? weekStart;
   final UserProfile? profile;
   final UserStreak? streak;
+  final UserSettings settings;
+  final List<Achievement> achievements;
 
   const MeResponse({
     required this.id,
@@ -122,6 +249,8 @@ class MeResponse {
     this.weekStart,
     this.profile,
     this.streak,
+    this.settings = const UserSettings(),
+    this.achievements = const [],
   });
 
   factory MeResponse.fromJson(Map<String, dynamic> json) {
@@ -137,6 +266,13 @@ class MeResponse {
       streak: json['streak'] != null
           ? UserStreak.fromJson(json['streak'] as Map<String, dynamic>)
           : null,
+      settings: json['settings'] != null
+          ? UserSettings.fromJson(json['settings'] as Map<String, dynamic>)
+          : const UserSettings(),
+      achievements: (json['achievements'] as List<dynamic>?)
+              ?.map((e) => Achievement.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
   }
 
@@ -148,5 +284,7 @@ class MeResponse {
         if (weekStart != null) 'weekStart': weekStart,
         if (profile != null) 'profile': profile!.toJson(),
         if (streak != null) 'streak': streak!.toJson(),
+        'settings': settings.toJson(),
+        'achievements': achievements.map((a) => a.toJson()).toList(),
       };
 }

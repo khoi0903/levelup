@@ -141,7 +141,8 @@ void main() {
       expect(repo.savedRequest!.meal, 'dinner');
       expect(repo.savedRequest!.method, 'search');
       expect(repo.savedRequest!.items.single.grams, 200);
-      expect(find.text('Dinh dưỡng'), findsOneWidget);
+      // Về lại màn Dinh dưỡng (tiêu đề + nhãn tab cùng chữ)
+      expect(find.text('Dinh dưỡng'), findsWidgets);
     },
   );
   testWidgets('unmatched AI item must be replaced before saving', (
