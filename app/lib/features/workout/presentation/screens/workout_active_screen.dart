@@ -26,6 +26,8 @@ class WorkoutActiveScreen extends ConsumerStatefulWidget {
 }
 
 class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
+  static const _maxDurationSec = 7200;
+
   // Khóa của hiệp đang nhập; đổi khóa thì đặt lại ô nhập.
   String? _inputKey;
   int _reps = 10;
@@ -69,7 +71,13 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
     }
     setState(() => _timerRunning = true);
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() => _durationSec++);
+      if (!mounted) return;
+      // Backend nhận durationSec tối đa 7200 (WorkoutRequest.SetLog).
+      if (_durationSec >= _maxDurationSec) {
+        setState(_stopTimer);
+      } else {
+        setState(() => _durationSec++);
+      }
     });
   }
 
@@ -293,7 +301,7 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
                   running: _timerRunning,
                   onToggle: _toggleTimer,
                   onAdjust: (delta) => setState(() {
-                    _durationSec = (_durationSec + delta).clamp(0, 7200);
+                    _durationSec = (_durationSec + delta).clamp(0, _maxDurationSec);
                   }),
                 )
               else
@@ -368,7 +376,7 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
                       child: PrimaryButton(
                         label: 'Đếm bằng camera',
                         icon: const Icon(Icons.videocam_rounded,
-                            color: Colors.white, size: 20),
+                            color: AppColors.surface, size: 20),
                         onPressed: () => _countWithCamera(s),
                       ),
                     ),

@@ -115,7 +115,8 @@ class _Overview extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
           child: PrimaryButton(
             label: 'Bắt đầu',
-            icon: const Icon(Icons.play_arrow_rounded, color: Colors.white),
+            icon: const Icon(Icons.play_arrow_rounded,
+                color: AppColors.surface),
             onPressed: setup.items.isEmpty ? null : onStart,
           ),
         ),

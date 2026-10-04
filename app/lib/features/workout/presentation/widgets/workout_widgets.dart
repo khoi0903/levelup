@@ -327,17 +327,18 @@ class ErrorBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final error = Theme.of(context).colorScheme.error;
+    // Bảng màu dịu mắt không có màu đỏ: báo lỗi bằng nền nhấn nhẹ + viền primary.
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
       decoration: BoxDecoration(
-        color: error.withValues(alpha: 0.08),
+        color: AppColors.primaryLight,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: error.withValues(alpha: 0.35)),
+        border: Border.all(color: AppColors.primary),
       ),
       child: Row(
         children: [
-          Icon(Icons.cloud_off_rounded, size: 20, color: error),
+          const Icon(Icons.cloud_off_rounded,
+              size: 20, color: AppColors.primary),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
