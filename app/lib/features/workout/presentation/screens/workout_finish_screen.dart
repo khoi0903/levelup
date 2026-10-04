@@ -237,7 +237,7 @@ class _WorkoutFinishScreenState extends ConsumerState<WorkoutFinishScreen> {
                           key: const ValueKey('retry-banner'),
                           message: error.isNetworkError
                               ? 'Chưa gửi được vì mất mạng. Buổi tập vẫn được giữ trên máy.'
-                              : 'Chưa lưu được buổi tập (${error.statusCode ?? error.code}).',
+                              : 'Chưa lưu được buổi tập. Bấm Thử lại nhé, buổi tập vẫn được giữ trên máy.',
                           onRetry: s.submitting ? null : _submit,
                         ),
                         const SizedBox(height: 12),

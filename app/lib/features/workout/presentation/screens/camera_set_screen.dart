@@ -556,7 +556,7 @@ class _CountingViewState extends ConsumerState<_CountingView>
             ErrorBanner(
               message: r.permissionDenied
                   ? 'Chưa có quyền camera. Cho phép LevelUp dùng camera trong Cài đặt.'
-                  : 'Camera gặp lỗi: $error',
+                  : cameraErrorMessage(error),
               retryLabel: r.permissionDenied ? 'Mở cài đặt' : 'Thử lại',
               onRetry: _session == null
                   ? null
@@ -630,6 +630,23 @@ class _OverlayBanner extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Lỗi camera/ML Kit (thường là chuỗi kỹ thuật tiếng Anh) → câu tiếng Việt cho người dùng.
+String cameraErrorMessage(String raw) {
+  debugPrint('[camera] lỗi: $raw');
+  final s = raw.toLowerCase();
+  if (s.contains('accessdenied') || s.contains('permission')) {
+    return 'Chưa có quyền camera. Cho phép LevelUp dùng camera trong Cài đặt.';
+  }
+  if (s.contains('no front') || s.contains('front camera') || s.contains('nocamera') ||
+      s.contains('no camera')) {
+    return 'Không tìm thấy camera trước trên máy này. Bạn đếm tay giúp mình nhé.';
+  }
+  if (s.contains('in use') || s.contains('max_cameras') || s.contains('disabled')) {
+    return 'Camera đang được ứng dụng khác dùng. Đóng ứng dụng đó rồi bấm Thử lại.';
+  }
+  return 'Camera đang gặp sự cố. Bấm Thử lại hoặc chuyển sang đếm tay.';
 }
 
 /// Tạo SetLog từ kết quả camera và số lần người dùng xác nhận.

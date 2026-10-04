@@ -534,4 +534,14 @@ void main() {
     expect(s.lastRepsFor(plankId), isNull);
     expect(s.lastRepsFor(gobletId), isNull);
   });
+
+  test('lỗi camera hiện câu tiếng Việt, không lộ chuỗi kỹ thuật', () {
+    expect(cameraErrorMessage('CameraException(CameraAccessDenied, denied)'),
+        contains('Chưa có quyền camera'));
+    expect(cameraErrorMessage('StateError: No front camera available'),
+        contains('camera trước'));
+    final generic = cameraErrorMessage('PlatformException(error, Something broke, null, null)');
+    expect(generic, contains('Camera đang gặp sự cố'));
+    expect(generic.contains('PlatformException'), isFalse);
+  });
 }

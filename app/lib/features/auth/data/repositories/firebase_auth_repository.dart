@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../../../core/constants/auth_constants.dart';
@@ -73,14 +74,16 @@ class FirebaseAuthRepository implements AuthRepository {
       if (e.code == GoogleSignInExceptionCode.canceled) {
         throw Exception('Đã hủy đăng nhập Google.');
       }
-      throw Exception('Lỗi đăng nhập Google: ${e.description ?? e.code.name}');
+      debugPrint('[auth] Google sign-in lỗi: ${e.code.name} ${e.description}');
+      throw Exception('Đăng nhập Google không thành công. Vui lòng thử lại.');
     } on fb.FirebaseAuthException catch (e) {
       throw Exception(mapFirebaseAuthError(e));
     } catch (e) {
       if (e.toString().contains('Đã hủy đăng nhập')) {
         rethrow;
       }
-      throw Exception('Đăng nhập Google không thành công: ${e.toString()}');
+      debugPrint('[auth] Google sign-in lỗi: $e');
+      throw Exception('Đăng nhập Google không thành công. Vui lòng thử lại.');
     }
   }
 
@@ -168,7 +171,8 @@ class FirebaseAuthRepository implements AuthRepository {
       case 'operation-not-allowed':
         return 'Phương thức đăng nhập này chưa được kích hoạt.';
       default:
-        return e.message ?? 'Đã có lỗi xảy ra (${e.code}). Vui lòng thử lại.';
+        debugPrint('[auth] Firebase lỗi: ${e.code} ${e.message}');
+        return 'Đăng nhập không thành công. Vui lòng thử lại sau.';
     }
   }
 }
