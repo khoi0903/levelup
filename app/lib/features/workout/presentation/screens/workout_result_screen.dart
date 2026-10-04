@@ -143,16 +143,16 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Text(
-          text,
-          style: const TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Text(
+      text,
+      style: const TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.w800,
+        color: AppColors.textPrimary,
+      ),
+    ),
+  );
 }
 
 class _WeekCard extends StatelessWidget {
@@ -216,8 +216,10 @@ class _WeekCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Còn ${week.targetSessions - week.completedSessions} buổi nữa là đạt mục tiêu tuần.',
-              style:
-                  const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ],
@@ -256,7 +258,7 @@ class _RecordTile extends StatelessWidget {
                     previous == null
                         ? record.metricLabelVi
                         : '${record.metricLabelVi} · trước: '
-                            '${PersonalRecord.formatValue(record.metric, previous)}',
+                              '${PersonalRecord.formatValue(record.metric, previous)}',
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
@@ -293,8 +295,11 @@ class _AchievementTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(
           children: [
-            const Icon(Icons.military_tech_rounded,
-                color: AppColors.primary, size: 28),
+            const Icon(
+              Icons.military_tech_rounded,
+              color: AppColors.primary,
+              size: 28,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

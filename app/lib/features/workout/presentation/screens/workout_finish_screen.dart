@@ -45,7 +45,9 @@ class _WorkoutFinishScreenState extends ConsumerState<WorkoutFinishScreen> {
   }
 
   Future<void> _submit() async {
-    final result = await ref.read(activeWorkoutProvider.notifier).submit(
+    final result = await ref
+        .read(activeWorkoutProvider.notifier)
+        .submit(
           rpe: _rpe,
           painAreas: PainArea.values.where(_pain.contains).toList(),
           note: _noteController.text,
@@ -129,7 +131,9 @@ class _WorkoutFinishScreenState extends ConsumerState<WorkoutFinishScreen> {
                       const SizedBox(height: 12),
                       AppCard(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 12),
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
                         borderRadius: 14,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,13 +213,15 @@ class _WorkoutFinishScreenState extends ConsumerState<WorkoutFinishScreen> {
                           fillColor: AppColors.surface,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide:
-                                const BorderSide(color: AppColors.border),
+                            borderSide: const BorderSide(
+                              color: AppColors.border,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide:
-                                const BorderSide(color: AppColors.border),
+                            borderSide: const BorderSide(
+                              color: AppColors.border,
+                            ),
                           ),
                         ),
                       ),

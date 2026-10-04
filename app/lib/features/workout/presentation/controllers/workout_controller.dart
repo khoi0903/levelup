@@ -70,43 +70,47 @@ typedef WorkoutSetupArgs = ({String? sessionId, bool quick5});
 /// Tải kế hoạch + thư viện bài tập và ghép thành buổi để tập.
 final workoutSetupProvider = FutureProvider.autoDispose
     .family<WorkoutSetup, WorkoutSetupArgs>((ref, args) async {
-  final workoutRepo = ref.watch(workoutRepositoryProvider);
-  final planRepo = ref.watch(planRepositoryProvider);
-  final now = ref.watch(workoutClockProvider)();
+      final workoutRepo = ref.watch(workoutRepositoryProvider);
+      final planRepo = ref.watch(planRepositoryProvider);
+      final now = ref.watch(workoutClockProvider)();
 
-  final exercisesFuture = workoutRepo.getExercises();
-  var plan = await planRepo.getCurrentPlan();
-  SessionView? session = args.sessionId == null
-      ? pickNextSession(plan, localDateString(now))
-      : plan.sessions.where((s) => s.id == args.sessionId).firstOrNull;
-  if (session == null) {
-    throw const ApiException(code: 'SESSION_NOT_FOUND', statusCode: 404);
-  }
-  if (args.quick5 && session.variant != 'quick5' && isSessionOpen(session)) {
-    plan = await workoutRepo.makeQuick5(session.id);
-    final id = session.id;
-    session = plan.sessions.firstWhere((s) => s.id == id,
-        orElse: () => session!);
-  }
+      final exercisesFuture = workoutRepo.getExercises();
+      var plan = await planRepo.getCurrentPlan();
+      SessionView? session = args.sessionId == null
+          ? pickNextSession(plan, localDateString(now))
+          : plan.sessions.where((s) => s.id == args.sessionId).firstOrNull;
+      if (session == null) {
+        throw const ApiException(code: 'SESSION_NOT_FOUND', statusCode: 404);
+      }
+      if (args.quick5 &&
+          session.variant != 'quick5' &&
+          isSessionOpen(session)) {
+        plan = await workoutRepo.makeQuick5(session.id);
+        final id = session.id;
+        session = plan.sessions.firstWhere(
+          (s) => s.id == id,
+          orElse: () => session!,
+        );
+      }
 
-  final exercises = <String, ExerciseResponse>{
-    for (final e in await exercisesFuture) e.id: e,
-  };
-  return WorkoutSetup(
-    session: session,
-    items: session.items
-        .map((i) => WorkoutPlanItem.from(i, exercises[i.exerciseId]))
-        .toList(),
-  );
-});
+      final exercises = <String, ExerciseResponse>{
+        for (final e in await exercisesFuture) e.id: e,
+      };
+      return WorkoutSetup(
+        session: session,
+        items: session.items
+            .map((i) => WorkoutPlanItem.from(i, exercises[i.exerciseId]))
+            .toList(),
+      );
+    });
 
 /// Buổi đang tập. Không autoDispose: giữ cả clientId để gửi lại khi lỗi mạng.
 // TODO(app): lưu bản nháp xuống drift (AGENTS.md) để còn giữ khi app bị tắt;
 // pubspec chưa có drift/path_provider nên hiện chỉ giữ trong bộ nhớ.
 final activeWorkoutProvider =
     StateNotifierProvider<WorkoutController, WorkoutSessionState?>((ref) {
-  return WorkoutController(ref);
-});
+      return WorkoutController(ref);
+    });
 
 class WorkoutController extends StateNotifier<WorkoutSessionState?> {
   WorkoutController(this._ref) : super(null);
@@ -189,8 +193,9 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
     if (state!.result != null) return state!.result;
     state = state!.copyWith(submitting: true, clearError: true);
     try {
-      final result =
-          await _ref.read(workoutRepositoryProvider).saveWorkout(request);
+      final result = await _ref
+          .read(workoutRepositoryProvider)
+          .saveWorkout(request);
       if (!mounted || state == null) return result;
       state = state!.copyWith(submitting: false, result: result);
       return result;

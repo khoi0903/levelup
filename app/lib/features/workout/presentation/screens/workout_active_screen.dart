@@ -115,14 +115,18 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
   void _logManual(WorkoutPlanItem item) {
     final duration = item.tracking == TrackingMode.duration;
     _stopTimer();
-    final rest = ref.read(activeWorkoutProvider.notifier).logSet(SetLog(
-          exerciseId: item.exerciseId,
-          setIndex: 1,
-          reps: duration ? null : _reps,
-          weightKg: item.tracking == TrackingMode.repsWeight ? _weight : null,
-          durationSec: duration ? _durationSec : null,
-          repSource: RepSource.manual,
-        ));
+    final rest = ref
+        .read(activeWorkoutProvider.notifier)
+        .logSet(
+          SetLog(
+            exerciseId: item.exerciseId,
+            setIndex: 1,
+            reps: duration ? null : _reps,
+            weightKg: item.tracking == TrackingMode.repsWeight ? _weight : null,
+            durationSec: duration ? _durationSec : null,
+            repSource: RepSource.manual,
+          ),
+        );
     _afterLog(rest);
   }
 
@@ -151,9 +155,11 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
     final s = ref.read(activeWorkoutProvider);
     if (s == null) return;
     if (s.sets.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Bạn chưa tập hiệp nào nên buổi này chưa được lưu.'),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bạn chưa tập hiệp nào nên buổi này chưa được lưu.'),
+        ),
+      );
       ref.read(activeWorkoutProvider.notifier).clear();
       context.go('/home');
       return;
@@ -169,9 +175,11 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Dừng buổi tập?'),
-        content: Text(hasSets
-            ? 'Bạn có thể kết thúc sớm và lưu các hiệp đã tập.'
-            : 'Bạn chưa tập hiệp nào, buổi này sẽ không được lưu.'),
+        content: Text(
+          hasSets
+              ? 'Bạn có thể kết thúc sớm và lưu các hiệp đã tập.'
+              : 'Bạn chưa tập hiệp nào, buổi này sẽ không được lưu.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, 'discard'),
@@ -230,15 +238,15 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
             child: item == null
                 ? const Center(child: CircularProgressIndicator())
                 : _restRemaining != null
-                    ? _RestView(
-                        seconds: _restRemaining!,
-                        next: item,
-                        setNumber: s.setNumber,
-                        onAdd: () =>
-                            setState(() => _restRemaining = _restRemaining! + 15),
-                        onSkip: _endRest,
-                      )
-                    : _buildExercise(s, item),
+                ? _RestView(
+                    seconds: _restRemaining!,
+                    next: item,
+                    setNumber: s.setNumber,
+                    onAdd: () =>
+                        setState(() => _restRemaining = _restRemaining! + 15),
+                    onSkip: _endRest,
+                  )
+                : _buildExercise(s, item),
           ),
         ),
       ),
@@ -248,8 +256,7 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
   Widget _buildExercise(WorkoutSessionState s, WorkoutPlanItem item) {
     final exercise = item.exercise;
     final factory = ref.watch(repSessionFactoryProvider);
-    final canCamera = item.tracking != TrackingMode.duration &&
-        factory.supports(exercise?.camera);
+    final canCamera = factory.supports(exercise?.camera);
     final total = s.items.length;
     final progress = (s.exerciseIndex + (s.setNumber - 1) / item.sets) / total;
     final cues = exercise?.cues ?? const <String>[];
@@ -301,7 +308,10 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
                   running: _timerRunning,
                   onToggle: _toggleTimer,
                   onAdjust: (delta) => setState(() {
-                    _durationSec = (_durationSec + delta).clamp(0, _maxDurationSec);
+                    _durationSec = (_durationSec + delta).clamp(
+                      0,
+                      _maxDurationSec,
+                    );
                   }),
                 )
               else
@@ -328,11 +338,13 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
                           value: _formatKg(_weight),
                           valueKey: const ValueKey('manual-weight'),
                           onDecrement: _weight > 0
-                              ? () => setState(() =>
-                                  _weight = (_weight - 1).clamp(0, 500))
+                              ? () => setState(
+                                  () => _weight = (_weight - 1).clamp(0, 500),
+                                )
                               : null,
                           onIncrement: () => setState(
-                              () => _weight = (_weight + 1).clamp(0, 500)),
+                            () => _weight = (_weight + 1).clamp(0, 500),
+                          ),
                         ),
                       ),
                     ],
@@ -368,15 +380,22 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
                       child: SecondaryButton(
                         label: 'Đếm tay: xong hiệp',
                         height: 52,
-                        onPressed: () => _logManual(item),
+                        onPressed:
+                            item.tracking == TrackingMode.duration &&
+                                _durationSec == 0
+                            ? null
+                            : () => _logManual(item),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: PrimaryButton(
                         label: 'Đếm bằng camera',
-                        icon: const Icon(Icons.videocam_rounded,
-                            color: AppColors.surface, size: 20),
+                        icon: const Icon(
+                          Icons.videocam_rounded,
+                          color: AppColors.surface,
+                          size: 20,
+                        ),
                         onPressed: () => _countWithCamera(s),
                       ),
                     ),
@@ -385,7 +404,8 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
               : PrimaryButton(
                   label: 'Xong hiệp',
                   // Bài theo thời gian: phải bấm giờ hoặc nhập tay trước.
-                  onPressed: item.tracking == TrackingMode.duration &&
+                  onPressed:
+                      item.tracking == TrackingMode.duration &&
                           _durationSec == 0
                       ? null
                       : () => _logManual(item),
@@ -482,8 +502,7 @@ class _GuideCardState extends State<_GuideCard> {
 }
 
 /// Bài tính theo thời gian: đồng hồ bấm giờ + chỉnh tay ±5 giây.
-// TODO(camera-hold): khi camera_counter có chế độ giữ tư thế (plank), thêm nút
-// "Đếm bằng camera" ở đây và ghi durationSec + repSource camera như bài theo lần.
+/// Bài có camera (plank, wall sit) còn có nút "Đếm bằng camera" đo thời gian giữ.
 class _DurationInput extends StatelessWidget {
   const _DurationInput({
     required this.seconds,
@@ -525,10 +544,15 @@ class _DurationInput extends StatelessWidget {
           ),
           Text(
             'Mục tiêu ${formatClock(targetSec)}',
-            style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 10),
-          WorkoutProgressBar(progress: targetSec == 0 ? 0 : seconds / targetSec),
+          WorkoutProgressBar(
+            progress: targetSec == 0 ? 0 : seconds / targetSec,
+          ),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -540,7 +564,9 @@ class _DurationInput extends StatelessWidget {
               const SizedBox(width: 12),
               FilledButton.icon(
                 onPressed: onToggle,
-                icon: Icon(running ? Icons.pause_rounded : Icons.play_arrow_rounded),
+                icon: Icon(
+                  running ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                ),
                 label: Text(running ? 'Tạm dừng' : 'Bấm giờ'),
               ),
               const SizedBox(width: 12),

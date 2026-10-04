@@ -40,10 +40,10 @@ class FormIssueLog {
   });
 
   Map<String, dynamic> toJson() => {
-        'repIndex': repIndex,
-        'code': code,
-        'severity': severity,
-      };
+    'repIndex': repIndex,
+    'code': code,
+    'severity': severity,
+  };
 }
 
 /// Một hiệp đã tập, ứng với `WorkoutRequest.SetLog`.
@@ -75,33 +75,33 @@ class SetLog {
   });
 
   SetLog withSetIndex(int index) => SetLog(
-        exerciseId: exerciseId,
-        setIndex: index,
-        reps: reps,
-        weightKg: weightKg,
-        durationSec: durationSec,
-        repSource: repSource,
-        repsDetected: repsDetected,
-        cvVersion: cvVersion,
-        avgConfidence: avgConfidence,
-        formScore: formScore,
-        formIssues: formIssues,
-      );
+    exerciseId: exerciseId,
+    setIndex: index,
+    reps: reps,
+    weightKg: weightKg,
+    durationSec: durationSec,
+    repSource: repSource,
+    repsDetected: repsDetected,
+    cvVersion: cvVersion,
+    avgConfidence: avgConfidence,
+    formScore: formScore,
+    formIssues: formIssues,
+  );
 
   Map<String, dynamic> toJson() => {
-        'exerciseId': exerciseId,
-        'setIndex': setIndex,
-        if (reps != null) 'reps': reps,
-        if (weightKg != null) 'weightKg': weightKg,
-        if (durationSec != null) 'durationSec': durationSec,
-        'repSource': repSource.json,
-        if (repsDetected != null) 'repsDetected': repsDetected,
-        if (cvVersion != null) 'cvVersion': cvVersion,
-        if (avgConfidence != null) 'avgConfidence': avgConfidence,
-        if (formScore != null) 'formScore': formScore,
-        if (formIssues.isNotEmpty)
-          'formIssues': formIssues.map((i) => i.toJson()).toList(),
-      };
+    'exerciseId': exerciseId,
+    'setIndex': setIndex,
+    if (reps != null) 'reps': reps,
+    if (weightKg != null) 'weightKg': weightKg,
+    if (durationSec != null) 'durationSec': durationSec,
+    'repSource': repSource.json,
+    if (repsDetected != null) 'repsDetected': repsDetected,
+    if (cvVersion != null) 'cvVersion': cvVersion,
+    if (avgConfidence != null) 'avgConfidence': avgConfidence,
+    if (formScore != null) 'formScore': formScore,
+    if (formIssues.isNotEmpty)
+      'formIssues': formIssues.map((i) => i.toJson()).toList(),
+  };
 }
 
 class WorkoutRequest {
@@ -128,17 +128,17 @@ class WorkoutRequest {
   });
 
   Map<String, dynamic> toJson() => {
-        'clientId': clientId,
-        if (plannedSessionId != null) 'plannedSessionId': plannedSessionId,
-        'startedAt': startedAt.toUtc().toIso8601String(),
-        'endedAt': endedAt.toUtc().toIso8601String(),
-        'variant': variant,
-        if (rpe != null) 'rpe': rpe,
-        if (painAreas.isNotEmpty)
-          'painAreas': painAreas.map((p) => p.json).toList(),
-        if (note != null && note!.trim().isNotEmpty) 'note': note!.trim(),
-        'sets': sets.map((s) => s.toJson()).toList(),
-      };
+    'clientId': clientId,
+    if (plannedSessionId != null) 'plannedSessionId': plannedSessionId,
+    'startedAt': startedAt.toUtc().toIso8601String(),
+    'endedAt': endedAt.toUtc().toIso8601String(),
+    'variant': variant,
+    if (rpe != null) 'rpe': rpe,
+    if (painAreas.isNotEmpty)
+      'painAreas': painAreas.map((p) => p.json).toList(),
+    if (note != null && note!.trim().isNotEmpty) 'note': note!.trim(),
+    'sets': sets.map((s) => s.toJson()).toList(),
+  };
 }
 
 class WeekProgress {
@@ -157,11 +157,11 @@ class WeekProgress {
   bool get achieved => status == 'achieved';
 
   factory WeekProgress.fromJson(Map<String, dynamic> json) => WeekProgress(
-        weekStart: json['weekStart']?.toString() ?? '',
-        targetSessions: (json['targetSessions'] as num?)?.toInt() ?? 0,
-        completedSessions: (json['completedSessions'] as num?)?.toInt() ?? 0,
-        status: json['status']?.toString() ?? 'in_progress',
-      );
+    weekStart: json['weekStart']?.toString() ?? '',
+    targetSessions: (json['targetSessions'] as num?)?.toInt() ?? 0,
+    completedSessions: (json['completedSessions'] as num?)?.toInt() ?? 0,
+    status: json['status']?.toString() ?? 'in_progress',
+  );
 }
 
 class PersonalRecord {
@@ -180,12 +180,12 @@ class PersonalRecord {
   });
 
   factory PersonalRecord.fromJson(Map<String, dynamic> json) => PersonalRecord(
-        exerciseId: json['exerciseId']?.toString() ?? '',
-        nameVi: json['nameVi'] as String?,
-        metric: json['metric']?.toString() ?? '',
-        value: (json['value'] as num?)?.toDouble() ?? 0,
-        previous: (json['previous'] as num?)?.toDouble(),
-      );
+    exerciseId: json['exerciseId']?.toString() ?? '',
+    nameVi: json['nameVi'] as String?,
+    metric: json['metric']?.toString() ?? '',
+    value: (json['value'] as num?)?.toDouble() ?? 0,
+    previous: (json['previous'] as num?)?.toDouble(),
+  );
 
   /// "12 lần", "8 kg", "45 giây".
   static String formatValue(String metric, double value) {
@@ -200,10 +200,10 @@ class PersonalRecord {
   }
 
   String get metricLabelVi => switch (metric) {
-        'max_weight' => 'Tạ nặng nhất',
-        'max_duration' => 'Giữ lâu nhất',
-        _ => 'Nhiều lần nhất',
-      };
+    'max_weight' => 'Tạ nặng nhất',
+    'max_duration' => 'Giữ lâu nhất',
+    _ => 'Nhiều lần nhất',
+  };
 }
 
 class Achievement {
@@ -218,10 +218,10 @@ class Achievement {
   });
 
   factory Achievement.fromJson(Map<String, dynamic> json) => Achievement(
-        code: json['code']?.toString() ?? '',
-        nameVi: json['nameVi']?.toString() ?? json['code']?.toString() ?? '',
-        descriptionVi: json['descriptionVi'] as String?,
-      );
+    code: json['code']?.toString() ?? '',
+    nameVi: json['nameVi']?.toString() ?? json['code']?.toString() ?? '',
+    descriptionVi: json['descriptionVi'] as String?,
+  );
 }
 
 /// Ứng với `WorkoutResponse`.
@@ -247,21 +247,23 @@ class WorkoutResult {
   });
 
   factory WorkoutResult.fromJson(Map<String, dynamic> json) => WorkoutResult(
-        workoutId: json['workoutId']?.toString() ?? '',
-        localDate: json['localDate']?.toString() ?? '',
-        durationSec: (json['durationSec'] as num?)?.toInt() ?? 0,
-        countsForStreak: json['countsForStreak'] == true,
-        duplicate: json['duplicate'] == true,
-        week: json['week'] is Map<String, dynamic>
-            ? WeekProgress.fromJson(json['week'] as Map<String, dynamic>)
-            : null,
-        personalRecords: (json['personalRecords'] as List<dynamic>?)
-                ?.map((e) => PersonalRecord.fromJson(e as Map<String, dynamic>))
-                .toList() ??
-            const [],
-        newAchievements: (json['newAchievements'] as List<dynamic>?)
-                ?.map((e) => Achievement.fromJson(e as Map<String, dynamic>))
-                .toList() ??
-            const [],
-      );
+    workoutId: json['workoutId']?.toString() ?? '',
+    localDate: json['localDate']?.toString() ?? '',
+    durationSec: (json['durationSec'] as num?)?.toInt() ?? 0,
+    countsForStreak: json['countsForStreak'] == true,
+    duplicate: json['duplicate'] == true,
+    week: json['week'] is Map<String, dynamic>
+        ? WeekProgress.fromJson(json['week'] as Map<String, dynamic>)
+        : null,
+    personalRecords:
+        (json['personalRecords'] as List<dynamic>?)
+            ?.map((e) => PersonalRecord.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        const [],
+    newAchievements:
+        (json['newAchievements'] as List<dynamic>?)
+            ?.map((e) => Achievement.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        const [],
+  );
 }

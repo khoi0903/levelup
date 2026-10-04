@@ -85,7 +85,9 @@ class _Overview extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
             children: [
               WorkoutHeader(
-                title: session.title.isEmpty ? 'Buổi tập hôm nay' : session.title,
+                title: session.title.isEmpty
+                    ? 'Buổi tập hôm nay'
+                    : session.title,
                 subtitle: meta,
                 onClose: onClose,
               ),
@@ -115,8 +117,10 @@ class _Overview extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
           child: PrimaryButton(
             label: 'Bắt đầu',
-            icon: const Icon(Icons.play_arrow_rounded,
-                color: AppColors.surface),
+            icon: const Icon(
+              Icons.play_arrow_rounded,
+              color: AppColors.surface,
+            ),
             onPressed: setup.items.isEmpty ? null : onStart,
           ),
         ),
@@ -213,8 +217,8 @@ class _ErrorView extends StatelessWidget {
     final message = api?.isNetworkError == true
         ? 'Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.'
         : api?.code == 'SESSION_NOT_FOUND'
-            ? 'Không tìm thấy buổi tập trong kế hoạch tuần này.'
-            : 'Không tải được buổi tập (${api?.statusCode ?? api?.code ?? 'lỗi'}).';
+        ? 'Không tìm thấy buổi tập trong kế hoạch tuần này.'
+        : 'Không tải được buổi tập (${api?.statusCode ?? api?.code ?? 'lỗi'}).';
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(

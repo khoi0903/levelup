@@ -68,34 +68,35 @@ class _CameraSetScreenState extends ConsumerState<CameraSetScreen> {
         child: SafeArea(
           child: switch (_stage) {
             _Stage.setup => _SetupView(
-                name: item.nameVi,
-                subtitle: subtitle,
-                camera: camera,
-                onReady: () => setState(() => _stage = _Stage.counting),
-                onManual: _manual,
-              ),
+              name: item.nameVi,
+              subtitle: subtitle,
+              camera: camera,
+              onReady: () => setState(() => _stage = _Stage.counting),
+              onManual: _manual,
+            ),
             _Stage.counting => _CountingView(
-                key: ValueKey('counting-$_attempt'),
-                name: item.nameVi,
-                subtitle: subtitle,
-                camera: camera,
-                targetReps: item.reps,
-                onManual: _manual,
-                onDone: (snapshot) => setState(() {
-                  _snapshot = snapshot;
-                  _stage = _Stage.confirm;
-                }),
-              ),
+              key: ValueKey('counting-$_attempt'),
+              name: item.nameVi,
+              subtitle: subtitle,
+              camera: camera,
+              targetReps: item.reps,
+              targetSec: item.durationSec,
+              onManual: _manual,
+              onDone: (snapshot) => setState(() {
+                _snapshot = snapshot;
+                _stage = _Stage.confirm;
+              }),
+            ),
             _Stage.confirm => _ConfirmView(
-                args: widget.args,
-                camera: camera,
-                snapshot: _snapshot ?? const RepSnapshot(),
-                onRecount: () => setState(() {
-                  _attempt++;
-                  _stage = _Stage.counting;
-                }),
-                onSave: (set) => context.pop(CameraSetOutcome(set)),
-              ),
+              args: widget.args,
+              camera: camera,
+              snapshot: _snapshot ?? const RepSnapshot(),
+              onRecount: () => setState(() {
+                _attempt++;
+                _stage = _Stage.counting;
+              }),
+              onSave: (set) => context.pop(CameraSetOutcome(set)),
+            ),
           },
         ),
       ),
@@ -189,8 +190,11 @@ class _SetupViewState extends ConsumerState<_SetupView> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: const [
-                      Icon(Icons.smartphone_rounded,
-                          size: 40, color: AppColors.textPrimary),
+                      Icon(
+                        Icons.smartphone_rounded,
+                        size: 40,
+                        color: AppColors.textPrimary,
+                      ),
                       Padding(
                         padding: EdgeInsets.only(bottom: 12),
                         child: Text(
@@ -201,8 +205,11 @@ class _SetupViewState extends ConsumerState<_SetupView> {
                           ),
                         ),
                       ),
-                      Icon(Icons.accessibility_new_rounded,
-                          size: 96, color: AppColors.textPrimary),
+                      Icon(
+                        Icons.accessibility_new_rounded,
+                        size: 96,
+                        color: AppColors.textPrimary,
+                      ),
                     ],
                   ),
                 ),
@@ -253,9 +260,11 @@ class _SetupViewState extends ConsumerState<_SetupView> {
               if (_denied != null) ...[
                 const SizedBox(height: 14),
                 ErrorBanner(
-                  message: 'LevelUp cần quyền camera để đếm số lần. '
+                  message:
+                      'LevelUp cần quyền camera để đếm số lần. '
                       'Bạn có thể cấp quyền hoặc tự đếm tay.',
-                  retryLabel: _denied == CameraPermissionResult.permanentlyDenied
+                  retryLabel:
+                      _denied == CameraPermissionResult.permanentlyDenied
                       ? 'Mở cài đặt'
                       : 'Thử lại',
                   onRetry: _denied == CameraPermissionResult.permanentlyDenied
@@ -298,6 +307,7 @@ class _CountingView extends ConsumerStatefulWidget {
     required this.subtitle,
     required this.camera,
     required this.targetReps,
+    this.targetSec,
     required this.onManual,
     required this.onDone,
   });
@@ -306,6 +316,7 @@ class _CountingView extends ConsumerStatefulWidget {
   final String subtitle;
   final ExerciseCamera camera;
   final int? targetReps;
+  final int? targetSec;
   final VoidCallback onManual;
   final ValueChanged<RepSnapshot> onDone;
 
@@ -385,7 +396,10 @@ class _CountingViewState extends ConsumerState<_CountingView>
     }
     if (!mounted) return;
     final latest = session.latest;
-    widget.onDone(latest.repCount >= _latest.repCount ? latest : _latest);
+    final better = latest.isHold
+        ? latest.holdDuration >= _latest.holdDuration
+        : latest.repCount >= _latest.repCount;
+    widget.onDone(better ? latest : _latest);
   }
 
   @override
@@ -409,11 +423,11 @@ class _CountingViewState extends ConsumerState<_CountingView>
     final lastIssue = r.issues.isNotEmpty ? r.issues.last : null;
     final statusText = !running
         ? (r.status == RepCountingStatus.paused
-            ? 'Đã tạm dừng'
-            : 'Đang mở camera…')
+              ? 'Đã tạm dừng'
+              : 'Đang mở camera…')
         : r.personMissing
-            ? 'Không thấy người'
-            : 'Đã thấy toàn thân';
+        ? 'Không thấy người'
+        : 'Đã thấy toàn thân';
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
@@ -438,8 +452,11 @@ class _CountingViewState extends ConsumerState<_CountingView>
                     child: controller != null && controller.value.isInitialized
                         ? Center(child: CameraPreview(controller))
                         : const Center(
-                            child: Icon(Icons.videocam_outlined,
-                                size: 48, color: AppColors.surface),
+                            child: Icon(
+                              Icons.videocam_outlined,
+                              size: 48,
+                              color: AppColors.surface,
+                            ),
                           ),
                   ),
                   if (running && r.personMissing)
@@ -449,7 +466,8 @@ class _CountingViewState extends ConsumerState<_CountingView>
                       top: 12,
                       child: _OverlayBanner(
                         icon: Icons.person_off_outlined,
-                        text: 'Không thấy người. Lùi xa để camera thấy vai, '
+                        text:
+                            'Không thấy người. Lùi xa để camera thấy vai, '
                             'hông, gối và cổ chân.',
                       ),
                     ),
@@ -461,7 +479,8 @@ class _CountingViewState extends ConsumerState<_CountingView>
                       child: _OverlayBanner(
                         key: const ValueKey('form-warning'),
                         icon: Icons.south_rounded,
-                        text: 'Lần ${lastIssue.repIndex}: '
+                        text:
+                            'Lần ${lastIssue.repIndex}: '
                             '${formIssueLabelVi(lastIssue.code)}',
                       ),
                     ),
@@ -475,7 +494,9 @@ class _CountingViewState extends ConsumerState<_CountingView>
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(
-                '${r.repCount}',
+                r.isHold
+                    ? formatClock(r.holdDuration.inSeconds)
+                    : '${r.repCount}',
                 key: const ValueKey('camera-rep-count'),
                 style: const TextStyle(
                   fontSize: 64,
@@ -485,7 +506,13 @@ class _CountingViewState extends ConsumerState<_CountingView>
               ),
               const SizedBox(width: 8),
               Text(
-                widget.targetReps != null
+                r.isHold
+                    ? (r.holding
+                          ? 'đang giữ đúng tư thế'
+                          : (widget.targetSec != null
+                                ? '/ ${formatClock(widget.targetSec!)}'
+                                : 'giữ tư thế'))
+                    : widget.targetReps != null
                     ? '/ ${widget.targetReps} lần'
                     : 'lần',
                 style: const TextStyle(
@@ -505,8 +532,8 @@ class _CountingViewState extends ConsumerState<_CountingView>
               onRetry: _session == null
                   ? null
                   : r.permissionDenied
-                      ? () => ref.read(cameraPermissionProvider).openSettings()
-                      : _start,
+                  ? () => ref.read(cameraPermissionProvider).openSettings()
+                  : _start,
             ),
             const SizedBox(height: 8),
           ],
@@ -519,8 +546,8 @@ class _CountingViewState extends ConsumerState<_CountingView>
                   onPressed: _session == null || _busy
                       ? null
                       : running
-                          ? _pause
-                          : _start,
+                      ? _pause
+                      : _start,
                 ),
               ),
               const SizedBox(width: 12),
@@ -583,9 +610,27 @@ SetLog buildCameraSetLog({
   required RepSnapshot snapshot,
   required int confirmedReps,
   double? weightKg,
+  int? confirmedSeconds,
 }) {
-  final detected = snapshot.repCount;
   final confidence = snapshot.averageConfidence.clamp(0.0, 1.0);
+  if (snapshot.isHold) {
+    // Giữ tư thế: lưu thời gian (giới hạn backend 7200 giây), không có số lần.
+    final measured = snapshot.holdDuration.inSeconds.clamp(0, 7200);
+    final seconds = (confirmedSeconds ?? measured).clamp(0, 7200);
+    return SetLog(
+      exerciseId: item.exerciseId,
+      setIndex: 1,
+      durationSec: seconds,
+      repSource: seconds == measured
+          ? RepSource.camera
+          : RepSource.cameraCorrected,
+      cvVersion: camera.version,
+      avgConfidence: double.parse(confidence.toStringAsFixed(3)),
+      formScore: measured > 0 ? snapshot.formScore.clamp(0, 100) : null,
+      formIssues: snapshot.issues.take(100).toList(),
+    );
+  }
+  final detected = snapshot.repCount;
   return SetLog(
     exerciseId: item.exerciseId,
     setIndex: 1,
@@ -623,6 +668,11 @@ class _ConfirmView extends StatefulWidget {
 
 class _ConfirmViewState extends State<_ConfirmView> {
   late int _reps = widget.snapshot.repCount;
+  late final int _measuredSec = widget.snapshot.holdDuration.inSeconds.clamp(
+    0,
+    7200,
+  );
+  late int _seconds = _measuredSec;
   late double _weight = widget.args.initialWeightKg;
 
   @override
@@ -646,7 +696,9 @@ class _ConfirmViewState extends State<_ConfirmView> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Camera đếm được ${s.repCount} lần',
+                s.isHold
+                    ? 'Camera đo được ${formatClock(_measuredSec)} giữ tư thế'
+                    : 'Camera đếm được ${s.repCount} lần',
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
@@ -662,15 +714,39 @@ class _ConfirmViewState extends State<_ConfirmView> {
               Row(
                 children: [
                   Expanded(
-                    child: CounterCard(
-                      label: 'Số lần',
-                      value: '$_reps',
-                      valueKey: const ValueKey('confirm-reps'),
-                      onDecrement:
-                          _reps > 0 ? () => setState(() => _reps--) : null,
-                      onIncrement:
-                          _reps < 1000 ? () => setState(() => _reps++) : null,
-                    ),
+                    child: s.isHold
+                        ? CounterCard(
+                            label: 'Thời gian giữ',
+                            value: formatClock(_seconds),
+                            valueKey: const ValueKey('confirm-seconds'),
+                            onDecrement: _seconds > 0
+                                ? () => setState(
+                                    () => _seconds = (_seconds - 5).clamp(
+                                      0,
+                                      7200,
+                                    ),
+                                  )
+                                : null,
+                            onIncrement: _seconds < 7200
+                                ? () => setState(
+                                    () => _seconds = (_seconds + 5).clamp(
+                                      0,
+                                      7200,
+                                    ),
+                                  )
+                                : null,
+                          )
+                        : CounterCard(
+                            label: 'Số lần',
+                            value: '$_reps',
+                            valueKey: const ValueKey('confirm-reps'),
+                            onDecrement: _reps > 0
+                                ? () => setState(() => _reps--)
+                                : null,
+                            onIncrement: _reps < 1000
+                                ? () => setState(() => _reps++)
+                                : null,
+                          ),
                   ),
                   if (withWeight) ...[
                     const SizedBox(width: 12),
@@ -682,24 +758,31 @@ class _ConfirmViewState extends State<_ConfirmView> {
                             : _weight.toStringAsFixed(1),
                         onDecrement: _weight > 0
                             ? () => setState(
-                                () => _weight = (_weight - 1).clamp(0, 500))
+                                () => _weight = (_weight - 1).clamp(0, 500),
+                              )
                             : null,
                         onIncrement: () => setState(
-                            () => _weight = (_weight + 1).clamp(0, 500)),
+                          () => _weight = (_weight + 1).clamp(0, 500),
+                        ),
                       ),
                     ),
                   ],
                 ],
               ),
-              if (_reps != s.repCount) ...[
+              if (s.isHold
+                  ? _seconds != _measuredSec
+                  : _reps != s.repCount) ...[
                 const SizedBox(height: 8),
                 const Text(
-                  'Đã sửa số lần, coach sẽ ghi là bạn chỉnh lại.',
-                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  'Đã sửa kết quả, coach sẽ ghi là bạn chỉnh lại.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
               const SizedBox(height: 14),
-              if (s.repCount > 0)
+              if (s.isHold ? _measuredSec > 0 : s.repCount > 0)
                 AppCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -756,13 +839,16 @@ class _ConfirmViewState extends State<_ConfirmView> {
             children: [
               PrimaryButton(
                 label: 'Lưu hiệp',
-                onPressed: () => widget.onSave(buildCameraSetLog(
-                  item: item,
-                  camera: widget.camera,
-                  snapshot: s,
-                  confirmedReps: _reps,
-                  weightKg: _weight,
-                )),
+                onPressed: () => widget.onSave(
+                  buildCameraSetLog(
+                    item: item,
+                    camera: widget.camera,
+                    snapshot: s,
+                    confirmedReps: _reps,
+                    weightKg: _weight,
+                    confirmedSeconds: s.isHold ? _seconds : null,
+                  ),
+                ),
               ),
               const SizedBox(height: 10),
               SizedBox(

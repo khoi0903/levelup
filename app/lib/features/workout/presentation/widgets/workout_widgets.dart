@@ -109,8 +109,10 @@ class WorkoutHeader extends StatelessWidget {
             ),
             if (stepLabel != null)
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(AppColors.radiusPill),
@@ -137,7 +139,11 @@ class WorkoutHeader extends StatelessWidget {
 }
 
 class WorkoutProgressBar extends StatelessWidget {
-  const WorkoutProgressBar({super.key, required this.progress, this.height = 6});
+  const WorkoutProgressBar({
+    super.key,
+    required this.progress,
+    this.height = 6,
+  });
 
   final double progress;
   final double height;
@@ -337,8 +343,11 @@ class ErrorBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.cloud_off_rounded,
-              size: 20, color: AppColors.primary),
+          const Icon(
+            Icons.cloud_off_rounded,
+            size: 20,
+            color: AppColors.primary,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -378,8 +387,8 @@ String formatDurationVi(int totalSec) {
 
 /// Mô tả tiếng Việt cho mã lỗi tư thế từ camera_counter.
 String formIssueLabelVi(String code) => switch (code) {
-      'shallow_depth' => 'Xuống chưa đủ sâu',
-      'knee_valgus' => 'Gối hơi chụm vào trong',
-      'back_rounding' => 'Lưng hơi cong',
-      _ => code.replaceAll('_', ' '),
-    };
+  'shallow_depth' => 'Xuống chưa đủ sâu',
+  'knee_valgus' => 'Gối hơi chụm vào trong',
+  'back_rounding' => 'Lưng hơi cong',
+  _ => code.replaceAll('_', ' '),
+};

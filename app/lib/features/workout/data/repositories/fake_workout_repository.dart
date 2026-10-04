@@ -44,9 +44,8 @@ class FakeWorkoutRepository implements WorkoutRepository {
           localDate: '2026-10-05',
           durationSec: duration,
           countsForStreak: duration >= 300,
-          duplicate: sentRequests
-                  .where((r) => r.clientId == request.clientId)
-                  .length >
+          duplicate:
+              sentRequests.where((r) => r.clientId == request.clientId).length >
               1,
           week: const WeekProgress(
             weekStart: '2026-10-05',
@@ -67,27 +66,31 @@ class FakeWorkoutRepository implements WorkoutRepository {
       status: base.status,
       targetSessions: base.targetSessions,
       sessions: base.sessions
-          .map((s) => s.id == sessionId
-              ? SessionView(
-                  id: s.id,
-                  scheduledDate: s.scheduledDate,
-                  scheduledTime: s.scheduledTime,
-                  title: s.title,
-                  durationMin: 5,
-                  variant: 'quick5',
-                  status: s.status,
-                  items: s.items
-                      .map((i) => ItemView(
+          .map(
+            (s) => s.id == sessionId
+                ? SessionView(
+                    id: s.id,
+                    scheduledDate: s.scheduledDate,
+                    scheduledTime: s.scheduledTime,
+                    title: s.title,
+                    durationMin: 5,
+                    variant: 'quick5',
+                    status: s.status,
+                    items: s.items
+                        .map(
+                          (i) => ItemView(
                             exerciseId: i.exerciseId,
                             nameVi: i.nameVi,
                             sets: 1,
                             reps: i.reps,
                             durationSec: i.durationSec,
                             restSec: i.restSec,
-                          ))
-                      .toList(),
-                )
-              : s)
+                          ),
+                        )
+                        .toList(),
+                  )
+                : s,
+          )
           .toList(),
     );
   }

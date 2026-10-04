@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 
 import '../../../camera_counter/data/camera_rep_session.dart';
 import '../../../camera_counter/domain/cv_config.dart';
-import '../../../camera_counter/domain/pose.dart';
 import '../../domain/models/exercise_response.dart';
 import '../../domain/models/workout_models.dart';
 
@@ -21,7 +20,17 @@ class RepSnapshot {
   final RepCountingStatus status;
   final String? error;
 
+  /// Bài giữ tư thế (plank, wall sit): đo thời gian thay vì đếm lần.
+  final bool isHold;
+  final Duration holdDuration;
+
+  /// Đang giữ đúng tư thế ngay lúc này (để UI báo "đang tính giờ").
+  final bool holding;
+
   const RepSnapshot({
+    this.isHold = false,
+    this.holdDuration = Duration.zero,
+    this.holding = false,
     this.repCount = 0,
     this.personMissing = false,
     this.averageConfidence = 0,
@@ -71,21 +80,18 @@ class CameraRepSessionFactory implements RepSessionFactory {
     final config = camera?.config;
     if (!_platformSupported || config == null) return false;
     try {
-      final cv = CvConfig.fromJson(config);
-      // CameraRepSession hiện chỉ đếm squat (hông–gối–cổ chân).
-      return cv.joints[0] == PoseJoint.hip &&
-          cv.joints[1] == PoseJoint.knee &&
-          cv.joints[2] == PoseJoint.ankle;
+      // Mọi cấu hình hợp lệ trong mongo/cv-configs.json: đếm lần hoặc giữ tư thế.
+      CvConfig.fromJson(config);
+      return true;
     } catch (_) {
       return false;
     }
   }
 
   @override
-  RepCountingSession create(ExerciseCamera camera) =>
-      _CameraRepCountingSession(
-        CameraRepSession(config: CvConfig.fromJson(camera.config!)),
-      );
+  RepCountingSession create(ExerciseCamera camera) => _CameraRepCountingSession(
+    CameraRepSession(config: CvConfig.fromJson(camera.config!)),
+  );
 }
 
 class _CameraRepCountingSession implements RepCountingSession {
@@ -94,25 +100,30 @@ class _CameraRepCountingSession implements RepCountingSession {
   final CameraRepSession _session;
 
   static RepSnapshot _map(CameraRepResult r) => RepSnapshot(
-        repCount: r.repCount,
-        personMissing: r.personMissing,
-        averageConfidence: r.averageConfidence,
-        formScore: r.formScore,
-        issues: r.issues
-            .map((i) => FormIssueLog(
-                  repIndex: i.repIndex,
-                  code: i.code,
-                  severity: i.severity,
-                ))
-            .toList(),
-        status: switch (r.status) {
-          CameraRepSessionStatus.idle => RepCountingStatus.idle,
-          CameraRepSessionStatus.running => RepCountingStatus.running,
-          CameraRepSessionStatus.paused => RepCountingStatus.paused,
-          CameraRepSessionStatus.stopped => RepCountingStatus.stopped,
-        },
-        error: r.error,
-      );
+    isHold: r.isHold,
+    holdDuration: r.holdDuration,
+    holding: r.holding,
+    repCount: r.repCount,
+    personMissing: r.personMissing,
+    averageConfidence: r.averageConfidence,
+    formScore: r.formScore,
+    issues: r.issues
+        .map(
+          (i) => FormIssueLog(
+            repIndex: i.repIndex,
+            code: i.code,
+            severity: i.severity,
+          ),
+        )
+        .toList(),
+    status: switch (r.status) {
+      CameraRepSessionStatus.idle => RepCountingStatus.idle,
+      CameraRepSessionStatus.running => RepCountingStatus.running,
+      CameraRepSessionStatus.paused => RepCountingStatus.paused,
+      CameraRepSessionStatus.stopped => RepCountingStatus.stopped,
+    },
+    error: r.error,
+  );
 
   @override
   Stream<RepSnapshot> get results => _session.results.map(_map);

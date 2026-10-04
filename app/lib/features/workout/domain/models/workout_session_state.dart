@@ -107,8 +107,11 @@ class WorkoutSessionState {
       _variants.contains(session.variant) ? session.variant! : 'normal';
 
   /// Backend chỉ nhận ObjectId; id giả (dữ liệu demo) thì bỏ qua.
+  /// Buổi đã hoàn thành mà tập lại ("Tập thêm") thì không gắn vào lịch nữa.
   String? get plannedSessionId =>
-      _objectId.hasMatch(session.id) ? session.id : null;
+      _objectId.hasMatch(session.id) && session.status != 'completed'
+      ? session.id
+      : null;
 
   bool get allExercisesDone => exerciseIndex >= items.length;
 
@@ -135,18 +138,17 @@ class WorkoutSessionState {
     WorkoutResult? result,
     ApiException? error,
     bool clearError = false,
-  }) =>
-      WorkoutSessionState(
-        session: session,
-        items: items,
-        clientId: clientId,
-        startedAt: startedAt,
-        endedAt: endedAt ?? this.endedAt,
-        exerciseIndex: exerciseIndex ?? this.exerciseIndex,
-        setNumber: setNumber ?? this.setNumber,
-        sets: sets ?? this.sets,
-        submitting: submitting ?? this.submitting,
-        result: result ?? this.result,
-        error: clearError ? null : (error ?? this.error),
-      );
+  }) => WorkoutSessionState(
+    session: session,
+    items: items,
+    clientId: clientId,
+    startedAt: startedAt,
+    endedAt: endedAt ?? this.endedAt,
+    exerciseIndex: exerciseIndex ?? this.exerciseIndex,
+    setNumber: setNumber ?? this.setNumber,
+    sets: sets ?? this.sets,
+    submitting: submitting ?? this.submitting,
+    result: result ?? this.result,
+    error: clearError ? null : (error ?? this.error),
+  );
 }

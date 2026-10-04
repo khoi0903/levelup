@@ -59,23 +59,23 @@ const testExercises = [
 ];
 
 PlanView planWith(List<ItemView> items, {String? variant}) => PlanView(
-      id: 'plan',
-      weekStart: '2026-10-05',
-      status: 'active',
-      targetSessions: 3,
-      sessions: [
-        SessionView(
-          id: sessionId,
-          scheduledDate: '2026-10-05',
-          scheduledTime: '18:00',
-          title: 'Toàn thân',
-          durationMin: 12,
-          status: 'planned',
-          variant: variant ?? 'normal',
-          items: items,
-        ),
-      ],
-    );
+  id: 'plan',
+  weekStart: '2026-10-05',
+  status: 'active',
+  targetSessions: 3,
+  sessions: [
+    SessionView(
+      id: sessionId,
+      scheduledDate: '2026-10-05',
+      scheduledTime: '18:00',
+      title: 'Toàn thân',
+      durationMin: 12,
+      status: 'planned',
+      variant: variant ?? 'normal',
+      items: items,
+    ),
+  ],
+);
 
 /// Đồng hồ giả: mỗi lần đọc trả về [now], test tự đẩy thời gian.
 class FakeClock {
@@ -119,13 +119,15 @@ class FakeRepSession implements RepCountingSession {
   Stream<RepSnapshot> get results => _controller.stream;
 
   @override
-  Future<void> pause() async => emit(RepSnapshot(
-        repCount: _latest.repCount,
-        issues: _latest.issues,
-        formScore: _latest.formScore,
-        averageConfidence: _latest.averageConfidence,
-        status: RepCountingStatus.paused,
-      ));
+  Future<void> pause() async => emit(
+    RepSnapshot(
+      repCount: _latest.repCount,
+      issues: _latest.issues,
+      formScore: _latest.formScore,
+      averageConfidence: _latest.averageConfidence,
+      status: RepCountingStatus.paused,
+    ),
+  );
 
   @override
   Future<void> start() async {
@@ -179,10 +181,10 @@ class WorkoutHarness {
     FakeWorkoutRepository? repo,
     RepSessionFactory? factory,
     FakePermissionGate? permission,
-  })  : planRepo = FakePlanRepository(planView: plan),
-        repo = repo ?? FakeWorkoutRepository(exercises: testExercises),
-        factory = factory ?? NoCameraFactory(),
-        permission = permission ?? FakePermissionGate();
+  }) : planRepo = FakePlanRepository(planView: plan),
+       repo = repo ?? FakeWorkoutRepository(exercises: testExercises),
+       factory = factory ?? NoCameraFactory(),
+       permission = permission ?? FakePermissionGate();
 
   final FakePlanRepository planRepo;
   final FakeWorkoutRepository repo;
@@ -198,21 +200,25 @@ class WorkoutHarness {
       tester.view.resetPhysicalSize();
       tester.view.resetDevicePixelRatio();
     });
-    container = ProviderContainer(overrides: [
-      planRepositoryProvider.overrideWithValue(planRepo),
-      workoutRepositoryProvider.overrideWithValue(repo),
-      repSessionFactoryProvider.overrideWithValue(factory),
-      cameraPermissionProvider.overrideWithValue(permission),
-      workoutClockProvider.overrideWithValue(clock.call),
-      userRepositoryProvider.overrideWithValue(FakeUserRepository()),
-    ]);
+    container = ProviderContainer(
+      overrides: [
+        planRepositoryProvider.overrideWithValue(planRepo),
+        workoutRepositoryProvider.overrideWithValue(repo),
+        repSessionFactoryProvider.overrideWithValue(factory),
+        cameraPermissionProvider.overrideWithValue(permission),
+        workoutClockProvider.overrideWithValue(clock.call),
+        userRepositoryProvider.overrideWithValue(FakeUserRepository()),
+      ],
+    );
     addTearDown(container.dispose);
-    await tester.pumpWidget(UncontrolledProviderScope(
-      container: container,
-      child: MaterialApp.router(
-        routerConfig: createAppRouter(initialLocation: location),
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp.router(
+          routerConfig: createAppRouter(initialLocation: location),
+        ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
   }
 }

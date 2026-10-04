@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -33,8 +34,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final dateText = me?.localDate ?? AppStrings.homeDate;
 
     final plan = planAsync.valueOrNull;
-    final todaySession =
-        plan == null ? null : pickNextSession(plan, localDateString(DateTime.now()));
+    final todaySession = plan == null
+        ? null
+        : pickNextSession(plan, localDateString(DateTime.now()));
     final todayDone = todaySession?.status == 'completed';
     final totalTarget = plan?.targetSessions ?? 3;
     final currentSessionsCount = plan == null
@@ -89,7 +91,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             decoration: BoxDecoration(
                               color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(AppColors.radiusPill),
+                              borderRadius: BorderRadius.circular(
+                                AppColors.radiusPill,
+                              ),
                               border: Border.all(
                                 color: AppColors.border,
                                 width: 1.0,
@@ -128,7 +132,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       // Card Tuần này (2/3 buổi)
                       GlassCard(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                         borderRadius: AppColors.radiusCard,
                         child: Column(
                           children: [
@@ -157,13 +163,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: const [
-                                _WeekDayDot(label: 'T2', status: _DayStatus.completed),
-                                _WeekDayDot(label: 'T3', status: _DayStatus.pending),
-                                _WeekDayDot(label: 'T4', status: _DayStatus.completed),
-                                _WeekDayDot(label: 'T5', status: _DayStatus.pending),
-                                _WeekDayDot(label: 'T6', status: _DayStatus.today),
-                                _WeekDayDot(label: 'T7', status: _DayStatus.pending),
-                                _WeekDayDot(label: 'CN', status: _DayStatus.pending),
+                                _WeekDayDot(
+                                  label: 'T2',
+                                  status: _DayStatus.completed,
+                                ),
+                                _WeekDayDot(
+                                  label: 'T3',
+                                  status: _DayStatus.pending,
+                                ),
+                                _WeekDayDot(
+                                  label: 'T4',
+                                  status: _DayStatus.completed,
+                                ),
+                                _WeekDayDot(
+                                  label: 'T5',
+                                  status: _DayStatus.pending,
+                                ),
+                                _WeekDayDot(
+                                  label: 'T6',
+                                  status: _DayStatus.today,
+                                ),
+                                _WeekDayDot(
+                                  label: 'T7',
+                                  status: _DayStatus.pending,
+                                ),
+                                _WeekDayDot(
+                                  label: 'CN',
+                                  status: _DayStatus.pending,
+                                ),
                               ],
                             ),
                           ],
@@ -213,7 +240,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              todaySession?.title ?? AppStrings.todayWorkoutTitle,
+                              todaySession?.title ??
+                                  AppStrings.todayWorkoutTitle,
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800,
@@ -249,7 +277,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             const SizedBox(height: 10),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 10),
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
                               decoration: BoxDecoration(
                                 color: AppColors.primaryLight,
                                 borderRadius: BorderRadius.circular(12),
@@ -273,15 +303,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               children: [
                                 Expanded(
                                   child: PrimaryButton(
+                                    // Tập xong hết buổi trong tuần vẫn được tập thêm
                                     label: todayDone
-                                        ? 'Đã tập xong'
+                                        ? 'Tập thêm'
                                         : AppStrings.btnStart,
                                     height: 48,
-                                    onPressed: todayDone
-                                        ? null
-                                        : () => context.push(todaySession == null
-                                            ? '/workout'
-                                            : '/workout/${todaySession.id}'),
+                                    onPressed: () => context.push(
+                                      todaySession == null
+                                          ? '/workout'
+                                          : '/workout/${todaySession.id}',
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -290,9 +321,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   height: 48,
                                   onPressed: todayDone
                                       ? null
-                                      : () => context.push(todaySession == null
-                                          ? '/workout?quick5=true'
-                                          : '/workout/${todaySession.id}?quick5=true'),
+                                      : () => context.push(
+                                          todaySession == null
+                                              ? '/workout?quick5=true'
+                                              : '/workout/${todaySession.id}?quick5=true',
+                                        ),
                                 ),
                               ],
                             ),
@@ -304,7 +337,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       // Card Buddy feed
                       GlassCard(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 12),
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
                         borderRadius: AppColors.radiusCard,
                         child: Row(
                           children: [
@@ -336,7 +371,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   children: [
                                     TextSpan(
                                       text: AppStrings.buddyFeedPrefix,
-                                      style: TextStyle(fontWeight: FontWeight.w700),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                     TextSpan(text: AppStrings.buddyFeedSuffix),
                                   ],
@@ -350,24 +387,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 });
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(_cheered
-                                        ? 'Đã gửi lời cổ vũ tới Lan! 🔥'
-                                        : 'Đã hủy cổ vũ'),
+                                    content: Text(
+                                      _cheered
+                                          ? 'Đã gửi lời cổ vũ tới Lan! 🔥'
+                                          : 'Đã hủy cổ vũ',
+                                    ),
                                     duration: const Duration(seconds: 1),
                                   ),
                                 );
                               },
-                              borderRadius: BorderRadius.circular(AppColors.radiusPill),
+                              borderRadius: BorderRadius.circular(
+                                AppColors.radiusPill,
+                              ),
                               child: Container(
                                 height: 34,
-                                padding: const EdgeInsets.symmetric(horizontal: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                ),
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
                                   color: _cheered
                                       ? AppColors.accentLink
                                       : AppColors.primary,
-                                  borderRadius:
-                                      BorderRadius.circular(AppColors.radiusPill),
+                                  borderRadius: BorderRadius.circular(
+                                    AppColors.radiusPill,
+                                  ),
                                   boxShadow: const [
                                     BoxShadow(
                                       color: AppColors.btnShadow,
@@ -394,7 +438,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       // Card Calo còn lại
                       GlassCard(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                         borderRadius: AppColors.radiusCard,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -428,8 +474,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               height: 8,
                               decoration: BoxDecoration(
                                 color: AppColors.progressTrack,
-                                borderRadius:
-                                    BorderRadius.circular(AppColors.radiusPill),
+                                borderRadius: BorderRadius.circular(
+                                  AppColors.radiusPill,
+                                ),
                               ),
                               child: Align(
                                 alignment: Alignment.centerLeft,
@@ -439,7 +486,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     decoration: BoxDecoration(
                                       color: AppColors.progressFill,
                                       borderRadius: BorderRadius.circular(
-                                          AppColors.radiusPill),
+                                        AppColors.radiusPill,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -460,8 +508,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 decoration: const BoxDecoration(
                   color: AppColors.surface,
                   border: Border(
-                    top: BorderSide(
-                        color: AppColors.border, width: 1.0),
+                    top: BorderSide(color: AppColors.border, width: 1.0),
                   ),
                 ),
                 child: Row(
@@ -490,7 +537,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
-                                  'Tính năng chụp món ăn sẽ có ở Sprint sau'),
+                                'Tính năng chụp món ăn sẽ có ở Sprint sau',
+                              ),
                               duration: Duration(seconds: 1),
                             ),
                           );
@@ -565,8 +613,8 @@ class _WeekDayDot extends StatelessWidget {
             color: status == _DayStatus.completed
                 ? AppColors.primary
                 : (status == _DayStatus.today
-                    ? AppColors.surface
-                    : AppColors.surface),
+                      ? AppColors.surface
+                      : AppColors.surface),
             border: status == _DayStatus.today
                 ? Border.all(color: AppColors.primary, width: 2.0)
                 : Border.all(
@@ -588,17 +636,17 @@ class _WeekDayDot extends StatelessWidget {
           child: status == _DayStatus.completed
               ? const Icon(Icons.check, size: 18, color: Colors.white)
               : (status == _DayStatus.today
-                  ? Center(
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.primary,
+                    ? Center(
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.primary,
+                          ),
                         ),
-                      ),
-                    )
-                  : null),
+                      )
+                    : null),
         ),
         const SizedBox(height: 6),
         Text(
@@ -644,7 +692,9 @@ class _NavItem extends StatelessWidget {
             Icon(
               icon,
               size: 22,
-              color: isSelected ? AppColors.accentLink : AppColors.textSecondary,
+              color: isSelected
+                  ? AppColors.accentLink
+                  : AppColors.textSecondary,
             ),
             const SizedBox(height: 2),
             Text(
@@ -652,7 +702,9 @@ class _NavItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? AppColors.accentLink : AppColors.textSecondary,
+                color: isSelected
+                    ? AppColors.accentLink
+                    : AppColors.textSecondary,
               ),
             ),
           ],
@@ -661,4 +713,3 @@ class _NavItem extends StatelessWidget {
     );
   }
 }
-
