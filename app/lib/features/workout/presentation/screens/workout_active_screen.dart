@@ -52,7 +52,8 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
     final key = '${s.exerciseIndex}/${s.setNumber}';
     if (key == _inputKey) return;
     _inputKey = key;
-    _reps = item.reps ?? 10;
+    // Hiệp sau giữ số lần người dùng vừa chọn cho cùng bài (giống mức tạ)
+    _reps = s.lastRepsFor(item.exerciseId) ?? item.reps ?? 10;
     _weight = s.lastWeightFor(item.exerciseId) ?? 0;
     _durationSec = 0;
     _stopTimer();
@@ -138,6 +139,7 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
         item: item,
         setNumber: s.setNumber,
         initialWeightKg: _weight,
+        targetReps: _reps,
       ),
     );
     if (!mounted || outcome == null || outcome.set == null) return;

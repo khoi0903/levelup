@@ -23,10 +23,14 @@ class CameraSetArgs {
   final int setNumber;
   final double initialWeightKg;
 
+  /// Số lần mục tiêu người dùng đang chọn ở màn Đang tập (null = theo kế hoạch).
+  final int? targetReps;
+
   const CameraSetArgs({
     required this.item,
     required this.setNumber,
     this.initialWeightKg = 0,
+    this.targetReps,
   });
 }
 
@@ -79,7 +83,7 @@ class _CameraSetScreenState extends ConsumerState<CameraSetScreen> {
               name: item.nameVi,
               subtitle: subtitle,
               camera: camera,
-              targetReps: item.reps,
+              targetReps: widget.args.targetReps ?? item.reps,
               targetSec: item.durationSec,
               onManual: _manual,
               onDone: (snapshot) => setState(() {

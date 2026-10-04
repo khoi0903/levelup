@@ -126,6 +126,14 @@ class WorkoutSessionState {
     return null;
   }
 
+  /// Số lần của hiệp gần nhất cùng bài (người dùng đã chỉnh), để hiệp sau giữ nguyên.
+  int? lastRepsFor(String exerciseId) {
+    for (final s in sets.reversed) {
+      if (s.exerciseId == exerciseId && s.reps != null) return s.reps;
+    }
+    return null;
+  }
+
   int setsDoneFor(String exerciseId) =>
       sets.where((s) => s.exerciseId == exerciseId).length;
 

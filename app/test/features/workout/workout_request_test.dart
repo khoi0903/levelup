@@ -510,4 +510,28 @@ void main() {
       expect(capped['durationSec'], 7200);
     });
   });
+
+  test('hiệp sau giữ số lần đã chỉnh của cùng bài (không về mặc định 10)', () {
+    final s = WorkoutSessionState(
+      session: const SessionView(
+        id: sessionId,
+        scheduledDate: '2026-10-05',
+        scheduledTime: '18:00',
+        title: 'Buổi 1',
+        durationMin: 10,
+        variant: 'normal',
+        items: [],
+      ),
+      items: const [],
+      clientId: 'AbCdEfGh12345678',
+      startedAt: DateTime.utc(2026),
+      sets: const [
+        SetLog(exerciseId: squatId, setIndex: 1, reps: 12, repSource: RepSource.manual),
+        SetLog(exerciseId: plankId, setIndex: 1, durationSec: 30, repSource: RepSource.manual),
+      ],
+    );
+    expect(s.lastRepsFor(squatId), 12);
+    expect(s.lastRepsFor(plankId), isNull);
+    expect(s.lastRepsFor(gobletId), isNull);
+  });
 }
