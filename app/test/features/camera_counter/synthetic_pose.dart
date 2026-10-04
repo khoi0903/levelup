@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:fitness_app/features/camera_counter/domain/cv_config.dart';
@@ -116,3 +118,113 @@ class SyntheticSession {
     }
   }
 }
+
+typedef Point = (double, double);
+
+/// Điểm C sao cho góc ABC bằng [angle] độ, cách B một đoạn [length].
+/// Xoay vector BA một góc [angle] (chiều dương của trục toán học).
+Point bend(Point a, Point b, double angle, {double length = 1}) {
+  final dx = a.$1 - b.$1;
+  final dy = a.$2 - b.$2;
+  final norm = math.sqrt(dx * dx + dy * dy);
+  final radians = angle * math.pi / 180;
+  final ux = dx / norm;
+  final uy = dy / norm;
+  return (
+    b.$1 + length * (ux * math.cos(radians) - uy * math.sin(radians)),
+    b.$2 + length * (ux * math.sin(radians) + uy * math.cos(radians)),
+  );
+}
+
+/// Khung hình từ toạ độ từng khớp. [right] mặc định giống [left];
+/// truyền `{}` để bên phải không có khớp nào.
+PoseFrame jointFrame(
+  int milliseconds,
+  Map<PoseJoint, Point> left, {
+  Map<PoseJoint, Point>? right,
+  double leftConfidence = 0.9,
+  double rightConfidence = 0.8,
+}) => PoseFrame(
+  timestamp: Duration(milliseconds: milliseconds),
+  landmarks: [
+    for (final entry in left.entries)
+      PoseLandmark(
+        type: PoseLandmarkType.forJoint(entry.key, BodySide.left),
+        x: entry.value.$1,
+        y: entry.value.$2,
+        likelihood: leftConfidence,
+      ),
+    for (final entry in (right ?? left).entries)
+      PoseLandmark(
+        type: PoseLandmarkType.forJoint(entry.key, BodySide.right),
+        x: entry.value.$1,
+        y: entry.value.$2,
+        likelihood: rightConfidence,
+      ),
+  ],
+);
+
+/// Ba khớp [joints] với góc ở khớp giữa bằng [angle]; khớp đầu nằm bên
+/// phải khớp giữa.
+Map<PoseJoint, Point> triplet(List<PoseJoint> joints, double angle) {
+  const Point a = (1, 0);
+  const Point b = (0, 0);
+  return {joints[0]: a, joints[1]: b, joints[2]: bend(a, b, angle)};
+}
+
+/// Đưa lần lượt khung cách nhau [stepMs] vào một RepCounter bất kỳ.
+class FrameFeeder {
+  FrameFeeder(CvConfig config) : counter = RepCounter(config: config);
+
+  final RepCounter counter;
+  int nextMs = 0;
+
+  RepCounterResult add(
+    Map<PoseJoint, Point> left, {
+    Map<PoseJoint, Point>? right,
+    int stepMs = 100,
+    double leftConfidence = 0.9,
+    double rightConfidence = 0.8,
+  }) {
+    final result = counter.addFrame(
+      jointFrame(
+        nextMs,
+        left,
+        right: right,
+        leftConfidence: leftConfidence,
+        rightConfidence: rightConfidence,
+      ),
+    );
+    nextMs += stepMs;
+    return result;
+  }
+
+  /// Chỉ góc chính, hai bên như nhau.
+  RepCounterResult angle(double angle, {int stepMs = 100}) =>
+      add(triplet(counter.config.joints, angle), stepMs: stepMs);
+
+  void angles(Iterable<double> values, {int stepMs = 100}) {
+    for (final value in values) {
+      angle(value, stepMs: stepMs);
+    }
+  }
+}
+
+/// `mongo/cv-configs.json`, đọc theo đường dẫn tương đối từ `app/`
+/// (thư mục làm việc của `flutter test`).
+Map<String, dynamic> cvConfigsJson() =>
+    jsonDecode(File('../mongo/cv-configs.json').readAsStringSync())
+        as Map<String, dynamic>;
+
+/// Bản ghi cấu hình đang dùng (`activeVersion`) của một bài.
+Map<String, dynamic> activeCvEntry(Map<String, dynamic> exercise) {
+  final version = exercise['activeVersion'];
+  return (exercise['configs'] as List).cast<Map<String, dynamic>>().singleWhere(
+    (entry) => entry['version'] == version,
+  );
+}
+
+CvConfig exerciseConfig(String slug) => CvConfig.fromJson(
+  activeCvEntry(cvConfigsJson()[slug] as Map<String, dynamic>)['config']
+      as Map<String, dynamic>,
+);
