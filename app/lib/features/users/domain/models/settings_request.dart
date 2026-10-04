@@ -9,6 +9,7 @@ class NotificationsUpdate {
   final String? quietStart;
   final String? quietEnd;
   final int? maxPerDay;
+  final bool? waterReminder;
 
   const NotificationsUpdate({
     this.pushEnabled,
@@ -17,6 +18,7 @@ class NotificationsUpdate {
     this.quietStart,
     this.quietEnd,
     this.maxPerDay,
+    this.waterReminder,
   });
 
   Map<String, dynamic> toJson() => {
@@ -26,6 +28,7 @@ class NotificationsUpdate {
     if (quietStart != null) 'quietStart': quietStart,
     if (quietEnd != null) 'quietEnd': quietEnd,
     if (maxPerDay != null) 'maxPerDay': maxPerDay,
+    if (waterReminder != null) 'waterReminder': waterReminder,
   };
 
   bool get isEmpty =>
@@ -34,7 +37,8 @@ class NotificationsUpdate {
       preWorkoutMinutes == null &&
       quietStart == null &&
       quietEnd == null &&
-      maxPerDay == null;
+      maxPerDay == null &&
+      waterReminder == null;
 }
 
 class SharingUpdate {

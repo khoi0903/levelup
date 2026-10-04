@@ -42,6 +42,16 @@ class ReminderAndRestartRulesTest {
     }
 
     @Test
+    void water_due_by_slot_and_share_of_target() {
+        assertEquals("noon", ReminderRules.waterDue(LocalTime.of(11, 0), 0, 2000).key());
+        assertEquals(null, ReminderRules.waterDue(LocalTime.of(12, 0), 800, 2000));       // đủ 40%
+        assertEquals("afternoon", ReminderRules.waterDue(LocalTime.of(17, 59), 1000, 2000).key());
+        assertEquals(null, ReminderRules.waterDue(LocalTime.of(18, 0), 0, 2000));         // hết khung giờ
+        assertEquals(null, ReminderRules.waterDue(LocalTime.of(14, 0), 0, 2000));
+        assertEquals(null, ReminderRules.waterDue(LocalTime.of(11, 30), 0, 0));           // chưa có mục tiêu
+    }
+
+    @Test
     void lighten_caps_minutes_and_drops_one_set() {
         TrainingPlan.Session s = new TrainingPlan.Session(new ObjectId(), "2026-10-05", "18:30", "Toàn thân", 20,
             "normal", "planned", List.of(new TrainingPlan.Item(new ObjectId(), 3, 12, null, 45),

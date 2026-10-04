@@ -88,6 +88,7 @@ public class SettingsService {
             setIfPresent(u, "notificationSettings.quietStart", n.quietStart());
             setIfPresent(u, "notificationSettings.quietEnd", n.quietEnd());
             setIfPresent(u, "notificationSettings.maxPerDay", n.maxPerDay());
+            setIfPresent(u, "notificationSettings.waterReminder", n.waterReminder());
         }
         SettingsRequest.Sharing s = r.sharing();
         if (s != null) {
@@ -115,7 +116,8 @@ public class SettingsService {
                 n.get("preWorkoutMinutes") instanceof Number p ? p.intValue() : null,
                 n.get("quietStart") instanceof String qs ? qs : NotificationRules.DEFAULT_QUIET_START.toString(),
                 n.get("quietEnd") instanceof String qe ? qe : NotificationRules.DEFAULT_QUIET_END.toString(),
-                NotificationRules.maxPerDay(n.get("maxPerDay"))),
+                NotificationRules.maxPerDay(n.get("maxPerDay")),
+                n.getBoolean("waterReminder", false)),
             new Settings.Sharing(sh.getBoolean("weight", false), sh.getBoolean("measurements", false),
                 sh.getBoolean("photos", false), sh.getBoolean("meals", false)),
             slots.stream().map(d -> new User.Availability(
@@ -152,7 +154,7 @@ public class SettingsService {
 
     public record Settings(Notifications notifications, Sharing sharing, List<User.Availability> availability) {
         public record Notifications(boolean pushEnabled, String checkinTime, Integer preWorkoutMinutes,
-                                    String quietStart, String quietEnd, int maxPerDay) {}
+                                    String quietStart, String quietEnd, int maxPerDay, boolean waterReminder) {}
 
         public record Sharing(boolean weight, boolean measurements, boolean photos, boolean meals) {}
     }

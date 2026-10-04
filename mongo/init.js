@@ -79,7 +79,8 @@ coll("users", {
         preWorkoutMinutes: { bsonType: "number" },
         quietStart:        { bsonType: "string" },    // "22:00"
         quietEnd:          { bsonType: "string" },    // "07:00"
-        maxPerDay:         { bsonType: "number", minimum: 0, maximum: 5 }
+        maxPerDay:         { bsonType: "number", minimum: 0, maximum: 5 },
+        waterReminder:     { bsonType: "bool" }       // nhắc uống nước, tự bật, không tính vào maxPerDay
       }
     },
     devices: { bsonType: "array", items: { bsonType: "object",
@@ -279,7 +280,8 @@ coll("daily_stats", {
                sleep: { enum: ["lt6", "h6_7", "h7_8", "gt8"] }, at: { bsonType: "date" } } },
     waterMl: { bsonType: "number", minimum: 0 },
     usage: { bsonType: "object", properties: { photoScans: { bsonType: "number" }, coachMessages: { bsonType: "number" } } },
-    notificationsSent: { bsonType: "number", minimum: 0 }   // đếm nhanh cho giới hạn 2 lần/ngày
+    notificationsSent: { bsonType: "number", minimum: 0 },  // đếm nhanh cho giới hạn 2 lần/ngày
+    waterRemindersSent: { bsonType: "number", minimum: 0 }  // nhắc uống nước đếm riêng, tối đa 2
   }
 });
 dbx.daily_stats.createIndex({ userId: 1, localDate: 1 }, { unique: true });

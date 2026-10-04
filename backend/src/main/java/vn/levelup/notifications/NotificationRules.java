@@ -13,6 +13,10 @@ public final class NotificationRules {
     public static final LocalTime DEFAULT_QUIET_END = LocalTime.of(7, 0);
     public static final int DEFAULT_MAX_PER_DAY = 2;
 
+    /** Nhắc uống nước: người dùng tự bật, có lượt riêng, không chiếm lượt của nhắc tập. */
+    public static final String WATER_TYPE = "water_reminder";
+    public static final int WATER_MAX_PER_DAY = 2;
+
     private NotificationRules() {}
 
     /** "HH:mm" của notificationSettings; thiếu hoặc sai thì dùng giá trị mặc định. */
@@ -25,6 +29,16 @@ public final class NotificationRules {
         } catch (DateTimeParseException e) {
             return fallback;
         }
+    }
+
+    /** Bộ đếm trong daily_stats cho loại thông báo này. */
+    public static String counterField(String type) {
+        return WATER_TYPE.equals(type) ? "waterRemindersSent" : "notificationsSent";
+    }
+
+    /** Giới hạn mỗi ngày cho loại thông báo này. */
+    public static int limitFor(String type, Object maxPerDaySetting) {
+        return WATER_TYPE.equals(type) ? WATER_MAX_PER_DAY : maxPerDay(maxPerDaySetting);
     }
 
     public static int maxPerDay(Object value) {

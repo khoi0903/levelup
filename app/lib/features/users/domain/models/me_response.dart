@@ -115,6 +115,9 @@ class UserNotificationsSettings {
   final String quietEnd;
   final int maxPerDay;
 
+  /// Nhắc uống nước: tự bật, có lượt riêng (tối đa 2/ngày), không tính vào [maxPerDay].
+  final bool waterReminder;
+
   const UserNotificationsSettings({
     this.pushEnabled = true,
     this.checkinTime,
@@ -122,6 +125,7 @@ class UserNotificationsSettings {
     this.quietStart = '22:00',
     this.quietEnd = '07:00',
     this.maxPerDay = 2,
+    this.waterReminder = false,
   });
 
   factory UserNotificationsSettings.fromJson(Map<String, dynamic> json) {
@@ -132,6 +136,7 @@ class UserNotificationsSettings {
       quietStart: json['quietStart'] as String? ?? '22:00',
       quietEnd: json['quietEnd'] as String? ?? '07:00',
       maxPerDay: (json['maxPerDay'] as num?)?.toInt() ?? 2,
+      waterReminder: json['waterReminder'] as bool? ?? false,
     );
   }
 
@@ -142,6 +147,7 @@ class UserNotificationsSettings {
         'quietStart': quietStart,
         'quietEnd': quietEnd,
         'maxPerDay': maxPerDay,
+        'waterReminder': waterReminder,
       };
 }
 

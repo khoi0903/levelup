@@ -448,7 +448,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Scroll to bottom to find "Đăng xuất"
-      await tester.drag(find.byType(ListView), const Offset(0, -1000));
+      await tester.scrollUntilVisible(find.text('Đăng xuất'), 300,
+          scrollable: find.byType(Scrollable).first);
       await tester.pumpAndSettle();
 
       final logoutBtn = find.text('Đăng xuất');

@@ -28,6 +28,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _notificationsEnabled = true;
   bool _quietHoursEnabled = true;
   int _maxPerDay = 2;
+  bool _waterReminder = false;
   bool _shareWeight = false;
   bool _shareMeasurements = false;
   bool _sharePhotos = false;
@@ -49,6 +50,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _quietHoursEnabled =
         notif.quietStart == '22:00' && notif.quietEnd == '07:00';
     _maxPerDay = notif.maxPerDay;
+    _waterReminder = notif.waterReminder;
 
     final sharing = me.settings.sharing;
     _shareWeight = sharing.weight;
@@ -484,6 +486,56 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) => setState(() => _quietHoursEnabled = val),
               ),
+              const Divider(color: AppColors.border, height: 1),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Số thông báo tối đa mỗi ngày',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                          SizedBox(height: 2),
+                          Text('Nhắc tập, nhắc tập bù, tin buddy…',
+                              style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      key: const ValueKey('settings-max-per-day-minus'),
+                      icon: const Icon(Icons.remove_circle_outline_rounded),
+                      color: AppColors.primary,
+                      onPressed: _maxPerDay > 1 ? () => setState(() => _maxPerDay--) : null,
+                    ),
+                    Text(
+                      '$_maxPerDay',
+                      key: const ValueKey('settings-max-per-day'),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                    ),
+                    IconButton(
+                      key: const ValueKey('settings-max-per-day-plus'),
+                      icon: const Icon(Icons.add_circle_outline_rounded),
+                      color: AppColors.primary,
+                      onPressed: _maxPerDay < 5 ? () => setState(() => _maxPerDay++) : null,
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(color: AppColors.border, height: 1),
+              SwitchListTile(
+                key: const ValueKey('settings-water-reminder'),
+                title: const Text('Nhắc uống nước',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                subtitle: const Text(
+                    'Trưa và chiều nếu bạn uống chưa đủ. Tối đa 2 lần/ngày, không tính vào số thông báo ở trên',
+                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                value: _waterReminder,
+                activeThumbColor: AppColors.primary,
+                contentPadding: EdgeInsets.zero,
+                onChanged: (val) => setState(() => _waterReminder = val),
+              ),
             ],
           ),
         ),
@@ -575,6 +627,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       quietStart: _quietHoursEnabled ? '22:00' : '00:00',
                       quietEnd: _quietHoursEnabled ? '07:00' : '00:00',
                       maxPerDay: _maxPerDay,
+                      waterReminder: _waterReminder,
                     ),
                     sharing: SharingUpdate(
                       weight: _shareWeight,

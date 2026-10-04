@@ -84,6 +84,12 @@ void main() {
         await tester.enterText(textField, 'Nguyễn Minh Khôi');
         await tester.pumpAndSettle();
 
+        // Đổi mục tiêu (nằm trên phong cách coach)
+        await tester.ensureVisible(find.byKey(const ValueKey('settings-goal-build_muscle')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('settings-goal-build_muscle')));
+        await tester.pumpAndSettle();
+
         // Select Coach style "Nghiêm khắc"
         await tester.ensureVisible(find.text('Nghiêm khắc'));
         await tester.pumpAndSettle();
@@ -108,8 +114,21 @@ void main() {
         await tester.tap(find.text('T3'));
         await tester.pumpAndSettle();
 
+        // Bật nhắc uống nước, tăng số thông báo mỗi ngày
+        await tester.ensureVisible(find.byKey(const ValueKey('settings-max-per-day-plus')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('settings-max-per-day-plus')));
+        await tester.ensureVisible(find.byKey(const ValueKey('settings-water-reminder')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('settings-water-reminder')));
+        await tester.pumpAndSettle();
+        expect(
+          tester.widget<Text>(find.byKey(const ValueKey('settings-max-per-day'))).data,
+          '3',
+        );
+
         // Scroll down to tap "Lưu cài đặt"
-        await tester.drag(find.byType(ListView), const Offset(0, -1000));
+        await tester.ensureVisible(find.text('Lưu cài đặt'));
         await tester.pumpAndSettle();
 
         final saveButton = find.text('Lưu cài đặt');
@@ -132,6 +151,9 @@ void main() {
         final updatedMe = await fakeRepo.getMe();
         expect(updatedMe.displayName, 'Nguyễn Minh Khôi');
         expect(updatedMe.profile?.coachStyle, 'strict');
+        expect(updatedMe.profile?.goal, 'build_muscle');
+        expect(updatedMe.settings.notifications.waterReminder, isTrue);
+        expect(updatedMe.settings.notifications.maxPerDay, 3);
         expect(
           updatedMe.settings.availability
               .map((s) => s.weekday)

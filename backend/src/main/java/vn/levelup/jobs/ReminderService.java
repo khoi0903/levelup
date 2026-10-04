@@ -15,9 +15,11 @@ import org.springframework.stereotype.Service;
 
 import vn.levelup.motivation.CoachTemplates;
 import vn.levelup.notifications.NotificationGateway;
+import vn.levelup.notifications.NotificationRules;
 
 /**
- * Nhắc check-in buổi sáng (F2) và nhắc trước buổi tập, chạy trong /jobs/tick.
+ * Nhắc check-in buổi sáng (F2), nhắc trước buổi tập và nhắc uống nước (F8, người dùng tự bật),
+ * chạy trong /jobs/tick.
  * Giờ yên lặng, tối đa tin/ngày và chống trùng do NotificationGateway lo (dedupeKey theo ngày / theo buổi).
  */
 @Service
@@ -51,7 +53,44 @@ public class ReminderService {
         if (preWorkout(userId, user, settings, local, date)) {
             sent++;
         }
+        if (water(userId, user, settings, local, date)) {
+            sent++;
+        }
         return sent;
+    }
+
+    /** Nhắc uống nước (F8): chỉ khi người dùng tự bật; lượt riêng, không chiếm lượt của nhắc tập. */
+    private boolean water(ObjectId userId, Document user, Document settings, LocalDateTime local, String date) {
+        if (!Boolean.TRUE.equals(settings.getBoolean("waterReminder"))) {
+            return false;
+        }
+        int target = waterTarget(user, date);
+        Document day = mongo.findOne(Query.query(Criteria.where("userId").is(userId).and("localDate").is(date)),
+            Document.class, "daily_stats");
+        int drank = day != null && day.get("waterMl") instanceof Number n ? n.intValue() : 0;
+        ReminderRules.WaterSlot slot = ReminderRules.waterDue(local.toLocalTime(), drank, target);
+        if (slot == null) {
+            return false;
+        }
+        String text = drank == 0
+            ? name(user) + ", hôm nay bạn chưa ghi ly nước nào. Uống một ly nhé!"
+            : name(user) + ", bạn mới uống " + drank + "/" + target + " ml nước hôm nay. Uống thêm một ly nhé!";
+        return notifications.send(userId, NotificationRules.WATER_TYPE, "LevelUp", text,
+            userId.toHexString() + "|" + date + "|water|" + slot.key(), Map.of("route", "/nutrition"))
+            == NotificationGateway.Result.SENT;
+    }
+
+    /** waterMl của mốc mục tiêu dinh dưỡng mới nhất đã có hiệu lực tới ngày này; 0 nếu chưa có. */
+    static int waterTarget(Document user, String date) {
+        Document chosen = null;
+        for (Document t : user.getList("nutritionTargets", Document.class, List.of())) {
+            String from = t.getString("effectiveFrom");
+            if (from != null && from.compareTo(date) <= 0 && t.get("waterMl") instanceof Number
+                && (chosen == null || from.compareTo(chosen.getString("effectiveFrom")) >= 0)) {
+                chosen = t;
+            }
+        }
+        return chosen == null ? 0 : ((Number) chosen.get("waterMl")).intValue();
     }
 
     private boolean checkin(ObjectId userId, Document user, Document settings, LocalDateTime local, String date) {

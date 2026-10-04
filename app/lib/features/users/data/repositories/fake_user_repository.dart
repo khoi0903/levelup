@@ -81,7 +81,7 @@ class FakeUserRepository implements UserRepository {
     final current = await getMe();
 
     final updatedProfile = UserProfile(
-      goal: current.profile?.goal,
+      goal: request.goal ?? current.profile?.goal,
       gender: current.profile?.gender,
       birthYear: current.profile?.birthYear,
       heightCm: current.profile?.heightCm,
@@ -107,6 +107,7 @@ class FakeUserRepository implements UserRepository {
             quietStart: request.notifications!.quietStart ?? currentNotif.quietStart,
             quietEnd: request.notifications!.quietEnd ?? currentNotif.quietEnd,
             maxPerDay: request.notifications!.maxPerDay ?? currentNotif.maxPerDay,
+            waterReminder: request.notifications!.waterReminder ?? currentNotif.waterReminder,
           );
 
     final currentSharing = current.settings.sharing;

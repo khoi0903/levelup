@@ -72,6 +72,40 @@ class RemindersRestartBuddyFlowTest extends FlowTestBase {
     }
 
     @Test
+    void water_reminder_only_when_enabled_has_own_daily_slots() throws Exception {
+        onboard();
+        ObjectId me = userId();
+        LocalDate today = LocalDate.now(LocalDates.DEFAULT_ZONE);
+        reminders.remind(me, today.atTime(11, 30));
+        assertEquals(0, notifications(me, "water_reminder"));            // mặc định tắt
+
+        // Bật nhắc nước, có thiết bị, tắt giờ yên lặng (để test không phụ thuộc giờ chạy), đã hết 2 lượt thường
+        mongo.updateFirst(Query.query(Criteria.where("_id").is(me)), new Update()
+            .set("notificationSettings.waterReminder", true)
+            .set("notificationSettings.quietStart", "00:00").set("notificationSettings.quietEnd", "00:00")
+            .set("devices", List.of(new Document("platform", "android").append("token", "water-test-token"))),
+            "users");
+        mongo.upsert(Query.query(Criteria.where("userId").is(me).and("localDate").is(today.toString())),
+            new Update().set("notificationsSent", 2).set("waterMl", 250), "daily_stats");
+
+        reminders.remind(me, today.atTime(10, 30));                     // ngoài khung giờ
+        assertEquals(0, notifications(me, "water_reminder"));
+        reminders.remind(me, today.atTime(11, 30));
+        reminders.remind(me, today.atTime(12, 15));                     // một lần mỗi mốc
+        assertEquals(1, mongo.count(Query.query(Criteria.where("userId").is(me).and("type").is("water_reminder")
+            .and("sentAt").exists(true)), "notifications"), "đã gửi dù hết lượt nhắc tập");
+
+        mongo.updateFirst(Query.query(Criteria.where("userId").is(me).and("localDate").is(today.toString())),
+            new Update().set("waterMl", 5000), "daily_stats");
+        reminders.remind(me, today.atTime(16, 30));                     // uống đủ thì thôi
+        assertEquals(1, notifications(me, "water_reminder"));
+        Document stats = mongo.findOne(Query.query(Criteria.where("userId").is(me)
+            .and("localDate").is(today.toString())), Document.class, "daily_stats");
+        assertEquals(2, stats.getInteger("notificationsSent"));          // lượt nhắc tập không bị đụng
+        assertEquals(1, stats.getInteger("waterRemindersSent"));
+    }
+
+    @Test
     void restart_week_lightens_remaining_sessions_or_creates_plan() throws Exception {
         onboard();
         ObjectId me = userId();

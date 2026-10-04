@@ -31,7 +31,8 @@ public record SettingsRequest(
         @Min(0) @Max(180) Integer preWorkoutMinutes,
         @Pattern(regexp = HH_MM) String quietStart,
         @Pattern(regexp = HH_MM) String quietEnd,
-        @Min(0) @Max(5) Integer maxPerDay
+        @Min(0) @Max(5) Integer maxPerDay,
+        Boolean waterReminder
     ) {}
 
     /** Buddy được xem gì; mặc định tắt hết (chỉ thấy trạng thái tập). */

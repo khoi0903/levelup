@@ -39,19 +39,21 @@ class SettingsFlowTest extends FlowTestBase {
         assertEquals("22:00", me.read("$.settings.notifications.quietStart"));
         assertEquals("07:00", me.read("$.settings.notifications.quietEnd"));
         assertEquals(2, me.<Integer>read("$.settings.notifications.maxPerDay"));
+        assertFalse(me.<Boolean>read("$.settings.notifications.waterReminder"));      // nhắc nước tự bật
         assertFalse(me.<Boolean>read("$.settings.sharing.weight"));
         assertEquals(7, me.<Integer>read("$.settings.availability.length()"));
         assertEquals(0, me.<Integer>read("$.achievements.length()"));
 
         DocumentContext after = patchMe("""
             {"displayName":"  Khôi  ","coachStyle":"funny",
-             "notifications":{"quietStart":"23:00","maxPerDay":1},
+             "notifications":{"quietStart":"23:00","maxPerDay":1,"waterReminder":true},
              "sharing":{"weight":true}}""", 200);
         assertEquals("Khôi", after.read("$.displayName"));
         assertEquals("funny", after.read("$.profile.coachStyle"));
         assertEquals("23:00", after.read("$.settings.notifications.quietStart"));
         assertEquals("07:00", after.read("$.settings.notifications.quietEnd"));      // không gửi thì giữ
         assertEquals(1, after.<Integer>read("$.settings.notifications.maxPerDay"));
+        assertTrue(after.<Boolean>read("$.settings.notifications.waterReminder"));
         assertTrue(after.<Boolean>read("$.settings.sharing.weight"));
         assertFalse(after.<Boolean>read("$.settings.sharing.meals"));
         assertEquals(15, after.<Integer>read("$.profile.sessionMinutes"));            // không gửi thì giữ

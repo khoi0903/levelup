@@ -105,19 +105,20 @@ public class MongoNotificationGateway implements NotificationGateway {
                 "notifications")) {
             return Result.DUPLICATE;
         }
-        int maxPerDay = NotificationRules.maxPerDay(settings.get("maxPerDay"));
-        if (maxPerDay == 0 || !takeDailySlot(userId, localDate, maxPerDay)) {
+        String counter = NotificationRules.counterField(type);
+        int limit = NotificationRules.limitFor(type, settings.get("maxPerDay"));
+        if (limit == 0 || !takeDailySlot(userId, localDate, counter, limit)) {
             log.info("[notify] hết lượt trong ngày user={} type={} key={}", userId, type, dedupeKey);
             return Result.DAILY_LIMIT;
         }
 
         notification.append("channel", "push").append("scheduledFor", Date.from(now));
         if (!insert(notification)) {
-            releaseDailySlot(userId, localDate);
+            releaseDailySlot(userId, localDate, counter);
             return Result.DUPLICATE;
         }
 
-        return deliver(userId, devices, notification.getObjectId("_id"), title, body, data, localDate)
+        return deliver(userId, devices, notification.getObjectId("_id"), title, body, data, localDate, counter)
             ? Result.SENT : Result.STORED_ONLY;
     }
 
@@ -146,8 +147,6 @@ public class MongoNotificationGateway implements NotificationGateway {
             NotificationRules.time(settings.getString("quietStart"), NotificationRules.DEFAULT_QUIET_START),
             NotificationRules.time(settings.getString("quietEnd"), NotificationRules.DEFAULT_QUIET_END));
         boolean pushEnabled = !Boolean.FALSE.equals(settings.getBoolean("pushEnabled"));
-        int maxPerDay = NotificationRules.maxPerDay(settings.get("maxPerDay"));
-
         int sent = 0;
         for (Document n : due) {
             ObjectId id = n.getObjectId("_id");
@@ -157,12 +156,14 @@ public class MongoNotificationGateway implements NotificationGateway {
                     "notifications");
                 continue;
             }
-            if (quiet || maxPerDay == 0 || !takeDailySlot(userId, localDate, maxPerDay)) {
+            String counter = NotificationRules.counterField(n.getString("type"));
+            int limit = NotificationRules.limitFor(n.getString("type"), settings.get("maxPerDay"));
+            if (quiet || limit == 0 || !takeDailySlot(userId, localDate, counter, limit)) {
                 continue;
             }
             Map<String, String> data = new java.util.HashMap<>();
             n.get("data", new Document()).forEach((k, v) -> data.put(k, String.valueOf(v)));
-            if (deliver(userId, devices, id, n.getString("title"), n.getString("body"), data, localDate)) {
+            if (deliver(userId, devices, id, n.getString("title"), n.getString("body"), data, localDate, counter)) {
                 sent++;
             }
         }
@@ -171,7 +172,7 @@ public class MongoNotificationGateway implements NotificationGateway {
 
     /** Gửi tới mọi thiết bị, xóa token hết hạn. Không thiết bị nào nhận thì trả lượt và chỉ giữ trong app. */
     private boolean deliver(ObjectId userId, List<Document> devices, ObjectId notificationId, String title,
-                            String body, Map<String, String> data, String localDate) {
+                            String body, Map<String, String> data, String localDate, String counter) {
         boolean delivered = false;
         for (Document device : devices) {
             String token = device.getString("token");
@@ -188,7 +189,7 @@ public class MongoNotificationGateway implements NotificationGateway {
         }
         Query byId = Query.query(Criteria.where("_id").is(notificationId));
         if (!delivered) {
-            releaseDailySlot(userId, localDate);
+            releaseDailySlot(userId, localDate, counter);
             mongo.updateFirst(byId, Update.update("channel", "in_app"), "notifications");
             return false;
         }
@@ -207,24 +208,24 @@ public class MongoNotificationGateway implements NotificationGateway {
     }
 
     /**
-     * Tăng daily_stats.notificationsSent nếu còn nhỏ hơn maxPerDay, trong một lệnh.
+     * Tăng bộ đếm trong daily_stats (notificationsSent, hoặc waterRemindersSent cho nhắc uống nước)
+     * nếu còn nhỏ hơn giới hạn, trong một lệnh.
      * Hết lượt thì điều kiện không khớp, upsert tạo document thứ hai cho cùng (userId, localDate)
      * và bị unique index chặn: đó là tín hiệu hết lượt.
      */
-    private boolean takeDailySlot(ObjectId userId, String localDate, int maxPerDay) {
+    private boolean takeDailySlot(ObjectId userId, String localDate, String counter, int limit) {
         Query query = Query.query(Criteria.where("userId").is(userId).and("localDate").is(localDate)
-            .orOperator(Criteria.where("notificationsSent").lt(maxPerDay),
-                Criteria.where("notificationsSent").exists(false)));
+            .orOperator(Criteria.where(counter).lt(limit), Criteria.where(counter).exists(false)));
         try {
-            mongo.upsert(query, new Update().inc("notificationsSent", 1), "daily_stats");
+            mongo.upsert(query, new Update().inc(counter, 1), "daily_stats");
             return true;
         } catch (DuplicateKeyException e) {
             return false;
         }
     }
 
-    private void releaseDailySlot(ObjectId userId, String localDate) {
+    private void releaseDailySlot(ObjectId userId, String localDate, String counter) {
         mongo.updateFirst(Query.query(Criteria.where("userId").is(userId).and("localDate").is(localDate)
-            .and("notificationsSent").gt(0)), new Update().inc("notificationsSent", -1), "daily_stats");
+            .and(counter).gt(0)), new Update().inc(counter, -1), "daily_stats");
     }
 }
