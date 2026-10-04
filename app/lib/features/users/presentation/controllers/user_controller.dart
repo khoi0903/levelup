@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/api/api_client.dart';
 import '../../data/repositories/api_user_repository.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../domain/models/me_response.dart';
 import '../../domain/models/settings_request.dart';
 import '../../domain/repositories/user_repository.dart';
@@ -84,7 +85,8 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     }
   }
 
-  void logout() {
+  Future<void> logout() async {
+    await _ref.read(authRepositoryProvider).signOut();
     _ref.read(currentUserProvider.notifier).state = null;
     _ref.invalidate(userStatusFutureProvider);
   }

@@ -1,19 +1,29 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../constants/auth_constants.dart';
+import '../../features/auth/presentation/controllers/auth_controller.dart';
 import 'api_exceptions.dart';
 
 /// Provider cung cấp token xác thực cho ApiClient.
-/// Khi chuyển sang Firebase Auth ở sprint sau, chỉ cần sửa provider này để lấy idToken thật từ FirebaseAuth.
+/// Khi AUTH_MODE=dev thì dùng dev token, ngược lại lấy từ FirebaseAuth.
 typedef AuthTokenProvider = Future<String?> Function();
+typedef UnauthorizedHandler = void Function();
 
 String defaultDevTokenProvider() {
-  const devUid = String.fromEnvironment('DEV_UID', defaultValue: 'dev-local');
-  return 'dev-$devUid';
+  return 'dev-${AuthConstants.devUid}';
 }
 
 final authTokenProvider = Provider<AuthTokenProvider>((ref) {
-  return () async => defaultDevTokenProvider();
+  if (AuthConstants.isDevMode) {
+    return () async => defaultDevTokenProvider();
+  }
+  final authRepo = ref.watch(authRepositoryProvider);
+  return () async {
+    return await authRepo.getIdToken();
+  };
 });
+
+final unauthorizedHandlerProvider = Provider<UnauthorizedHandler?>((ref) => null);
 
 final apiBaseUrlProvider = Provider<String>((ref) {
   return const String.fromEnvironment(
@@ -24,10 +34,12 @@ final apiBaseUrlProvider = Provider<String>((ref) {
 
 class ApiClient {
   final Dio dio;
+  final UnauthorizedHandler? onUnauthorized;
 
   ApiClient({
     required String baseUrl,
     required AuthTokenProvider tokenProvider,
+    this.onUnauthorized,
   }) : dio = Dio(
           BaseOptions(
             baseUrl: baseUrl,
@@ -51,6 +63,9 @@ class ApiClient {
         },
         onError: (DioException error, handler) {
           final response = error.response;
+          if (response?.statusCode == 401) {
+            onUnauthorized?.call();
+          }
           if (response != null && response.data is Map<String, dynamic>) {
             final data = response.data as Map<String, dynamic>;
             final code =
@@ -202,8 +217,10 @@ class ApiClient {
 final apiClientProvider = Provider<ApiClient>((ref) {
   final baseUrl = ref.watch(apiBaseUrlProvider);
   final tokenProvider = ref.watch(authTokenProvider);
+  final onUnauthorized = ref.watch(unauthorizedHandlerProvider);
   return ApiClient(
     baseUrl: baseUrl,
     tokenProvider: tokenProvider,
+    onUnauthorized: onUnauthorized,
   );
 });

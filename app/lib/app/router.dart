@@ -10,6 +10,7 @@ import '../features/nutrition/presentation/screens/meal_editor_screen.dart';
 import '../features/progress/presentation/screens/progress_screen.dart';
 import '../features/progress/presentation/screens/measurement_screen.dart';
 import '../features/auth/presentation/screens/bootstrap_screen.dart';
+import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/buddies/presentation/screens/buddy_screen.dart';
 import '../features/checkins/presentation/screens/checkin_screen.dart';
 import '../features/coach/presentation/screens/coach_screen.dart';
@@ -89,6 +90,11 @@ GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
       path: '/progress/measurements',
       name: 'progress_measurements',
       builder: (context, state) => const MeasurementScreen(),
+    ),
+    GoRoute(
+      path: '/login',
+      name: 'login',
+      builder: (context, state) => const LoginScreen(),
     ),
     GoRoute(
       path: '/',

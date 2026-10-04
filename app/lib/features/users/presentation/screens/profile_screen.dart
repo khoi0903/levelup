@@ -489,16 +489,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           child: TextButton.icon(
             icon: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 20),
             label: const Text(
-              'Đăng xuất (Xóa phiên làm việc)',
+              'Đăng xuất',
               style: TextStyle(
                 color: Colors.redAccent,
                 fontWeight: FontWeight.w700,
                 fontSize: 14,
               ),
             ),
-            onPressed: () {
-              notifier.logout();
-              context.go('/');
+            onPressed: () async {
+              await notifier.logout();
+              if (context.mounted) {
+                context.go('/login');
+              }
             },
           ),
         ),
