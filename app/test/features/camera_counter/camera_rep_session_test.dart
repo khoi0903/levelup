@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:fitness_app/features/camera_counter/data/camera_rep_device.dart';
 import 'package:fitness_app/features/camera_counter/data/camera_rep_session.dart';
+import 'package:fitness_app/features/camera_counter/domain/cv_config.dart';
 import 'package:fitness_app/features/camera_counter/domain/pose.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -320,10 +321,7 @@ void main() {
         detector: detector,
       );
       var done = false;
-      session.results.listen(
-        (_) {},
-        onDone: () => done = true,
-      );
+      session.results.listen((_) {}, onDone: () => done = true);
       await session.start();
       camera.emit();
       final stopped = session.stop();
@@ -451,4 +449,72 @@ void main() {
       expect(session.latestResult.status, CameraRepSessionStatus.stopped);
     },
   );
+
+  testWidgets('hold config exposes mode, holdDuration and holding', (
+    tester,
+  ) async {
+    final camera = FakeCamera();
+    final detector = FakeDetector();
+    var time = Duration.zero;
+    final session = CameraRepSession(
+      config: exerciseConfig('wall-sit'),
+      camera: camera,
+      detector: detector,
+      elapsed: () => time,
+    );
+    expect(session.latestResult.mode, CvMode.hold);
+    expect(session.latestResult.isHold, isTrue);
+    expect(session.latestResult.holdDuration, Duration.zero);
+    await session.start();
+    Future<void> feed(double angle) async {
+      // Advance first: a frame at t=0 would be nudged to 1 µs.
+      time += const Duration(milliseconds: 100);
+      detector.poses = [pose(angle)];
+      camera.emit();
+      await tester.pump();
+    }
+
+    for (var i = 0; i < 21; i++) {
+      await feed(90);
+    }
+    expect(session.latestResult.holdDuration, const Duration(seconds: 2));
+    expect(session.latestResult.holding, isTrue);
+    expect(session.latestResult.repCount, 0);
+    expect(session.latestResult.currentAngle, closeTo(90, 1e-9));
+    expect(session.latestResult.selectedSide, BodySide.left);
+    expect(session.latestResult.averagedSides, isFalse);
+    expect(session.latestResult.orientationOk, isNull);
+    expect(session.latestResult.formScore, 100);
+
+    await feed(150);
+    expect(session.latestResult.holding, isFalse);
+
+    // Pause keeps the held time; resuming restarts the clock.
+    await session.pause();
+    expect(session.latestResult.holdDuration, const Duration(seconds: 2));
+    await session.start();
+    await feed(90);
+    await feed(90);
+    expect(
+      session.latestResult.holdDuration,
+      const Duration(milliseconds: 2100),
+    );
+    await session.stop();
+    expect(
+      session.latestResult.holdDuration,
+      const Duration(milliseconds: 2100),
+    );
+  });
+
+  test('reps config reports reps mode and zero hold time', () {
+    final session = CameraRepSession(
+      config: squatConfig(),
+      camera: FakeCamera(),
+      detector: FakeDetector(),
+    );
+    expect(session.latestResult.mode, CvMode.reps);
+    expect(session.latestResult.isHold, isFalse);
+    expect(session.latestResult.holdDuration, Duration.zero);
+    expect(session.config.mode, CvMode.reps);
+  });
 }

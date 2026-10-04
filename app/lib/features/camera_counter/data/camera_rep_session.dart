@@ -30,15 +30,30 @@ class CameraRepResult {
   List<FormIssue> get issues => form.issues;
 
   /// Chế độ của cấu hình đang chạy: reps (đếm lần) hoặc hold (giữ tư thế).
+  /// UI hiện [repCount] khi reps, [holdDuration] khi hold.
   final CvMode mode;
 
-  /// Thời gian giữ đúng tư thế (chỉ khác 0 ở chế độ hold).
+  bool get isHold => mode == CvMode.hold;
+
+  /// Thời gian giữ đúng tư thế (chỉ khác 0 ở chế độ hold). Không cộng khi
+  /// ra khỏi dải góc, sai hướng thân, mất người hoặc tạm dừng.
   Duration get holdDuration => counter.holdDuration;
 
   /// Đang giữ đúng dải ở khung gần nhất (chế độ hold).
   bool get holding => counter.holding;
+
+  /// Góc chính ở khung gần nhất (độ); null khi chưa có dữ liệu/mất người.
   double? get currentAngle => counter.currentAngle;
+
+  /// Bên được dùng ở khung gần nhất; null khi lấy trung bình hai bên.
   BodySide? get selectedSide => counter.selectedSide;
+
+  /// true khi góc là trung bình hai bên (`side: both`).
+  bool get averagedSides => counter.averagedSides;
+
+  /// false khi thân sai hướng (ví dụ đứng thẳng lúc plank); null nếu cấu
+  /// hình không kiểm tra hướng hoặc chưa có dữ liệu.
+  bool? get orientationOk => counter.orientationOk;
 }
 
 /// One set of any camera-supported exercise (reps or hold).
