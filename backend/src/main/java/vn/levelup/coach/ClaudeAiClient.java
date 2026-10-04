@@ -7,8 +7,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import com.anthropic.client.AnthropicClient;
 import com.anthropic.client.okhttp.AnthropicOkHttpClient;
@@ -22,7 +20,7 @@ import com.anthropic.models.messages.OutputConfig;
 import com.anthropic.models.messages.StopReason;
 import com.anthropic.models.messages.TextBlockParam;
 
-@Service
+/** AiClient gọi Claude qua SDK chính thức. Bean được tạo trong AiConfig. */
 public class ClaudeAiClient implements AiClient {
 
     private static final Logger log = LoggerFactory.getLogger(ClaudeAiClient.class);
@@ -30,8 +28,7 @@ public class ClaudeAiClient implements AiClient {
     private final AnthropicClient client;
     private final String model;
 
-    public ClaudeAiClient(@Value("${levelup.ai.model:claude-opus-5-5}") String model,
-                          @Value("${levelup.ai.timeout-seconds:20}") int timeoutSeconds) {
+    public ClaudeAiClient(String model, int timeoutSeconds) {
         this.model = model;
         String key = System.getenv("ANTHROPIC_API_KEY");
         // Hết 20 giây thì báo bận, thử lại 1 lần (docs/04-backend-flow.html, mục Lỗi và mất mạng)
