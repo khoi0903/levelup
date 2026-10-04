@@ -87,6 +87,7 @@ class SessionView {
   final String? variant;
   final String? status;
   final List<ItemView> items;
+  final String? adjustedReason;
 
   const SessionView({
     required this.id,
@@ -97,6 +98,7 @@ class SessionView {
     this.variant,
     this.status,
     this.items = const [],
+    this.adjustedReason,
   });
 
   String get dayLabel {
@@ -138,6 +140,7 @@ class SessionView {
               ?.map((e) => ItemView.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
+      adjustedReason: json['adjustedReason'] as String?,
     );
   }
 
@@ -150,6 +153,7 @@ class SessionView {
         if (variant != null) 'variant': variant,
         if (status != null) 'status': status,
         'items': items.map((i) => i.toJson()).toList(),
+        if (adjustedReason != null) 'adjustedReason': adjustedReason,
       };
 }
 

@@ -210,18 +210,32 @@ class Achievement {
   final String code;
   final String nameVi;
   final String? descriptionVi;
+  final String? category;
+  final String? earnedAt;
 
   const Achievement({
     required this.code,
     required this.nameVi,
     this.descriptionVi,
+    this.category,
+    this.earnedAt,
   });
 
   factory Achievement.fromJson(Map<String, dynamic> json) => Achievement(
     code: json['code']?.toString() ?? '',
     nameVi: json['nameVi']?.toString() ?? json['code']?.toString() ?? '',
     descriptionVi: json['descriptionVi'] as String?,
+    category: json['category'] as String?,
+    earnedAt: json['earnedAt'] as String?,
   );
+
+  Map<String, dynamic> toJson() => {
+    'code': code,
+    'nameVi': nameVi,
+    if (descriptionVi != null) 'descriptionVi': descriptionVi,
+    if (category != null) 'category': category,
+    if (earnedAt != null) 'earnedAt': earnedAt,
+  };
 }
 
 /// Ứng với `WorkoutResponse`.

@@ -103,6 +103,32 @@ class WorkoutResultScreen extends ConsumerWidget {
                           _RecordTile(record: pr),
                       ],
                       if (result.newAchievements.isNotEmpty) ...[
+                        const SizedBox(height: 14),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF3C7),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFFDE68A), width: 1.5),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.celebration_rounded, color: Color(0xFFD97706), size: 28),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Ăn mừng thành tích! Bạn vừa mở khóa huy hiệu mới.',
+                                  key: ValueKey('achievement-celebration-banner'),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF92400E),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         const SizedBox(height: 18),
                         const _SectionTitle('Huy hiệu mới'),
                         for (final a in result.newAchievements)
