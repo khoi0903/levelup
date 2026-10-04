@@ -56,7 +56,8 @@
     "met": 3,
     "equipment": [],
     "contraindications": ["shoulder", "lower_back", "neck"],
-    "isActive": true
+    "isActive": true,
+    "cv": { "supported": true }
   },
   {
     "slug": "glute-bridge",
@@ -85,7 +86,8 @@
     "met": 3,
     "equipment": [],
     "contraindications": ["lower_back", "hip", "shoulder"],
-    "isActive": true
+    "isActive": true,
+    "cv": { "supported": false }
   },
   {
     "slug": "push-up",
@@ -129,7 +131,8 @@
     "met": 3.5,
     "equipment": ["dumbbell"],
     "contraindications": ["shoulder", "neck", "wrist", "lower_back"],
-    "isActive": true
+    "isActive": true,
+    "cv": { "supported": true }
   },
   {
     "slug": "standing-calf-raise",
@@ -143,7 +146,8 @@
     "met": 3,
     "equipment": [],
     "contraindications": ["ankle"],
-    "isActive": true
+    "isActive": true,
+    "cv": { "supported": true }
   },
   {
     "slug": "wall-sit",
@@ -157,7 +161,8 @@
     "met": 3.5,
     "equipment": [],
     "contraindications": ["knee", "hip", "lower_back"],
-    "isActive": true
+    "isActive": true,
+    "cv": { "supported": true }
   },
   {
     "slug": "bird-dog",
@@ -171,7 +176,8 @@
     "met": 3,
     "equipment": [],
     "contraindications": ["wrist", "knee", "shoulder", "lower_back"],
-    "isActive": true
+    "isActive": true,
+    "cv": { "supported": false }
   },
   {
     "slug": "side-lying-leg-raise",
@@ -185,7 +191,8 @@
     "met": 2.8,
     "equipment": [],
     "contraindications": ["hip", "lower_back"],
-    "isActive": true
+    "isActive": true,
+    "cv": { "supported": true }
   },
   {
     "slug": "wall-push-up",
@@ -214,7 +221,8 @@
     "met": 3.5,
     "equipment": [],
     "contraindications": ["hip", "knee", "ankle"],
-    "isActive": true
+    "isActive": true,
+    "cv": { "supported": false }
   },
   {
     "slug": "step-jack",
@@ -228,7 +236,8 @@
     "met": 4,
     "equipment": [],
     "contraindications": ["shoulder", "hip", "knee", "ankle"],
-    "isActive": true
+    "isActive": true,
+    "cv": { "supported": false }
   },
   {
     "slug": "dumbbell-bent-over-row",
@@ -242,7 +251,8 @@
     "met": 3.5,
     "equipment": ["dumbbell"],
     "contraindications": ["lower_back", "shoulder", "neck", "wrist"],
-    "isActive": true
+    "isActive": true,
+    "cv": { "supported": true }
   },
   {
     "slug": "seated-resistance-band-row",
@@ -256,7 +266,8 @@
     "met": 3.5,
     "equipment": ["resistance_band"],
     "contraindications": ["lower_back", "shoulder", "wrist", "ankle"],
-    "isActive": true
+    "isActive": true,
+    "cv": { "supported": true }
   },
   {
     "slug": "dumbbell-biceps-curl",
@@ -270,7 +281,8 @@
     "met": 3,
     "equipment": ["dumbbell"],
     "contraindications": ["wrist", "shoulder"],
-    "isActive": true
+    "isActive": true,
+    "cv": { "supported": true }
   },
   {
     "slug": "dumbbell-floor-press",
@@ -284,6 +296,7 @@
     "met": 3.5,
     "equipment": ["dumbbell"],
     "contraindications": ["shoulder", "wrist"],
-    "isActive": true
+    "isActive": true,
+    "cv": { "supported": false }
   }
 ]
