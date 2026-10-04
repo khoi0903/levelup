@@ -44,7 +44,12 @@ public class FcmPushSender implements PushSender {
             return Outcome.SENT;
         } catch (FirebaseMessagingException e) {
             Outcome outcome = outcomeFor(e.getMessagingErrorCode());
-            log.warn("[fcm] gửi lỗi platform={} code={} → {}", platform, e.getMessagingErrorCode(), outcome);
+            Throwable root = e;
+            while (root.getCause() != null && root.getCause() != root) {
+                root = root.getCause();
+            }
+            log.warn("[fcm] gửi lỗi platform={} code={} → {}: {} (gốc: {}: {})", platform,
+                e.getMessagingErrorCode(), outcome, e.getMessage(), root.getClass().getSimpleName(), root.getMessage());
             return outcome;
         }
     }
