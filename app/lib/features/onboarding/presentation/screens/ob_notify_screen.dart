@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
+import '../../../notifications/presentation/controllers/notifications_controller.dart';
 import '../controllers/onboarding_controller.dart';
 
 class ObNotifyScreen extends ConsumerWidget {
@@ -32,7 +34,10 @@ class ObNotifyScreen extends ConsumerWidget {
                     },
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.textSecondary,
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 10,
+                      ),
                       textStyle: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -59,13 +64,16 @@ class ObNotifyScreen extends ConsumerWidget {
                               // Notification Card 1 (Active)
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 12),
+                                  horizontal: 14,
+                                  vertical: 12,
+                                ),
                                 decoration: BoxDecoration(
                                   color: AppColors.cardSelectedBg,
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
-                                      color: AppColors.cardSelectedBorder,
-                                      width: 1.0),
+                                    color: AppColors.cardSelectedBorder,
+                                    width: 1.0,
+                                  ),
                                   boxShadow: const [
                                     BoxShadow(
                                       color: AppColors.cardSelectedShadow,
@@ -126,13 +134,16 @@ class ObNotifyScreen extends ConsumerWidget {
                                 opacity: 0.7,
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 12),
+                                    horizontal: 14,
+                                    vertical: 12,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: AppColors.surface,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
-                                        color: AppColors.border,
-                                        width: 1.0),
+                                      color: AppColors.border,
+                                      width: 1.0,
+                                    ),
                                   ),
                                   child: Row(
                                     crossAxisAlignment:
@@ -143,8 +154,9 @@ class ObNotifyScreen extends ConsumerWidget {
                                         height: 40,
                                         decoration: BoxDecoration(
                                           color: AppColors.primaryLight,
-                                          borderRadius:
-                                              BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
                                         ),
                                         child: const Icon(
                                           Icons.chat_bubble,
@@ -221,9 +233,13 @@ class ObNotifyScreen extends ConsumerWidget {
 
                 PrimaryButton(
                   label: AppStrings.btnEnableNotification,
-                  onPressed: () {
-                    controller.setPushEnabled(true);
-                    context.push('/onboarding/start');
+                  onPressed: () async {
+                    final pushService = ref.read(pushServiceProvider);
+                    final granted = await pushService.requestPermission();
+                    controller.setPushEnabled(granted);
+                    if (context.mounted) {
+                      context.push('/onboarding/start');
+                    }
                   },
                 ),
               ],
@@ -244,11 +260,7 @@ class _NotifyFeatureItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(
-          Icons.check_circle,
-          color: AppColors.accent,
-          size: 20,
-        ),
+        const Icon(Icons.check_circle, color: AppColors.accent, size: 20),
         const SizedBox(width: 10),
         Expanded(
           child: Text(

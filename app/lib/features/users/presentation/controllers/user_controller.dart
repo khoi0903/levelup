@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/api/api_client.dart';
 import '../../data/repositories/api_user_repository.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../../notifications/presentation/controllers/notifications_controller.dart';
 import '../../domain/models/me_response.dart';
 import '../../domain/models/settings_request.dart';
 import '../../domain/repositories/user_repository.dart';
@@ -20,6 +22,27 @@ final userStatusFutureProvider = FutureProvider.autoDispose<MeResponse>((
   final repo = ref.watch(userRepositoryProvider);
   final me = await repo.getMe();
   ref.read(currentUserProvider.notifier).state = me;
+
+  // Nếu người dùng bật push notification và đã có quyền hệ thống thì đăng ký token
+  if (me.settings.notifications.pushEnabled) {
+    try {
+      final pushService = ref.read(pushServiceProvider);
+      final hasPermission = await pushService.hasPermission();
+      if (hasPermission) {
+        final token = await pushService.getToken();
+        if (token != null && token.isNotEmpty) {
+          final deviceRepo = ref.read(deviceRepositoryProvider);
+          await deviceRepo.registerDevice(
+            token: token,
+            platform: getDevicePlatform(),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Register device token on GET /me error: $e');
+    }
+  }
+
   return me;
 });
 
@@ -97,6 +120,11 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   void clearSuccess() => state = state.copyWith(clearSuccess: true);
 
   Future<void> logout() async {
+    try {
+      await _ref.read(pushServiceProvider).deleteToken();
+    } catch (e) {
+      debugPrint('Error deleting push token on logout: $e');
+    }
     await _ref.read(authRepositoryProvider).signOut();
     _ref.read(currentUserProvider.notifier).state = null;
     _ref.invalidate(userStatusFutureProvider);

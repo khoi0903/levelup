@@ -8,6 +8,9 @@ import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
+
+import 'package:fitness_app/features/notifications/presentation/controllers/notifications_controller.dart';
+
 import '../controllers/user_controller.dart';
 import '../../domain/models/me_response.dart';
 import '../../domain/models/settings_request.dart';
@@ -466,7 +469,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 value: _notificationsEnabled,
                 activeThumbColor: AppColors.primary,
                 contentPadding: EdgeInsets.zero,
-                onChanged: (val) => setState(() => _notificationsEnabled = val),
+                onChanged: (val) async {
+                  if (val) {
+                    final pushService = ref.read(pushServiceProvider);
+                    final hasPermission = await pushService.hasPermission();
+                    if (!context.mounted) return;
+                    if (!hasPermission) {
+                      final granted = await pushService.requestPermission();
+                      if (!context.mounted) return;
+                      if (!granted) {
+                        setState(() => _notificationsEnabled = false);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Vui lòng mở Cài đặt điện thoại để cho phép LevelUp gửi thông báo.',
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                        return;
+                      }
+                    }
+                    setState(() => _notificationsEnabled = true);
+                  } else {
+                    setState(() => _notificationsEnabled = false);
+                  }
+                },
               ),
               const Divider(color: AppColors.border, height: 1),
               SwitchListTile(
@@ -495,11 +523,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Số thông báo tối đa mỗi ngày',
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                          Text(
+                            'Số thông báo tối đa mỗi ngày',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                           SizedBox(height: 2),
-                          Text('Nhắc tập, nhắc tập bù, tin buddy…',
-                              style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                          Text(
+                            'Nhắc tập, nhắc tập bù, tin buddy…',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -507,18 +545,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       key: const ValueKey('settings-max-per-day-minus'),
                       icon: const Icon(Icons.remove_circle_outline_rounded),
                       color: AppColors.primary,
-                      onPressed: _maxPerDay > 1 ? () => setState(() => _maxPerDay--) : null,
+                      onPressed: _maxPerDay > 1
+                          ? () => setState(() => _maxPerDay--)
+                          : null,
                     ),
                     Text(
                       '$_maxPerDay',
                       key: const ValueKey('settings-max-per-day'),
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     IconButton(
                       key: const ValueKey('settings-max-per-day-plus'),
                       icon: const Icon(Icons.add_circle_outline_rounded),
                       color: AppColors.primary,
-                      onPressed: _maxPerDay < 5 ? () => setState(() => _maxPerDay++) : null,
+                      onPressed: _maxPerDay < 5
+                          ? () => setState(() => _maxPerDay++)
+                          : null,
                     ),
                   ],
                 ),
@@ -526,11 +571,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const Divider(color: AppColors.border, height: 1),
               SwitchListTile(
                 key: const ValueKey('settings-water-reminder'),
-                title: const Text('Nhắc uống nước',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                title: const Text(
+                  'Nhắc uống nước',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
                 subtitle: const Text(
-                    'Trưa và chiều nếu bạn uống chưa đủ. Tối đa 2 lần/ngày, không tính vào số thông báo ở trên',
-                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  'Trưa và chiều nếu bạn uống chưa đủ. Tối đa 2 lần/ngày, không tính vào số thông báo ở trên',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 value: _waterReminder,
                 activeThumbColor: AppColors.primary,
                 contentPadding: EdgeInsets.zero,
