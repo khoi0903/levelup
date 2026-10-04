@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -23,24 +25,12 @@ final userStatusFutureProvider = FutureProvider.autoDispose<MeResponse>((
   final me = await repo.getMe();
   ref.read(currentUserProvider.notifier).state = me;
 
-  // Nếu người dùng bật push notification và đã có quyền hệ thống thì đăng ký token
+  // Bật push và đã có quyền thì đăng ký token. Không chờ: lấy token FCM có thể chậm hoặc treo
+  // (máy chặn dịch vụ Google), không được giữ người dùng ở màn chờ. Lỗi chỉ ghi log.
   if (me.settings.notifications.pushEnabled) {
-    try {
-      final pushService = ref.read(pushServiceProvider);
-      final hasPermission = await pushService.hasPermission();
-      if (hasPermission) {
-        final token = await pushService.getToken();
-        if (token != null && token.isNotEmpty) {
-          final deviceRepo = ref.read(deviceRepositoryProvider);
-          await deviceRepo.registerDevice(
-            token: token,
-            platform: getDevicePlatform(),
-          );
-        }
-      }
-    } catch (e) {
-      debugPrint('Register device token on GET /me error: $e');
-    }
+    unawaited(
+      ref.read(notificationCoordinatorProvider).registerDeviceTokenIfEligible(),
+    );
   }
 
   return me;

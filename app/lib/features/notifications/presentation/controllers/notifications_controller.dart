@@ -56,14 +56,16 @@ final pendingNotificationRouteProvider = StateProvider<String?>((ref) => null);
 class NotificationCoordinator {
   final Ref _ref;
   final PushService _pushService;
-  final DeviceRepository _deviceRepository;
+
+  /// Lấy lúc cần (không dựng sẵn): ApiClient kéo theo token đăng nhập, chưa cần khi chưa có quyền thông báo.
+  DeviceRepository get _deviceRepository => _ref.read(deviceRepositoryProvider);
 
   StreamSubscription<PushNotificationMessage>? _messageSubscription;
   StreamSubscription<PushNotificationMessage>? _messageOpenedSubscription;
   StreamSubscription<String>? _tokenRefreshSubscription;
   bool _initialized = false;
 
-  NotificationCoordinator(this._ref, this._pushService, this._deviceRepository);
+  NotificationCoordinator(this._ref, this._pushService);
 
   /// Khởi tạo các bộ lắng nghe sự kiện push notification.
   Future<void> init() async {
@@ -155,8 +157,7 @@ final notificationCoordinatorProvider = Provider<NotificationCoordinator>((
   ref,
 ) {
   final pushService = ref.watch(pushServiceProvider);
-  final deviceRepo = ref.watch(deviceRepositoryProvider);
-  final coordinator = NotificationCoordinator(ref, pushService, deviceRepo);
+  final coordinator = NotificationCoordinator(ref, pushService);
   ref.onDispose(() => coordinator.dispose());
   return coordinator;
 });
