@@ -7,12 +7,32 @@ import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../users/presentation/controllers/user_controller.dart';
+import '../controllers/auth_controller.dart';
 
 class BootstrapScreen extends ConsumerWidget {
   const BootstrapScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authRepo = ref.watch(authRepositoryProvider);
+
+    // Luồng mở app: chưa đăng nhập → chuyển về màn đăng nhập
+    if (authRepo.currentUser == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          context.go('/login');
+        }
+      });
+      return Scaffold(
+        body: GradientBackground(
+          child: SafeArea(
+            child: _buildLoadingWidget(),
+          ),
+        ),
+      );
+    }
+
+    // Đã đăng nhập → gọi GET /me để kiểm tra trạng thái onboarding
     final statusAsync = ref.watch(userStatusFutureProvider);
 
     return Scaffold(
@@ -29,6 +49,20 @@ class BootstrapScreen extends ConsumerWidget {
             },
             loading: () => _buildLoadingWidget(),
             error: (error, stack) {
+              // 401 Unauthorized từ backend → tự động đăng xuất và quay về màn đăng nhập
+              if (error is ApiException && error.statusCode == 401) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (context.mounted) {
+                    ref.read(authRepositoryProvider).signOut();
+                    ref.invalidate(userStatusFutureProvider);
+                    ref.invalidate(currentUserProvider);
+                    context.go('/login');
+                  }
+                });
+                return _buildLoadingWidget();
+              }
+
+              // 404 ONBOARDING_REQUIRED → chuyển tiếp vào luồng Onboarding
               if (error is ApiException && error.isOnboardingRequired) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (context.mounted) {
