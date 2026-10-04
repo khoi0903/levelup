@@ -1,4 +1,9 @@
 import 'package:go_router/go_router.dart';
+import '../features/nutrition/domain/models/nutrition_models.dart';
+import '../features/nutrition/presentation/screens/nutrition_screen.dart';
+import '../features/nutrition/presentation/screens/meal_editor_screen.dart';
+import '../features/progress/presentation/screens/progress_screen.dart';
+import '../features/progress/presentation/screens/measurement_screen.dart';
 import '../features/auth/presentation/screens/bootstrap_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 import '../features/onboarding/presentation/screens/ob_body_screen.dart';
@@ -19,6 +24,36 @@ import '../features/workout/presentation/screens/workout_start_screen.dart';
 GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
   initialLocation: initialLocation,
   routes: [
+    GoRoute(
+      path: '/nutrition',
+      name: 'nutrition',
+      builder: (context, state) => const NutritionScreen(),
+    ),
+    GoRoute(
+      path: '/nutrition/photo',
+      name: 'nutrition_photo',
+      builder: (context, state) => const MealEditorScreen(photoMode: true),
+    ),
+    GoRoute(
+      path: '/nutrition/add',
+      name: 'nutrition_add',
+      builder: (context, state) => MealEditorScreen(
+        meal: state.uri.queryParameters['meal'] ?? 'lunch',
+        initialFoods: state.extra is List<Food>
+            ? state.extra! as List<Food>
+            : const [],
+      ),
+    ),
+    GoRoute(
+      path: '/progress',
+      name: 'progress',
+      builder: (context, state) => const ProgressScreen(),
+    ),
+    GoRoute(
+      path: '/progress/measurements',
+      name: 'progress_measurements',
+      builder: (context, state) => const MeasurementScreen(),
+    ),
     GoRoute(
       path: '/',
       name: 'bootstrap',
