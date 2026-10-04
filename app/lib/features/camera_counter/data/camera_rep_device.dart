@@ -59,7 +59,8 @@ class FrontCameraRepDevice implements CameraRepDevice {
       ResolutionPreset.medium,
       enableAudio: false,
       imageFormatGroup: defaultTargetPlatform == TargetPlatform.android
-          ? ImageFormatGroup.nv21
+          // yuv420 thay vì nv21: NV21 của plugin không báo stride đệm trên một số máy
+          ? ImageFormatGroup.yuv420
           : ImageFormatGroup.bgra8888,
     );
     try {

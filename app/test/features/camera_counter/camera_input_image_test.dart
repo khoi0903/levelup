@@ -13,13 +13,17 @@ class FakeFormat implements ImageFormat {
 }
 
 class FakePlane implements Plane {
-  FakePlane({required this.bytes, required this.bytesPerRow});
+  FakePlane({
+    required this.bytes,
+    required this.bytesPerRow,
+    this.bytesPerPixel = 1,
+  });
   @override
   final Uint8List bytes;
   @override
   final int bytesPerRow;
   @override
-  int? get bytesPerPixel => 1;
+  final int? bytesPerPixel;
   @override
   int? get height => null;
   @override
@@ -27,16 +31,20 @@ class FakePlane implements Plane {
 }
 
 class FakeImage implements CameraImage {
-  FakeImage({required ImageFormatGroup group, required this.planes})
-    : format = FakeFormat(group);
+  FakeImage({
+    required ImageFormatGroup group,
+    required this.planes,
+    this.width = 2,
+    this.height = 2,
+  }) : format = FakeFormat(group);
   @override
   final ImageFormat format;
   @override
   final List<Plane> planes;
   @override
-  int get height => 2;
+  final int height;
   @override
-  int get width => 2;
+  final int width;
   @override
   double? get lensAperture => null;
   @override
@@ -128,10 +136,11 @@ void main() {
     for (final image in [
       FakeImage(
         group: ImageFormatGroup.yuv420,
-        planes: List.generate(
-          3,
-          (_) => FakePlane(bytes: Uint8List(4), bytesPerRow: 2),
-        ),
+        planes: [
+          FakePlane(bytes: Uint8List(3), bytesPerRow: 2), // Y thiếu byte
+          FakePlane(bytes: Uint8List(1), bytesPerRow: 1),
+          FakePlane(bytes: Uint8List(1), bytesPerRow: 1),
+        ],
       ),
       FakeImage(
         group: ImageFormatGroup.yuv420,
@@ -156,5 +165,32 @@ void main() {
         throwsFormatException,
       );
     }
+  });
+
+  test('Android YUV420 with padded rows packs into exact NV21 (VU order)', () {
+    // 4x2 ảnh, Y stride 6 (đệm 2 byte/hàng), U/V xen kẽ pixelStride 2, stride 6 — như CameraX
+    final y = Uint8List.fromList([1, 2, 3, 4, 0, 0, 5, 6, 7, 8, 0, 0]);
+    final u = Uint8List.fromList([10, 20, 11, 21, 0, 0]);
+    final v = Uint8List.fromList([20, 11, 21, 0, 0, 0]);
+    final image = FakeImage(
+      group: ImageFormatGroup.yuv420,
+      width: 4,
+      height: 2,
+      planes: [
+        FakePlane(bytes: y, bytesPerRow: 6),
+        FakePlane(bytes: u, bytesPerRow: 6, bytesPerPixel: 2),
+        FakePlane(bytes: v, bytesPerRow: 6, bytesPerPixel: 2),
+      ],
+    );
+    expect(yuv420ToNv21(image), [1, 2, 3, 4, 5, 6, 7, 8, 20, 10, 21, 11]);
+    final input = cameraInputImage(
+      image,
+      camera: front,
+      orientation: DeviceOrientation.portraitUp,
+      platform: TargetPlatform.android,
+    );
+    expect(input.metadata!.format, InputImageFormat.nv21);
+    expect(input.metadata!.bytesPerRow, 4);
+    expect(input.bytes!.length, 12);
   });
 }
