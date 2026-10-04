@@ -1,5 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/constants/auth_constants.dart';
+import '../../../notifications/domain/services/push_service.dart';
+import '../../../notifications/presentation/controllers/notifications_controller.dart';
 import '../../data/repositories/fake_auth_repository.dart';
 import '../../data/repositories/firebase_auth_repository.dart';
 import '../../domain/models/auth_user.dart';
@@ -47,7 +51,9 @@ class AuthState {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
-      successMessage: clearSuccess ? null : (successMessage ?? this.successMessage),
+      successMessage: clearSuccess
+          ? null
+          : (successMessage ?? this.successMessage),
       user: user ?? this.user,
     );
   }
@@ -55,16 +61,21 @@ class AuthState {
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _repository;
+  final PushService? _pushService;
 
-  AuthNotifier(this._repository)
-      : super(AuthState(user: _repository.currentUser));
+  AuthNotifier(this._repository, [this._pushService])
+    : super(AuthState(user: _repository.currentUser));
 
   void clearMessages() {
     state = state.copyWith(clearError: true, clearSuccess: true);
   }
 
   Future<bool> signInWithGoogle() async {
-    state = state.copyWith(isLoading: true, clearError: true, clearSuccess: true);
+    state = state.copyWith(
+      isLoading: true,
+      clearError: true,
+      clearSuccess: true,
+    );
     try {
       final user = await _repository.signInWithGoogle();
       state = state.copyWith(isLoading: false, user: user);
@@ -91,7 +102,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return false;
     }
 
-    state = state.copyWith(isLoading: true, clearError: true, clearSuccess: true);
+    state = state.copyWith(
+      isLoading: true,
+      clearError: true,
+      clearSuccess: true,
+    );
     try {
       final user = await _repository.signInWithEmailPassword(
         email: email,
@@ -100,7 +115,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: false, user: user);
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: _cleanErrorMessage(e));
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: _cleanErrorMessage(e),
+      );
       return false;
     }
   }
@@ -118,13 +136,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
 
     if (password.length < 6) {
-      state = state.copyWith(
-        errorMessage: 'Mật khẩu phải có ít nhất 6 ký tự.',
-      );
+      state = state.copyWith(errorMessage: 'Mật khẩu phải có ít nhất 6 ký tự.');
       return false;
     }
 
-    state = state.copyWith(isLoading: true, clearError: true, clearSuccess: true);
+    state = state.copyWith(
+      isLoading: true,
+      clearError: true,
+      clearSuccess: true,
+    );
     try {
       final user = await _repository.signUpWithEmailPassword(
         email: email,
@@ -134,33 +154,53 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: false, user: user);
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: _cleanErrorMessage(e));
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: _cleanErrorMessage(e),
+      );
       return false;
     }
   }
 
   Future<bool> sendPasswordResetEmail(String email) async {
     if (email.trim().isEmpty) {
-      state = state.copyWith(errorMessage: 'Vui lòng nhập email để đặt lại mật khẩu.');
+      state = state.copyWith(
+        errorMessage: 'Vui lòng nhập email để đặt lại mật khẩu.',
+      );
       return false;
     }
 
-    state = state.copyWith(isLoading: true, clearError: true, clearSuccess: true);
+    state = state.copyWith(
+      isLoading: true,
+      clearError: true,
+      clearSuccess: true,
+    );
     try {
       await _repository.sendPasswordResetEmail(email);
       state = state.copyWith(
         isLoading: false,
-        successMessage: 'Đã gửi email khôi phục mật khẩu. Vui lòng kiểm tra hộp thư.',
+        successMessage:
+            'Đã gửi email khôi phục mật khẩu. Vui lòng kiểm tra hộp thư.',
       );
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: _cleanErrorMessage(e));
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: _cleanErrorMessage(e),
+      );
       return false;
     }
   }
 
   Future<void> signOut() async {
     state = state.copyWith(isLoading: true);
+    if (_pushService != null) {
+      try {
+        await _pushService.deleteToken();
+      } catch (e) {
+        debugPrint('AuthNotifier deleteToken error: $e');
+      }
+    }
     await _repository.signOut();
     state = const AuthState();
   }
@@ -176,6 +216,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
 final authControllerProvider =
     StateNotifierProvider.autoDispose<AuthNotifier, AuthState>((ref) {
-  final repo = ref.watch(authRepositoryProvider);
-  return AuthNotifier(repo);
-});
+      final repo = ref.watch(authRepositoryProvider);
+      final pushService = ref.watch(pushServiceProvider);
+      return AuthNotifier(repo, pushService);
+    });
