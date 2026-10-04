@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import java.time.Clock;
@@ -130,5 +131,11 @@ class JobsFlowTest extends FlowTestBase {
         DocumentContext wrong = call(post("/jobs/tick").header("Authorization", token)
             .header("X-Job-Secret", "nope"), 403);
         assertEquals("FORBIDDEN", wrong.read("$.code"));
+
+        // Bộ gọi job không có Firebase token: qua được tầng đăng nhập nhưng vẫn bị chặn nếu sai secret
+        call(post("/jobs/tick"), 403);
+        call(post("/jobs/tick").header("X-Job-Secret", "nope"), 403);
+        call(get("/jobs/tick").header("X-Job-Secret", "nope"), 401);   // chỉ mở đúng POST
+        call(get("/me"), 401);                                           // endpoint khác vẫn cần token
     }
 }

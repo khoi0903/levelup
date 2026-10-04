@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -14,7 +15,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
- * Mọi endpoint đều cần token, trừ health check và tài liệu API.
+ * Mọi endpoint đều cần token, trừ health check, tài liệu API và POST /jobs/tick (dùng X-Job-Secret).
  * Token được kiểm tra bởi JwtDecoder trong {@link vn.levelup.auth.FirebaseJwtConfig}.
  * CORS chỉ mở cho các origin trong levelup.cors.allowed-origin-patterns (profile dev: localhost, cho Flutter web).
  */
@@ -32,6 +33,9 @@ public class SecurityConfig {
                     "/actuator/health/**", "/actuator/info",
                     "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html"
                 ).permitAll()
+                // Cloud Scheduler / cron-job.org không có Firebase token: JobsController tự kiểm tra
+                // header X-Job-Secret (so sánh hằng thời gian; JOB_SECRET trống thì luôn 403)
+                .requestMatchers(HttpMethod.POST, "/jobs/tick").permitAll()
                 .anyRequest().authenticated())
             .oauth2ResourceServer(o -> o.jwt(Customizer.withDefaults()));
         return http.build();

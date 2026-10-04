@@ -15,8 +15,9 @@ WORKDIR /app
 RUN useradd --system --uid 1001 levelup
 COPY --from=build /app/app.jar app.jar
 USER levelup
-# Máy nhỏ (512 MB–1 GB): giới hạn heap theo RAM của container, GC đơn luồng tốn ít bộ nhớ
-ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=70 -XX:+UseSerialGC -Xss512k -XX:TieredStopAtLevel=1"
+# Máy nhỏ (Render free 512 MB): heap một nửa RAM, phần còn lại cho metaspace, code cache, thread;
+# GC đơn luồng tốn ít bộ nhớ. Vượt 512 MB là bị kill nên giới hạn cả metaspace và code cache.
+ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=50 -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=48m -XX:+UseSerialGC -Xss512k -XX:TieredStopAtLevel=1"
 # Cloud Run / Render tự đặt PORT; application.yaml đọc server.port=${PORT:8080}
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

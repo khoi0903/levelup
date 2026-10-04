@@ -1,0 +1,26 @@
+# Render Blueprint: Render đọc file này khi chọn New → Blueprint và trỏ vào repo.
+# Biến có "sync: false" là bí mật: Render hỏi giá trị lúc tạo, không lưu trong repo.
+# Hướng dẫn đầy đủ: docs/deploy.md
+services:
+  - type: web
+    name: levelup-backend
+    runtime: docker
+    plan: free
+    region: singapore
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /actuator/health
+    autoDeploy: false          # deploy khi bấm tay, main đổi không tự deploy
+    envVars:
+      - key: LEVELUP_AI_PROVIDER
+        value: gemini
+      - key: FIREBASE_PROJECT_ID
+        value: levelup-pro
+      - key: FIREBASE_CREDENTIALS
+        value: /etc/secrets/firebase-sa.json   # Secret File tên firebase-sa.json
+      - key: MONGODB_URI
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: JOB_SECRET
+        sync: false

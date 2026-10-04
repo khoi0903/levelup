@@ -87,15 +87,23 @@ gcloud scheduler jobs create http levelup-tick --location asia-southeast1 --sche
 Muốn demo không phải chờ khởi động: tạm đặt `--min-instances 1` trước buổi demo (tốn tiền khi bật lâu),
 xong demo đặt lại `0`.
 
-## 3b. Render
+## 3b. Render (đang dùng)
 
-1. https://render.com → đăng nhập bằng GitHub → **New → Web Service** → chọn repo, **Root Directory** `backend`,
-   **Runtime** Docker, **Instance type** Free, region Singapore.
-2. **Environment**: thêm các biến ở mục 2. Riêng file Firebase: **Secret Files** → tên `firebase-sa.json`,
-   dán nội dung file `D:\secrets\levelup-pro-firebase.json` → đặt `FIREBASE_CREDENTIALS=/etc/secrets/firebase-sa.json`.
-3. Deploy. URL dạng `https://levelup-backend.onrender.com`.
-4. https://cron-job.org → tạo job POST `https://<URL Render>/jobs/tick`, header `X-Job-Secret: <JOB_SECRET>`,
-   mỗi 15 phút.
+Cấu hình nằm trong `render.yaml` ở gốc repo (Docker, gói free, Singapore, health check `/actuator/health`).
+
+1. https://render.com → đăng nhập bằng GitHub → cho Render quyền đọc repo `levelup` (private).
+2. **New → Blueprint** → chọn repo → Render đọc `render.yaml`, hỏi 3 giá trị bí mật:
+   `MONGODB_URI` (chuỗi Atlas), `GEMINI_API_KEY` (key mới), `JOB_SECRET` (chuỗi tạo ở mục 2).
+3. Sau khi tạo: vào service `levelup-backend` → **Environment → Secret Files → Add** → tên `firebase-sa.json`,
+   dán nội dung file `D:\secrets\levelup-pro-firebase.json` → Save → **Manual Deploy → Deploy latest commit**.
+4. Lần đầu build mất khoảng 5–10 phút. Log có `Push: gửi thật qua FCM` và `Started LevelupBackendApplication`
+   là chạy. URL dạng `https://levelup-backend.onrender.com`.
+5. https://cron-job.org (miễn phí) → Create cronjob: URL `https://<URL Render>/jobs/tick`, mỗi 15 phút,
+   **Advanced → Request method** POST, **Headers** thêm `X-Job-Secret` = `<JOB_SECRET>`.
+   Job này vừa chạy nhắc nhở / tổng kết tuần, vừa giữ server không ngủ.
+
+Gói free có 512 MB RAM và CPU yếu: khởi động mất khoảng 1–2 phút. Nếu log báo hết bộ nhớ
+(`OOMKilled` / `Exited with status 137`) thì báo Claude Code chỉnh lại `JAVA_TOOL_OPTIONS` trong Dockerfile.
 
 ## 4. Kiểm tra và build app
 
