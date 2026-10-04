@@ -34,6 +34,10 @@ public class FirebaseJwtConfig {
     @Bean
     @ConditionalOnProperty(name = "levelup.auth.dev-tokens", havingValue = "false", matchIfMissing = true)
     JwtDecoder firebaseJwtDecoder(@Value("${levelup.firebase.project-id}") String projectId) {
+        return firebaseDecoder(projectId);
+    }
+
+    static JwtDecoder firebaseDecoder(String projectId) {
         NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(FIREBASE_JWKS).build();
         OAuth2TokenValidator<Jwt> issuer =
             JwtValidators.createDefaultWithIssuer("https://securetoken.google.com/" + projectId);
@@ -43,13 +47,23 @@ public class FirebaseJwtConfig {
         return decoder;
     }
 
-    /** Chỉ dùng khi phát triển (profile dev): token dạng "dev-<uid>", không kiểm tra chữ ký. */
+    /**
+     * Chỉ dùng khi phát triển (profile dev): token "dev-<uid>" không kiểm tra chữ ký;
+     * token khác được kiểm tra như Firebase ID token thật, để thử đăng nhập Google/email trên máy dev.
+     */
     @Bean
     @ConditionalOnProperty(name = "levelup.auth.dev-tokens", havingValue = "true")
-    JwtDecoder devJwtDecoder() {
+    JwtDecoder devJwtDecoder(@Value("${levelup.firebase.project-id}") String projectId) {
         log.warn("ĐANG BẬT TOKEN DEV: chỉ dùng trên máy phát triển, không bao giờ bật trên server thật");
+        return devOrFirebase(firebaseDecoder(projectId));
+    }
+
+    static JwtDecoder devOrFirebase(JwtDecoder firebase) {
         return token -> {
-            if (token == null || !token.startsWith("dev-") || token.length() <= 4) {
+            if (token == null || !token.startsWith("dev-")) {
+                return firebase.decode(token);
+            }
+            if (token.length() <= 4) {
                 throw new BadJwtException("Token dev phải có dạng dev-<uid>");
             }
             String uid = token.substring(4);
