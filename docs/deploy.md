@@ -98,9 +98,9 @@ Cấu hình nằm trong `render.yaml` ở gốc repo (Docker, gói free, Singapo
    dán nội dung file `D:\secrets\levelup-pro-firebase.json` → Save → **Manual Deploy → Deploy latest commit**.
 4. Lần đầu build mất khoảng 5–10 phút. Log có `Push: gửi thật qua FCM` và `Started LevelupBackendApplication`
    là chạy. URL dạng `https://levelup-backend.onrender.com`.
-5. https://cron-job.org (miễn phí) → Create cronjob: URL `https://<URL Render>/jobs/tick`, mỗi 15 phút,
+5. https://cron-job.org (miễn phí) → Create cronjob: URL `https://<URL Render>/jobs/tick`, **mỗi 10 phút**
    **Advanced → Request method** POST, **Headers** thêm `X-Job-Secret` = `<JOB_SECRET>`.
-   Job này vừa chạy nhắc nhở / tổng kết tuần, vừa giữ server không ngủ.
+   (Render ngủ sau 15 phút không có request; 10 phút để chắc chắn). Job này vừa chạy nhắc nhở / tổng kết tuần, vừa giữ server không ngủ. Gói free 750 giờ/tháng đủ chạy liên tục.
 
 Gói free có 512 MB RAM và CPU yếu: khởi động mất khoảng 1–2 phút. Nếu log báo hết bộ nhớ
 (`OOMKilled` / `Exited with status 137`) thì báo Claude Code chỉnh lại `JAVA_TOOL_OPTIONS` trong Dockerfile.
