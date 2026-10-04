@@ -7,6 +7,7 @@ import '../../../../core/api/api_exceptions.dart';
 import '../../../onboarding/domain/models/plan_models.dart';
 import '../../../onboarding/presentation/controllers/onboarding_controller.dart';
 import '../../data/camera/camera_permission.dart';
+import '../../data/camera/camera_setup_skip.dart';
 import '../../data/camera/rep_counting_session.dart';
 import '../../data/repositories/api_workout_repository.dart';
 import '../../domain/models/exercise_response.dart';
@@ -24,6 +25,11 @@ final repSessionFactoryProvider = Provider<RepSessionFactory>((ref) {
 
 final cameraPermissionProvider = Provider<CameraPermissionGate>((ref) {
   return const PlatformCameraPermissionGate();
+});
+
+/// "Không hỏi lại hôm nay" ở màn Đặt camera.
+final cameraSetupSkipProvider = Provider<CameraSetupSkip>((ref) {
+  return const PrefsCameraSetupSkip();
 });
 
 /// Đồng hồ cho buổi tập; test ghi đè để cố định thời gian.

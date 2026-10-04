@@ -1,3 +1,4 @@
+import 'package:fitness_app/features/workout/data/camera/camera_setup_skip.dart';
 import 'dart:async';
 
 import 'package:camera/camera.dart';
@@ -181,15 +182,18 @@ class WorkoutHarness {
     FakeWorkoutRepository? repo,
     RepSessionFactory? factory,
     FakePermissionGate? permission,
+    CameraSetupSkip? setupSkip,
   }) : planRepo = FakePlanRepository(planView: plan),
        repo = repo ?? FakeWorkoutRepository(exercises: testExercises),
        factory = factory ?? NoCameraFactory(),
-       permission = permission ?? FakePermissionGate();
+       permission = permission ?? FakePermissionGate(),
+       setupSkip = setupSkip ?? MemoryCameraSetupSkip();
 
   final FakePlanRepository planRepo;
   final FakeWorkoutRepository repo;
   final RepSessionFactory factory;
   final FakePermissionGate permission;
+  final CameraSetupSkip setupSkip;
   final clock = FakeClock();
   late ProviderContainer container;
 
@@ -206,6 +210,7 @@ class WorkoutHarness {
         workoutRepositoryProvider.overrideWithValue(repo),
         repSessionFactoryProvider.overrideWithValue(factory),
         cameraPermissionProvider.overrideWithValue(permission),
+        cameraSetupSkipProvider.overrideWithValue(setupSkip),
         workoutClockProvider.overrideWithValue(clock.call),
         userRepositoryProvider.overrideWithValue(FakeUserRepository()),
       ],

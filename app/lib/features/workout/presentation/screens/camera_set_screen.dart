@@ -55,6 +55,35 @@ class CameraSetScreen extends ConsumerStatefulWidget {
 
 class _CameraSetScreenState extends ConsumerState<CameraSetScreen> {
   _Stage _stage = _Stage.setup;
+  // Đang kiểm tra "Không hỏi lại hôm nay" → chưa vẽ màn Đặt camera để khỏi nháy
+  bool _checkingSkip = true;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_maybeSkipSetup());
+  }
+
+  /// Đã chọn bỏ qua hôm nay và quyền camera vẫn còn → vào đếm luôn.
+  Future<void> _maybeSkipSetup() async {
+    var skip = false;
+    try {
+      final today = localDateString(DateTime.now());
+      if (await ref.read(cameraSetupSkipProvider).skippedDate() == today) {
+        skip =
+            await ref.read(cameraPermissionProvider).request() ==
+            CameraPermissionResult.granted;
+      }
+    } catch (_) {
+      skip = false;
+    }
+    if (!mounted) return;
+    setState(() {
+      _checkingSkip = false;
+      if (skip) _stage = _Stage.counting;
+    });
+  }
+
   RepSnapshot? _snapshot;
   // Đổi key để tạo phiên đếm mới khi "Đếm lại".
   int _attempt = 0;
@@ -70,38 +99,40 @@ class _CameraSetScreenState extends ConsumerState<CameraSetScreen> {
     return Scaffold(
       body: GradientBackground(
         child: SafeArea(
-          child: switch (_stage) {
-            _Stage.setup => _SetupView(
-              name: item.nameVi,
-              subtitle: subtitle,
-              camera: camera,
-              onReady: () => setState(() => _stage = _Stage.counting),
-              onManual: _manual,
-            ),
-            _Stage.counting => _CountingView(
-              key: ValueKey('counting-$_attempt'),
-              name: item.nameVi,
-              subtitle: subtitle,
-              camera: camera,
-              targetReps: widget.args.targetReps ?? item.reps,
-              targetSec: item.durationSec,
-              onManual: _manual,
-              onDone: (snapshot) => setState(() {
-                _snapshot = snapshot;
-                _stage = _Stage.confirm;
-              }),
-            ),
-            _Stage.confirm => _ConfirmView(
-              args: widget.args,
-              camera: camera,
-              snapshot: _snapshot ?? const RepSnapshot(),
-              onRecount: () => setState(() {
-                _attempt++;
-                _stage = _Stage.counting;
-              }),
-              onSave: (set) => context.pop(CameraSetOutcome(set)),
-            ),
-          },
+          child: _checkingSkip
+              ? const Center(child: CircularProgressIndicator())
+              : switch (_stage) {
+                  _Stage.setup => _SetupView(
+                    name: item.nameVi,
+                    subtitle: subtitle,
+                    camera: camera,
+                    onReady: () => setState(() => _stage = _Stage.counting),
+                    onManual: _manual,
+                  ),
+                  _Stage.counting => _CountingView(
+                    key: ValueKey('counting-$_attempt'),
+                    name: item.nameVi,
+                    subtitle: subtitle,
+                    camera: camera,
+                    targetReps: widget.args.targetReps ?? item.reps,
+                    targetSec: item.durationSec,
+                    onManual: _manual,
+                    onDone: (snapshot) => setState(() {
+                      _snapshot = snapshot;
+                      _stage = _Stage.confirm;
+                    }),
+                  ),
+                  _Stage.confirm => _ConfirmView(
+                    args: widget.args,
+                    camera: camera,
+                    snapshot: _snapshot ?? const RepSnapshot(),
+                    onRecount: () => setState(() {
+                      _attempt++;
+                      _stage = _Stage.counting;
+                    }),
+                    onSave: (set) => context.pop(CameraSetOutcome(set)),
+                  ),
+                },
         ),
       ),
     );
@@ -148,6 +179,7 @@ class _SetupView extends ConsumerStatefulWidget {
 class _SetupViewState extends ConsumerState<_SetupView> {
   CameraPermissionResult? _denied;
   bool _busy = false;
+  bool _dontAskToday = false;
 
   Future<void> _ready() async {
     setState(() => _busy = true);
@@ -156,6 +188,12 @@ class _SetupViewState extends ConsumerState<_SetupView> {
     setState(() => _busy = false);
     if (result == CameraPermissionResult.granted) {
       _denied = null;
+      if (_dontAskToday) {
+        await ref
+            .read(cameraSetupSkipProvider)
+            .skipFor(localDateString(DateTime.now()));
+        if (!mounted) return;
+      }
       widget.onReady();
     } else {
       setState(() => _denied = result);
@@ -283,6 +321,19 @@ class _SetupViewState extends ConsumerState<_SetupView> {
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
           child: Column(
             children: [
+              CheckboxListTile(
+                key: const ValueKey('camera-skip-today'),
+                value: _dontAskToday,
+                onChanged: (v) => setState(() => _dontAskToday = v ?? false),
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                activeColor: AppColors.primary,
+                title: const Text(
+                  'Không hỏi lại hôm nay, lần sau vào đếm luôn',
+                  style: TextStyle(fontSize: 14, color: AppColors.textPrimary),
+                ),
+              ),
               PrimaryButton(
                 label: 'Tôi đã sẵn sàng',
                 isLoading: _busy,
@@ -639,11 +690,15 @@ String cameraErrorMessage(String raw) {
   if (s.contains('accessdenied') || s.contains('permission')) {
     return 'Chưa có quyền camera. Cho phép LevelUp dùng camera trong Cài đặt.';
   }
-  if (s.contains('no front') || s.contains('front camera') || s.contains('nocamera') ||
+  if (s.contains('no front') ||
+      s.contains('front camera') ||
+      s.contains('nocamera') ||
       s.contains('no camera')) {
     return 'Không tìm thấy camera trước trên máy này. Bạn đếm tay giúp mình nhé.';
   }
-  if (s.contains('in use') || s.contains('max_cameras') || s.contains('disabled')) {
+  if (s.contains('in use') ||
+      s.contains('max_cameras') ||
+      s.contains('disabled')) {
     return 'Camera đang được ứng dụng khác dùng. Đóng ứng dụng đó rồi bấm Thử lại.';
   }
   return 'Camera đang gặp sự cố. Bấm Thử lại hoặc chuyển sang đếm tay.';

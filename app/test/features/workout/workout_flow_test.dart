@@ -1,3 +1,4 @@
+import 'package:fitness_app/features/workout/data/camera/camera_setup_skip.dart';
 import 'package:fitness_app/features/workout/data/camera/camera_permission.dart';
 import 'package:fitness_app/features/onboarding/domain/models/plan_models.dart';
 import 'package:fitness_app/features/workout/data/camera/rep_counting_session.dart';
@@ -356,6 +357,36 @@ void main() {
       await tester.pumpAndSettle();
       expect(session.stops, greaterThanOrEqualTo(1));
       expect(find.text('Camera đếm được 10 lần'), findsOneWidget);
+    });
+
+    testWidgets('tích "Không hỏi lại hôm nay" thì hiệp sau vào đếm luôn', (
+      tester,
+    ) async {
+      final skip = MemoryCameraSetupSkip();
+      final factory = FakeRepSessionFactory(cameraSnapshot);
+      final h = WorkoutHarness(
+        plan: planWith([
+          ItemView(exerciseId: squatId, nameVi: 'Squat', sets: 2, reps: 10),
+        ]),
+        factory: factory,
+        setupSkip: skip,
+      );
+      await h.pump(tester, '/workout/$sessionId');
+      await tapText(tester, 'Bắt đầu');
+      await tapText(tester, 'Đếm bằng camera');
+      await tester.tap(find.byKey(const ValueKey('camera-skip-today')));
+      await tester.pump();
+      await tapText(tester, 'Tôi đã sẵn sàng');
+      expect(await skip.skippedDate(), isNotNull);
+      await tapText(tester, 'Xong hiệp');
+      await tapText(tester, 'Lưu hiệp');
+      // Bỏ qua thời gian nghỉ nếu có
+      final skipRest = find.text('Bỏ qua nghỉ');
+      if (skipRest.evaluate().isNotEmpty) await tapText(tester, 'Bỏ qua nghỉ');
+      await tapText(tester, 'Đếm bằng camera');
+      // Hiệp 2: không còn màn Đặt camera
+      expect(find.text('Tôi đã sẵn sàng'), findsNothing);
+      expect(find.byKey(const ValueKey('camera-rep-count')), findsOneWidget);
     });
 
     testWidgets('Chuyển sang đếm tay tắt camera, không lưu hiệp', (
