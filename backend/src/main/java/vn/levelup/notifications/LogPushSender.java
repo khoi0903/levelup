@@ -4,13 +4,11 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 /**
- * Tạm thời: chỉ ghi log thay cho FCM (TODO: gửi qua Firebase Admin SDK).
+ * Bộ gửi khi chưa có service account (dev, test): chỉ ghi log. Bản thật là FcmPushSender (xem PushConfig).
  * Token bắt đầu bằng "expired-" được coi là hết hạn, để thử luồng xóa token khi phát triển.
  */
-@Component
 public class LogPushSender implements PushSender {
 
     private static final Logger log = LoggerFactory.getLogger(LogPushSender.class);
