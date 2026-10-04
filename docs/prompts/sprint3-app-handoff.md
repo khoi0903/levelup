@@ -34,9 +34,16 @@ Không sửa app/lib/features/camera_counter/, app/lib/features/nutrition/, app/
    NETWORK_ERROR, 401, 500...).
 3. Trang chủ: bỏ hết số liệu giả ('Minh', streak 5, 2/3 buổi) — lấy từ GET /me, GET /streak, GET /plans/current;
    đang tải thì skeleton.
-4. Cài đặt (tab Tôi): tên hiển thị, phong cách coach (strict|supportive|funny), lịch rảnh, thông báo
-   (bật/tắt, giờ yên lặng), chia sẻ với buddy, đăng xuất (xóa token dev). Backend CHƯA có API sửa cài đặt —
-   Claude Code đang làm PATCH /me; tạm dùng repository Fake + TODO, đọc dữ liệu từ GET /me.
+4. Cài đặt (tab Tôi): tên hiển thị, phong cách coach (strict|supportive|funny), thời lượng buổi, lịch rảnh,
+   thông báo (bật/tắt, giờ check-in, nhắc trước buổi, giờ yên lặng, tối đa tin/ngày), chia sẻ với buddy,
+   đăng xuất (xóa token dev). API đã có:
+   - GET /me trả thêm `settings` {notifications{pushEnabled, checkinTime, preWorkoutMinutes, quietStart,
+     quietEnd, maxPerDay}, sharing{weight, measurements, photos, meals}, availability[{weekday, slot}]}
+     và `achievements` [{code, nameVi, descriptionVi, category, earnedAt}] (mới nhất trước).
+   - PATCH /me (gửi trường nào đổi trường đó, trả lại cả hồ sơ như GET /me): displayName, timezone,
+     coachStyle, sessionMinutes 5–180, availability (1–7 ngày, không trùng weekday), notifications{...},
+     sharing{...}. Lỗi: VALIDATION_ERROR (fields), NOTHING_TO_UPDATE, INVALID_TIMEZONE, DUPLICATE_WEEKDAY.
+     Xem backend/src/main/java/vn/levelup/users/SettingsRequest.java. Đổi lịch rảnh áp dụng cho tuần sau.
 5. Check-in sáng (F2): POST /checkins (energy, sleep), hiện buổi đã điều chỉnh (adjustedReason).
 6. Streak tuần (F4): GET /streak — 8 tuần, thẻ đóng băng, tuần này.
 7. Bỏ buổi (F3): trên buổi tập có "Không tập được hôm nay" → POST /skip-reports (5 lý do, đau thì chọn vùng),
@@ -46,7 +53,7 @@ Không sửa app/lib/features/camera_counter/, app/lib/features/nutrition/, app/
 9. Buddy (F5): tạo mã mời (POST /buddies/invites, chia sẻ shareText), nhập mã (POST /buddies/join),
    trạng thái hôm nay (GET /buddies/today), nhắc/cổ vũ (POST /buddies/{pairId}/actions), rời cặp.
 10. Tổng kết tuần (F6): GET /reviews/latest, đồng ý/chỉnh (POST /reviews/{id}/decision).
-11. Huy hiệu (F7): danh sách từ users.achievements trong GET /me (nếu /me chưa trả thì TODO), màn ăn mừng
+11. Huy hiệu (F7): danh sách từ `achievements` trong GET /me, màn ăn mừng
     khi POST /workouts trả newAchievements (luồng tập đã có màn kết quả, chỉ thêm hiệu ứng).
 Test cho mỗi màn với Fake repository. Báo cáo: màn + route, API còn thiếu, số test.
 ```
