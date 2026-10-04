@@ -10,7 +10,11 @@ import '../features/onboarding/presentation/screens/ob_schedule_screen.dart';
 import '../features/onboarding/presentation/screens/ob_start_screen.dart';
 import '../features/onboarding/presentation/screens/ob_training_screen.dart';
 import '../features/onboarding/presentation/screens/ob_why_screen.dart';
-import '../features/workout/presentation/screens/workout_screen.dart';
+import '../features/workout/presentation/screens/camera_set_screen.dart';
+import '../features/workout/presentation/screens/workout_active_screen.dart';
+import '../features/workout/presentation/screens/workout_finish_screen.dart';
+import '../features/workout/presentation/screens/workout_result_screen.dart';
+import '../features/workout/presentation/screens/workout_start_screen.dart';
 
 GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
   initialLocation: initialLocation,
@@ -70,13 +74,43 @@ GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
       name: 'home',
       builder: (context, state) => const HomeScreen(),
     ),
+    // Buổi kế tiếp trong kế hoạch (dùng từ OB-Start). ?quick5=true đổi sang bản 5 phút.
     GoRoute(
       path: '/workout',
       name: 'workout',
-      builder: (context, state) {
-        final quick5 = state.uri.queryParameters['quick5'] == 'true';
-        return WorkoutScreen(isQuick5: quick5);
-      },
+      builder: (context, state) => WorkoutStartScreen(
+        quick5: state.uri.queryParameters['quick5'] == 'true',
+      ),
+    ),
+    // Các đường dẫn cố định đặt trước /workout/:sessionId để khớp trước.
+    GoRoute(
+      path: '/workout/active',
+      name: 'workout_active',
+      builder: (context, state) => const WorkoutActiveScreen(),
+    ),
+    GoRoute(
+      path: '/workout/camera',
+      name: 'workout_camera',
+      builder: (context, state) =>
+          CameraSetScreen(args: state.extra! as CameraSetArgs),
+    ),
+    GoRoute(
+      path: '/workout/finish',
+      name: 'workout_finish',
+      builder: (context, state) => const WorkoutFinishScreen(),
+    ),
+    GoRoute(
+      path: '/workout/result',
+      name: 'workout_result',
+      builder: (context, state) => const WorkoutResultScreen(),
+    ),
+    GoRoute(
+      path: '/workout/:sessionId',
+      name: 'workout_session',
+      builder: (context, state) => WorkoutStartScreen(
+        sessionId: state.pathParameters['sessionId'],
+        quick5: state.uri.queryParameters['quick5'] == 'true',
+      ),
     ),
   ],
 );
