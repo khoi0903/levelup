@@ -24,7 +24,7 @@ server:
 
 levelup:
   firebase:
-    project-id: ${FIREBASE_PROJECT_ID:levelup-dev}
+    project-id: ${FIREBASE_PROJECT_ID:levelup-pro}
   default-timezone: Asia/Ho_Chi_Minh
   ai:
     # claude | gemini | auto (auto: có ANTHROPIC_API_KEY thì Claude, không thì GEMINI_API_KEY thì Gemini)
