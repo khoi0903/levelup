@@ -4,6 +4,11 @@ import 'package:go_router/go_router.dart';
 import '../core/constants/app_colors.dart';
 import '../core/widgets/error_view.dart';
 import '../core/widgets/gradient_background.dart';
+import '../features/nutrition/domain/models/nutrition_models.dart';
+import '../features/nutrition/presentation/screens/nutrition_screen.dart';
+import '../features/nutrition/presentation/screens/meal_editor_screen.dart';
+import '../features/progress/presentation/screens/progress_screen.dart';
+import '../features/progress/presentation/screens/measurement_screen.dart';
 import '../features/auth/presentation/screens/bootstrap_screen.dart';
 import '../features/buddies/presentation/screens/buddy_screen.dart';
 import '../features/checkins/presentation/screens/checkin_screen.dart';
@@ -20,7 +25,6 @@ import '../features/onboarding/presentation/screens/ob_training_screen.dart';
 import '../features/onboarding/presentation/screens/ob_why_screen.dart';
 import '../features/reviews/presentation/screens/review_screen.dart';
 import '../features/shell/presentation/screens/app_shell_screen.dart';
-import '../features/shell/presentation/screens/nutrition_placeholder_screen.dart';
 import '../features/skip_report/presentation/screens/skip_report_screen.dart';
 import '../features/streak/presentation/screens/streak_screen.dart';
 import '../features/users/presentation/screens/achievements_screen.dart';
@@ -61,6 +65,31 @@ GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
   ),
   routes: [
     // Màn khởi động kiểm tra phiên đăng nhập
+    GoRoute(
+      path: '/nutrition/photo',
+      name: 'nutrition_photo',
+      builder: (context, state) => const MealEditorScreen(photoMode: true),
+    ),
+    GoRoute(
+      path: '/nutrition/add',
+      name: 'nutrition_add',
+      builder: (context, state) => MealEditorScreen(
+        meal: state.uri.queryParameters['meal'] ?? 'lunch',
+        initialFoods: state.extra is List<Food>
+            ? state.extra! as List<Food>
+            : const [],
+      ),
+    ),
+    GoRoute(
+      path: '/progress',
+      name: 'progress',
+      builder: (context, state) => const ProgressScreen(),
+    ),
+    GoRoute(
+      path: '/progress/measurements',
+      name: 'progress_measurements',
+      builder: (context, state) => const MeasurementScreen(),
+    ),
     GoRoute(
       path: '/',
       name: 'bootstrap',
@@ -154,13 +183,13 @@ GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
           ],
         ),
 
-        // Tab 3: Dinh dưỡng (tạm thời trỏ tới placeholder, Codex làm màn)
+        // Tab 3: Dinh dưỡng (màn của Codex)
         StatefulShellBranch(
           routes: [
             GoRoute(
               path: '/nutrition',
               name: 'nutrition',
-              builder: (context, state) => const NutritionPlaceholderScreen(),
+              builder: (context, state) => const NutritionScreen(),
             ),
           ],
         ),

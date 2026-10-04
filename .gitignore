@@ -20,3 +20,6 @@ backend/target/
 
 # Dữ liệu xuất từ MongoDB
 mongo/*.archive.gz
+# Cấu hình Firebase của từng máy/project, không commit
+**/google-services.json
+**/GoogleService-Info.plist

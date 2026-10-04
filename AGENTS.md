@@ -52,7 +52,9 @@ Không sửa thư mục do agent khác phụ trách trong cùng lúc. Cần sử
   `checkins`, `coach`, `nutrition`, `motivation`, `notifications`, `jobs`, `demo`.
 - Mỗi module: `*Controller`, `*Service`, `*Repository`, DTO dùng `record`.
 - Xác thực: Firebase ID token ở header `Authorization: Bearer`.
-- Gọi Claude API chỉ từ backend, key để trong biến môi trường `ANTHROPIC_API_KEY`.
+- Gọi AI chỉ từ backend, qua interface `coach/AiClient` (không tạo client riêng ở module khác).
+  Chọn nhà cung cấp bằng `LEVELUP_AI_PROVIDER` = `claude` | `gemini` | `auto`; key trong
+  `ANTHROPIC_API_KEY` hoặc `GEMINI_API_KEY`. Gemini gói miễn phí chỉ dùng với dữ liệu thử.
 - API mô tả bằng OpenAPI (springdoc), app Flutter sinh client từ đó.
 
 ## App (Flutter)

@@ -6,6 +6,8 @@ import 'package:fitness_app/core/widgets/error_view.dart';
 import 'package:fitness_app/core/widgets/offline_banner.dart';
 import 'package:fitness_app/features/coach/data/repositories/fake_coach_repository.dart';
 import 'package:fitness_app/features/coach/presentation/controllers/coach_controller.dart';
+import 'package:fitness_app/features/nutrition/data/repositories/fake_nutrition_repository.dart';
+import 'package:fitness_app/features/nutrition/presentation/controllers/nutrition_controller.dart';
 import 'package:fitness_app/features/onboarding/data/repositories/fake_plan_repository.dart';
 import 'package:fitness_app/features/onboarding/presentation/controllers/onboarding_controller.dart';
 import 'package:fitness_app/features/users/data/repositories/fake_user_repository.dart';
@@ -41,6 +43,7 @@ void main() {
             planRepositoryProvider.overrideWithValue(fakePlanRepo),
             streakRepositoryProvider.overrideWithValue(fakeStreakRepo),
             coachRepositoryProvider.overrideWithValue(fakeCoachRepo),
+            nutritionRepositoryProvider.overrideWithValue(FakeNutritionRepository()),
           ],
           child: MaterialApp.router(
             routerConfig: router,
@@ -65,7 +68,8 @@ void main() {
       // Tap Dinh dưỡng tab
       await tester.tap(find.byKey(const ValueKey('tab-nutrition')));
       await tester.pumpAndSettle();
-      expect(find.text('Màn hình Dinh dưỡng'), findsOneWidget);
+      // Tab Dinh dưỡng mở màn thật (tiêu đề + nhãn tab cùng chữ)
+      expect(find.text('Thêm món thủ công'), findsOneWidget);
 
       // Tap Tôi tab (Profile)
       await tester.tap(find.byKey(const ValueKey('tab-profile')));

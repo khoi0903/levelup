@@ -24,11 +24,14 @@ server:
 
 levelup:
   firebase:
-    project-id: ${FIREBASE_PROJECT_ID:levelup-dev}
+    project-id: ${FIREBASE_PROJECT_ID:levelup-pro}
   default-timezone: Asia/Ho_Chi_Minh
   ai:
-    # Model dùng chung cho coach, tổng kết tuần, nhận diện món ăn
+    # claude | gemini | auto (auto: có ANTHROPIC_API_KEY thì Claude, không thì GEMINI_API_KEY thì Gemini)
+    provider: ${LEVELUP_AI_PROVIDER:auto}
+    # Model Claude dùng chung cho coach, tổng kết tuần, nhận diện món ăn
     model: ${LEVELUP_AI_MODEL:claude-opus-5-5}
+    gemini-model: ${LEVELUP_GEMINI_MODEL:gemini-2.5-flash}
     timeout-seconds: 20
   jobs:
     # Header X-Job-Secret của POST /jobs/tick; để trống thì endpoint luôn trả 403

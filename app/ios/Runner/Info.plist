@@ -26,6 +26,8 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>LevelUp dùng ảnh bạn chọn để nhận diện món ăn và tính calo. Ảnh không được lưu trên máy chủ.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>LevelUp dùng camera để đếm số lần tập trên điện thoại. Video không được lưu hoặc gửi đi.</string>
 	<key>UIApplicationSceneManifest</key>
