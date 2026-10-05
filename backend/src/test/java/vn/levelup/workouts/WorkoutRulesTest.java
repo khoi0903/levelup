@@ -60,4 +60,16 @@ class WorkoutRulesTest {
         assertEquals("achieved", WorkoutRules.weekStatus("achieved", 4, 3));
         assertEquals("missed", WorkoutRules.weekStatus("missed", 5, 3));
     }
+
+    @Test
+    void kcal_burned_met_weighted_by_sets() {
+        // 20 phút, 70 kg: 2 hiệp squat (MET 5) + 2 hiệp plank (MET 3) → MET trung bình 4 → 4 × 70 × 1/3 ≈ 93
+        List<WorkoutRequest.SetLog> sets = List.of(set(SQUAT, 1, 10, null, null), set(SQUAT, 2, 10, null, null),
+            set(PLANK, 1, null, null, 30), set(PLANK, 2, null, null, 30));
+        assertEquals(93, WorkoutRules.kcalBurned(sets, java.util.Map.of(SQUAT, 5.0, PLANK, 3.0), 1200, 70));
+        // Bài chưa có MET dùng mặc định 4
+        assertEquals(93, WorkoutRules.kcalBurned(sets, java.util.Map.of(), 1200, 70));
+        assertEquals(0, WorkoutRules.kcalBurned(List.of(), java.util.Map.of(), 1200, 70));
+        assertEquals(0, WorkoutRules.kcalBurned(sets, java.util.Map.of(), 0, 70));
+    }
 }
