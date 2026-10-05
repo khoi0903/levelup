@@ -3,6 +3,8 @@ spring:
     name: levelup-backend
   mongodb:
     uri: ${MONGODB_URI:mongodb://localhost:27018/fitness?replicaSet=rs0}
+    # Luôn dùng database "fitness", kể cả khi chuỗi Atlas không ghi tên database (…mongodb.net/?appName=…)
+    database: ${MONGODB_DATABASE:fitness}
   data:
     mongodb:
       # Index và validator do mongo/init.js quản lý, không để Spring tự tạo
