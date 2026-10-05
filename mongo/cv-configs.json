@@ -321,5 +321,239 @@
         }
       }
     ]
+  },
+  "dead-bug": {
+    "activeVersion": 1,
+    "configs": [
+      {
+        "version": 1,
+        "cameraPosition": "side",
+        "config": {
+          "mode": "alternating",
+          "joints": [
+            "hip",
+            "knee",
+            "ankle"
+          ],
+          "direction": "extend",
+          "side": "auto",
+          "downBelow": 110,
+          "upAbove": 155,
+          "minConfidence": 0.5,
+          "minRepMs": 600,
+          "formRules": [
+            {
+              "type": "max_extreme",
+              "code": "leg_not_extended",
+              "angle": 165,
+              "severity": [
+                160,
+                155
+              ]
+            }
+          ],
+          "placement": "floor_side",
+          "setupTipVi": "Đặt điện thoại thấp trên sàn cách 2–3 m, nhìn ngang hơi chéo để thấy cả hai gối và cổ chân. Nằm ngửa, duỗi chân đối bên tay rồi thu về; mỗi bên là một lần. Tránh để chân gần che chân xa.",
+          "orientation": {
+            "joints": [
+              "shoulder",
+              "hip"
+            ],
+            "axis": "horizontal",
+            "maxTiltDeg": 40
+          }
+        }
+      }
+    ]
+  },
+  "bird-dog": {
+    "activeVersion": 1,
+    "configs": [
+      {
+        "version": 1,
+        "cameraPosition": "side",
+        "config": {
+          "mode": "alternating",
+          "joints": [
+            "shoulder",
+            "hip",
+            "knee"
+          ],
+          "direction": "extend",
+          "side": "auto",
+          "downBelow": 115,
+          "upAbove": 155,
+          "minConfidence": 0.5,
+          "minRepMs": 600,
+          "formRules": [
+            {
+              "type": "max_extreme",
+              "code": "leg_not_extended",
+              "angle": 165,
+              "severity": [
+                160,
+                155
+              ]
+            }
+          ],
+          "placement": "floor_side",
+          "setupTipVi": "Đặt điện thoại trên sàn cách 2–3 m, nhìn ngang hơi chéo tư thế quỳ bốn điểm để thấy cả hai bên. Duỗi tay và chân đối bên rồi thu về; giữ hông ổn định, không xoay thân.",
+          "orientation": {
+            "joints": [
+              "shoulder",
+              "hip"
+            ],
+            "axis": "horizontal",
+            "maxTiltDeg": 40
+          }
+        }
+      }
+    ]
+  },
+  "march-in-place": {
+    "activeVersion": 1,
+    "configs": [
+      {
+        "version": 1,
+        "cameraPosition": "side",
+        "config": {
+          "mode": "active",
+          "joints": [
+            "hip",
+            "knee",
+            "ankle"
+          ],
+          "direction": "flex",
+          "side": "min",
+          "downBelow": 115,
+          "upAbove": 155,
+          "minConfidence": 0.5,
+          "minRepMs": 200,
+          "formRules": [
+            {
+              "type": "band",
+              "code": "torso_leaning",
+              "joints": [
+                "shoulder",
+                "hip",
+                "knee"
+              ],
+              "min": 65,
+              "max": 180,
+              "minFraction": 0.1,
+              "severity": [
+                0.25,
+                0.5
+              ]
+            }
+          ],
+          "placement": "floor_side",
+          "setupTipVi": "Đặt điện thoại dựng đứng trên sàn cách 2–3 m, nhìn ngang hơi chéo để thấy cả hai chân. Nâng gối xen kẽ rõ ràng; đồng hồ chạy sau chu kỳ đầu và dừng sau khoảng 2 giây không có chu kỳ mới.",
+          "orientation": {
+            "joints": [
+              "shoulder",
+              "hip"
+            ],
+            "axis": "vertical",
+            "maxTiltDeg": 40
+          }
+        }
+      }
+    ]
+  },
+  "step-jack": {
+    "activeVersion": 1,
+    "configs": [
+      {
+        "version": 1,
+        "cameraPosition": "front",
+        "config": {
+          "mode": "active",
+          "joints": [
+            "hip",
+            "shoulder",
+            "elbow"
+          ],
+          "direction": "extend",
+          "side": "both",
+          "downBelow": 45,
+          "upAbove": 100,
+          "minConfidence": 0.5,
+          "minRepMs": 200,
+          "formRules": [
+            {
+              "type": "band",
+              "code": "arms_not_straight",
+              "joints": [
+                "shoulder",
+                "elbow",
+                "wrist"
+              ],
+              "min": 150,
+              "max": 180,
+              "minFraction": 0.1,
+              "severity": [
+                0.25,
+                0.5
+              ]
+            }
+          ],
+          "placement": "floor_front",
+          "setupTipVi": "Đặt điện thoại trên sàn cách 2–3 m, nhìn chính diện toàn thân. Bước ngang xen kẽ, đưa tay lên rồi hạ tay rõ ràng; đồng hồ dừng sau khoảng 2 giây không có chu kỳ mới.",
+          "orientation": {
+            "joints": [
+              "hip",
+              "shoulder"
+            ],
+            "axis": "vertical",
+            "maxTiltDeg": 40
+          }
+        }
+      }
+    ]
+  },
+  "dumbbell-floor-press": {
+    "activeVersion": 1,
+    "configs": [
+      {
+        "version": 1,
+        "cameraPosition": "side",
+        "config": {
+          "mode": "reps",
+          "joints": [
+            "shoulder",
+            "elbow",
+            "wrist"
+          ],
+          "direction": "extend",
+          "side": "auto",
+          "downBelow": 110,
+          "upAbove": 150,
+          "minConfidence": 0.5,
+          "minRepMs": 600,
+          "formRules": [
+            {
+              "type": "max_extreme",
+              "code": "press_not_locked_out",
+              "angle": 165,
+              "severity": [
+                160,
+                155
+              ]
+            }
+          ],
+          "placement": "floor_side",
+          "setupTipVi": "Đặt điện thoại thấp sát sàn, cách 1,5–2 m, nhìn ngang người nằm ngửa. Camera cần thấy rõ vai, khuỷu và cổ tay phía gần; hạ tạ có kiểm soát rồi đẩy lên, tránh để tạ che khuỷu.",
+          "orientation": {
+            "joints": [
+              "shoulder",
+              "hip"
+            ],
+            "axis": "horizontal",
+            "maxTiltDeg": 40
+          }
+        }
+      }
+    ]
   }
 }

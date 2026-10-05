@@ -5,15 +5,17 @@
 camera and ML Kit; `presentation/` contains an isolated debug screen.
 
 One generic engine handles every supported exercise: a 3-joint angle, a
-direction (flex/extend), a mode (reps/hold), a side policy, optional body
-orientation check and a list of form rules — all read from the exercise's
+direction (flex/extend), a mode (reps/hold/alternating/active), a side policy,
+optional body orientation check and a list of form rules — all read from the exercise's
 `cv.configs[].config` JSON (`mongo/cv-configs.json`).
 
 ## Supported exercises
 
 Configs live in `mongo/cv-configs.json` (key = exercise slug, `activeVersion`
-selects the config). `mongo/seed/exercises.json` marks `cv.supported`; a test
-keeps the two in sync. Angles are in degrees; "rest/active" = thresholds
+selects the config). A test verifies all 20 slugs in
+`mongo/seed/exercises.json` have configs. Its five legacy `cv.supported: false`
+flags still need a separate seed update. Angles are in degrees; "rest/active"
+= thresholds
 `downBelow`/`upAbove` (hold: `holdMin`–`holdMax`).
 
 | Bài (slug) | Hỗ trợ | Mode | Direction | Khớp (đỉnh ở giữa) | Side | Máy | Đặt máy | Ngưỡng | Luật tư thế |
@@ -33,11 +35,11 @@ keeps the two in sync. Angles are in degrees; "rest/active" = thresholds
 | side-lying-leg-raise | ✔ | reps | flex | shoulder–hip–knee | min | front | floor_front | <158 / >168 | leg_not_high_enough >145° |
 | plank | ✔ | hold | – | shoulder–hip–ankle | auto | side | floor_side | giữ 150–180, thân nằm ngang ±35° | body_not_straight (ngoài 165–180° >10% thời gian) |
 | wall-sit | ✔ | hold | – | hip–knee–ankle | auto | side | floor_side | giữ 65–120 | knee_not_at_90 (ngoài 80–100° >10% thời gian) |
-| dead-bug | ✘ | | | | | | | | Nằm ngửa, tay–chân đối bên chuyển động chéo: nhìn nghiêng hai bên che nhau, một góc 2D không biết bên nào đang duỗi. |
-| bird-dog | ✘ | | | | | | | | Tư thế bò, duỗi tay–chân đối bên: tay/chân phía xa bị thân che; cần đo thăng bằng hông mà một góc khớp không thể hiện. |
-| march-in-place | ✘ | | | | | | | | Nhìn trước, gối nâng chủ yếu theo chiều sâu nên góc 2D đổi ít; nhịp nhanh, luân phiên → cần đếm theo vị trí gối, chưa có. |
-| step-jack | ✘ | | | | | | | | Bước ngang luân phiên biên độ nhỏ kèm đưa tay; cần đếm theo khoảng cách cổ chân chứ không phải góc khớp. |
-| dumbbell-floor-press | ✘ | | | | | | | | Nằm sàn: nhìn nghiêng thân che tay xa, nhìn trước thì khuỷu gập trong mặt phẳng ngang nên góc 2D sai lệch lớn. |
+| dead-bug | ✔ | alternating | extend | hip–knee–ankle | independent | side | floor_side, ngang hơi chéo, thấy hai chân | <110 / >155, thân ngang ±40° | leg_not_extended (đỉnh <165°) |
+| bird-dog | ✔ | alternating | extend | shoulder–hip–knee | independent | side | floor_side, ngang hơi chéo tư thế quỳ | <115 / >155, thân ngang ±40° | leg_not_extended (đỉnh <165°) |
+| march-in-place | ✔ | active | flex | hip–knee–ankle | independent (live: min) | side | floor_side, ngang hơi chéo thấy hai gối | <115 / >155, thân đứng ±40° | torso_leaning (vai–hông–gối ngoài 65–180°) |
+| step-jack | ✔ | active | extend | hip–shoulder–elbow | independent (live: both) | front | floor_front, chính diện toàn thân | <45 / >100, thân đứng ±40° | arms_not_straight (khuỷu ngoài 150–180°) |
+| dumbbell-floor-press | ✔ | reps | extend | shoulder–elbow–wrist | auto | side | floor_side, điện thoại thấp sát sàn, thấy tay gần | <110 / >150, thân ngang ±40° | press_not_locked_out (đỉnh <165°) |
 
 Every config has a Vietnamese `setupTipVi` (shown to the user before the set)
 and `placement` (`floor_side`, `table_front`, ...) refining `cameraPosition`.
@@ -69,11 +71,11 @@ Tất cả ngưỡng là **ước lượng ban đầu** chưa đo trên máy th�
 | Field | Default | Meaning |
 |---|---|---|
 | `joints` | required | 3 of `shoulder, elbow, wrist, hip, knee, ankle, heel, footIndex`; middle = vertex |
-| `downBelow`, `upAbove` | required for reps | `0 < downBelow < upAbove < 180` |
+| `downBelow`, `upAbove` | required for reps/alternating/active | `0 < downBelow < upAbove < 180` |
 | `minConfidence` | required | per-joint likelihood in [0, 1] |
-| `minRepMs` | required for reps, 0 for hold | shorter reps are discarded |
+| `minRepMs` | required for reps/alternating/active, 0 for hold | shorter reps are discarded |
 | `direction` | `flex` | `flex`: rest at large angle, rep = below `downBelow` then above `upAbove`. `extend`: rest at small angle, rep = above `upAbove` then below `downBelow` |
-| `mode` | `reps` | `hold`: accumulate time while angle ∈ [`holdMin`, `holdMax`] |
+| `mode` | `reps` | See mode table below; `active` uses motion thresholds, not `holdMin`/`holdMax` |
 | `side` | `auto` | `auto` higher confidence, `both` mean of both sides (falls back to one), `min`/`max` smaller/larger angle |
 | `orientation` | none | `{joints: [a, b], axis: horizontal\|vertical, maxTiltDeg: 35}`; wrong orientation is "person present" but never advances reps/hold |
 | `formRules` | squat hip–knee–ankle flex reps → legacy `shallow_depth`; else none | see below |
@@ -91,7 +93,21 @@ optional `joints` measures another triplet on the same side(s) as the main angle
   (default 0.1), `s0`/`s1` are fractions in (minFraction, 1].
 - Legacy `{code, maxDepthAngle}` (old squat seed) is still read as `min_depth`.
 
-Hold mode accepts only `band` rules.
+`hold` and `active` accept only `band` rules (severity = time fractions).
+`alternating` supports the same per-rep rules as `reps`, measured on the
+completing side, so the resting side cannot dilute its angle range.
+
+| Mode | Output | When it advances |
+|---|---|---|
+| `reps` | `repCount`, `isHold: false` | Selected angle completes rest → active → rest |
+| `alternating` | `repCount`, `isHold: false` | Left/right tracked independently; each full cycle is one rep; overlapping cycles count once |
+| `hold` | `holdDuration`, `holding`, `isHold: true` | Usable angle stays inside hold band |
+| `active` | `holdDuration`, `holding`, `isHold: true` | A complete left/right cycle occurred in the last 2 s |
+
+For `alternating`/`active`, `side` affects live angle display and active band
+rules; cycle detection always follows both sides independently. Either usable
+side can complete a cycle. The engine does not require strict left/right order:
+a missed/occluded cycle cannot permanently block the next valid one.
 
 ## Using the domain directly
 
@@ -104,7 +120,8 @@ final result = counter.addFrame(PoseFrame(
   landmarks: adaptedLandmarks, // same scale for x and y, e.g. pixels
 ));
 final form = const FormChecker().check(config, result);
-// reps: result.repCount, result.reps; hold: result.holdDuration, result.holding
+// reps/alternating: result.repCount, result.reps
+// hold/active: result.holdDuration, result.holding
 // result.currentAngle, selectedSide, averagedSides, orientationOk
 // form.formScore, form.issues.map((issue) => issue.toJson())
 
@@ -126,6 +143,15 @@ final presence = counter.checkPresence(clock.elapsed);
   from the first active crossing to the first rest crossing; `== minRepMs`
   counts. Rep indices start at 1. Each rep stores deepest/peak angle and the
   min/max of every tracked triplet (`angleRanges`) for form rules.
+- Alternating: each side uses the same two-frame arming, crossing and minimum
+  duration checks as reps. Overlapping cycle intervals are merged, even when
+  the two sides return on different frames. Pause/person loss cancels partials.
+- Active: the first complete cycle starts a 2 s motion window; each subsequent
+  complete cycle refreshes it. No initial partial motion is backfilled. Usable
+  frame intervals ≤500 ms add time, clipped at window expiry. Standing still
+  stops `holding` after 2 s; no camera frames, invalid pose, wrong orientation
+  or pause stops time. Expiry is also checked by the presence timer. Resuming
+  needs a fresh cycle; accumulated time remains. Active `repCount` stays zero.
 - Hold: time between two consecutive usable in-band frames is added if the gap
   is `<= 500 ms` (`RepCounter.holdMaxGap`). Leaving the band, wrong
   orientation, losing the person or pausing stops the clock; the first frame
@@ -146,7 +172,7 @@ import 'package:fitness_app/features/camera_counter/domain/camera_counter.dart';
 final session = CameraRepSession(config: CvConfig.fromJson(exerciseCvConfig));
 final subscription = session.results.listen((result) {
   // Common: status, error, personMissing, averageConfidence, formScore, issues
-  // result.mode (CvMode.reps | CvMode.hold), result.isHold
+  // result.mode (reps | alternating | hold | active), result.isHold
   // reps: result.repCount — hold: result.holdDuration, result.holding
   // live debug: currentAngle, selectedSide, averagedSides, orientationOk
   // Use session.cameraController with CameraPreview for the live preview.
@@ -202,13 +228,16 @@ after editing the JSON.
 
 From `app/`: `flutter test test/features/camera_counter`.
 
+- `motion_modes_test.dart`: alternating flex/extend, six unilateral cycles,
+  jitter, simultaneous/staggered returns, missing side, short/partial cycles;
+  active cycle windows, exact expiry, restart, pause/loss, gaps and form score.
 - `generic_counter_test.dart`: flex on elbow (curl), extend (glute bridge:
   count, jitter, start extended), `max_extreme` severities, side
   `both`/`min`/`max`/`auto`, push-up orientation and body-line `band`, hold
   (in/out of band, gaps, person missing, pause, band fraction, plank
   orientation).
 - `exercise_configs_test.dart`: every config in `mongo/cv-configs.json` parses
-  and round-trips (read by relative path), `cv.supported` matches, old squat
+  and round-trips (read by relative path), all 20 seed slugs covered, old squat
   JSON counts/grades exactly like `checkSquats`, validation errors.
 - `camera_rep_session_test.dart`: session lifecycle plus hold mode fields.
 - `debug_counter_screen_test.dart`: config copy in sync, picker reps ↔ hold.
@@ -230,4 +259,10 @@ exercise and adjust:
   push-up `body_not_straight` needs ankles in frame.
 - Rows/curls with `auto` side: the far arm may be selected if it is more
   confident; consider `min` if that happens.
+- New dead-bug/bird-dog configs detect leg cycles only; they do not prove
+  contralateral arm coordination or a stable lower back. Check far-side
+  occlusion and use a slight diagonal side view. March uses knee flexion,
+  step-jack uses arm cycles; neither proves footwork from a single 2D triplet.
+- Floor press: phone low near floor level, keep the near elbow/wrist visible;
+  test camera pitch and avoid weights occluding landmarks.
 - Front camera only: floor placements assume the screen faces the user.

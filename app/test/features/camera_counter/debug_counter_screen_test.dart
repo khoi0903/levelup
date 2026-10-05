@@ -17,7 +17,7 @@ void main() {
     ) as List).cast<Map<String, dynamic>>();
     expect(debugExerciseNamesVi, {
       for (final exercise in exercises)
-        if ((exercise['cv'] as Map<String, dynamic>)['supported'] == true)
+        if (cvConfigsJson().containsKey(exercise['slug']))
           exercise['slug']: exercise['nameVi'],
     });
     final configs = debugExerciseConfigs();
@@ -55,6 +55,26 @@ void main() {
       find.textContaining('Giữ khi góc trong 150.0°–180.0°'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('active exercises display duration and motion guidance', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DebugCounterScreen(
+          config: exerciseConfig('march-in-place'),
+          autoStart: false,
+        ),
+      ),
+    );
+    expect(find.byKey(const ValueKey('debug-hold-duration')), findsOneWidget);
+    expect(find.byKey(const ValueKey('debug-rep-count')), findsNothing);
+    expect(
+      find.textContaining('Tính giờ khi có chu kỳ chuyển động'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('null°'), findsNothing);
   });
 
   testWidgets('a passed config is listed first', (tester) async {

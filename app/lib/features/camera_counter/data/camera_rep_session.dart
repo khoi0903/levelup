@@ -29,17 +29,17 @@ class CameraRepResult {
   int get formScore => form.formScore;
   List<FormIssue> get issues => form.issues;
 
-  /// Chế độ của cấu hình đang chạy: reps (đếm lần) hoặc hold (giữ tư thế).
-  /// UI hiện [repCount] khi reps, [holdDuration] khi hold.
+  /// Chế độ của cấu hình đang chạy: reps/alternating (đếm), hold/active (thời gian).
+  /// UI hiện [holdDuration] khi [isHold], còn lại hiện [repCount].
   final CvMode mode;
 
-  bool get isHold => mode == CvMode.hold;
+  bool get isHold => mode == CvMode.hold || mode == CvMode.active;
 
-  /// Thời gian giữ đúng tư thế (chỉ khác 0 ở chế độ hold). Không cộng khi
+  /// Thời gian giữ (hold) hoặc chuyển động (active). Không cộng khi
   /// ra khỏi dải góc, sai hướng thân, mất người hoặc tạm dừng.
   Duration get holdDuration => counter.holdDuration;
 
-  /// Đang giữ đúng dải ở khung gần nhất (chế độ hold).
+  /// Đang giữ (hold) hoặc có chu kỳ chuyển động gần đây (active).
   bool get holding => counter.holding;
 
   /// Góc chính ở khung gần nhất (độ); null khi chưa có dữ liệu/mất người.
