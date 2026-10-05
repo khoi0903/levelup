@@ -51,6 +51,18 @@ public final class StreakCalculator {
         return result;
     }
 
+    /**
+     * Bỏ các tuần "none" ở đầu (trước khi người dùng có tuần đầu tiên), luôn giữ tuần cuối (tuần này).
+     * Người mới tham gia thì lịch sử chỉ có tuần này, không có 7 tuần trống "0/0 buổi".
+     */
+    public static List<Week> fromFirstActive(List<Week> history) {
+        int first = 0;
+        while (first < history.size() - 1 && "none".equals(history.get(first).status())) {
+            first++;
+        }
+        return List.copyOf(history.subList(first, history.size()));
+    }
+
     private static Map<String, Week> index(List<Week> weeks) {
         return weeks.stream().collect(Collectors.toMap(Week::weekStart, Function.identity(), (a, b) -> a));
     }

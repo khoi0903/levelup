@@ -15,7 +15,7 @@ import vn.levelup.auth.CurrentUserService;
 import vn.levelup.users.User;
 
 /**
- * POST /demo/{action}: skip-two | close-week | review | seed.
+ * POST /demo/{action}: skip-two | close-week | review | seed | checkin | push-test.
  * Chỉ chạy khi levelup.demo.enabled=true và uid nằm trong levelup.demo.uids ("demo*" = tiền tố);
  * ngoài ra trả 404 như endpoint không tồn tại.
  */
@@ -49,6 +49,8 @@ public class DemoController {
             case "close-week" -> demo.closeWeek(user);
             case "review" -> demo.review(user);
             case "seed" -> demo.seed(user);
+            case "checkin" -> demo.checkin(user);
+            case "push-test" -> demo.pushTest(user);
             default -> throw new ResponseStatusException(HttpStatus.NOT_FOUND, "UNKNOWN_ACTION");
         };
         return new DemoResult(action, result);

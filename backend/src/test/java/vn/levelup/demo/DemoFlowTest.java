@@ -58,6 +58,17 @@ class DemoFlowTest extends FlowTestBase {
             .and("status").is("achieved")), "weekly_streaks"));
         Document streak = user().get("streak", Document.class);
         assertEquals(3, ((Number) streak.get("currentWeeks")).intValue());
+        // Cân nặng giảm dần 4 tuần và 21 bữa ăn 7 ngày trước; seed lại không nhân đôi
+        assertEquals(4, seeded.<Integer>read("$.result.measurements"));
+        assertEquals(4, mongo.count(mine, "body_measurements"));
+        assertEquals(21, mongo.count(mine, "meal_logs"));
+        assertEquals(5, ((Number) user().get("notificationSettings", Document.class).get("maxPerDay")).intValue());
+
+        // Nút gửi thông báo đi qua cổng gửi thật (chưa có thiết bị thì chỉ lưu trong app)
+        assertEquals("STORED_ONLY", demo("push-test", 200).read("$.result.result"));
+        assertEquals("STORED_ONLY", demo("checkin", 200).read("$.result.result"));
+        assertEquals(1, mongo.count(Query.query(Criteria.where("userId").is(userId).and("type").is("demo_test")),
+            "notifications"));
 
         DocumentContext view = call(get("/streak").header("Authorization", token), 200);
         assertEquals(3, view.<Integer>read("$.currentWeeks"));

@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -26,6 +27,7 @@ import vn.levelup.exercises.ExerciseRepository;
 import vn.levelup.jobs.DailyCloseService;
 import vn.levelup.jobs.WeekCloseService;
 import vn.levelup.motivation.WeekCloseListeners;
+import vn.levelup.notifications.NotificationGateway;
 import vn.levelup.plans.PlanReader;
 import vn.levelup.plans.TrainingPlan;
 import vn.levelup.users.User;
@@ -39,7 +41,10 @@ public class DemoService {
     static final int SEED_MINUTES = 20;
     /** Dữ liệu demo bị xóa trước khi seed lại. Kế hoạch tập (training_plans) được giữ. */
     static final List<String> GENERATED = List.of("workout_logs", "weekly_streaks", "personal_records",
-        "skip_reports", "notifications", "coach_messages", "daily_stats");
+        "skip_reports", "notifications", "coach_messages", "daily_stats", "body_measurements", "meal_logs");
+    /** Số ngày có bữa ăn mẫu (mỗi ngày sáng, trưa, tối), không tính hôm nay để demo ghi bữa mới. */
+    static final int SEED_MEAL_DAYS = 7;
+    static final String[] MEALS = {"breakfast", "lunch", "dinner"};
 
     private final MongoTemplate mongo;
     private final ExerciseRepository exercises;
@@ -47,18 +52,41 @@ public class DemoService {
     private final DailyCloseService dailyClose;
     private final WeekCloseService weekClose;
     private final WeekCloseListeners listeners;
+    private final NotificationGateway notifications;
     private final Clock clock;
 
     public DemoService(MongoTemplate mongo, ExerciseRepository exercises, PlanReader plans,
                        DailyCloseService dailyClose, WeekCloseService weekClose, WeekCloseListeners listeners,
-                       Clock clock) {
+                       NotificationGateway notifications, Clock clock) {
         this.mongo = mongo;
         this.exercises = exercises;
         this.plans = plans;
         this.dailyClose = dailyClose;
         this.weekClose = weekClose;
         this.listeners = listeners;
+        this.notifications = notifications;
         this.clock = clock;
+    }
+
+    /** Gửi nhắc check-in sáng ngay (job thật chỉ gửi trong khung giờ check-in). Đi qua cổng gửi thật. */
+    public Map<String, Object> checkin(User user) {
+        String name = user.displayName() == null ? "" : user.displayName();
+        return push(user, "checkin_morning",
+            name + ", hôm nay bạn thấy thế nào? Check-in để mình chỉnh buổi tập cho vừa sức nhé.", "/checkin");
+    }
+
+    /** Thông báo thử: kiểm tra điện thoại nhận được push (token, quyền, FCM). */
+    public Map<String, Object> pushTest(User user) {
+        return push(user, "demo_test", "Thông báo thử từ LevelUp: điện thoại đã nhận được thông báo đẩy.", "/home");
+    }
+
+    private Map<String, Object> push(User user, String type, String body, String route) {
+        NotificationGateway.Result r = notifications.send(new ObjectId(user.id()), type, "LevelUp", body,
+            "demo|" + user.id() + "|" + type + "|" + clock.instant().toEpochMilli(), Map.of("route", route));
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("type", type);
+        result.put("result", r.name());      // SENT | STORED_ONLY (chưa có thiết bị) | QUIET_HOURS | DAILY_LIMIT
+        return result;
     }
 
     /** Đánh dấu 2 buổi planned gần nhất (tới hôm nay) là skipped rồi chạy phần còn lại của chốt ngày. */
@@ -163,12 +191,69 @@ public class DemoService {
                     .append("context", new Document("weekStart", thisWeek.minusWeeks(2).toString())))),
             "users");
 
+        int measurements = seedMeasurements(user, userId, now);
+        int meals = seedMeals(user, userId, zone, now);
+        // Demo bấm nhiều nút gửi thông báo: nới giới hạn mỗi ngày (giờ yên lặng giữ nguyên)
+        mongo.updateFirst(Query.query(Criteria.where("_id").is(userId)),
+            Update.update("notificationSettings.maxPerDay", 5), "users");
+
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("weeks", SEED_WEEKS);
+        result.put("measurements", measurements);
+        result.put("meals", meals);
         result.put("workouts", logs.size());
         result.put("currentWeeks", 3);
         result.put("personalRecordExerciseId", exerciseId.toHexString());
         return result;
+    }
+
+    /** Cân nặng mỗi tuần trong 4 tuần trước, giảm dần 0,5 kg/tuần về cân nặng lúc onboarding. */
+    private int seedMeasurements(User user, ObjectId userId, Instant now) {
+        double start = user.profile() != null && user.profile().startWeightKg() != null
+            ? user.profile().startWeightKg() : 70.0;
+        LocalDate today = LocalDates.today(user.timezone(), clock);
+        List<Document> docs = new ArrayList<>();
+        for (int i = SEED_WEEKS; i >= 1; i--) {
+            docs.add(new Document("userId", userId).append("measuredOn", today.minusWeeks(i).toString())
+                .append("weightKg", start + 0.5 * i).append("source", "demo").append("createdAt", Date.from(now)));
+        }
+        mongo.insert(docs, "body_measurements");
+        return docs.size();
+    }
+
+    /** Sáng, trưa, tối trong 7 ngày trước hôm nay, lấy món trong kho foods (xoay vòng cho đa dạng). */
+    private int seedMeals(User user, ObjectId userId, ZoneId zone, Instant now) {
+        List<Document> foods = mongo.find(Query.query(Criteria.where("source").is("curated"))
+            .with(Sort.by("searchName")), Document.class, "foods");
+        if (foods.isEmpty()) {
+            return 0;
+        }
+        LocalDate today = LocalDates.today(user.timezone(), clock);
+        int[] hours = {7, 12, 19};
+        List<Document> docs = new ArrayList<>();
+        for (int d = SEED_MEAL_DAYS; d >= 1; d--) {
+            LocalDate date = today.minusDays(d);
+            for (int m = 0; m < MEALS.length; m++) {
+                Document f = foods.get((d * 7 + m * 13) % foods.size());
+                double kcal = number(f, "kcal");
+                Document item = new Document("foodId", f.getObjectId("_id")).append("name", f.getString("nameVi"))
+                    .append("quantity", 1.0).append("unit", "phần").append("kcal", kcal)
+                    .append("proteinG", number(f, "proteinG")).append("carbsG", number(f, "carbsG"))
+                    .append("fatG", number(f, "fatG"));
+                docs.add(new Document("userId", userId).append("localDate", date.toString())
+                    .append("eatenAt", Date.from(date.atTime(hours[m], 0).atZone(zone).toInstant()))
+                    .append("meal", MEALS[m]).append("method", "search").append("kcal", kcal)
+                    .append("proteinG", number(f, "proteinG")).append("carbsG", number(f, "carbsG"))
+                    .append("fatG", number(f, "fatG")).append("items", List.of(item))
+                    .append("createdAt", Date.from(now)));
+            }
+        }
+        mongo.insert(docs, "meal_logs");
+        return docs.size();
+    }
+
+    private static double number(Document d, String key) {
+        return d.get(key) instanceof Number n ? n.doubleValue() : 0.0;
     }
 
     private Document log(ObjectId userId, int n, LocalDate date, LocalDate weekStart, Instant start,

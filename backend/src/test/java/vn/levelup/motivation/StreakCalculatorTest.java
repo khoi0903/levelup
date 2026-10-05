@@ -48,4 +48,23 @@ class StreakCalculatorTest {
         assertEquals("none", history.getFirst().status());
         assertEquals("in_progress", history.getLast().status());
     }
+
+    @Test
+    void history_starts_at_first_active_week() {
+        // Người mới: chỉ còn tuần này
+        List<StreakCalculator.Week> fresh = StreakCalculator.fromFirstActive(
+            StreakCalculator.lastWeeks(List.of(week(0, 2, 0, "in_progress")), THIS_WEEK, 8));
+        assertEquals(1, fresh.size());
+        assertEquals("in_progress", fresh.getFirst().status());
+
+        // Tuần trống ở giữa (bỏ app một tuần) vẫn giữ để thấy chỗ hổng
+        List<StreakCalculator.Week> gap = StreakCalculator.fromFirstActive(StreakCalculator.lastWeeks(
+            List.of(week(3, 3, 3, "achieved"), week(0, 3, 0, "in_progress")), THIS_WEEK, 8));
+        assertEquals(4, gap.size());
+        assertEquals("achieved", gap.getFirst().status());
+        assertEquals("none", gap.get(1).status());
+
+        // Chưa có tuần nào: vẫn trả tuần này
+        assertEquals(1, StreakCalculator.fromFirstActive(StreakCalculator.lastWeeks(List.of(), THIS_WEEK, 8)).size());
+    }
 }
