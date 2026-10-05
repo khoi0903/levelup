@@ -12,4 +12,12 @@ class ApiStreakRepository implements StreakRepository {
     final response = await client.get<Map<String, dynamic>>('/streak');
     return StreakView.fromJson(response.data!);
   }
+
+  @override
+  Future<StreakWeekDetail> getWeekDetail(String weekStart) async {
+    final response = await client.get<Map<String, dynamic>>(
+      '/streak/weeks/$weekStart',
+    );
+    return StreakWeekDetail.fromJson(response.data!);
+  }
 }

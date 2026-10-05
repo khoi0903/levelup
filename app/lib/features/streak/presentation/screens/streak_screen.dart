@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/error_view.dart';
@@ -8,7 +10,7 @@ import '../../../../core/widgets/gradient_background.dart';
 import '../controllers/streak_controller.dart';
 import '../../domain/models/streak_models.dart';
 
-/// Màn hình Streak tuần (F4).
+/// Màn hình Chuỗi tuần (Streak) - F4.
 class StreakScreen extends ConsumerWidget {
   const StreakScreen({super.key});
 
@@ -51,6 +53,8 @@ class StreakScreen extends ConsumerWidget {
 
   Widget _buildContent(BuildContext context, WidgetRef ref, StreakView streak) {
     final thisWeek = streak.thisWeek;
+    final sortedWeeks = streak.weeks.toList()
+      ..sort((a, b) => b.weekStart.compareTo(a.weekStart));
 
     return ListView(
       physics: const BouncingScrollPhysics(),
@@ -181,11 +185,14 @@ class StreakScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(AppColors.radiusPill),
                   child: LinearProgressIndicator(
                     value: thisWeek.targetSessions > 0
-                        ? (thisWeek.completedSessions / thisWeek.targetSessions).clamp(0.0, 1.0)
+                        ? (thisWeek.completedSessions / thisWeek.targetSessions)
+                              .clamp(0.0, 1.0)
                         : 0.0,
                     minHeight: 8,
                     backgroundColor: AppColors.progressTrack,
-                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.progressFill),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.progressFill,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -219,7 +226,7 @@ class StreakScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 14),
-              if (streak.weeks.isEmpty)
+              if (sortedWeeks.isEmpty)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12),
                   child: Center(
@@ -233,7 +240,7 @@ class StreakScreen extends ConsumerWidget {
                   ),
                 )
               else
-                ...streak.weeks.map((week) => _buildWeekRow(week)),
+                ...sortedWeeks.map((week) => _buildWeekRow(context, week)),
             ],
           ),
         ),
@@ -241,84 +248,67 @@ class StreakScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildWeekRow(StreakWeek week) {
-    IconData statusIcon;
-    Color iconColor;
-    Color iconBg;
-    String statusLabel;
+  Widget _buildWeekRow(BuildContext context, StreakWeek week) {
+    final statusInfo = mapWeekStatus(week.status);
+    final weekTitle = formatWeekRange(week.weekStart);
 
-    switch (week.status) {
-      case 'completed':
-        statusIcon = Icons.check_circle_rounded;
-        iconColor = AppColors.primary;
-        iconBg = AppColors.primaryLight;
-        statusLabel = 'Đạt mục tiêu';
-        break;
-      case 'frozen':
-        statusIcon = Icons.ac_unit_rounded;
-        iconColor = const Color(0xFF0284C7);
-        iconBg = const Color(0xFFE0F2FE);
-        statusLabel = 'Đã dùng đóng băng';
-        break;
-      case 'broken':
-        statusIcon = Icons.remove_circle_outline_rounded;
-        iconColor = Colors.grey;
-        iconBg = const Color(0xFFF3F4F6);
-        statusLabel = 'Bỏ lỡ';
-        break;
-      default:
-        statusIcon = Icons.timelapse_rounded;
-        iconColor = AppColors.accentLink;
-        iconBg = AppColors.primaryLight;
-        statusLabel = 'Đang diễn ra';
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: iconBg,
-              shape: BoxShape.circle,
+    return InkWell(
+      key: ValueKey('streak-week-row-${week.weekStart}'),
+      onTap: () => context.push('/streak/week/${week.weekStart}'),
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: statusInfo.bgColor,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(statusInfo.icon, color: statusInfo.color, size: 20),
             ),
-            child: Icon(statusIcon, color: iconColor, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Tuần bắt đầu ${week.weekStart}',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    weekTitle,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                ),
-                Text(
-                  statusLabel,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: iconColor,
+                  Text(
+                    statusInfo.label,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: statusInfo.color,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Text(
-            '${week.completedSessions}/${week.targetSessions} buổi',
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+            Text(
+              '${week.completedSessions}/${week.targetSessions} buổi',
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
               color: AppColors.textSecondary,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

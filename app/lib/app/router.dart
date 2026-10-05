@@ -27,7 +27,9 @@ import '../features/onboarding/presentation/screens/ob_why_screen.dart';
 import '../features/reviews/presentation/screens/review_screen.dart';
 import '../features/shell/presentation/screens/app_shell_screen.dart';
 import '../features/skip_report/presentation/screens/skip_report_screen.dart';
+import '../features/demo/presentation/screens/demo_screen.dart';
 import '../features/streak/presentation/screens/streak_screen.dart';
+import '../features/streak/presentation/screens/streak_week_detail_screen.dart';
 import '../features/users/presentation/screens/achievements_screen.dart';
 import '../features/users/presentation/screens/profile_screen.dart';
 import '../features/workout/presentation/screens/camera_set_screen.dart';
@@ -57,7 +59,8 @@ GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
         child: ErrorView(
           code: '404',
           title: 'Không tìm thấy trang (404)',
-          message: 'Trang bạn yêu cầu (${state.uri.path}) không tồn tại hoặc đã được chuyển đi.',
+          message:
+              'Trang bạn yêu cầu (${state.uri.path}) không tồn tại hoặc đã được chuyển đi.',
           retryLabel: 'Về trang chủ',
           onRetry: () => context.go('/home'),
         ),
@@ -225,11 +228,22 @@ GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
       builder: (context, state) => const StreakScreen(),
     ),
     GoRoute(
+      path: '/streak/week/:weekStart',
+      name: 'streak_week_detail',
+      builder: (context, state) => StreakWeekDetailScreen(
+        weekStart: state.pathParameters['weekStart'] ?? '',
+      ),
+    ),
+    GoRoute(
+      path: '/demo',
+      name: 'demo',
+      builder: (context, state) => const DemoScreen(),
+    ),
+    GoRoute(
       path: '/skip-report',
       name: 'skip_report',
-      builder: (context, state) => SkipReportScreen(
-        sessionId: state.uri.queryParameters['sessionId'],
-      ),
+      builder: (context, state) =>
+          SkipReportScreen(sessionId: state.uri.queryParameters['sessionId']),
     ),
     GoRoute(
       path: '/buddy',

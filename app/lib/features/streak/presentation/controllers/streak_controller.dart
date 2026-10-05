@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/api/api_client.dart';
 import '../../data/repositories/api_streak_repository.dart';
 import '../../domain/models/streak_models.dart';
@@ -11,7 +12,9 @@ final streakRepositoryProvider = Provider<StreakRepository>((ref) {
   return ApiStreakRepository(client: client);
 });
 
-final streakFutureProvider = FutureProvider.autoDispose<StreakView>((ref) async {
+final streakFutureProvider = FutureProvider.autoDispose<StreakView>((
+  ref,
+) async {
   try {
     final repo = ref.watch(streakRepositoryProvider);
     return await repo.getStreak();
@@ -26,3 +29,8 @@ final streakFutureProvider = FutureProvider.autoDispose<StreakView>((ref) async 
   }
 });
 
+final streakWeekDetailProvider = FutureProvider.autoDispose
+    .family<StreakWeekDetail, String>((ref, weekStart) async {
+      final repo = ref.watch(streakRepositoryProvider);
+      return await repo.getWeekDetail(weekStart);
+    });

@@ -20,11 +20,29 @@ import '../../../workout/domain/models/workout_session_state.dart';
 import '../controllers/home_controller.dart';
 
 /// Màn hình Trang chủ (Home) - hoàn toàn kết nối API, bỏ dữ liệu giả.
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final List<DateTime> _tapTimestamps = [];
+
+  void _handleHeaderTap() {
+    final now = DateTime.now();
+    _tapTimestamps.removeWhere((t) => now.difference(t).inMilliseconds > 3000);
+    _tapTimestamps.add(now);
+
+    if (_tapTimestamps.length >= 5) {
+      _tapTimestamps.clear();
+      context.push('/demo');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userAsync = ref.watch(userStatusFutureProvider);
     final planAsync = ref.watch(homePlanProvider);
     final streakAsync = ref.watch(streakFutureProvider);
@@ -33,11 +51,7 @@ class HomeScreen extends ConsumerWidget {
     // Khi đang tải dữ liệu ban đầu, hiển thị Skeleton
     if (userAsync.isLoading || planAsync.isLoading) {
       return const Scaffold(
-        body: GradientBackground(
-          child: SafeArea(
-            child: HomeScreenSkeleton(),
-          ),
-        ),
+        body: GradientBackground(child: SafeArea(child: HomeScreenSkeleton())),
       );
     }
 
@@ -64,18 +78,20 @@ class HomeScreen extends ConsumerWidget {
     final todayStr = localDateString(DateTime.now());
     final todaySession = plan == null ? null : pickNextSession(plan, todayStr);
     // Đã tập xong, hoặc buổi kế tiếp ở ngày sau: tập lúc này là "Tập thêm", không gắn vào lịch
-    final todayDone = todaySession != null &&
+    final todayDone =
+        todaySession != null &&
         (todaySession.status == 'completed' ||
             !canLinkToPlan(todaySession.scheduledDate, DateTime.now()));
 
-    final totalTarget = streakAsync.valueOrNull?.thisWeek?.targetSessions ??
+    final totalTarget =
+        streakAsync.valueOrNull?.thisWeek?.targetSessions ??
         plan?.targetSessions ??
         0;
     final currentSessionsCount =
         streakAsync.valueOrNull?.thisWeek?.completedSessions ??
-            (plan == null
-                ? 0
-                : plan.sessions.where((s) => s.status == 'completed').length);
+        (plan == null
+            ? 0
+            : plan.sessions.where((s) => s.status == 'completed').length);
 
     final buddy = buddyAsync.valueOrNull;
 
@@ -105,34 +121,41 @@ class HomeScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              dateText,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.textSecondary,
+                        child: GestureDetector(
+                          key: const ValueKey('home-header-title-tap'),
+                          behavior: HitTestBehavior.opaque,
+                          onTap: _handleHeaderTap,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                dateText,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Chào buổi chiều, $displayName',
-                              key: const ValueKey('home-greeting-text'),
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.textPrimary,
+                              const SizedBox(height: 2),
+                              Text(
+                                'Chào buổi chiều, $displayName',
+                                key: const ValueKey('home-greeting-text'),
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textPrimary,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       InkWell(
                         onTap: () => context.push('/streak'),
-                        borderRadius: BorderRadius.circular(AppColors.radiusPill),
+                        borderRadius: BorderRadius.circular(
+                          AppColors.radiusPill,
+                        ),
                         child: Container(
                           height: 38,
                           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -277,18 +300,12 @@ class HomeScreen extends ConsumerWidget {
                   SizedBox(height: 2),
                   Text(
                     'Để coach điều chỉnh khối lượng tập phù hợp',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF3B82F6),
-                    ),
+                    style: TextStyle(fontSize: 12, color: Color(0xFF3B82F6)),
                   ),
                 ],
               ),
             ),
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: Color(0xFF2563EB),
-            ),
+            const Icon(Icons.chevron_right_rounded, color: Color(0xFF2563EB)),
           ],
         ),
       ),
@@ -311,10 +328,7 @@ class HomeScreen extends ConsumerWidget {
             decoration: BoxDecoration(
               color: AppColors.placeholder,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: AppColors.border,
-                width: 1.0,
-              ),
+              border: Border.all(color: AppColors.border, width: 1.0),
             ),
             child: const Center(
               child: Icon(
@@ -373,17 +387,11 @@ class HomeScreen extends ConsumerWidget {
           if (todaySession?.adjustedReason != null) ...[
             const SizedBox(height: 10),
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 10,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
                 color: AppColors.primaryLight,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppColors.border,
-                  width: 1.0,
-                ),
+                border: Border.all(color: AppColors.border, width: 1.0),
               ),
               child: Text(
                 _formatAdjustedReason(todaySession!.adjustedReason!),
@@ -418,10 +426,10 @@ class HomeScreen extends ConsumerWidget {
                 onPressed: todayDone
                     ? null
                     : () => context.push(
-                          todaySession == null
-                              ? '/workout?quick5=true'
-                              : '/workout/${todaySession.id}?quick5=true',
-                        ),
+                        todaySession == null
+                            ? '/workout?quick5=true'
+                            : '/workout/${todaySession.id}?quick5=true',
+                      ),
               ),
             ],
           ),
@@ -472,7 +480,11 @@ class HomeScreen extends ConsumerWidget {
                 color: AppColors.primaryLight,
                 border: Border.all(color: AppColors.border, width: 1.0),
               ),
-              child: const Icon(Icons.person, size: 20, color: AppColors.primary),
+              child: const Icon(
+                Icons.person,
+                size: 20,
+                color: AppColors.primary,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -491,8 +503,8 @@ class HomeScreen extends ConsumerWidget {
                     buddy.isDone
                         ? 'Đã hoàn thành buổi hôm nay!'
                         : (buddy.isPlanned
-                            ? 'Dự kiến tập lúc ${buddy.scheduledTime ?? "hôm nay"}'
-                            : 'Nghỉ hôm nay'),
+                              ? 'Dự kiến tập lúc ${buddy.scheduledTime ?? "hôm nay"}'
+                              : 'Nghỉ hôm nay'),
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
@@ -510,7 +522,9 @@ class HomeScreen extends ConsumerWidget {
                           .sendCheer(buddyToday.pairId);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Đã gửi lời cổ vũ tới ${buddy.displayName}! 🔥'),
+                          content: Text(
+                            'Đã gửi lời cổ vũ tới ${buddy.displayName}! 🔥',
+                          ),
                           duration: const Duration(seconds: 1),
                         ),
                       );
@@ -557,8 +571,11 @@ class HomeScreen extends ConsumerWidget {
         borderRadius: AppColors.radiusCard,
         child: Row(
           children: [
-            const Icon(Icons.people_outline_rounded,
-                color: AppColors.primary, size: 24),
+            const Icon(
+              Icons.people_outline_rounded,
+              color: AppColors.primary,
+              size: 24,
+            ),
             const SizedBox(width: 12),
             const Expanded(
               child: Column(
@@ -582,8 +599,10 @@ class HomeScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded,
-                color: AppColors.textSecondary),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.textSecondary,
+            ),
           ],
         ),
       ),
@@ -627,10 +646,7 @@ class HomeScreen extends ConsumerWidget {
           status = _DayStatus.pending;
         }
 
-        return _WeekDayDot(
-          label: labels[i],
-          status: status,
-        );
+        return _WeekDayDot(label: labels[i], status: status);
       }),
     );
   }
@@ -656,7 +672,15 @@ class HomeScreen extends ConsumerWidget {
 
   String _currentDateString() {
     final now = DateTime.now();
-    final days = ['Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ Nhật'];
+    final days = [
+      'Thứ Hai',
+      'Thứ Ba',
+      'Thứ Tư',
+      'Thứ Năm',
+      'Thứ Sáu',
+      'Thứ Bảy',
+      'Chủ Nhật',
+    ];
     return '${days[now.weekday - 1]}, ${now.day}/${now.month}';
   }
 }
@@ -702,17 +726,17 @@ class _WeekDayDot extends StatelessWidget {
           child: status == _DayStatus.completed
               ? const Icon(Icons.check, size: 18, color: Colors.white)
               : (status == _DayStatus.today
-                  ? Center(
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.primary,
+                    ? Center(
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.primary,
+                          ),
                         ),
-                      ),
-                    )
-                  : null),
+                      )
+                    : null),
         ),
         const SizedBox(height: 6),
         Text(
@@ -737,11 +761,21 @@ String _sessionDayLabel(String scheduledDate) {
   final d = DateTime.tryParse(scheduledDate);
   if (d == null) return 'Hôm nay';
   final now = DateTime.now();
-  final diff = DateTime(d.year, d.month, d.day)
-      .difference(DateTime(now.year, now.month, now.day))
-      .inDays;
+  final diff = DateTime(
+    d.year,
+    d.month,
+    d.day,
+  ).difference(DateTime(now.year, now.month, now.day)).inDays;
   if (diff <= 0) return 'Hôm nay';
   if (diff == 1) return 'Ngày mai';
-  const names = ['Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ nhật'];
+  const names = [
+    'Thứ Hai',
+    'Thứ Ba',
+    'Thứ Tư',
+    'Thứ Năm',
+    'Thứ Sáu',
+    'Thứ Bảy',
+    'Chủ nhật',
+  ];
   return names[d.weekday - 1];
 }
