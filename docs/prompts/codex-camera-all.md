@@ -19,7 +19,7 @@ Giữ API hiện có tương thích để app không phải sửa nhiều.
 ---
 
 ```
-Bạn đang ở nhánh feat/codex-camera-all (worktree D:\levelup-worktrees\codex-camera-all), không chuyển nhánh,
+Bạn đang ở nhánh feat/codex-camera-all (worktree D:\levelup-worktrees\codex-cam20), không chuyển nhánh,
 không merge vào main. Đọc AGENTS.md, docs/prompts/codex-camera-all.md, app/lib/features/camera_counter/README.md.
 Chỉ sửa app/lib/features/camera_counter/**, app/test/features/camera_counter/** (hoặc test hiện có của bộ đếm),
 mongo/cv-configs.json. Không sửa app/lib khác, backend/, app/android/. Không chạy dart format cho cả thư mục.
