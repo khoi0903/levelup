@@ -9,6 +9,9 @@ import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/onboarding_header.dart';
 import '../../../../core/widgets/missing_hint.dart';
 import '../../../../core/widgets/primary_button.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../../notifications/presentation/controllers/notifications_controller.dart';
+import '../../../users/presentation/controllers/user_controller.dart';
 import '../../domain/models/onboarding_models.dart';
 import '../controllers/onboarding_controller.dart';
 
@@ -47,6 +50,12 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(onboardingControllerProvider);
     final controller = ref.read(onboardingControllerProvider.notifier);
+    String? userEmail;
+    try {
+      userEmail = ref.watch(authRepositoryProvider).currentUser?.email;
+    } catch (_) {
+      userEmail = null;
+    }
 
     final goalOptions = [
       (
@@ -206,39 +215,73 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
                       : null,
                 ),
                 const SizedBox(height: 14),
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    const Text(
-                      AppStrings.alreadyHaveAccount,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Tính năng đăng nhập sẽ có ở Sprint sau',
-                            ),
-                            duration: Duration(seconds: 1),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        AppStrings.logIn,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.accentLink,
+                if (userEmail != null && userEmail.isNotEmpty) ...[
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        'Đang đăng nhập: $userEmail · ',
+                        key: const ValueKey('ob-logged-in-email-text'),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                      InkWell(
+                        key: const ValueKey('ob-change-account-button'),
+                        onTap: () async {
+                          try {
+                            await ref.read(pushServiceProvider).deleteToken();
+                          } catch (_) {}
+                          await ref.read(authRepositoryProvider).signOut();
+                          ref.read(currentUserProvider.notifier).state = null;
+                          ref.invalidate(userStatusFutureProvider);
+                          if (context.mounted) {
+                            context.go('/login');
+                          }
+                        },
+                        child: const Text(
+                          'Đổi tài khoản',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.accentLink,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ] else ...[
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      const Text(
+                        AppStrings.alreadyHaveAccount,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          if (context.mounted) {
+                            context.go('/login');
+                          }
+                        },
+                        child: const Text(
+                          AppStrings.logIn,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.accentLink,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
