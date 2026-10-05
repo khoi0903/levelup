@@ -60,6 +60,28 @@ class WorkoutPlanItem {
         : '${reps ?? 10} lần';
     return '$sets hiệp × $per';
   }
+
+  Map<String, dynamic> toJson() => {
+    'exerciseId': exerciseId,
+    'nameVi': nameVi,
+    'sets': sets,
+    if (reps != null) 'reps': reps,
+    if (durationSec != null) 'durationSec': durationSec,
+    'restSec': restSec,
+    if (exercise != null) 'exercise': exercise!.toJson(),
+  };
+
+  factory WorkoutPlanItem.fromJson(Map<String, dynamic> json) => WorkoutPlanItem(
+    exerciseId: json['exerciseId'] as String,
+    nameVi: json['nameVi'] as String? ?? 'Bài tập',
+    sets: (json['sets'] as num?)?.toInt() ?? 1,
+    reps: (json['reps'] as num?)?.toInt(),
+    durationSec: (json['durationSec'] as num?)?.toInt(),
+    restSec: (json['restSec'] as num?)?.toInt() ?? 0,
+    exercise: json['exercise'] != null
+        ? ExerciseResponse.fromJson(json['exercise'] as Map<String, dynamic>)
+        : null,
+  );
 }
 
 /// Dữ liệu để mở một buổi: buổi trong kế hoạch và các bài đã ghép.
@@ -99,6 +121,36 @@ class WorkoutSessionState {
     this.result,
     this.error,
   });
+
+  Map<String, dynamic> toJson() => {
+    'session': session.toJson(),
+    'items': items.map((i) => i.toJson()).toList(),
+    'clientId': clientId,
+    'startedAt': startedAt.toUtc().toIso8601String(),
+    if (endedAt != null) 'endedAt': endedAt!.toUtc().toIso8601String(),
+    'exerciseIndex': exerciseIndex,
+    'setNumber': setNumber,
+    'sets': sets.map((s) => s.toJson()).toList(),
+  };
+
+  factory WorkoutSessionState.fromJson(Map<String, dynamic> json) =>
+      WorkoutSessionState(
+        session: SessionView.fromJson(json['session'] as Map<String, dynamic>),
+        items: (json['items'] as List<dynamic>)
+            .map((i) => WorkoutPlanItem.fromJson(i as Map<String, dynamic>))
+            .toList(),
+        clientId: json['clientId'] as String,
+        startedAt: DateTime.parse(json['startedAt'] as String).toLocal(),
+        endedAt: json['endedAt'] != null
+            ? DateTime.parse(json['endedAt'] as String).toLocal()
+            : null,
+        exerciseIndex: (json['exerciseIndex'] as num?)?.toInt() ?? 0,
+        setNumber: (json['setNumber'] as num?)?.toInt() ?? 1,
+        sets: (json['sets'] as List<dynamic>?)
+                ?.map((s) => SetLog.fromJson(s as Map<String, dynamic>))
+                .toList() ??
+            const [],
+      );
 
   static const _variants = {'normal', 'light', 'quick5', 'advanced'};
   static final _objectId = RegExp(r'^[0-9a-f]{24}$');

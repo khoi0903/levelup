@@ -44,6 +44,12 @@ class FormIssueLog {
     'code': code,
     'severity': severity,
   };
+
+  factory FormIssueLog.fromJson(Map<String, dynamic> json) => FormIssueLog(
+    repIndex: (json['repIndex'] as num).toInt(),
+    code: json['code'] as String,
+    severity: (json['severity'] as num).toInt(),
+  );
 }
 
 /// Một hiệp đã tập, ứng với `WorkoutRequest.SetLog`.
@@ -102,6 +108,26 @@ class SetLog {
     if (formIssues.isNotEmpty)
       'formIssues': formIssues.map((i) => i.toJson()).toList(),
   };
+
+  factory SetLog.fromJson(Map<String, dynamic> json) => SetLog(
+    exerciseId: json['exerciseId'] as String,
+    setIndex: (json['setIndex'] as num).toInt(),
+    reps: (json['reps'] as num?)?.toInt(),
+    weightKg: (json['weightKg'] as num?)?.toDouble(),
+    durationSec: (json['durationSec'] as num?)?.toInt(),
+    repSource: RepSource.values.firstWhere(
+      (s) => s.json == json['repSource'],
+      orElse: () => RepSource.manual,
+    ),
+    repsDetected: (json['repsDetected'] as num?)?.toInt(),
+    cvVersion: (json['cvVersion'] as num?)?.toInt(),
+    avgConfidence: (json['avgConfidence'] as num?)?.toDouble(),
+    formScore: (json['formScore'] as num?)?.toInt(),
+    formIssues: (json['formIssues'] as List<dynamic>?)
+            ?.map((i) => FormIssueLog.fromJson(i as Map<String, dynamic>))
+            .toList() ??
+        const [],
+  );
 }
 
 class WorkoutRequest {

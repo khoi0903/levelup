@@ -10,8 +10,6 @@ import '../../../../core/widgets/onboarding_header.dart';
 import '../../../../core/widgets/missing_hint.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
-import '../../../notifications/presentation/controllers/notifications_controller.dart';
-import '../../../users/presentation/controllers/user_controller.dart';
 import '../../domain/models/onboarding_models.dart';
 import '../controllers/onboarding_controller.dart';
 
@@ -231,12 +229,7 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
                       InkWell(
                         key: const ValueKey('ob-change-account-button'),
                         onTap: () async {
-                          try {
-                            await ref.read(pushServiceProvider).deleteToken();
-                          } catch (_) {}
-                          await ref.read(authRepositoryProvider).signOut();
-                          ref.read(currentUserProvider.notifier).state = null;
-                          ref.invalidate(userStatusFutureProvider);
+                          await appSignOut(ref);
                           if (context.mounted) {
                             context.go('/login');
                           }

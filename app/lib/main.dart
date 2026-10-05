@@ -9,7 +9,6 @@ import 'core/constants/app_strings.dart';
 import 'core/constants/auth_constants.dart';
 import 'features/notifications/presentation/controllers/notifications_controller.dart';
 import 'features/auth/presentation/controllers/auth_controller.dart';
-import 'features/users/presentation/controllers/user_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,14 +28,7 @@ Future<void> main() async {
         // Xử lý khi nhận mã lỗi 401 từ backend: tự động đăng xuất và về màn đăng nhập
         unauthorizedHandlerProvider.overrideWith((ref) {
           return () async {
-            try {
-              await ref.read(pushServiceProvider).deleteToken();
-            } catch (e) {
-              debugPrint('Error deleting push token on 401: $e');
-            }
-            ref.read(authRepositoryProvider).signOut();
-            ref.invalidate(userStatusFutureProvider);
-            ref.invalidate(currentUserProvider);
+            await appSignOutRef(ref);
             appRouter.go('/login');
           };
         }),

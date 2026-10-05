@@ -60,16 +60,10 @@ class BootstrapScreen extends ConsumerWidget {
               if (error is ApiException && error.statusCode == 401) {
                 WidgetsBinding.instance.addPostFrameCallback((_) async {
                   if (!context.mounted) return;
-                  try {
-                    await ref.read(pushServiceProvider).deleteToken();
-                  } catch (e) {
-                    debugPrint('deleteToken error on bootstrap 401: $e');
+                  await appSignOut(ref);
+                  if (context.mounted) {
+                    context.go('/login');
                   }
-                  if (!context.mounted) return;
-                  ref.read(authRepositoryProvider).signOut();
-                  ref.invalidate(userStatusFutureProvider);
-                  ref.invalidate(currentUserProvider);
-                  context.go('/login');
                 });
                 return _buildLoadingWidget();
               }
