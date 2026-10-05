@@ -1,8 +1,26 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
     id("com.google.gms.google-services")
+}
+
+// Optional local release credentials; never commit this file or the keystore.
+// See docs/release-signing.md and https://docs.flutter.dev/deployment/android.
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
+    listOf("storeFile", "storePassword", "keyAlias", "keyPassword").forEach { name ->
+        require(!keystoreProperties.getProperty(name).isNullOrBlank()) {
+            "android/key.properties must define $name for release signing"
+        }
+    }
+    require(rootProject.file(keystoreProperties.getProperty("storeFile")).isFile) {
+        "Release keystore referenced by android/key.properties does not exist"
+    }
 }
 
 android {
@@ -32,15 +50,33 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (keystorePropertiesFile.exists()) {
+            create("release") {
+                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
-            // Tắt rút gọn code (R8): bản release bị R8 bỏ mất class mà camera / ML Kit / Firebase
-            // gọi qua reflection, app thoát ngay khi mở. Bật lại khi đã có quy tắc proguard đầy đủ.
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // Máy dev/CI không có key.properties vẫn build được bằng khóa debug.
+            // Trước khi phát hành, cấu hình khóa release theo docs/release-signing.md.
+            signingConfig = signingConfigs.getByName(
+                if (keystorePropertiesFile.exists()) "release" else "debug"
+            )
+            // Từng tắt R8 vì bản release thoát ngay khi mở: camera / ML Kit / Firebase
+            // có class bị bỏ khi gọi qua reflection. Bật lại với keep rules cho plugin;
+            // vẫn cần kiểm tra trên thiết bị và bổ sung theo adb logcat nếu còn crash.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }
