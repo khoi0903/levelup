@@ -4,7 +4,7 @@ Tài liệu vận hành bản demo Android kết nối Render. Claude Code revie
 
 ## Kiến trúc tổng quan
 
-**App Flutter → backend Java 21/Spring Boot trên Render → MongoDB Atlas (`fitness`)**. App đăng nhập **Firebase Auth**, gửi Firebase ID token trong `Authorization: Bearer`; backend xác minh, lấy người dùng từ token để lọc dữ liệu. API mô tả qua OpenAPI (`/swagger-ui.html`, `/v3/api-docs`).
+**App Flutter → backend Java 21/Spring Boot trên Render → MongoDB Atlas (`fitness`)**. App đăng nhập **Firebase Auth**, gửi Firebase ID token trong `Authorization: Bearer`; backend xác minh, lấy người dùng từ token để lọc dữ liệu. API mô tả qua OpenAPI (`/swagger-ui.html`, `/v3/api-docs`), chỉ bật ở profile dev (server thật bật bằng `SPRINGDOC_ENABLED=true` khi cần).
 
 Backend gọi **Gemini qua interface `coach/AiClient`** dùng chung cho coach, tổng kết tuần, nhận diện món ăn. AI đề xuất/gọi công cụ; backend kiểm tra trước khi ghi database. Khóa Gemini ở server; gói miễn phí chỉ dùng dữ liệu thử.
 

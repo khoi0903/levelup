@@ -1,0 +1,6 @@
+# Docker build context là gốc repo (render.yaml: dockerContext "."), nhưng chỉ cần 3 thứ dưới đây.
+# Mọi thứ khác (app/, mongo/, secrets, .git…) không vào image.
+*
+!backend/pom.xml
+!backend/src
+!docs/content

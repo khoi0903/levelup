@@ -7,8 +7,14 @@ services:
     runtime: docker
     plan: free
     region: singapore
-    rootDir: backend
-    dockerfilePath: ./Dockerfile
+    # Build từ gốc repo để có docs/content (mẫu tin nhắn coach); .dockerignore chỉ lấy backend + docs/content
+    dockerContext: .
+    dockerfilePath: ./backend/Dockerfile
+    buildFilter:
+      paths:
+        - backend/**
+        - docs/content/**
+        - .dockerignore
     healthCheckPath: /actuator/health
     autoDeploy: false          # deploy khi bấm tay, main đổi không tự deploy
     envVars:
