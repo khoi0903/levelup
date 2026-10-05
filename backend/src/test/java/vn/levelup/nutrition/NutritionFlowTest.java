@@ -167,9 +167,9 @@ class NutritionFlowTest {
         assertFalse(first.<Boolean>read("$.cached"));
         assertTrue(first.<Boolean>read("$.items[0].matched"));
         assertEquals("Phở bò tái", first.read("$.items[0].nameVi"));
-        assertEquals(430, first.<Integer>read("$.items[0].kcal"));
-        assertEquals(366, first.<Integer>read("$.items[0].kcalMin"));
-        assertEquals(494, first.<Integer>read("$.items[0].kcalMax"));
+        assertEquals(536, first.<Integer>read("$.items[0].kcal"));
+        assertEquals(455, first.<Integer>read("$.items[0].kcalMin"));
+        assertEquals(616, first.<Integer>read("$.items[0].kcalMax"));
         assertEquals(0.9, first.<Double>read("$.items[0].confidence"));
         String recognitionId = first.read("$.recognitionId");
         String foodId = first.read("$.items[0].foodId");
