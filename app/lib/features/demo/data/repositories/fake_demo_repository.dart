@@ -16,9 +16,12 @@ class FakeDemoRepository implements DemoRepository {
     return mockResult ??
         {
           'action': action,
-          'result': action == 'checkin' || action == 'push-test'
-              ? {'result': 'SENT'}
-              : {},
+          'result': switch (action) {
+            'checkin' || 'push-test' => {'result': 'SENT'},
+            'seed' => {'workouts': 9, 'currentWeeks': 3, 'measurements': 4, 'meals': 21},
+            'skip-two' => {'skipped': 2, 'notified': true},
+            _ => <String, dynamic>{},
+          },
         };
   }
 }
