@@ -23,6 +23,10 @@ final onboardingResponseProvider =
 class OnboardingController extends StateNotifier<OnboardingState> {
   OnboardingController() : super(const OnboardingState());
 
+  void reset() {
+    state = const OnboardingState();
+  }
+
   void setDisplayName(String name) {
     state = state.copyWith(displayName: name);
   }

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/api/api_client.dart';
@@ -110,14 +109,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   void clearSuccess() => state = state.copyWith(clearSuccess: true);
 
   Future<void> logout() async {
-    try {
-      await _ref.read(pushServiceProvider).deleteToken();
-    } catch (e) {
-      debugPrint('Error deleting push token on logout: $e');
-    }
-    await _ref.read(authRepositoryProvider).signOut();
-    _ref.read(currentUserProvider.notifier).state = null;
-    _ref.invalidate(userStatusFutureProvider);
+    await appSignOutRef(_ref);
   }
 }
 

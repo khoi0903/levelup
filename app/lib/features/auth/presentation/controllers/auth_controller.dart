@@ -2,8 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/auth_constants.dart';
+import '../../../home/presentation/controllers/home_controller.dart';
 import '../../../notifications/domain/services/push_service.dart';
 import '../../../notifications/presentation/controllers/notifications_controller.dart';
+import '../../../onboarding/presentation/controllers/onboarding_controller.dart';
+import '../../../users/presentation/controllers/user_controller.dart';
+import '../../../workout/presentation/controllers/workout_controller.dart';
 import '../../data/repositories/fake_auth_repository.dart';
 import '../../data/repositories/firebase_auth_repository.dart';
 import '../../domain/models/auth_user.dart';
@@ -62,8 +66,9 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _repository;
   final PushService? _pushService;
+  final Ref? _ref;
 
-  AuthNotifier(this._repository, [this._pushService])
+  AuthNotifier(this._repository, [this._pushService, this._ref])
     : super(AuthState(user: _repository.currentUser));
 
   void clearMessages() {
@@ -194,15 +199,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> signOut() async {
     state = state.copyWith(isLoading: true);
-    if (_pushService != null) {
-      try {
-        await _pushService.deleteToken();
-      } catch (e) {
-        debugPrint('AuthNotifier deleteToken error: $e');
+    if (_ref != null) {
+      await appSignOutRef(_ref);
+    } else {
+      if (_pushService != null) {
+        try {
+          await _pushService.deleteToken();
+        } catch (e) {
+          debugPrint('AuthNotifier deleteToken error: $e');
+        }
       }
+      await _repository.signOut();
     }
-    await _repository.signOut();
-    state = const AuthState();
+    if (mounted) {
+      state = const AuthState();
+    }
   }
 
   String _cleanErrorMessage(dynamic e) {
@@ -214,9 +225,67 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 }
 
+Future<void> appSignOut(WidgetRef ref) async {
+  await _performSignOutCore(
+    read: ref.read,
+    invalidate: ref.invalidate,
+  );
+}
+
+Future<void> appSignOutRef(Ref ref) async {
+  await _performSignOutCore(
+    read: ref.read,
+    invalidate: ref.invalidate,
+  );
+}
+
+Future<void> appSignOutContainer(ProviderContainer container) async {
+  await _performSignOutCore(
+    read: container.read,
+    invalidate: container.invalidate,
+  );
+}
+
+Future<void> _performSignOutCore({
+  required T Function<T>(ProviderListenable<T>) read,
+  required void Function(ProviderOrFamily) invalidate,
+}) async {
+  try {
+    await read(pushServiceProvider).deleteToken();
+  } catch (e) {
+    debugPrint('deleteToken error on sign out: $e');
+  }
+
+  try {
+    await read(workoutDraftRepositoryProvider).deleteAllDrafts();
+  } catch (e) {
+    debugPrint('deleteAllDrafts error on sign out: $e');
+  }
+
+  try {
+    read(activeWorkoutProvider.notifier).clear();
+  } catch (_) {}
+
+  try {
+    read(onboardingControllerProvider.notifier).reset();
+  } catch (_) {}
+
+  invalidate(onboardingControllerProvider);
+  invalidate(onboardingResponseProvider);
+  invalidate(weeklyPlanFutureProvider);
+  invalidate(userStatusFutureProvider);
+  invalidate(homePlanProvider);
+  invalidate(activeWorkoutDraftProvider);
+  try {
+    read(currentUserProvider.notifier).state = null;
+  } catch (_) {}
+
+  await read(authRepositoryProvider).signOut();
+}
+
 final authControllerProvider =
     StateNotifierProvider.autoDispose<AuthNotifier, AuthState>((ref) {
       final repo = ref.watch(authRepositoryProvider);
       final pushService = ref.watch(pushServiceProvider);
-      return AuthNotifier(repo, pushService);
+      return AuthNotifier(repo, pushService, ref);
     });

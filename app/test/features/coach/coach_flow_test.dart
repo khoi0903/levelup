@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:fitness_app/core/api/api_exceptions.dart';
+import 'package:fitness_app/features/coach/data/sse/coach_sse_parser.dart';
 import 'package:fitness_app/features/coach/domain/models/coach_models.dart';
 import 'package:fitness_app/features/coach/data/repositories/fake_coach_repository.dart';
 import 'package:fitness_app/features/coach/presentation/controllers/coach_controller.dart';
@@ -18,6 +19,12 @@ class _SlowCoachRepository extends FakeCoachRepository {
   Future<SendCoachResponse> sendMessage(String text) async {
     await reply.future;
     return super.sendMessage(text);
+  }
+
+  @override
+  Stream<CoachStreamEvent> sendMessageStream(String text) async* {
+    await reply.future;
+    yield* super.sendMessageStream(text);
   }
 }
 

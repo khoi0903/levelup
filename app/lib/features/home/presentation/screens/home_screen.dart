@@ -15,6 +15,7 @@ import '../../../buddies/presentation/controllers/buddy_controller.dart';
 import '../../../onboarding/domain/models/plan_models.dart';
 import '../../../streak/presentation/controllers/streak_controller.dart';
 import '../../../users/presentation/controllers/user_controller.dart';
+import '../../../workout/domain/models/workout_draft.dart';
 import '../../../workout/presentation/controllers/workout_controller.dart';
 import '../../../workout/domain/models/workout_session_state.dart';
 import '../controllers/home_controller.dart';
@@ -29,6 +30,14 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final List<DateTime> _tapTimestamps = [];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      triggerSyncPendingWorkoutDrafts(ref);
+    });
+  }
 
   void _handleHeaderTap() {
     final now = DateTime.now();
@@ -47,6 +56,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final planAsync = ref.watch(homePlanProvider);
     final streakAsync = ref.watch(streakFutureProvider);
     final buddyAsync = ref.watch(buddyTodayFutureProvider);
+    final activeDraftAsync = ref.watch(activeWorkoutDraftProvider);
 
     // Khi đang tải dữ liệu ban đầu, hiển thị Skeleton
     if (userAsync.isLoading || planAsync.isLoading) {
@@ -102,10 +112,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: RefreshIndicator(
             color: AppColors.primary,
             onRefresh: () async {
+              await triggerSyncPendingWorkoutDrafts(ref);
               ref.invalidate(userStatusFutureProvider);
               ref.invalidate(homePlanProvider);
               ref.invalidate(streakFutureProvider);
               ref.invalidate(buddyTodayFutureProvider);
+              ref.invalidate(activeWorkoutDraftProvider);
             },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(
@@ -201,6 +213,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   const SizedBox(height: 14),
 
+                  // Card tập dở (nếu có draft active < 12h)
+                  if (activeDraftAsync.valueOrNull != null) ...[
+                    _buildActiveDraftCard(
+                      context,
+                      activeDraftAsync.valueOrNull!,
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+
                   // Card Check-in sáng
                   _buildCheckinCard(context),
                   const SizedBox(height: 14),
@@ -244,7 +265,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const SizedBox(height: 14),
 
                   // Card Buổi tập chính hôm nay
-                  _buildTodayWorkoutCard(context, todaySession, todayDone),
+                  _buildTodayWorkoutCard(
+                    context,
+                    todaySession,
+                    todayDone,
+                    todayStr,
+                  ),
                   const SizedBox(height: 14),
 
                   // Card Buddy feed
@@ -254,6 +280,116 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildActiveDraftCard(BuildContext context, WorkoutDraft draft) {
+    WorkoutSessionState state;
+    try {
+      state = draft.sessionState;
+    } catch (_) {
+      return const SizedBox.shrink();
+    }
+    final sessionTitle = state.session.title;
+    return Container(
+      key: const ValueKey('home-active-draft-card'),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(AppColors.radiusCard),
+        border: Border.all(color: const Color(0xFFBFDBFE), width: 1),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.play_circle_outline_rounded,
+              color: AppColors.primary,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Bạn đang tập dở $sessionTitle',
+                  key: const ValueKey('home-active-draft-title'),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Hiệp ${state.setNumber} · ${state.currentItem?.nameVi ?? 'Bài tập'}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          TextButton(
+            key: const ValueKey('home-active-draft-discard-button'),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            onPressed: () async {
+              await ref
+                  .read(workoutDraftRepositoryProvider)
+                  .deleteDraft(draft.clientId);
+              ref.read(activeWorkoutProvider.notifier).clear();
+              ref.invalidate(activeWorkoutDraftProvider);
+            },
+            child: const Text(
+              'Bỏ',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          FilledButton(
+            key: const ValueKey('home-active-draft-continue-button'),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () {
+              ref.read(activeWorkoutProvider.notifier).restore(state);
+              context.push('/workout/active');
+            },
+            child: const Text(
+              'Tiếp tục',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -316,6 +452,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     BuildContext context,
     SessionView? todaySession,
     bool todayDone,
+    String todayStr,
   ) {
     return GlassCard(
       padding: const EdgeInsets.all(16),
@@ -433,26 +570,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          Center(
-            child: TextButton(
-              onPressed: () => context.push(
-                todaySession != null
-                    ? '/skip-report?sessionId=${todaySession.id}'
-                    : '/skip-report',
-              ),
-              child: const Text(
-                'Không tập được hôm nay?',
-                key: ValueKey('home-skip-report-button'),
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
-                  decoration: TextDecoration.underline,
+          if (todaySession != null &&
+              todaySession.scheduledDate == todayStr &&
+              todaySession.status == 'planned') ...[
+            const SizedBox(height: 10),
+            Center(
+              child: TextButton(
+                onPressed: () => context.push(
+                  '/skip-report?sessionId=${todaySession.id}',
+                ),
+                child: const Text(
+                  'Không tập được hôm nay?',
+                  key: ValueKey('home-skip-report-button'),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                    decoration: TextDecoration.underline,
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );

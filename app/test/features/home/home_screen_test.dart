@@ -16,6 +16,10 @@ import 'package:fitness_app/features/streak/presentation/controllers/streak_cont
 import 'package:fitness_app/features/users/data/repositories/fake_user_repository.dart';
 import 'package:fitness_app/features/users/domain/models/me_response.dart';
 import 'package:fitness_app/features/users/presentation/controllers/user_controller.dart';
+import 'package:fitness_app/features/workout/data/repositories/memory_workout_draft_repository.dart';
+import 'package:fitness_app/features/workout/domain/models/workout_draft.dart';
+import 'package:fitness_app/features/workout/domain/models/workout_session_state.dart';
+import 'package:fitness_app/features/workout/presentation/controllers/workout_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -159,6 +163,195 @@ void main() {
       expect(find.byType(HomeScreenSkeleton), findsNothing);
       expect(find.textContaining('Dinh Khoi'), findsWidgets);
     });
+
+    testWidgets(
+      'Ẩn nút "Không tập được hôm nay?" khi buổi hôm nay đã tập xong (status == completed)',
+      (tester) async {
+        final now = DateTime.now();
+        final todayStr = localDateString(now);
+
+        final fakePlan = PlanView(
+          id: 'plan-completed',
+          weekStart: '2026-09-28',
+          status: 'active',
+          targetSessions: 3,
+          sessions: [
+            SessionView(
+              id: 'sess-today',
+              scheduledDate: todayStr,
+              scheduledTime: '07:00',
+              title: 'Ngực & Tay sau',
+              status: 'completed', // Đã tập xong
+              durationMin: 25,
+            ),
+          ],
+        );
+
+        final fakeUserRepo = FakeUserRepository(
+          meResponse: MeResponse(
+            id: 'u-1',
+            displayName: 'Khoi',
+            localDate: todayStr,
+          ),
+        );
+
+        final router = createAppRouter(initialLocation: '/home');
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              authRepositoryProvider.overrideWithValue(signedInAuth()),
+              userRepositoryProvider.overrideWithValue(fakeUserRepo),
+              planRepositoryProvider.overrideWithValue(
+                FakePlanRepository(planView: fakePlan),
+              ),
+              streakRepositoryProvider.overrideWithValue(FakeStreakRepository()),
+            ],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Nút "Không tập được hôm nay?" phải bị ẩn
+        expect(find.byKey(const ValueKey('home-skip-report-button')), findsNothing);
+        expect(find.text('Không tập được hôm nay?'), findsNothing);
+        // Nút chính chuyển thành "Tập thêm"
+        expect(find.text('Tập thêm'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'Ẩn nút "Không tập được hôm nay?" khi buổi ở ngày sau (scheduledDate != todayStr)',
+      (tester) async {
+        final now = DateTime.now();
+        final todayStr = localDateString(now);
+        final tomorrow = now.add(const Duration(days: 1));
+        final tomorrowStr = localDateString(tomorrow);
+
+        final fakePlan = PlanView(
+          id: 'plan-future',
+          weekStart: '2026-09-28',
+          status: 'active',
+          targetSessions: 3,
+          sessions: [
+            SessionView(
+              id: 'sess-tomorrow',
+              scheduledDate: tomorrowStr,
+              scheduledTime: '07:00',
+              title: 'Chân & Bụng',
+              status: 'planned',
+              durationMin: 25,
+            ),
+          ],
+        );
+
+        final fakeUserRepo = FakeUserRepository(
+          meResponse: MeResponse(
+            id: 'u-1',
+            displayName: 'Khoi',
+            localDate: todayStr,
+          ),
+        );
+
+        final router = createAppRouter(initialLocation: '/home');
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              authRepositoryProvider.overrideWithValue(signedInAuth()),
+              userRepositoryProvider.overrideWithValue(fakeUserRepo),
+              planRepositoryProvider.overrideWithValue(
+                FakePlanRepository(planView: fakePlan),
+              ),
+              streakRepositoryProvider.overrideWithValue(FakeStreakRepository()),
+            ],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Buổi ở ngày sau -> ẩn nút Không tập được hôm nay
+        expect(find.byKey(const ValueKey('home-skip-report-button')), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'Hiện thẻ "Bạn đang tập dở ... Tiếp tục / Bỏ" khi có active draft < 12h, bấm Bỏ xóa draft',
+      (tester) async {
+        final now = DateTime.now();
+        final todayStr = localDateString(now);
+
+        final draftRepo = MemoryWorkoutDraftRepository();
+        final sState = WorkoutSessionState(
+          session: SessionView(
+            id: 'sess-active',
+            scheduledDate: todayStr,
+            scheduledTime: '07:00',
+            title: 'Cardio Buổi Sáng',
+            status: 'planned',
+            durationMin: 20,
+          ),
+          items: const [
+            WorkoutPlanItem(
+              exerciseId: 'ex-cardio',
+              nameVi: 'Jumping Jack',
+              sets: 3,
+              reps: 20,
+            ),
+          ],
+          clientId: 'client-active-draft-999',
+          startedAt: now.subtract(const Duration(minutes: 15)),
+          exerciseIndex: 0,
+          setNumber: 2,
+        );
+
+        await draftRepo.saveDraft(
+          WorkoutDraft(
+            clientId: sState.clientId,
+            sessionId: sState.session.id,
+            stateJson: WorkoutDraft.encodeStateJson(sState),
+            updatedAt: now.subtract(const Duration(minutes: 5)),
+            status: 'active',
+          ),
+        );
+
+        final router = createAppRouter(initialLocation: '/home');
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              authRepositoryProvider.overrideWithValue(signedInAuth()),
+              userRepositoryProvider.overrideWithValue(
+                FakeUserRepository(
+                  meResponse: MeResponse(id: 'u-1', displayName: 'Khoi', localDate: todayStr),
+                ),
+              ),
+              planRepositoryProvider.overrideWithValue(FakePlanRepository()),
+              streakRepositoryProvider.overrideWithValue(FakeStreakRepository()),
+              workoutDraftRepositoryProvider.overrideWithValue(draftRepo),
+            ],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Thẻ đang tập dở hiện lên
+        expect(find.byKey(const ValueKey('home-active-draft-card')), findsOneWidget);
+        expect(find.textContaining('Bạn đang tập dở Cardio Buổi Sáng'), findsOneWidget);
+        expect(find.text('Tiếp tục'), findsOneWidget);
+        expect(find.text('Bỏ'), findsOneWidget);
+
+        // Bấm Bỏ -> draft bị xóa khỏi repo và thẻ biến mất
+        await tester.tap(find.byKey(const ValueKey('home-active-draft-discard-button')));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(const ValueKey('home-active-draft-card')), findsNothing);
+        expect(await draftRepo.getActiveDraft(), isNull);
+      },
+    );
   });
 }
 

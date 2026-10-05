@@ -1,4 +1,8 @@
+import 'dart:async';
+
+import '../../../../core/api/api_exceptions.dart';
 import '../../../onboarding/domain/models/plan_models.dart';
+import '../../data/sse/coach_sse_parser.dart';
 import '../../domain/models/coach_models.dart';
 import '../../domain/repositories/coach_repository.dart';
 
@@ -9,12 +13,24 @@ class FakeCoachRepository implements CoachRepository {
   Exception? errorToThrow;
   String? lastSentText;
   String? lastAppliedMessageId;
+  bool streamReturns404;
+  List<String>? streamDeltas;
+  Duration streamDelay;
+  CoachErrorEvent? streamError;
+  SendCoachResponse? streamDoneResponse;
+  Stream<CoachStreamEvent> Function(String text)? customStreamHandler;
 
   FakeCoachRepository({
     List<CoachMessageView>? initialMessages,
     this.nextBefore,
     this.remainingToday = 10,
     this.errorToThrow,
+    this.streamReturns404 = false,
+    this.streamDeltas,
+    this.streamDelay = Duration.zero,
+    this.streamError,
+    this.streamDoneResponse,
+    this.customStreamHandler,
   }) : messages = initialMessages ??
             [
               CoachMessageView(
@@ -83,6 +99,67 @@ class FakeCoachRepository implements CoachRepository {
       reply: replyMsg,
       remainingToday: remainingToday,
       source: 'rules',
+    );
+  }
+
+  @override
+  Stream<CoachStreamEvent> sendMessageStream(String text) async* {
+    lastSentText = text;
+    if (errorToThrow != null) {
+      throw errorToThrow!;
+    }
+    if (streamReturns404) {
+      throw const ApiException(code: 'NOT_FOUND', statusCode: 404);
+    }
+    if (customStreamHandler != null) {
+      yield* customStreamHandler!(text);
+      return;
+    }
+
+    final deltas = streamDeltas ??
+        [
+          'Coach đã nhận được tin: ',
+          '"$text". ',
+          'Bạn cứ tiếp tục duy trì nhé!',
+        ];
+
+    for (final d in deltas) {
+      if (streamDelay > Duration.zero) {
+        await Future<void>.delayed(streamDelay);
+      }
+      yield CoachDeltaEvent(d);
+    }
+
+    if (streamError != null) {
+      yield streamError!;
+      return;
+    }
+
+    final userMsg = CoachMessageView(
+      id: 'user-msg-${DateTime.now().millisecondsSinceEpoch}',
+      role: 'user',
+      content: text,
+      createdAt: DateTime.now(),
+    );
+    final replyMsg = CoachMessageView(
+      id: 'coach-reply-${DateTime.now().millisecondsSinceEpoch}',
+      role: 'coach',
+      content: 'Coach đã nhận được tin: "$text". Bạn cứ tiếp tục duy trì nhé!',
+      createdAt: DateTime.now().add(const Duration(seconds: 1)),
+    );
+
+    messages.insert(0, replyMsg);
+    messages.insert(1, userMsg);
+    remainingToday = (remainingToday - 1).clamp(0, 100);
+
+    yield CoachDoneEvent(
+      streamDoneResponse ??
+          SendCoachResponse(
+            userMessage: userMsg,
+            reply: replyMsg,
+            remainingToday: remainingToday,
+            source: 'rules',
+          ),
     );
   }
 

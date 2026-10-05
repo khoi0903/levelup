@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/api/api_client.dart';
+import '../../../../core/api/api_exceptions.dart';
 import '../../data/repositories/api_coach_repository.dart';
+import '../../data/sse/coach_sse_parser.dart';
 import '../../domain/models/coach_models.dart';
 import '../../domain/repositories/coach_repository.dart';
 
@@ -14,6 +16,7 @@ class CoachChatState {
   final List<CoachMessageView> messages;
   final bool isLoading;
   final bool isSending;
+  final bool hasStreamingReply;
   final bool isLoadingMore;
   final String? nextBefore;
   final int remainingToday;
@@ -23,6 +26,7 @@ class CoachChatState {
     this.messages = const [],
     this.isLoading = false,
     this.isSending = false,
+    this.hasStreamingReply = false,
     this.isLoadingMore = false,
     this.nextBefore,
     this.remainingToday = 10,
@@ -33,6 +37,7 @@ class CoachChatState {
     List<CoachMessageView>? messages,
     bool? isLoading,
     bool? isSending,
+    bool? hasStreamingReply,
     bool? isLoadingMore,
     String? nextBefore,
     int? remainingToday,
@@ -43,6 +48,7 @@ class CoachChatState {
       messages: messages ?? this.messages,
       isLoading: isLoading ?? this.isLoading,
       isSending: isSending ?? this.isSending,
+      hasStreamingReply: hasStreamingReply ?? this.hasStreamingReply,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       nextBefore: nextBefore ?? this.nextBefore,
       remainingToday: remainingToday ?? this.remainingToday,
@@ -62,9 +68,12 @@ class CoachChatNotifier extends StateNotifier<CoachChatState> {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final res = await _repository.getHistory(limit: 20);
+      final pendingMessages = state.messages
+          .where((m) => m.id.startsWith('pending-') || m.id.startsWith('streaming-'))
+          .toList();
       state = state.copyWith(
         isLoading: false,
-        messages: res.messages,
+        messages: [...pendingMessages, ...res.messages],
         nextBefore: res.nextBefore,
       );
     } catch (e) {
@@ -90,33 +99,109 @@ class CoachChatNotifier extends StateNotifier<CoachChatState> {
     }
   }
 
-  /// Tin của người dùng hiện ngay (id "pending-..."), coach trả lời xong thì thay bằng bản từ server.
-  /// Gửi lỗi thì gỡ tin tạm ra, màn hình trả lại chữ vào ô nhập.
+  /// Gửi tin nhắn:
+  /// - Tin người dùng hiện ngay với id "pending-..."
+  /// - Bong bóng coach xuất hiện và chữ lớn dần theo từng delta (bỏ "Coach đang trả lời...")
+  /// - Event done: thay cả hai tin bằng bản từ server, cập nhật remainingToday
+  /// - Lỗi giữa chừng / error: gỡ tin tạm, trả chữ vào ô nhập, hiện lỗi
+  /// - 404: dùng POST /coach/messages (fallback cũ)
   Future<bool> sendMessage(String text) async {
-    if (text.trim().isEmpty || state.isSending) return false;
+    final trimmed = text.trim();
+    if (trimmed.isEmpty || state.isSending) return false;
+
+    final pendingId = 'pending-${DateTime.now().microsecondsSinceEpoch}';
     final pending = CoachMessageView(
-      id: 'pending-${DateTime.now().microsecondsSinceEpoch}',
+      id: pendingId,
       role: 'user',
-      content: text.trim(),
+      content: trimmed,
       createdAt: DateTime.now(),
     );
+
     state = state.copyWith(
       isSending: true,
+      hasStreamingReply: false,
       clearError: true,
       messages: [pending, ...state.messages],
     );
-    List<CoachMessageView> rest() =>
-        state.messages.where((m) => m.id != pending.id).toList();
+
+    final streamingReplyId = 'streaming-${DateTime.now().microsecondsSinceEpoch}';
+    var accumulatedDelta = '';
+    var hasReceivedDelta = false;
+
+    List<CoachMessageView> currentBaseMessages() => state.messages
+        .where((m) => m.id != pendingId && m.id != streamingReplyId)
+        .toList();
+
     try {
-      final res = await _repository.sendMessage(text.trim());
+      await for (final event in _repository.sendMessageStream(trimmed)) {
+        if (event is CoachDeltaEvent) {
+          accumulatedDelta += event.text;
+          hasReceivedDelta = true;
+          final streamingMessage = CoachMessageView(
+            id: streamingReplyId,
+            role: 'coach',
+            content: accumulatedDelta,
+            createdAt: DateTime.now(),
+          );
+          state = state.copyWith(
+            hasStreamingReply: true,
+            messages: [streamingMessage, pending, ...currentBaseMessages()],
+          );
+        } else if (event is CoachDoneEvent) {
+          final res = event.response;
+          state = state.copyWith(
+            isSending: false,
+            hasStreamingReply: false,
+            messages: [res.reply, res.userMessage, ...currentBaseMessages()],
+            remainingToday: res.remainingToday,
+          );
+          return true;
+        } else if (event is CoachErrorEvent) {
+          throw ApiException(code: event.code);
+        }
+      }
+
+      if (hasReceivedDelta) {
+        state = state.copyWith(isSending: false, hasStreamingReply: false);
+        return true;
+      }
+      return true;
+    } on ApiException catch (e) {
+      if (e.statusCode == 404) {
+        // Fallback to POST /coach/messages
+        try {
+          final res = await _repository.sendMessage(trimmed);
+          state = state.copyWith(
+            isSending: false,
+            hasStreamingReply: false,
+            messages: [res.reply, res.userMessage, ...currentBaseMessages()],
+            remainingToday: res.remainingToday,
+          );
+          return true;
+        } catch (err) {
+          state = state.copyWith(
+            isSending: false,
+            hasStreamingReply: false,
+            error: err,
+            messages: currentBaseMessages(),
+          );
+          return false;
+        }
+      }
       state = state.copyWith(
         isSending: false,
-        messages: [res.reply, res.userMessage, ...rest()],
-        remainingToday: res.remainingToday,
+        hasStreamingReply: false,
+        error: e,
+        messages: currentBaseMessages(),
       );
-      return true;
+      return false;
     } catch (e) {
-      state = state.copyWith(isSending: false, error: e, messages: rest());
+      state = state.copyWith(
+        isSending: false,
+        hasStreamingReply: false,
+        error: e,
+        messages: currentBaseMessages(),
+      );
       return false;
     }
   }

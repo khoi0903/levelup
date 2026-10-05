@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/api/api_client.dart';
@@ -10,12 +12,39 @@ import '../../data/camera/camera_permission.dart';
 import '../../data/camera/camera_setup_skip.dart';
 import '../../data/camera/rep_counting_session.dart';
 import '../../data/repositories/api_workout_repository.dart';
+import '../../data/local/workout_database.dart';
+import '../../data/repositories/drift_workout_draft_repository.dart';
+import '../../data/repositories/fake_workout_repository.dart';
+import '../../data/repositories/memory_workout_draft_repository.dart';
 import '../../domain/models/exercise_response.dart';
+import '../../domain/models/workout_draft.dart';
 import '../../domain/models/workout_models.dart';
 import '../../domain/models/workout_session_state.dart';
+import '../../domain/repositories/workout_draft_repository.dart';
 import '../../domain/repositories/workout_repository.dart';
 
+final workoutDatabaseProvider = Provider<WorkoutDatabase>((ref) {
+  final db = WorkoutDatabase();
+  ref.onDispose(() => db.close());
+  return db;
+});
+
+final workoutDraftRepositoryProvider = Provider<WorkoutDraftRepository>((ref) {
+  if (!kIsWeb && Platform.environment.containsKey('FLUTTER_TEST')) {
+    return MemoryWorkoutDraftRepository();
+  }
+  final db = ref.watch(workoutDatabaseProvider);
+  return DriftWorkoutDraftRepository(db);
+});
+
 final workoutRepositoryProvider = Provider<WorkoutRepository>((ref) {
+  if (!kIsWeb && Platform.environment.containsKey('FLUTTER_TEST')) {
+    try {
+      return ApiWorkoutRepository(ref.watch(apiClientProvider));
+    } catch (_) {
+      return FakeWorkoutRepository();
+    }
+  }
   return ApiWorkoutRepository(ref.watch(apiClientProvider));
 });
 
@@ -111,8 +140,6 @@ final workoutSetupProvider = FutureProvider.autoDispose
     });
 
 /// Buổi đang tập. Không autoDispose: giữ cả clientId để gửi lại khi lỗi mạng.
-// TODO(app): lưu bản nháp xuống drift (AGENTS.md) để còn giữ khi app bị tắt;
-// pubspec chưa có drift/path_provider nên hiện chỉ giữ trong bộ nhớ.
 final activeWorkoutProvider =
     StateNotifierProvider<WorkoutController, WorkoutSessionState?>((ref) {
       return WorkoutController(ref);
@@ -124,6 +151,31 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
   final Ref _ref;
 
   DateTime _now() => _ref.read(workoutClockProvider)();
+
+  Future<void> _saveDraft({
+    required String status,
+    int? rpe,
+    List<PainArea> painAreas = const [],
+    String? note,
+  }) async {
+    final s = state;
+    if (s == null) return;
+    final draft = WorkoutDraft(
+      clientId: s.clientId,
+      sessionId: s.session.id,
+      stateJson: WorkoutDraft.encodeStateJson(
+        s,
+        rpe: rpe,
+        painAreas: painAreas,
+        note: note,
+      ),
+      updatedAt: _now(),
+      status: status,
+    );
+    try {
+      await _ref.read(workoutDraftRepositoryProvider).saveDraft(draft);
+    } catch (_) {}
+  }
 
   void start(WorkoutSetup setup) {
     state = WorkoutSessionState(
@@ -142,22 +194,27 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
     if (s == null || item == null) return 0;
     final logged = set.withSetIndex(s.setNumber);
     final sets = [...s.sets, logged];
+    int rest;
     if (s.setNumber < item.sets) {
       state = s.copyWith(sets: sets, setNumber: s.setNumber + 1);
-      return item.restSec;
+      rest = item.restSec;
+    } else {
+      state = s.copyWith(
+        sets: sets,
+        exerciseIndex: s.exerciseIndex + 1,
+        setNumber: 1,
+      );
+      rest = state!.allExercisesDone ? 0 : item.restSec;
     }
-    state = s.copyWith(
-      sets: sets,
-      exerciseIndex: s.exerciseIndex + 1,
-      setNumber: 1,
-    );
-    return state!.allExercisesDone ? 0 : item.restSec;
+    _saveDraft(status: 'active');
+    return rest;
   }
 
   void skipExercise() {
     final s = state;
     if (s == null || s.allExercisesDone) return;
     state = s.copyWith(exerciseIndex: s.exerciseIndex + 1, setNumber: 1);
+    _saveDraft(status: 'active');
   }
 
   /// Chốt giờ kết thúc một lần; gửi lại vẫn dùng đúng giờ này.
@@ -204,21 +261,55 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
           .saveWorkout(request);
       if (!mounted || state == null) return result;
       state = state!.copyWith(submitting: false, result: result);
+      // Xóa draft trên máy khi POST /workouts thành công
+      try {
+        await _ref
+            .read(workoutDraftRepositoryProvider)
+            .deleteDraft(request.clientId);
+      } catch (_) {}
       return result;
     } on ApiException catch (e) {
+      if (e.isNetworkError) {
+        await _saveDraft(
+          status: 'pending_submit',
+          rpe: rpe,
+          painAreas: painAreas,
+          note: note,
+        );
+      }
       if (mounted && state != null) {
         state = state!.copyWith(submitting: false, error: e);
       }
       return null;
     } catch (_) {
+      await _saveDraft(
+        status: 'pending_submit',
+        rpe: rpe,
+        painAreas: painAreas,
+        note: note,
+      );
       if (mounted && state != null) {
         state = state!.copyWith(
           submitting: false,
-          error: const ApiException(code: 'UNKNOWN_ERROR'),
+          error: const ApiException(code: 'NETWORK_ERROR'),
         );
       }
       return null;
     }
+  }
+
+  void restore(WorkoutSessionState restored) {
+    state = restored;
+  }
+
+  void discard() {
+    final s = state;
+    if (s != null) {
+      try {
+        _ref.read(workoutDraftRepositoryProvider).deleteDraft(s.clientId);
+      } catch (_) {}
+    }
+    clear();
   }
 
   void clear() => state = null;

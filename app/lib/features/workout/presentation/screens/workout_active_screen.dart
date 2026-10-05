@@ -162,7 +162,7 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
           content: Text('Bạn chưa tập hiệp nào nên buổi này chưa được lưu.'),
         ),
       );
-      ref.read(activeWorkoutProvider.notifier).clear();
+      ref.read(activeWorkoutProvider.notifier).discard();
       context.go('/home');
       return;
     }
@@ -203,7 +203,7 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
     if (choice == 'finish') {
       _goFinish();
     } else if (choice == 'discard') {
-      ref.read(activeWorkoutProvider.notifier).clear();
+      ref.read(activeWorkoutProvider.notifier).discard();
       context.go('/home');
     }
   }
