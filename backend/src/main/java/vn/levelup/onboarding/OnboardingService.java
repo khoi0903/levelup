@@ -15,8 +15,10 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import vn.levelup.common.LocalDates;
 import vn.levelup.exercises.Exercise;
@@ -85,8 +87,13 @@ public class OnboardingService {
         User user = mongo.findOne(byUid, User.class);
         ObjectId userId = new ObjectId(user.id());
 
-        // 2. Kế hoạch tuần 1 từ bài an toàn với người dùng
-        List<Exercise> safe = ExerciseFilter.forUser(exercises.findByIsActiveTrue(), r.location(),
+        // 2. Kế hoạch tuần 1 từ bài an toàn với người dùng.
+        // Kho bài tập trống (database mới chưa nạp seed) thì báo lỗi, không tạo kế hoạch 0 động tác.
+        List<Exercise> catalog = exercises.findByIsActiveTrue();
+        if (catalog.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "EXERCISE_CATALOG_EMPTY");
+        }
+        List<Exercise> safe = ExerciseFilter.forUser(catalog, r.location(),
             Set.copyOf(equipment), Set.copyOf(injuryAreas));
         Week1PlanBuilder.Draft draft = Week1PlanBuilder.build(today, availability, r.sessionMinutes(), safe);
         String weekStart = draft.weekStart().toString();

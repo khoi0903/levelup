@@ -11,6 +11,8 @@ String mapErrorMessage(dynamic error, {String? defaultMessage}) {
     switch (code) {
       case 'ONBOARDING_REQUIRED':
         return 'Bạn cần hoàn thành bảng khảo sát ban đầu trước khi tiếp tục.';
+      case 'EXERCISE_CATALOG_EMPTY':
+        return 'Máy chủ chưa có dữ liệu bài tập nên chưa lập được kế hoạch. Vui lòng thử lại sau.';
       case 'COACH_LIMIT':
         return 'Hôm nay bạn đã dùng hết lượt nhắn tin với Coach. Hãy quay lại vào ngày mai nhé!';
       case 'PHOTO_LIMIT_REACHED':
