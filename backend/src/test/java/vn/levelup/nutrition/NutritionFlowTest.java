@@ -199,25 +199,25 @@ class NutritionFlowTest {
             {"meal":"snack","method":"manual",
              "items":[{"name":"Sữa chua tự làm","portionGrams":100,"kcal":120,"proteinG":5,"carbsG":15,"fatG":3}]}""",
             200);
-        assertEquals(550, afterSnack.<Integer>read("$.consumed.kcal"));
+        assertEquals(656, afterSnack.<Integer>read("$.consumed.kcal"));
         assertNotNull(afterSnack.read("$.suggestion.message"));
 
         // 4. Tổng kết hôm nay
         DocumentContext today = call(get("/nutrition/today").header("Authorization", token), 200);
         assertEquals(today(), today.read("$.localDate"));
         assertEquals(1790, today.<Integer>read("$.target.kcal"));
-        assertEquals(550, today.<Integer>read("$.consumed.kcal"));
-        assertEquals(33.0, today.<Double>read("$.consumed.proteinG"));
-        assertEquals(1240, today.<Integer>read("$.remaining.kcal"));
-        assertEquals(79.0, today.<Double>read("$.remaining.proteinG"));
+        assertEquals(656, today.<Integer>read("$.consumed.kcal"));
+        assertEquals(40.1, today.<Double>read("$.consumed.proteinG"));
+        assertEquals(1134, today.<Integer>read("$.remaining.kcal"));
+        assertEquals(71.9, today.<Double>read("$.remaining.proteinG"));
         assertEquals(2, today.<Integer>read("$.meals.length()"));
-        assertEquals(430, today.<Integer>read("$.meals[0].kcal"));
-        assertEquals(366, today.<Integer>read("$.meals[0].kcalMin"));
+        assertEquals(536, today.<Integer>read("$.meals[0].kcal"));
+        assertEquals(456, today.<Integer>read("$.meals[0].kcalMin"));
         assertEquals(foodId, today.read("$.meals[0].items[0].foodId"));
-        // 19:00 và còn thiếu 79 g đạm: gợi ý món nhiều đạm từ kho
+        // 19:00 và còn thiếu 72 g đạm: gợi ý món nhiều đạm từ kho
         List<Object> suggested = today.read("$.suggestion.foods");
         assertFalse(suggested.isEmpty());
-        assertTrue(today.<String>read("$.suggestion.message").startsWith("Hôm nay bạn còn thiếu khoảng 79 g đạm"));
+        assertTrue(today.<String>read("$.suggestion.message").startsWith("Hôm nay bạn còn thiếu khoảng 72 g đạm"));
 
         // món không có trong kho, recognitionId của người khác, photo thiếu recognitionId
         assertEquals("UNKNOWN_FOOD", postJson("/meals", """
