@@ -50,10 +50,12 @@ Lệnh theo **[deploy.md mục 4](deploy.md#4-kiểm-tra-và-build-app)**. Chạ
 curl https://<URL>/actuator/health
 cd D:\fitness-app\app
 flutter run -d <id điện thoại> --dart-define=API_BASE_URL=https://<URL>
-flutter build apk --release --dart-define=API_BASE_URL=https://<URL>
+flutter build apk --release --split-per-abi --dart-define=API_BASE_URL=https://<URL>
 ```
 
-Health trả `{"status":"UP"}`. APK: `app/build/app/outputs/flutter-apk/app-release.apk`; sao chép cho team, cài cả hai máy (hoặc `adb install -r build/app/outputs/flutter-apk/app-release.apk` khi đứng trong `app/`). Dùng Firebase mặc định, không truyền `AUTH_MODE=dev`. Nếu dùng Google login, thêm SHA-1 khóa ký release vào Firebase theo `deploy.md`; demo email/mật khẩu không cần bước Google này.
+Health trả `{"status":"UP"}`. APK: `app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk` (~50 MB, máy 64-bit;
+máy rất cũ dùng `app-armeabi-v7a-release.apk`); sao chép cho team, cài cả hai máy (hoặc
+`adb install -r build/app/outputs/flutter-apk/app-arm64-v8a-release.apk` khi đứng trong `app/`). Dùng Firebase mặc định, không truyền `AUTH_MODE=dev`. Nếu dùng Google login, thêm SHA-1 khóa ký release vào Firebase theo `deploy.md`; demo email/mật khẩu không cần bước Google này.
 
 ## Deploy backend trên Render
 

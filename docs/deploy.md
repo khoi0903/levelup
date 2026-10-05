@@ -113,5 +113,8 @@ cd D:\fitness-app\app
 flutter run -d <id điện thoại> --dart-define=API_BASE_URL=https://<URL>
 ```
 
-Bản build để cài cho người khác: `flutter build apk --release --dart-define=API_BASE_URL=https://<URL>`
+Bản build để cài cho người khác (mỗi loại chip một file, nhẹ hơn một nửa):
+`flutter build apk --release --split-per-abi --dart-define=API_BASE_URL=https://<URL>`
+→ gửi `app-arm64-v8a-release.apk` (~50 MB, hầu hết điện thoại từ 2017 trở lại đây). Máy rất cũ (chip 32-bit)
+dùng `app-armeabi-v7a-release.apk`. Không dùng bản gộp (~106 MB, gồm cả thư viện cho máy ảo x86_64).
 (cần thêm SHA-1 của khóa release vào Firebase để đăng nhập Google chạy được).
