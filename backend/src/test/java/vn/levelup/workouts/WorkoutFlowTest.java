@@ -135,7 +135,7 @@ class WorkoutFlowTest {
         assertEquals("active", ((Document) user.get("reengagement")).getString("stage"));
 
         DocumentContext streak = call(get("/streak").header("Authorization", token), 200);
-        assertEquals(8, streak.<Integer>read("$.weeks.length()"));
+        assertEquals(1, streak.<Integer>read("$.weeks.length()"));   // người mới: chỉ tuần này, không 7 tuần trống
         assertEquals(2, streak.<Integer>read("$.thisWeek.completedSessions"));
     }
 
