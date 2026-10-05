@@ -35,7 +35,7 @@ void main() {
       }
     });
 
-    test('exercises.json cv.supported matches the configured slugs', () {
+    test('all 20 seeded exercise slugs have a camera config', () {
       final exercises = (jsonDecode(
         File('../mongo/seed/exercises.json').readAsStringSync(),
       ) as List).cast<Map<String, dynamic>>();
@@ -44,7 +44,13 @@ void main() {
           if ((exercise['cv'] as Map<String, dynamic>?)?['supported'] == true)
             exercise['slug'] as String,
       };
-      expect(supported, all.keys.toSet());
+      final slugs = exercises.map((e) => e['slug'] as String).toSet();
+      expect(exercises, hasLength(20));
+      expect(slugs, hasLength(20));
+      expect(all.keys.toSet(), slugs);
+      // Seed metadata is maintained separately; every advertised exercise
+      // must have a config, including while its old false flags are updated.
+      expect(all.keys.toSet().containsAll(supported), isTrue);
       for (final exercise in exercises) {
         expect(
           exercise['cv'],
@@ -62,13 +68,14 @@ void main() {
       }
     });
 
-    test('plank and wall-sit are hold exercises; the rest count reps', () {
+    test('exercise tracking selects the expected camera mode', () {
       for (final slug in all.keys) {
-        expect(
-          exerciseConfig(slug).mode,
-          slug == 'plank' || slug == 'wall-sit' ? CvMode.hold : CvMode.reps,
-          reason: slug,
-        );
+        expect(exerciseConfig(slug).mode, switch (slug) {
+          'plank' || 'wall-sit' => CvMode.hold,
+          'dead-bug' || 'bird-dog' => CvMode.alternating,
+          'march-in-place' || 'step-jack' => CvMode.active,
+          _ => CvMode.reps,
+        }, reason: slug);
       }
     });
   });

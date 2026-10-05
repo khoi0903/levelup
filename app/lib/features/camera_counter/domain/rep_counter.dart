@@ -83,10 +83,10 @@ class RepCounterResult {
   /// có dữ liệu hoặc cấu hình không kiểm tra hướng.
   final bool? orientationOk;
 
-  /// Tổng thời gian giữ đúng dải (chế độ hold); luôn 0 ở chế độ reps.
+  /// Tổng thời gian giữ (hold) hoặc chuyển động (active); 0 ở reps/alternating.
   final Duration holdDuration;
 
-  /// Đang giữ trong dải ở khung gần nhất (chế độ hold).
+  /// Đang giữ trong dải (hold) hoặc có chu kỳ gần đây (active).
   final bool holding;
 
   /// Chế độ hold: thời gian (trong lúc giữ) góc của luật band thứ i nằm ngoài
@@ -120,6 +120,9 @@ class RepCounter {
   /// Khoảng hở lớn nhất giữa hai khung vẫn được cộng vào thời gian giữ.
   static const holdMaxGap = Duration(milliseconds: 500);
 
+  /// Sau chu kỳ hoàn chỉnh, hoạt động còn được tính tối đa hai giây.
+  static const activeWindow = Duration(seconds: 2);
+
   final CvConfig config;
   final Duration _startedAt;
   final List<List<PoseJoint>> _triplets;
@@ -144,6 +147,32 @@ class RepCounter {
   final List<Duration> _holdOutside;
   Duration? _holdPrevAt;
   bool _holdPrevInBand = false;
+  Duration? _activeUntil;
+  Duration? _lastCycleCompletedAt;
+
+  // Reuse the legacy debounce/range tracking independently for each side.
+  // Child configs are always reps, so this cannot recurse.
+  late final Map<BodySide, RepCounter> _sideCounters = {
+    for (final side in BodySide.values)
+      side: RepCounter(
+        startedAt: _startedAt,
+        config: CvConfig(
+          joints: config.joints,
+          downBelow: config.downBelow,
+          upAbove: config.upAbove,
+          minConfidence: config.minConfidence,
+          minRepMs: config.minRepMs,
+          direction: config.direction,
+          orientation: config.orientation,
+          formRules: config.mode == CvMode.alternating
+              ? config.formRules
+              : const [],
+        ),
+      ),
+  };
+
+  bool get _dualMode =>
+      config.mode == CvMode.alternating || config.mode == CvMode.active;
 
   RepCounterResult get result => RepCounterResult._(
     reps: _reps,
@@ -157,7 +186,12 @@ class RepCounter {
     averagedSides: _averagedSides,
     orientationOk: _orientationOk,
     holdDuration: _holdDuration,
-    holding: _holdPrevAt != null && _holdPrevInBand && !_personMissing,
+    holding:
+        _holdPrevAt != null &&
+        _holdPrevInBand &&
+        !_personMissing &&
+        (config.mode != CvMode.active ||
+            (_activeUntil != null && _latestTime < _activeUntil!)),
     holdOutsideByRule: _holdOutside,
   );
 
@@ -172,6 +206,10 @@ class RepCounter {
     _selectedSide = sample?.side;
     _averagedSides = sample?.averaged ?? false;
     _orientationOk = sample?.orientationOk;
+    if (_dualMode) {
+      _addDualFrame(frame, sample);
+      return result;
+    }
     if (sample == null) {
       _clearDebounce();
       return result;
@@ -267,6 +305,7 @@ class RepCounter {
     _orientationOk = null;
     _holdPrevAt = null;
     _holdPrevInBand = false;
+    _resetDualMotion();
     _clearDebounce();
     return result;
   }
@@ -279,6 +318,116 @@ class RepCounter {
       ? angle < config.downBelow
       : angle > config.upAbove;
 
+  void _resetDualMotion() {
+    if (!_dualMode) return;
+    _state = RepState.up;
+    _activeUntil = null;
+    _lastCycleCompletedAt = null;
+    for (final counter in _sideCounters.values) {
+      counter.discardIncompleteRep();
+    }
+  }
+
+  void _addDualFrame(PoseFrame frame, _AngleSample? sample) {
+    final completed = <DetectedRep>[];
+    for (final entry in _sideCounters.entries) {
+      final counter = entry.value;
+      final before = counter._reps.length;
+      counter.addFrame(
+        PoseFrame(
+          timestamp: frame.timestamp,
+          landmarks: frame.landmarks.values.where(
+            (point) => PoseJoint.values.any(
+              (joint) =>
+                  point.type == PoseLandmarkType.forJoint(joint, entry.key),
+            ),
+          ),
+        ),
+      );
+      if (counter._reps.length > before) {
+        completed.add(counter._reps.removeLast());
+      }
+    }
+    _state = _sideCounters.values.any((c) => c._state == RepState.down)
+        ? RepState.down
+        : RepState.up;
+    if (sample != null) {
+      // Presence is independent of posture, as in legacy reps/hold modes.
+      _lastConfidentAt = frame.timestamp;
+      _personMissing = false;
+      _confidenceSum += sample.confidence;
+      _confidenceFrames++;
+    }
+    if (sample == null || sample.orientationOk == false) {
+      _holdPrevAt = null;
+      _holdPrevInBand = false;
+      _resetDualMotion();
+      return;
+    }
+
+    // Add only the interval covered by the previous motion window. A new
+    // cycle must not retrospectively fill an expired window or a frame gap.
+    if (config.mode == CvMode.active) {
+      final previous = _holdPrevAt;
+      final until = _activeUntil;
+      if (previous != null &&
+          until != null &&
+          frame.timestamp - previous <= holdMaxGap) {
+        final end = frame.timestamp < until ? frame.timestamp : until;
+        if (end > previous) _accumulateHold(end - previous, sample);
+      }
+    }
+
+    completed.sort((a, b) => a.completedAt.compareTo(b.completedAt));
+    for (final rep in completed) {
+      if (config.mode == CvMode.active) {
+        // Duration has no double-count risk: even overlapping cycles are
+        // evidence of continued movement and must refresh the window.
+        _activeUntil = frame.timestamp + activeWindow;
+        continue;
+      }
+      // One cycle for overlapping left/right motions, including returns on
+      // different frames. Sequential alternating cycles remain independent.
+      if (_lastCycleCompletedAt != null &&
+          rep.startedAt <= _lastCycleCompletedAt!) {
+        if (rep.completedAt > _lastCycleCompletedAt!) {
+          _lastCycleCompletedAt = rep.completedAt;
+        }
+        continue;
+      }
+      _lastCycleCompletedAt = rep.completedAt;
+      _reps.add(
+        DetectedRep(
+          repIndex: _reps.length + 1,
+          startedAt: rep.startedAt,
+          completedAt: rep.completedAt,
+          deepestAngle: rep.deepestAngle,
+          peakAngle: rep.peakAngle,
+          averageConfidence: rep.averageConfidence,
+          angleRanges: rep.angleRanges,
+        ),
+      );
+    }
+    if (config.mode == CvMode.active) {
+      _holdPrevAt = frame.timestamp;
+      _holdPrevInBand = _activeUntil != null && frame.timestamp < _activeUntil!;
+    }
+  }
+
+  void _accumulateHold(Duration delta, _AngleSample sample) {
+    _holdDuration += delta;
+    for (var i = 0; i < config.formRules.length; i++) {
+      final rule = config.formRules[i];
+      if (rule.type != FormRuleType.band) continue;
+      final angle = rule.joints == null
+          ? sample.angle
+          : sample.tracked[tripletKey(rule.joints!)];
+      if (angle != null && (angle < rule.min! || angle > rule.max!)) {
+        _holdOutside[i] += delta;
+      }
+    }
+  }
+
   void _addHoldSample(Duration timestamp, _AngleSample sample) {
     final inBand =
         sample.orientationOk != false &&
@@ -288,17 +437,7 @@ class RepCounter {
     if (previous != null && _holdPrevInBand && inBand) {
       final delta = timestamp - previous;
       if (delta <= holdMaxGap) {
-        _holdDuration += delta;
-        for (var i = 0; i < config.formRules.length; i++) {
-          final rule = config.formRules[i];
-          if (rule.type != FormRuleType.band) continue;
-          final angle = rule.joints == null
-              ? sample.angle
-              : sample.tracked[tripletKey(rule.joints!)];
-          if (angle != null && (angle < rule.min! || angle > rule.max!)) {
-            _holdOutside[i] += delta;
-          }
-        }
+        _accumulateHold(delta, sample);
       }
     }
     _holdPrevAt = timestamp;
@@ -321,6 +460,7 @@ class RepCounter {
       _orientationOk = null;
       _holdPrevAt = null;
       _holdPrevInBand = false;
+      _resetDualMotion();
       _clearDebounce();
     }
   }

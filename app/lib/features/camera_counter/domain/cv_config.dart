@@ -20,6 +20,12 @@ enum CvMode {
   /// Bài giữ tư thế (plank, wall sit): cộng thời gian khi góc nằm trong
   /// [holdMin, holdMax] với đủ độ tin cậy.
   hold,
+
+  /// Mỗi bên hoàn tất một chu kỳ; chu kỳ hai bên chồng nhau tính một lần.
+  alternating,
+
+  /// Cộng thời gian khi có chu kỳ hoàn tất trong hai giây gần nhất.
+  active,
 }
 
 /// Cách chọn bên trái/phải mỗi khung hình.
@@ -116,7 +122,7 @@ class CvConfig {
     if (this.joints.length != 3 || this.joints.toSet().length != 3) {
       throw ArgumentError('joints must contain three distinct joints');
     }
-    if (mode == CvMode.reps) {
+    if (mode != CvMode.hold) {
       if (!downBelow.isFinite ||
           !upAbove.isFinite ||
           downBelow <= 0 ||
@@ -144,10 +150,10 @@ class CvConfig {
       throw ArgumentError('minRepMs must be nonnegative');
     }
     for (final rule in this.formRules) {
-      if (mode == CvMode.hold && rule.type != FormRuleType.band) {
-        throw ArgumentError('Hold mode supports band form rules only');
+      if (isHold && rule.type != FormRuleType.band) {
+        throw ArgumentError('Duration modes support band form rules only');
       }
-      if (mode == CvMode.hold &&
+      if (isHold &&
           !(rule.minFraction < rule.severity[0] && rule.severity[1] <= 1)) {
         throw ArgumentError(
           'Hold band severity must satisfy minFraction < [0] < [1] <= 1',
@@ -245,7 +251,7 @@ class CvConfig {
   /// Hướng dẫn đặt điện thoại hiển thị cho người dùng.
   final String? setupTipVi;
 
-  bool get isHold => mode == CvMode.hold;
+  bool get isHold => mode == CvMode.hold || mode == CvMode.active;
 
   /// Mọi bộ ba khớp cần đo: bộ chính (vị trí 0) rồi các bộ riêng của luật.
   List<List<PoseJoint>> get trackedTriplets {

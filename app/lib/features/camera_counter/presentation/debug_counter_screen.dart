@@ -175,6 +175,9 @@ class _DebugCounterScreenState extends State<DebugCounterScreen>
 
   String _thresholds() {
     final c = _config;
+    if (c.mode == CvMode.active) {
+      return 'Tính giờ khi có chu kỳ chuyển động trong 2 giây gần nhất.';
+    }
     if (c.isHold) return 'Giữ khi góc trong ${c.holdMin}°–${c.holdMax}°.';
     return c.direction == CvDirection.flex
         ? 'Đếm: xuống <${c.downBelow}° rồi lên >${c.upAbove}° '

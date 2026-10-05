@@ -103,6 +103,59 @@ class FakeDetector implements CameraRepPoseDetector {
 
 void main() {
   testWidgets(
+    'active mode exposes duration and holding through the session API',
+    (tester) async {
+      final camera = FakeCamera();
+      final detector = FakeDetector();
+      var time = Duration.zero;
+      final session = CameraRepSession(
+        config: CvConfig.fromJson({
+          'mode': 'active',
+          'joints': ['hip', 'knee', 'ankle'],
+          'downBelow': 100,
+          'upAbove': 150,
+          'minConfidence': 0.5,
+          'minRepMs': 200,
+        }),
+        camera: camera,
+        detector: detector,
+        elapsed: () => time,
+      );
+      expect(session.latestResult.isHold, isTrue);
+      expect(session.latestResult.mode, CvMode.active);
+      await session.start();
+      for (final angle in [
+        170.0,
+        170.0,
+        80.0,
+        80.0,
+        80.0,
+        170.0,
+        170.0,
+        170.0,
+      ]) {
+        detector.poses = [pose(angle)];
+        camera.emit();
+        await tester.pump();
+        time += const Duration(milliseconds: 100);
+      }
+      expect(session.latestResult.holding, isTrue);
+      expect(
+        session.latestResult.holdDuration,
+        const Duration(milliseconds: 100),
+      );
+      expect(session.latestResult.repCount, 0);
+      await session.pause();
+      expect(session.latestResult.holding, isFalse);
+      expect(
+        session.latestResult.holdDuration,
+        const Duration(milliseconds: 100),
+      );
+      await session.stop();
+    },
+  );
+
+  testWidgets(
     'broadcast results contain reps, presence, form score and issues',
     (tester) async {
       final camera = FakeCamera();
