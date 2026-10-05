@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
@@ -6,12 +7,19 @@ import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/secondary_button.dart';
+import '../../../users/presentation/controllers/user_controller.dart';
+import '../controllers/onboarding_controller.dart';
 
-class ObStartScreen extends StatelessWidget {
+class ObStartScreen extends ConsumerWidget {
   const ObStartScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Tên vừa nhập ở onboarding; mở lại màn này sau đó thì lấy từ GET /me
+    final typed = ref.watch(onboardingControllerProvider).displayName.trim();
+    final name = typed.isNotEmpty
+        ? typed
+        : (ref.watch(currentUserProvider)?.displayName ?? '').trim();
     final exercises = [
       (AppStrings.startEx1Title, AppStrings.startEx1Duration),
       (AppStrings.startEx2Title, AppStrings.startEx2Duration),
@@ -38,8 +46,8 @@ class ObStartScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-                const Text(
-                  AppStrings.startTitle,
+                Text(
+                  AppStrings.startTitle(name),
                   style: TextStyle(
                     fontSize: 28,
                     height: 1.25,

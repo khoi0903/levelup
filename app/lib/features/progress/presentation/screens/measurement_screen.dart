@@ -64,7 +64,14 @@ class _MeasurementScreenState extends ConsumerState<MeasurementScreen> {
       ref.invalidate(measurementHistoryProvider);
       ref.read(newProgressAchievementsProvider.notifier).state =
           result.newAchievements;
-      if (mounted) context.go('/progress');
+      if (!mounted) return;
+      // Quay về màn Tiến độ đang có trong ngăn xếp (giữ nút quay lại của nó);
+      // mở thẳng màn nhập (không có màn trước) thì mới thay bằng /progress
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/progress');
+      }
     } catch (e) {
       if (mounted) setState(() => error = e);
     } finally {

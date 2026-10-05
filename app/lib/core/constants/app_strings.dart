@@ -143,7 +143,8 @@ class AppStrings {
 
   // OB-Start
   static const String startReady = 'MỌI THỨ ĐÃ SẴN SÀNG';
-  static const String startTitle = 'Thử ngay buổi làm quen 5 phút nhé, Minh?';
+  static String startTitle(String name) =>
+      name.isEmpty ? 'Thử ngay buổi làm quen 5 phút nhé?' : 'Thử ngay buổi làm quen 5 phút nhé, $name?';
   static const String startSubtitle = 'Không cần dụng cụ, không cần thay đồ. Coach sẽ xem bạn thấy thế nào để chỉnh kế hoạch.';
   static const String startWorkoutImagePlaceholder = '[Ảnh minh họa buổi tập]';
   static const String startEx1Title = 'Bật nhảy tại chỗ';
@@ -159,7 +160,6 @@ class AppStrings {
 
   // Home
   static const String homeDate = 'Thứ Sáu, 26/9';
-  static const String homeGreeting = 'Chào buổi chiều, Minh';
   static const String streakWeeks = '5 tuần';
   static const String thisWeekTitle = 'Tuần này';
   static const String thisWeekSessions = '2/3 buổi';

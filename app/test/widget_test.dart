@@ -368,7 +368,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // 9. Màn OB-Start
-        expect(find.text(AppStrings.startTitle), findsOneWidget);
+        expect(find.textContaining('Thử ngay buổi làm quen 5 phút nhé'), findsOneWidget);
         expect(find.text(AppStrings.btnStart5Min), findsOneWidget);
         expect(find.text(AppStrings.btnScheduleFirstSession), findsOneWidget);
       },
