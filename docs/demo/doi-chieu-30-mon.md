@@ -157,3 +157,48 @@ Ví dụ kiểm toán trực tiếp: Cơm trắng dùng 150g cơm chín FDC 1688
 SHA-256 gói USDA đã tải: `b80817294b8850530aaedf2e515c02593b1824f763a0ff356e5c2081643e6fd0`.
 
 Có thể tải lại gói chính thức, tra FDC ID và bốn nutrient_id phía trên để tái tính. Công thức/hạn chế có trong báo cáo này và `sourceNote` từng món; script kiểm tra chỉ lưu tạm, không commit.
+
+## Đối chiếu Phở bò tái với test backend (2026-10-05)
+
+**Giữ `kcal: 535.5` cho khẩu phần 550 g trong `foods.json`; API nhận diện trả `kcal=536`, `kcalMin=455`, `kcalMax=616`.** Số 430 kcal trong `NutritionFlowTest` là kỳ vọng theo seed ước tính cũ, không khớp mô hình khẩu phần đã công khai ở trên. Kết luận này áp dụng cho mô hình của repo, không khẳng định mọi tô phở ngoài quán đều có cùng năng lượng; `verified=false` giữ nguyên.
+
+Đã đọc lại [PDF Viện Dinh dưỡng 2007](https://www.fao.org/fileadmin/templates/food_composition/documents/pdf/VTN_FCT_2007.pdf), mã 1013, trang in 13/trang PDF 26: bánh phở 143 kcal/100 g. Đã tải lại [CSV USDA SR Legacy 04/2018](https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_sr_legacy_food_csv_2018-04.zip), tra `food.csv` và `food_nutrient.csv` với nutrient_id 1008; SHA-256 khớp dấu vết trên. Có thể tìm bản tải tại [trang dữ liệu chính thức USDA](https://fdc.nal.usda.gov/download-datasets/).
+
+| Thành phần mô hình | Gam | Nguồn / mã | kcal/100 g | kcal đóng góp |
+|---|---:|---|---:|---:|
+| Bánh phở | 200 | VDD 2007, 1013 | 143 | 286 |
+| Bò chín ít mỡ, thay bò tái đã chần | 80 | USDA FDC 168632 | 202 | 161,6 |
+| Nước dùng bò | 230 | USDA FDC 172883 | 13 | 29,9 |
+| Hành tây | 30 | USDA FDC 170000 | 40 | 12 |
+| Dầu đậu nành giữ lại | 5 | USDA FDC 171411 | 884 | 44,2 |
+| Nước mắm | 5 | USDA FDC 174531 | 35 | 1,75 |
+| **Tổng** | **550** | | | **535,45** |
+
+Tổng mô hình làm tròn 1 chữ số thành **535,5**, lưu trong JSON; macro giữ **P 35,1 / C 69,1 / F 12,8 g**. Không đổi cấu trúc, khẩu phần, tên/alias hoặc dữ liệu món khác; chỉ bổ sung lý do vào `sourceNote` của Phở bò tái.
+
+Theo `NutritionRules.portion`, tính khoảng từ **535,5 trước khi làm tròn sang số nguyên**:
+
+- `kcal = Math.round(535.5) = 536`.
+- `kcalMin = Math.round(535.5 × 0.85) = Math.round(455.175) = 455`.
+- `kcalMax = Math.round(535.5 × 1.15) = Math.round(615.825) = 616`.
+
+### Báo Claude Code cập nhật test
+
+Không sửa hoặc chạy test backend trong tác vụ tài liệu này. Sau khi nạp seed mới vào MongoDB dev **cổng 27018**, Claude Code cập nhật `backend/src/test/java/vn/levelup/nutrition/NutritionFlowTest.java` và chạy lại flow test:
+
+| Kỳ vọng trong flow hiện tại | Cũ | Đúng với seed hiện tại |
+|---|---:|---:|
+| `first.items[0].kcal` (dòng 170) | 430 | **536** |
+| `first.items[0].kcalMin` (dòng 171) | 366 | **455** |
+| `first.items[0].kcalMax` (dòng 172) | 494 | **616** |
+| `afterSnack.consumed.kcal`, `today.consumed.kcal` (thêm sữa chua 120 kcal) | 550 | **656** |
+| `today.consumed.proteinG` (thêm 5 g đạm) | 33,0 | **40,1** |
+| `today.remaining.kcal` (mục tiêu 1790) | 1240 | **1134** |
+| `today.remaining.proteinG` (mục tiêu 112 g) | 79,0 | **71,9** |
+| `today.meals[0].kcal` (dòng 214) | 430 | **536** |
+| `today.meals[0].kcalMin` (dòng 215) | 366 | **456** |
+| Tiền tố thông điệp gợi ý đạm | 79 g | **72 g** |
+
+**Phân biệt khoảng nhận diện và khoảng bữa đã lưu:** `NutritionService` cộng kcal của item đã làm tròn (536), rồi tính khoảng của bữa: `Math.round(536 × 0.85)=456`, `Math.round(536 × 1.15)=616`. Vì vậy min của `today.meals[0]` là **456**, còn min của item nhận diện là **455** theo code hiện tại; không thay đồng loạt mọi 366 bằng 455. `NutritionRulesTest` có fixture riêng 430 kcal, không dùng seed, nên không cần đổi fixture chỉ vì cập nhật dữ liệu món.
+
+Đã tính lại công thức từ nguồn, kiểm tra JSON và phép làm tròn phù hợp Java; chưa nạp dữ liệu vào Atlas/dev và chưa xác nhận một lần chạy backend thực tế.
