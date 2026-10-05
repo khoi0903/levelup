@@ -207,6 +207,7 @@ class NutritionFlowTest {
         assertEquals(today(), today.read("$.localDate"));
         assertEquals(1790, today.<Integer>read("$.target.kcal"));
         assertEquals(656, today.<Integer>read("$.consumed.kcal"));
+        assertEquals(0, today.<Integer>read("$.burnedKcal"));                     // chưa tập buổi nào hôm nay
         assertEquals(40.1, today.<Double>read("$.consumed.proteinG"));
         assertEquals(1134, today.<Integer>read("$.remaining.kcal"));
         assertEquals(71.9, today.<Double>read("$.remaining.proteinG"));

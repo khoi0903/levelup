@@ -104,6 +104,7 @@ class WorkoutFlowTest {
         DocumentContext first = call(post("/workouts").header("Authorization", token)
             .contentType(MediaType.APPLICATION_JSON).content(workout("client-aaa-1", exerciseId, 12, 10)), 200);
         assertTrue(first.<Boolean>read("$.countsForStreak"));
+        assertTrue(first.<Integer>read("$.kcalBurned") > 0, "có ước tính calo đốt");
         assertFalse(first.<Boolean>read("$.duplicate"));
         assertEquals(1, first.<Integer>read("$.week.completedSessions"));
         assertEquals(0, first.<Integer>read("$.personalRecords.length()"));     // lần đầu chỉ lưu mốc
@@ -113,6 +114,7 @@ class WorkoutFlowTest {
         DocumentContext again = call(post("/workouts").header("Authorization", token)
             .contentType(MediaType.APPLICATION_JSON).content(workout("client-aaa-1", exerciseId, 12, 10)), 200);
         assertTrue(again.<Boolean>read("$.duplicate"));
+        assertEquals(first.<Integer>read("$.kcalBurned"), again.<Integer>read("$.kcalBurned"));   // gửi lại: cùng số
         assertEquals(first.<String>read("$.workoutId"), again.read("$.workoutId"));
         assertEquals(1, again.<Integer>read("$.week.completedSessions"));
         assertEquals("sessions_1", again.read("$.newAchievements[0].code"));

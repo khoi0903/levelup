@@ -76,8 +76,10 @@ public class WorkoutService {
 
         Set<String> exerciseIds = r.sets().stream().map(WorkoutRequest.SetLog::exerciseId)
             .collect(Collectors.toCollection(LinkedHashSet::new));
-        Map<String, String> names = StreamSupport.stream(exercises.findAllById(exerciseIds).spliterator(), false)
-            .collect(Collectors.toMap(Exercise::id, Exercise::nameVi));
+        List<Exercise> used = StreamSupport.stream(exercises.findAllById(exerciseIds).spliterator(), false).toList();
+        Map<String, String> names = used.stream().collect(Collectors.toMap(Exercise::id, Exercise::nameVi));
+        Map<String, Double> mets = new HashMap<>();
+        used.forEach(e -> mets.put(e.id(), e.met()));
         if (names.size() != exerciseIds.size()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "UNKNOWN_EXERCISE");
         }
@@ -85,6 +87,7 @@ public class WorkoutService {
         LocalDate localDate = r.startedAt().atZone(LocalDates.zone(user.timezone())).toLocalDate();
         String weekStart = LocalDates.weekStart(localDate).toString();
         boolean counts = WorkoutRules.countsForStreak(durationSec);
+        int kcalBurned = WorkoutRules.kcalBurned(r.sets(), mets, durationSec, latestWeightKg(userId, user));
         ObjectId logId = new ObjectId();
 
         // Kỷ lục: so với personal_records trước khi ghi, để đánh dấu isPr ngay trong log
@@ -114,6 +117,7 @@ public class WorkoutService {
             .append("durationSec", durationSec)
             .append("variant", r.variant())
             .append("countsForStreak", counts)
+            .append("kcalBurned", kcalBurned)
             .append("sets", r.sets().stream().map(s -> setDocument(s, now, prSets)).toList())
             .append("newRecords", newRecords)
             .append("createdAt", Date.from(now));
@@ -190,7 +194,20 @@ public class WorkoutService {
             r.plannedSessionId() == null ? null : new ObjectId(r.plannedSessionId()), r.rpe(), r.painAreas());
 
         return new WorkoutResponse(logId.toHexString(), localDate.toString(), durationSec, counts, false, week,
-            recordViews(newRecords, names), achievementViews(earned));
+            recordViews(newRecords, names), achievementViews(earned), kcalBurned);
+    }
+
+    /** Lần cân gần nhất; chưa cân thì cân nặng lúc onboarding; không có thì mức mặc định. */
+    private double latestWeightKg(ObjectId userId, User user) {
+        Document m = mongo.findOne(Query.query(Criteria.where("userId").is(userId).and("weightKg").exists(true))
+            .with(Sort.by(Sort.Direction.DESC, "measuredOn")), Document.class, "body_measurements");
+        if (m != null && m.get("weightKg") instanceof Number n && n.doubleValue() > 0) {
+            return n.doubleValue();
+        }
+        if (user.profile() != null && user.profile().startWeightKg() != null) {
+            return user.profile().startWeightKg();
+        }
+        return WorkoutRules.DEFAULT_WEIGHT_KG;
     }
 
     /** Kết quả của lần lưu trước, dựng lại từ dữ liệu đã ghi. */
@@ -209,7 +226,8 @@ public class WorkoutService {
             .toList();
         return new WorkoutResponse(logId.toHexString(), log.getString("localDate"),
             ((Number) log.get("durationSec")).longValue(), Boolean.TRUE.equals(log.getBoolean("countsForStreak")),
-            true, readWeek(userId, weekStart), recordViews(records, names), achievementViews(earned));
+            true, readWeek(userId, weekStart), recordViews(records, names), achievementViews(earned),
+            log.get("kcalBurned") instanceof Number k ? k.intValue() : 0);
     }
 
     private WorkoutResponse.Week addToWeek(ObjectId userId, String weekStart) {

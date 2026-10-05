@@ -11,7 +11,8 @@ public record WorkoutResponse(
     boolean duplicate,          // true khi app gửi lại cùng clientId
     Week week,
     List<Record> personalRecords,
-    List<Achievement> newAchievements
+    List<Achievement> newAchievements,
+    int kcalBurned              // ước tính: MET × cân nặng × thời gian (WorkoutRules.kcalBurned)
 ) {
     public record Week(String weekStart, int targetSessions, int completedSessions, String status) {}
 

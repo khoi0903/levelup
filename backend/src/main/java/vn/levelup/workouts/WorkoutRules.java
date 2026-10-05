@@ -19,6 +19,29 @@ public final class WorkoutRules {
 
     private WorkoutRules() {}
 
+    /** MET khi bài chưa có số liệu: mức vận động vừa phải. */
+    public static final double DEFAULT_MET = 4.0;
+    /** Chưa có cân nặng nào: dùng mức trung bình người Việt trưởng thành. */
+    public static final double DEFAULT_WEIGHT_KG = 60.0;
+
+    /**
+     * Calo đốt ước tính: MET × cân nặng (kg) × thời gian (giờ). Thời lượng cả buổi chia cho từng bài theo số hiệp,
+     * nên MET dùng là trung bình có trọng số theo số hiệp. Đã gồm thời gian nghỉ giữa hiệp → là ước tính, không đo.
+     */
+    public static int kcalBurned(List<WorkoutRequest.SetLog> sets, Map<String, Double> metByExercise,
+                                 long durationSec, double weightKg) {
+        if (sets.isEmpty() || durationSec <= 0 || weightKg <= 0) {
+            return 0;
+        }
+        double sum = 0;
+        for (WorkoutRequest.SetLog s : sets) {
+            Double met = metByExercise.get(s.exerciseId());
+            sum += met == null || met <= 0 ? DEFAULT_MET : met;
+        }
+        double met = sum / sets.size();
+        return (int) Math.round(met * weightKg * durationSec / 3600.0);
+    }
+
     public static boolean countsForStreak(long durationSec) {
         return durationSec >= MIN_STREAK_SEC;
     }
