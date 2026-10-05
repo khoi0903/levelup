@@ -33,6 +33,8 @@ class ExerciseResponse {
   final String? tracking;
   final List<String> equipment;
   final ExerciseCamera? camera;
+  final List<String> contraindications;
+  final bool isActive;
 
   const ExerciseResponse({
     required this.id,
@@ -47,6 +49,8 @@ class ExerciseResponse {
     this.tracking,
     this.equipment = const [],
     this.camera,
+    this.contraindications = const [],
+    this.isActive = true,
   });
 
   factory ExerciseResponse.fromJson(Map<String, dynamic> json) {
@@ -71,6 +75,12 @@ class ExerciseResponse {
       camera: json['camera'] != null
           ? ExerciseCamera.fromJson(json['camera'] as Map<String, dynamic>)
           : null,
+      contraindications:
+          (json['contraindications'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      isActive: json['isActive'] as bool? ?? true,
     );
   }
 
@@ -87,5 +97,7 @@ class ExerciseResponse {
     if (tracking != null) 'tracking': tracking,
     'equipment': equipment,
     if (camera != null) 'camera': camera!.toJson(),
+    'contraindications': contraindications,
+    'isActive': isActive,
   };
 }

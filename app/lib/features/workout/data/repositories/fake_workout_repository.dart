@@ -53,6 +53,7 @@ class FakeWorkoutRepository implements WorkoutRepository {
             completedSessions: 1,
             status: 'in_progress',
           ),
+          kcalBurned: duration > 0 ? ((duration / 60) * 6).round() : 120,
         );
   }
 

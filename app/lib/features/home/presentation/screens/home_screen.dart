@@ -87,11 +87,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final plan = planAsync.valueOrNull;
     final todayStr = localDateString(DateTime.now());
     final todaySession = plan == null ? null : pickNextSession(plan, todayStr);
-    // Đã tập xong, hoặc buổi kế tiếp ở ngày sau: tập lúc này là "Tập thêm", không gắn vào lịch
+    // Đã tập xong, không có buổi hôm nay, hoặc buổi kế tiếp ở ngày sau: tập lúc này là "Tập thêm"
     final todayDone =
-        todaySession != null &&
-        (todaySession.status == 'completed' ||
-            !canLinkToPlan(todaySession.scheduledDate, DateTime.now()));
+        todaySession == null ||
+        todaySession.status == 'completed' ||
+        !canLinkToPlan(todaySession.scheduledDate, DateTime.now());
 
     final totalTarget =
         streakAsync.valueOrNull?.thisWeek?.targetSessions ??
@@ -549,11 +549,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: PrimaryButton(
                   label: todayDone ? 'Tập thêm' : AppStrings.btnStart,
                   height: 48,
-                  onPressed: () => context.push(
-                    todaySession == null
-                        ? '/workout'
-                        : '/workout/${todaySession.id}',
-                  ),
+                  onPressed: todayDone
+                      ? () => context.push('/workout/extra')
+                      : () => context.push('/workout/${todaySession!.id}'),
                 ),
               ),
               const SizedBox(width: 8),

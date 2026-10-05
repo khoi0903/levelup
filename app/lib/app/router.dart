@@ -37,6 +37,7 @@ import '../features/workout/presentation/screens/workout_active_screen.dart';
 import '../features/workout/presentation/screens/workout_finish_screen.dart';
 import '../features/workout/presentation/screens/workout_result_screen.dart';
 import '../features/workout/presentation/screens/workout_start_screen.dart';
+import '../features/workout/presentation/screens/workout_extra_screen.dart';
 
 GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
   initialLocation: initialLocation,
@@ -282,6 +283,11 @@ GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
       path: '/workout/result',
       name: 'workout_result',
       builder: (context, state) => const WorkoutResultScreen(),
+    ),
+    GoRoute(
+      path: '/workout/extra',
+      name: 'workout_extra',
+      builder: (context, state) => const WorkoutExtraScreen(),
     ),
     GoRoute(
       path: '/workout/:sessionId',

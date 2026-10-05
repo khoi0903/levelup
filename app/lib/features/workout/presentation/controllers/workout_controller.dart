@@ -102,9 +102,20 @@ SessionView? pickNextSession(PlanView plan, String today) {
 
 typedef WorkoutSetupArgs = ({String? sessionId, bool quick5});
 
+/// Buổi tập thêm dựng tạm thời (không nằm trong kế hoạch).
+final extraWorkoutSetupProvider = StateProvider<WorkoutSetup?>((ref) => null);
+
 /// Tải kế hoạch + thư viện bài tập và ghép thành buổi để tập.
 final workoutSetupProvider = FutureProvider.autoDispose
     .family<WorkoutSetup, WorkoutSetupArgs>((ref, args) async {
+      // Nếu là buổi tập thêm (extra-...), lấy trực tiếp từ provider
+      if (args.sessionId != null && args.sessionId!.startsWith('extra-')) {
+        final extra = ref.watch(extraWorkoutSetupProvider);
+        if (extra != null && extra.session.id == args.sessionId) {
+          return extra;
+        }
+      }
+
       final workoutRepo = ref.watch(workoutRepositoryProvider);
       final planRepo = ref.watch(planRepositoryProvider);
       final now = ref.watch(workoutClockProvider)();
