@@ -1,6 +1,7 @@
 package vn.levelup.coach;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -9,6 +10,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +55,80 @@ public class GeminiAiClient implements AiClient {
     @Override
     public String complete(String system, List<AiClient.Message> messages, int maxTokens) {
         return call(textRequest(system, messages, maxTokens));
+    }
+
+    /**
+     * streamGenerateContent?alt=sse: mỗi dòng "data: {...}" là một phần câu trả lời.
+     * Lỗi trước khi có chữ nào thì thử lại 1 lần như complete; đã phát chữ rồi mà đứt thì báo AI lỗi.
+     */
+    @Override
+    public String stream(String system, List<AiClient.Message> messages, int maxTokens, Consumer<String> onText) {
+        if (apiKey == null) {
+            throw new AiUnavailableException("GEMINI_API_KEY chưa được cấu hình", null);
+        }
+        HttpRequest request = HttpRequest.newBuilder(URI.create(BASE + model + ":streamGenerateContent?alt=sse"))
+            .timeout(timeout)
+            .header("Content-Type", "application/json")
+            .header("x-goog-api-key", apiKey)
+            .POST(HttpRequest.BodyPublishers.ofString(JSON.writeValueAsString(textRequest(system, messages, maxTokens)),
+                StandardCharsets.UTF_8))
+            .build();
+        for (int attempt = 1; ; attempt++) {
+            StringBuilder all = new StringBuilder();
+            try {
+                HttpResponse<Stream<String>> response = http().send(request,
+                    HttpResponse.BodyHandlers.ofLines());
+                int status = response.statusCode();
+                if (status != 200) {
+                    response.body().close();
+                    log.warn("Gọi Gemini (stream) lỗi HTTP {} (lần {})", status, attempt);
+                    if (!(status == 429 || status >= 500) || attempt >= 2) {
+                        throw new AiUnavailableException("Coach đang bận, thử lại nhé", null);
+                    }
+                    continue;
+                }
+                try (Stream<String> lines = response.body()) {
+                    lines.filter(l -> l.startsWith("data:")).forEach(l -> {
+                        String part = parseChunk(l.substring(5).trim());
+                        if (!part.isEmpty()) {
+                            all.append(part);
+                            onText.accept(part);
+                        }
+                    });
+                }
+                if (all.isEmpty()) {
+                    throw new AiUnavailableException("Gemini không trả nội dung (stream)", null);
+                }
+                return all.toString();
+            } catch (IOException | UncheckedIOException e) {
+                log.warn("Gọi Gemini (stream) lỗi mạng (lần {}): {}", attempt, e.getMessage());
+                if (!all.isEmpty() || attempt >= 2) {
+                    throw new AiUnavailableException("Coach đang bận, thử lại nhé", e);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new AiUnavailableException("Bị ngắt khi gọi Gemini", e);
+            }
+        }
+    }
+
+    /** Chữ trong một sự kiện stream (bỏ phần "thought"); bị chặn thì coi như AI không dùng được. */
+    static String parseChunk(String json) {
+        if (json.isEmpty()) {
+            return "";
+        }
+        JsonNode root = JSON.readTree(json);
+        JsonNode blocked = root.path("promptFeedback").path("blockReason");
+        if (!blocked.isMissingNode() && !blocked.isNull()) {
+            throw new AiUnavailableException("Gemini chặn yêu cầu: " + blocked.asString(), null);
+        }
+        StringBuilder text = new StringBuilder();
+        for (JsonNode part : root.path("candidates").path(0).path("content").path("parts")) {
+            if (!part.path("thought").asBoolean(false) && part.path("text").isString()) {
+                text.append(part.path("text").asString());
+            }
+        }
+        return text.toString();
     }
 
     @Override

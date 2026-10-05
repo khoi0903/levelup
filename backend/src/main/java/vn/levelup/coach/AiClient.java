@@ -1,6 +1,7 @@
 package vn.levelup.coach;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Cổng duy nhất gọi Claude (AGENTS.md: chỉ backend gọi AI). Mọi module dùng interface này,
@@ -13,6 +14,16 @@ public interface AiClient {
 
     /** Hội thoại văn bản. role của từng tin: "user" hoặc "assistant", tin cuối là "user". */
     String complete(String system, List<Message> messages, int maxTokens);
+
+    /**
+     * Như {@link #complete}, nhưng gọi onText với từng đoạn chữ mới khi AI trả dần, rồi trả toàn bộ chữ.
+     * Mặc định (nhà cung cấp chưa hỗ trợ stream): gọi complete rồi phát một lần.
+     */
+    default String stream(String system, List<Message> messages, int maxTokens, Consumer<String> onText) {
+        String all = complete(system, messages, maxTokens);
+        onText.accept(all);
+        return all;
+    }
 
     /** Một ảnh kèm câu hỏi (nhận diện món ăn). mediaType: image/jpeg | image/png | image/webp. */
     String completeWithImage(String system, String prompt, byte[] image, String mediaType, int maxTokens);

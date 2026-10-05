@@ -14,6 +14,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.bson.Document;
@@ -83,6 +84,14 @@ public class CoachService {
     // ------------------------------------------------------------------
 
     public CoachViews.SendResponse send(User user, String text) {
+        return send(user, text, t -> { });
+    }
+
+    /**
+     * Như send, nhưng onReplyText nhận dần chữ câu trả lời khi AI đang viết (POST /coach/messages/stream).
+     * Bản cuối (đã kiểm tra đề xuất, đã lưu) vẫn là giá trị trả về; chữ đã phát có thể khác nếu AI lỗi.
+     */
+    public CoachViews.SendResponse send(User user, String text, Consumer<String> onReplyText) {
         ObjectId userId = new ObjectId(user.id());
         LocalDate today = LocalDates.today(user.timezone(), clock);
         int used = consumeQuota(userId, today.toString());
@@ -102,7 +111,7 @@ public class CoachService {
         if (ai.available()) {
             List<Exercise> safe = SafeSessions.safeList(active, ctx.location(), ctx.equipment(), ctx.injuries());
             String system = CoachPrompts.chatSystem(ctx.style(), userData(user, ctx, memory, plan, byId, safe, today));
-            Optional<Proposal> fromAi = askAi(system, conversation(recentMessages(userId), message));
+            Optional<Proposal> fromAi = askAi(system, conversation(recentMessages(userId), message), onReplyText);
             if (fromAi.isPresent()) {
                 p = fromAi.get();
                 source = "ai";
@@ -222,9 +231,16 @@ public class CoachService {
     }
 
     /** Hỏi Claude; JSON sai thì hỏi lại 1 lần, vẫn sai hoặc AI lỗi thì empty để dùng luật cố định. */
-    private Optional<Proposal> askAi(String system, List<AiClient.Message> messages) {
+    private Optional<Proposal> askAi(String system, List<AiClient.Message> messages, Consumer<String> onReplyText) {
         try {
-            String raw = ai.complete(system, messages, MAX_TOKENS);
+            // Lần đầu stream: tách dần chuỗi "reply" để app hiện chữ ngay; lần sửa JSON thì không stream
+            ReplyExtractor reply = new ReplyExtractor();
+            String raw = ai.stream(system, messages, MAX_TOKENS, chunk -> {
+                String text = reply.feed(chunk);
+                if (!text.isEmpty()) {
+                    onReplyText.accept(text);
+                }
+            });
             Optional<Proposal> parsed = CoachRules.parseAi(raw);
             if (parsed.isPresent()) {
                 return parsed;
