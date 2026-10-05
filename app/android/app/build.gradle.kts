@@ -37,6 +37,10 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            // Tắt rút gọn code (R8): bản release bị R8 bỏ mất class mà camera / ML Kit / Firebase
+            // gọi qua reflection, app thoát ngay khi mở. Bật lại khi đã có quy tắc proguard đầy đủ.
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
