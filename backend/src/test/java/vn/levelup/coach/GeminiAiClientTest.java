@@ -66,4 +66,14 @@ class GeminiAiClientTest {
         assertEquals("gemini", AiConfig.choose(null, " ", "g"));
         assertEquals("claude", AiConfig.choose("auto", null, null));
     }
+
+    @Test
+    void stream_chunk_text_skips_thoughts_and_detects_block() {
+        assertEquals("Chào bạn", GeminiAiClient.parseChunk("""
+            {"candidates":[{"content":{"parts":[{"text":"nghĩ…","thought":true},{"text":"Chào bạn"}]}}]}"""));
+        assertEquals("", GeminiAiClient.parseChunk("{\"candidates\":[{\"finishReason\":\"STOP\"}]}"));
+        assertEquals("", GeminiAiClient.parseChunk(""));
+        assertThrows(AiClient.AiUnavailableException.class,
+            () -> GeminiAiClient.parseChunk("{\"promptFeedback\":{\"blockReason\":\"SAFETY\"}}"));
+    }
 }

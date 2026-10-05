@@ -5,14 +5,18 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Clock;
@@ -71,6 +75,8 @@ class CoachFlowTest {
         mvc = MockMvcBuilders.webAppContextSetup(context)
             .addFilters(context.getBean("springSecurityFilterChain", Filter.class)).build();
         token = "Bearer dev-it-" + UUID.randomUUID();
+        // stream() mặc định gọi complete() đã giả lập rồi phát một lần (như nhà cung cấp chưa stream)
+        when(ai.stream(anyString(), anyList(), anyInt(), any())).thenCallRealMethod();
     }
 
     @AfterEach
@@ -219,6 +225,53 @@ class CoachFlowTest {
             .header("Authorization", token), 409);
         assertEquals("ACTION_INVALID", rejected.read("$.code"));
         assertEquals(itemIds(session), itemIds(nextSession()));
+    }
+
+    @Test
+    void stream_phat_chu_dan_roi_ban_cuoi_da_luu() throws Exception {
+        onboard();
+        when(ai.available()).thenReturn(true);
+        // AI trả dần từng đoạn: tách được chữ trong "reply" trước khi JSON đủ
+        doAnswer(inv -> {
+            java.util.function.Consumer<String> onText = inv.getArgument(3);
+            String[] parts = {"{\"reply\": \"Chào bạn, ", "hôm nay tập nhẹ ", "nhé\", \"memory\": []}"};
+            for (String part : parts) {
+                onText.accept(part);
+            }
+            return String.join("", parts);
+        }).when(ai).stream(anyString(), anyList(), anyInt(), any());
+
+        var started = mvc.perform(post("/coach/messages/stream").header("Authorization", token)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"text\":\"hôm nay tập gì\"}"))
+            .andExpect(request().asyncStarted()).andReturn();
+        String body = mvc.perform(asyncDispatch(started)).andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+
+        assertTrue(body.contains("event:delta"), body);
+        assertTrue(body.contains("Chào bạn, ") && body.contains("hôm nay tập nhẹ ") && body.contains("nhé"), body);
+        String done = body.substring(body.indexOf("event:done"));
+        int data = done.indexOf("data:") + 5;
+        DocumentContext doneJson = JsonPath.parse(done.substring(data, done.indexOf('\n', data)).trim());
+        assertEquals("Chào bạn, hôm nay tập nhẹ nhé", doneJson.read("$.reply.content"));
+        assertEquals("hôm nay tập gì", doneJson.read("$.userMessage.content"));
+        // Đã lưu như POST /coach/messages
+        assertEquals(2, mongo.count(Query.query(Criteria.where("userId").is(userDoc().getObjectId("_id"))),
+            "coach_messages"));
+    }
+
+    @Test
+    void stream_het_luot_tra_event_error() throws Exception {
+        onboard();
+        when(ai.available()).thenReturn(false);
+        mongo.upsert(Query.query(Criteria.where("userId").is(userDoc().getObjectId("_id"))
+            .and("localDate").is(java.time.LocalDate.now(vn.levelup.common.LocalDates.DEFAULT_ZONE).toString())),
+            Update.update("usage.coachMessages", 999), "daily_stats");
+        var started = mvc.perform(post("/coach/messages/stream").header("Authorization", token)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"text\":\"chào\"}"))
+            .andExpect(request().asyncStarted()).andReturn();
+        String body = mvc.perform(asyncDispatch(started)).andReturn().getResponse()
+            .getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(body.contains("event:error") && body.contains("COACH_LIMIT"), body);
     }
 
     @Test
