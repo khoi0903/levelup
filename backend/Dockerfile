@@ -1,13 +1,17 @@
-# Image chạy backend trên Cloud Run / Render. Build:  docker build -t levelup-backend backend
+# Image chạy backend trên Render / Cloud Run. Build từ GỐC repo (cần docs/content cho mẫu tin nhắn coach):
+#   docker build -f backend/Dockerfile -t levelup-backend .
+# .dockerignore ở gốc repo chỉ cho vào backend/pom.xml, backend/src, docs/content.
 # Biến môi trường cần khi chạy: xem docs/deploy.md
 
 # 1. Build jar (bỏ qua test: test cần MongoDB, đã chạy trên máy dev trước khi deploy)
 FROM maven:3.9-eclipse-temurin-21 AS build
-WORKDIR /app
-COPY pom.xml .
+WORKDIR /app/backend
+COPY backend/pom.xml .
 RUN mvn -q -B dependency:go-offline
-COPY src ./src
-RUN mvn -q -B -DskipTests package && cp target/backend-*.jar app.jar
+COPY backend/src ./src
+# pom.xml đóng gói ../docs/content vào classpath:content/ (coach-messages.json)
+COPY docs/content /app/docs/content
+RUN mvn -q -B -DskipTests package && cp target/backend-*.jar /app/app.jar
 
 # 2. Chạy bằng JRE gọn
 FROM eclipse-temurin:21-jre
