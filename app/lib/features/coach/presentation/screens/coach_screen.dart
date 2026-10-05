@@ -143,21 +143,25 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                       )
                     : state.messages.isEmpty && !state.isSending
                     ? _buildWelcome(state)
-                    : ListView.builder(
-                        controller: _scrollController,
-                        reverse: true,
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                        itemCount:
-                            state.messages.length +
-                            (state.isSending ? 1 : 0) +
-                            (state.isLoadingMore ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          // Danh sách đảo ngược: index 0 là dưới cùng
-                          if (state.isSending) {
-                            if (index == 0) return _buildTyping();
-                            index -= 1;
-                          }
+                    : Builder(
+                        builder: (context) {
+                          final showTyping =
+                              state.isSending && !state.hasStreamingReply;
+                          return ListView.builder(
+                            controller: _scrollController,
+                            reverse: true,
+                            physics: const BouncingScrollPhysics(),
+                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                            itemCount:
+                                state.messages.length +
+                                (showTyping ? 1 : 0) +
+                                (state.isLoadingMore ? 1 : 0),
+                            itemBuilder: (context, index) {
+                              // Danh sách đảo ngược: index 0 là dưới cùng
+                              if (showTyping) {
+                                if (index == 0) return _buildTyping();
+                                index -= 1;
+                              }
                           if (index == state.messages.length) {
                             return const Padding(
                               padding: EdgeInsets.symmetric(vertical: 12),
@@ -175,7 +179,9 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                           final msg = state.messages[index];
                           return _buildMessageItem(context, msg, notifier);
                         },
-                      ),
+                      );
+                    },
+                  ),
               ),
               _buildInputBar(state),
             ],

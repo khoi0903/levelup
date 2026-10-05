@@ -163,6 +163,40 @@ class ApiClient {
     }
   }
 
+  Future<Response<ResponseBody>> postStream(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
+    final streamOptions = (options ?? Options()).copyWith(
+      responseType: ResponseType.stream,
+      headers: {
+        'Accept': 'text/event-stream',
+        if (options?.headers != null) ...options!.headers!,
+      },
+    );
+    try {
+      return await dio.post<ResponseBody>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: streamOptions,
+      );
+    } on DioException catch (e) {
+      if (e.error is ApiException) {
+        throw e.error as ApiException;
+      }
+      throw ApiException(
+        code: e.response?.statusCode != null
+            ? 'HTTP_${e.response!.statusCode}'
+            : 'NETWORK_ERROR',
+        fields: const {},
+        statusCode: e.response?.statusCode,
+      );
+    }
+  }
+
   Future<Response<T>> patch<T>(
     String path, {
     dynamic data,
