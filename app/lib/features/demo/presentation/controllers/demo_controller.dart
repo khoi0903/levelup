@@ -89,9 +89,15 @@ class DemoNotifier extends StateNotifier<DemoState> {
             message = 'Đã thực hiện: ${pushResult ?? "thành công"}';
         }
       } else if (action == 'seed') {
-        message = 'Nạp dữ liệu demo thành công (9 buổi tập, streak 3 tuần, cân nặng 4 tuần, 21 bữa ăn).';
+        final r = resultData is Map ? resultData : const {};
+        message =
+            'Đã nạp dữ liệu demo: ${r['workouts'] ?? 0} buổi tập, streak ${r['currentWeeks'] ?? 0} tuần, '
+            '${r['measurements'] ?? 0} lần cân, ${r['meals'] ?? 0} bữa ăn.';
       } else if (action == 'skip-two') {
-        message = 'Đã giả lập bỏ 2 buổi gần nhất. Coach đã gửi nhắc nhở.';
+        final skipped = resultData is Map ? (resultData['skipped'] as num?)?.toInt() ?? 0 : 0;
+        message = skipped == 0
+            ? 'Không còn buổi nào từ hôm nay trở về trước để bỏ.'
+            : 'Đã giả lập bỏ $skipped buổi. Coach sẽ hỏi lý do.';
       } else if (action == 'close-week') {
         final status = resultData is Map
             ? resultData['status']?.toString()

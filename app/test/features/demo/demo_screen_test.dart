@@ -89,7 +89,7 @@ void main() {
       expect(fakeDemoRepo.lastActionCalled, 'seed');
       expect(find.byKey(const ValueKey('demo-result-text')), findsOneWidget);
       expect(
-        find.textContaining('Nạp dữ liệu demo thành công'),
+        find.textContaining('Đã nạp dữ liệu demo'),
         findsOneWidget,
       );
 
