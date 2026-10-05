@@ -31,7 +31,12 @@ Chỉ sửa app/lib, app/test. Không chạy dart format cho cả thư mục.
    tập hiện có (màn bắt đầu, đếm camera, nghỉ, kết thúc, lưu offline bằng drift). Màn kết quả ghi "Buổi tập thêm".
 3. Trang chủ: nút chính khi hôm nay không có buổi / buổi kế tiếp ở ngày sau ghi "Tập thêm" và mở màn ở mục 1;
    vẫn hiện thông tin buổi kế tiếp (thứ, giờ) chỉ để xem.
-4. Test: hàm ghép buổi gợi ý (lọc nơi tập, dụng cụ, chấn thương, đủ 3–5 bài), tự chọn bài → bắt đầu → POST
+4. Calo đốt (backend đã có): POST /workouts trả thêm `kcalBurned` (int, ước tính MET × cân nặng × thời gian);
+   GET /nutrition/today trả thêm `burnedKcal` (tổng hôm nay, chỉ để xem, không cộng vào mục tiêu ăn).
+   - Màn kết quả buổi tập: dòng "Đốt khoảng X kcal" (icon lửa), có chữ nhỏ "ước tính".
+   - Màn Dinh dưỡng: dưới tổng đã ăn, dòng "Đã đốt khi tập: X kcal" (ẩn khi 0).
+   - Chi tiết tuần streak: mỗi buổi đã tập hiện kcal nếu có (GET /streak/weeks chưa trả kcal → bỏ qua phần này).
+5. Test: hàm ghép buổi gợi ý (lọc nơi tập, dụng cụ, chấn thương, đủ 3–5 bài), tự chọn bài → bắt đầu → POST
    /workouts không có plannedSessionId, nút "Tập thêm" không mở buổi ngày mai.
-5. Commit riêng trên cùng nhánh: "app: màn Tập thêm cho chọn buổi gợi ý hoặc tự chọn bài". Báo lại để review.
+6. Commit riêng trên cùng nhánh: "app: màn Tập thêm cho chọn buổi gợi ý hoặc tự chọn bài, hiện calo đốt". Báo lại để review.
 ```
