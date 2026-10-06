@@ -204,6 +204,7 @@ class NutritionToday {
     this.waterMl = 0,
     this.meals = const [],
     this.suggestion,
+    this.burnedKcal = 0,
   });
   final String localDate;
   final NutritionTarget? target;
@@ -212,6 +213,7 @@ class NutritionToday {
   final int waterMl;
   final List<MealView> meals;
   final DinnerSuggestion? suggestion;
+  final int burnedKcal;
   NutritionToday withWater(int value) => NutritionToday(
     localDate: localDate,
     target: target,
@@ -220,6 +222,7 @@ class NutritionToday {
     waterMl: value,
     meals: meals,
     suggestion: suggestion,
+    burnedKcal: burnedKcal,
   );
   factory NutritionToday.fromJson(Map<String, dynamic> j) => NutritionToday(
     localDate: j['localDate'] as String,
@@ -231,6 +234,7 @@ class NutritionToday {
     suggestion: j['suggestion'] == null
         ? null
         : DinnerSuggestion.fromJson(j['suggestion']),
+    burnedKcal: (j['burnedKcal'] as num?)?.toInt() ?? 0,
   );
 }
 

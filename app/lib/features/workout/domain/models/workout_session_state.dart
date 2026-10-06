@@ -168,6 +168,9 @@ class WorkoutSessionState {
       ? session.id
       : null;
 
+  bool get isExtra =>
+      session.id.startsWith('extra-') || plannedSessionId == null;
+
   bool get allExercisesDone => exerciseIndex >= items.length;
 
   WorkoutPlanItem? get currentItem =>

@@ -71,7 +71,11 @@ class _Overview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final session = setup.session;
-    final done = session.status == 'completed';
+    final isExtra = session.id.startsWith('extra-');
+    final isFuture = !isExtra && !canLinkToPlan(session.scheduledDate, DateTime.now());
+    final done = !isExtra && session.status == 'completed';
+    final shouldOpenExtra = done || isFuture;
+
     final meta = [
       if (session.durationMin > 0) '${session.durationMin} phút',
       '${setup.items.length} động tác',
@@ -96,7 +100,15 @@ class _Overview extends StatelessWidget {
                 const TipBox(
                   icon: Icons.check_circle_rounded,
                   child: Text(
-                    'Bạn đã hoàn thành buổi này. Tập thêm vẫn được ghi lại.',
+                    'Bạn đã hoàn thành buổi này. Bạn có thể chọn tập thêm.',
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ] else if (isFuture) ...[
+                const TipBox(
+                  icon: Icons.calendar_today_rounded,
+                  child: Text(
+                    'Buổi này được lên lịch cho ngày khác. Hãy chọn tập thêm hôm nay.',
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -116,12 +128,16 @@ class _Overview extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
           child: PrimaryButton(
-            label: 'Bắt đầu',
-            icon: const Icon(
-              Icons.play_arrow_rounded,
+            label: shouldOpenExtra ? 'Tập thêm' : 'Bắt đầu',
+            icon: Icon(
+              shouldOpenExtra ? Icons.add_rounded : Icons.play_arrow_rounded,
               color: AppColors.surface,
             ),
-            onPressed: setup.items.isEmpty ? null : onStart,
+            onPressed: setup.items.isEmpty
+                ? null
+                : (shouldOpenExtra
+                    ? () => context.push('/workout/extra')
+                    : onStart),
           ),
         ),
       ],

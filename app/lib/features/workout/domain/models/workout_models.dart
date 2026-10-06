@@ -274,6 +274,7 @@ class WorkoutResult {
   final WeekProgress? week;
   final List<PersonalRecord> personalRecords;
   final List<Achievement> newAchievements;
+  final int kcalBurned;
 
   const WorkoutResult({
     required this.workoutId,
@@ -284,6 +285,7 @@ class WorkoutResult {
     this.week,
     this.personalRecords = const [],
     this.newAchievements = const [],
+    this.kcalBurned = 0,
   });
 
   factory WorkoutResult.fromJson(Map<String, dynamic> json) => WorkoutResult(
@@ -305,5 +307,6 @@ class WorkoutResult {
             ?.map((e) => Achievement.fromJson(e as Map<String, dynamic>))
             .toList() ??
         const [],
+    kcalBurned: (json['kcalBurned'] as num?)?.toInt() ?? 0,
   );
 }

@@ -248,6 +248,18 @@ class _Summary extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 14),
+        if (today.burnedKcal > 0) ...[
+          Text(
+            'Đã đốt khi tập: ${today.burnedKcal} kcal',
+            key: const ValueKey('nutrition-burned-kcal'),
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 4),
+        ],
         Text(
           target == null
               ? 'Chưa có mục tiêu dinh dưỡng'

@@ -6,6 +6,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
+import '../../../../core/widgets/secondary_button.dart';
 import '../../../home/presentation/controllers/home_controller.dart';
 import '../../../users/presentation/controllers/user_controller.dart';
 import '../../domain/models/workout_models.dart';
@@ -26,7 +27,8 @@ class WorkoutResultScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final result = ref.watch(activeWorkoutProvider)?.result;
+    final activeSession = ref.watch(activeWorkoutProvider);
+    final result = activeSession?.result;
     if (result == null) {
       return Scaffold(
         body: GradientBackground(
@@ -40,6 +42,8 @@ class WorkoutResultScreen extends ConsumerWidget {
       );
     }
     final week = result.week;
+    final isExtra = activeSession?.isExtra == true ||
+        activeSession?.session.id.startsWith('extra-') == true;
 
     return PopScope(
       canPop: false,
@@ -61,6 +65,30 @@ class WorkoutResultScreen extends ConsumerWidget {
                         color: AppColors.primary,
                       ),
                       const SizedBox(height: 8),
+                      if (isExtra) ...[
+                        Center(
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryLight,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Text(
+                              'Buổi tập thêm',
+                              key: ValueKey('result-extra-badge'),
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                       const Text(
                         'Xong buổi tập!',
                         textAlign: TextAlign.center,
@@ -80,6 +108,37 @@ class WorkoutResultScreen extends ConsumerWidget {
                           color: AppColors.textSecondary,
                         ),
                       ),
+                      if (result.kcalBurned > 0) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.local_fire_department_rounded,
+                              size: 20,
+                              color: Color(0xFFEA580C),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Đốt khoảng ${result.kcalBurned} kcal',
+                              key: const ValueKey('result-kcal-burned'),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Text(
+                              'ước tính',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       TipBox(
                         icon: result.countsForStreak
@@ -161,9 +220,27 @@ class WorkoutResultScreen extends ConsumerWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                  child: PrimaryButton(
-                    label: 'Về trang chủ',
-                    onPressed: () => _home(context, ref),
+                  child: Column(
+                    children: [
+                      SecondaryButton(
+                        label: 'Tập thêm',
+                        icon: const Icon(
+                          Icons.add_rounded,
+                          color: AppColors.primary,
+                        ),
+                        onPressed: () {
+                          ref.invalidate(homePlanProvider);
+                          ref.invalidate(userStatusFutureProvider);
+                          ref.read(activeWorkoutProvider.notifier).clear();
+                          context.push('/workout/extra');
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      PrimaryButton(
+                        label: 'Về trang chủ',
+                        onPressed: () => _home(context, ref),
+                      ),
+                    ],
                   ),
                 ),
               ],
