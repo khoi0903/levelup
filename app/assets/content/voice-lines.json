@@ -1,0 +1,173 @@
+{
+  "version": 1,
+  "styles": {
+    "supportive": {
+      "nameVi": "Động viên",
+      "descriptionVi": "Đồng hành ấm áp và ghi nhận từng bước tiến nhỏ của bạn.",
+      "rate": 0.48,
+      "pitch": 1.0,
+      "countEvery": 1,
+      "lines": {
+        "start_countdown": ["Chuẩn bị nhé, {n}", "Sẵn sàng nào, {n}", "Vào hiệp nhé, {n}"],
+        "go": ["Bắt đầu nhé!", "Cùng tập nào!", "Theo nhịp của bạn nhé!"],
+        "rep": ["{n}", "{n}, tốt lắm", "{n}, đều nhé"],
+        "almost_done": ["Còn {left} lần nhé", "Thêm {left} lần là xong", "Còn {left} lần, giữ nhịp nhé"],
+        "last_rep": ["Lần cuối nhé!", "Một lần nữa là xong!", "Lần cuối, giữ nhịp nhé!"],
+        "set_done": ["Xong hiệp {set} trên {sets}, tốt lắm!", "Hoàn thành hiệp {set} trên {sets} rồi!", "Hiệp {set} trên {sets} đã xong nhé!"],
+        "rest_start": ["Nghỉ {sec} giây nhé", "Thả lỏng trong {sec} giây nhé", "Mình nghỉ {sec} giây nào"],
+        "rest_ending": ["Còn {sec} giây nghỉ nhé", "Nghỉ thêm {sec} giây rồi chuẩn bị nhé", "Sắp vào hiệp, còn {sec} giây nghỉ"],
+        "hold_remaining": ["Còn {sec} giây, thở đều nhé", "Giữ thêm {sec} giây nhé", "Còn {sec} giây, bạn đang làm tốt"],
+        "hold_last": ["{sec}"],
+        "form_generic": ["Chậm lại, xem tư thế nhé", "Tạm dừng, chỉnh tư thế nhé", "Xem hướng dẫn rồi tập tiếp nhé"],
+        "lost_person": ["Lùi ra để thấy cả người nhé", "Chọn chỗ để camera thấy cả người nhé", "Đứng trọn trong khung hình nhé"],
+        "exercise_next": ["Tiếp theo là {exercise} nhé", "Mình chuyển sang {exercise} nhé", "Chuẩn bị cho bài {exercise} nào"],
+        "workout_done": ["Xong {minutes} phút rồi, bạn làm tốt lắm!", "Bạn đã dành {minutes} phút cho mình!", "Hoàn thành {minutes} phút, ước tính {kcal} ki lô calo. Tốt lắm!"],
+        "personal_record": ["Bạn vừa có kỷ lục mới!", "Một mốc mới của riêng bạn!", "Tiến bộ rồi, kỷ lục mới nhé!"]
+      }
+    },
+    "strict": {
+      "nameVi": "Nghiêm khắc",
+      "descriptionVi": "Nhắc ngắn gọn, dứt khoát để bạn tập trung vào từng động tác.",
+      "rate": 0.56,
+      "pitch": 0.95,
+      "countEvery": 1,
+      "lines": {
+        "start_countdown": ["Chuẩn bị, {n}", "Vào vị trí, {n}", "Sẵn sàng, {n}"],
+        "go": ["Bắt đầu!", "Vào hiệp!", "Giữ nhịp tập!"],
+        "rep": ["{n}", "Lần {n}", "{n}, giữ nhịp"],
+        "almost_done": ["Còn {left} lần", "Thêm {left} lần, giữ nhịp", "Còn {left} lần, tập trung"],
+        "last_rep": ["Lần cuối!", "Hoàn tất lần cuối!", "Một lần nữa, giữ tư thế!"],
+        "set_done": ["Xong hiệp {set} trên {sets}.", "Hoàn thành hiệp {set} trên {sets}.", "Hiệp {set} trên {sets} kết thúc."],
+        "rest_start": ["Nghỉ {sec} giây.", "Thả lỏng {sec} giây.", "Bắt đầu nghỉ {sec} giây."],
+        "rest_ending": ["Còn {sec} giây nghỉ.", "Nghỉ thêm {sec} giây, chuẩn bị.", "Vào vị trí sau {sec} giây nghỉ."],
+        "hold_remaining": ["Còn {sec} giây, giữ tư thế.", "Giữ thêm {sec} giây.", "Còn {sec} giây, thở đều."],
+        "hold_last": ["{sec}"],
+        "form_generic": ["Chậm lại. Kiểm tra tư thế.", "Tạm dừng. Chỉnh tư thế.", "Xem lại hướng dẫn động tác."],
+        "lost_person": ["Lùi ra để thấy cả người.", "Đứng trọn trong khung hình.", "Chọn vị trí camera thấy cả người."],
+        "exercise_next": ["Bài tiếp theo: {exercise}.", "Chuẩn bị bài {exercise}.", "Chuyển sang {exercise}."],
+        "workout_done": ["Hoàn thành {minutes} phút tập.", "Buổi tập kết thúc. Đã tập {minutes} phút.", "Xong {minutes} phút. Ước tính {kcal} ki lô calo."],
+        "personal_record": ["Kỷ lục cá nhân mới.", "Đã đạt mốc mới.", "Ghi nhận kỷ lục mới."]
+      }
+    },
+    "funny": {
+      "nameVi": "Hài hước",
+      "descriptionVi": "Đùa nhẹ để buổi tập vui hơn mà vẫn dễ theo nhịp.",
+      "rate": 0.5,
+      "pitch": 1.05,
+      "countEvery": 1,
+      "lines": {
+        "start_countdown": ["Chuẩn bị lên sóng, {n}", "Sân khấu sẵn rồi, {n}", "Đến giờ tập rồi, {n}"],
+        "go": ["Lên sóng nào!", "Bắt đầu, vai chính ơi!", "Đến lượt bạn rồi!"],
+        "rep": ["{n}", "Số {n} rồi", "{n}, ngon lành"],
+        "almost_done": ["Còn {left} lần là hạ màn", "Thêm {left} lần, sắp hết tập rồi", "Còn {left} lần, đích đang chờ"],
+        "last_rep": ["Lần cuối, sắp hạ màn!", "Một lần nữa, hết hiệp!", "Lần cuối lên sóng nào!"],
+        "set_done": ["Hiệp {set} trên {sets} đã hạ màn!", "Hiệp {set} trên {sets} có dấu tích rồi!", "Xong hiệp {set} trên {sets}, đến giờ giải lao!"],
+        "rest_start": ["Giờ giải lao: {sec} giây!", "Nghỉ {sec} giây, sân khấu chờ!", "Thả lỏng {sec} giây, nghỉ giữa tập!"],
+        "rest_ending": ["Còn {sec} giây nghỉ, sắp lên sóng!", "Giải lao còn {sec} giây!", "Nghỉ thêm {sec} giây, màn mới sắp tới!"],
+        "hold_remaining": ["Còn {sec} giây, thở đều cùng mình!", "Giữ thêm {sec} giây, sắp hạ màn!", "Đồng hồ còn {sec} giây nhé!"],
+        "hold_last": ["{sec}"],
+        "form_generic": ["Chậm lại, chỉnh dáng trước nhé!", "Tạm dừng, xem lại tư thế nhé!", "Xem hướng dẫn, rồi mình lên sóng tiếp!"],
+        "lost_person": ["Lùi ra để camera thấy cả người nhé!", "Vai chính ơi, đứng trọn trong khung nhé!", "Chọn chỗ để cả người vào hình nhé!"],
+        "exercise_next": ["Màn tiếp theo: {exercise}!", "Bài {exercise} sắp lên sóng!", "Đổi tiết mục sang {exercise} nhé!"],
+        "workout_done": ["Hạ màn rồi, bạn đã tập {minutes} phút!", "Nhật ký có thêm {minutes} phút, ngon lành!", "Xong {minutes} phút, ước tính {kcal} ki lô calo. Hạ màn!"],
+        "personal_record": ["Bảng kỷ lục có khách mới!", "Kỷ lục mới vừa lên sóng!", "Nhật ký vừa thêm một chiếc cúp!"]
+      }
+    },
+    "calm": {
+      "nameVi": "Bình tĩnh",
+      "descriptionVi": "Nhắc nhẹ nhàng với nhịp đọc chậm để bạn chú ý hơi thở.",
+      "rate": 0.4,
+      "pitch": 0.95,
+      "countEvery": 1,
+      "lines": {
+        "start_countdown": ["Nhẹ nhàng chuẩn bị, {n}", "Sẵn sàng nhé, {n}", "Thở đều nhé, {n}"],
+        "go": ["Bắt đầu nhẹ nhàng nhé.", "Theo nhịp của mình nhé.", "Mình vào hiệp nhé."],
+        "rep": ["{n}", "{n}, đều nhé", "Lần {n}"],
+        "almost_done": ["Còn {left} lần, nhẹ nhàng nhé", "Thêm {left} lần, thở đều nhé", "Còn {left} lần thôi nhé"],
+        "last_rep": ["Lần cuối, thở đều nhé.", "Thêm một lần nhẹ nhàng nhé.", "Lần cuối, theo nhịp của mình."],
+        "set_done": ["Xong hiệp {set} trên {sets}, thả lỏng nhé.", "Hiệp {set} trên {sets} đã kết thúc.", "Hoàn thành hiệp {set} trên {sets} rồi nhé."],
+        "rest_start": ["Nghỉ {sec} giây, thả lỏng nhé.", "Thở đều trong {sec} giây nghỉ nhé.", "Mình nghỉ nhẹ nhàng {sec} giây."],
+        "rest_ending": ["Còn {sec} giây nghỉ, thở đều nhé.", "Nghỉ thêm {sec} giây nhé.", "Chuẩn bị nhẹ nhàng, còn {sec} giây nghỉ."],
+        "hold_remaining": ["Còn {sec} giây, thở đều nhé.", "Giữ thêm {sec} giây, nhẹ nhàng thôi.", "Còn {sec} giây, giữ nhịp thở nhé."],
+        "hold_last": ["{sec}"],
+        "form_generic": ["Chậm lại, xem tư thế nhé.", "Tạm dừng để chỉnh tư thế nhé.", "Xem hướng dẫn, rồi tiếp tục nhẹ nhàng."],
+        "lost_person": ["Lùi ra để thấy cả người nhé.", "Nhẹ nhàng đứng trọn trong khung hình nhé.", "Chọn vị trí camera thấy cả người nhé."],
+        "exercise_next": ["Tiếp theo là {exercise} nhé.", "Mình chuẩn bị bài {exercise}.", "Chuyển nhẹ nhàng sang {exercise} nhé."],
+        "workout_done": ["Bạn đã tập {minutes} phút. Thả lỏng nhé.", "Xong {minutes} phút dành cho mình rồi.", "Hoàn thành {minutes} phút, ước tính {kcal} ki lô calo. Thả lỏng nhé."],
+        "personal_record": ["Bạn vừa đạt một mốc mới.", "Kỷ lục mới của riêng bạn nhé.", "Một bước tiến nhỏ đáng ghi nhận."]
+      }
+    },
+    "hype": {
+      "nameVi": "Bùng nổ",
+      "descriptionVi": "Tiếp năng lượng bằng lời cổ vũ rộn ràng như trên sân thể thao.",
+      "rate": 0.6,
+      "pitch": 1.1,
+      "countEvery": 1,
+      "lines": {
+        "start_countdown": ["Sẵn sàng vào sân, {n}", "Chuẩn bị xuất phát, {n}", "Đến giờ vào hiệp, {n}"],
+        "go": ["Bắt đầu nào!", "Vào sân thôi!", "Hiệp mới bắt đầu!"],
+        "rep": ["{n}", "{n}, quá tốt", "{n}, giữ nhịp"],
+        "almost_done": ["Còn {left} lần, đích ngay đây", "Thêm {left} lần, giữ nhịp nào", "Còn {left} lần, về đích thôi"],
+        "last_rep": ["Lần cuối, về đích nào!", "Một lần nữa, hoàn tất hiệp!", "Lần cuối, giữ tư thế đẹp!"],
+        "set_done": ["Hiệp {set} trên {sets} hoàn tất, quá tốt!", "Xong hiệp {set} trên {sets}, tuyệt vời!", "Về đích hiệp {set} trên {sets} rồi!"],
+        "rest_start": ["Nghỉ {sec} giây, thả lỏng nào!", "Giải lao {sec} giây, bạn làm tốt!", "Bắt đầu {sec} giây nghỉ nhé!"],
+        "rest_ending": ["Còn {sec} giây nghỉ, chuẩn bị vào sân!", "Nghỉ thêm {sec} giây, hiệp mới đang chờ!", "Giải lao còn {sec} giây nhé!"],
+        "hold_remaining": ["Còn {sec} giây, giữ nhịp thở nào!", "Giữ thêm {sec} giây, sắp về đích!", "Đích còn {sec} giây, thở đều nhé!"],
+        "hold_last": ["{sec}"],
+        "form_generic": ["Chậm lại, giữ tư thế nào!", "Tạm dừng, chỉnh tư thế nhé!", "Xem hướng dẫn rồi vào nhịp tiếp!"],
+        "lost_person": ["Lùi ra để thấy cả người nhé!", "Đứng trọn trong khung, vào vị trí nào!", "Chọn chỗ để camera thấy cả người nhé!"],
+        "exercise_next": ["Bài tiếp theo: {exercise}!", "Chuẩn bị vào bài {exercise}!", "Màn tiếp theo là {exercise}!"],
+        "workout_done": ["Về đích rồi! Bạn đã tập {minutes} phút!", "Hoàn tất {minutes} phút, một tràng vỗ tay!", "Xong {minutes} phút, ước tính {kcal} ki lô calo. Quá tốt!"],
+        "personal_record": ["Kỷ lục mới, tuyệt vời!", "Một mốc mới vừa được thiết lập!", "Bạn vừa vượt mốc của chính mình!"]
+      }
+    },
+    "genz": {
+      "nameVi": "Bạn thân Gen Z",
+      "descriptionVi": "Cổ vũ thân mật như một người bạn với lời nhắc vui và dễ hiểu.",
+      "rate": 0.52,
+      "pitch": 1.05,
+      "countEvery": 1,
+      "lines": {
+        "start_countdown": ["Sẵn sàng nha, {n}", "Vào hiệp thôi bạn, {n}", "Chuẩn bị cùng mình, {n}"],
+        "go": ["Bắt đầu nha!", "Tập thôi bạn ơi!", "Mình vào nhịp nào!"],
+        "rep": ["{n}", "{n}, ổn nha", "{n}, đẹp đó"],
+        "almost_done": ["Còn {left} lần thôi bạn ơi", "Thêm {left} lần là xong nha", "Còn {left} lần, giữ nhịp nè"],
+        "last_rep": ["Lần cuối nha bạn!", "Thêm một lần là xong nè!", "Lần cuối, mình cùng đếm nha!"],
+        "set_done": ["Hiệp {set} trên {sets} xong rồi nha!", "Xong hiệp {set} trên {sets}, ổn đó bạn!", "Hiệp {set} trên {sets} có dấu tích rồi!"],
+        "rest_start": ["Nghỉ {sec} giây nha bạn!", "Thả lỏng {sec} giây nè!", "Mình nghỉ {sec} giây thôi!"],
+        "rest_ending": ["Còn {sec} giây nghỉ nha!", "Nghỉ thêm {sec} giây, chuẩn bị nha bạn!", "Sắp vào hiệp nè, còn {sec} giây nghỉ!"],
+        "hold_remaining": ["Còn {sec} giây, thở đều nha!", "Giữ thêm {sec} giây nè bạn!", "Còn {sec} giây thôi, giữ nhịp nha!"],
+        "hold_last": ["{sec}"],
+        "form_generic": ["Chậm lại, chỉnh tư thế nha!", "Tạm dừng, xem lại động tác nè!", "Xem hướng dẫn rồi tập tiếp nha bạn!"],
+        "lost_person": ["Lùi ra để thấy cả người nha!", "Đứng trọn trong khung hình nha bạn!", "Chọn chỗ để camera thấy cả người nè!"],
+        "exercise_next": ["Tiếp theo là {exercise} nha!", "Mình qua bài {exercise} nè!", "Chuẩn bị {exercise} thôi bạn!"],
+        "workout_done": ["Xong {minutes} phút rồi, bạn làm tốt đó!", "Thêm {minutes} phút cho bản thân, đáng khen nha!", "Xong {minutes} phút, ước tính {kcal} ki lô calo. Hay đó bạn!"],
+        "personal_record": ["Kỷ lục mới rồi bạn ơi!", "Bạn vừa có mốc mới nè!", "Tiến bộ thấy rõ, kỷ lục mới nha!"]
+      }
+    },
+    "minimal": {
+      "nameVi": "Tối giản",
+      "descriptionVi": "Đọc đủ từng số và chỉ nhắc những lệnh ngắn cần thiết.",
+      "rate": 0.5,
+      "pitch": 1.0,
+      "countEvery": 1,
+      "lines": {
+        "start_countdown": ["{n}"],
+        "go": ["Bắt đầu."],
+        "rep": ["{n}"],
+        "almost_done": ["Còn {left} lần."],
+        "last_rep": ["Lần cuối."],
+        "set_done": ["Xong hiệp {set} trên {sets}."],
+        "rest_start": ["Nghỉ {sec} giây."],
+        "rest_ending": ["Còn {sec} giây nghỉ."],
+        "hold_remaining": ["Còn {sec} giây."],
+        "hold_last": ["{sec}"],
+        "form_generic": ["Kiểm tra tư thế."],
+        "lost_person": ["Lùi ra để thấy cả người."],
+        "exercise_next": ["Tiếp theo: {exercise}."],
+        "workout_done": ["Xong {minutes} phút.", "Xong {minutes} phút, ước tính {kcal} ki lô calo."],
+        "personal_record": ["Kỷ lục mới."]
+      }
+    }
+  }
+}
