@@ -13,6 +13,7 @@ import 'package:fitness_app/features/notifications/presentation/controllers/noti
 
 import '../../../../core/voice/voice_models.dart';
 import '../../../../core/voice/voice_provider.dart';
+import '../../../workout/data/camera/auto_camera_setting.dart';
 import '../controllers/user_controller.dart';
 import '../../domain/models/me_response.dart';
 import '../../domain/models/settings_request.dart';
@@ -982,6 +983,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        GlassCard(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          child: SwitchListTile(
+            key: const ValueKey('settings-auto-camera'),
+            title: const Text('Tự mở camera khi bắt đầu hiệp',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            subtitle: const Text(
+                'Bài đếm được bằng camera sẽ mở camera ngay, không cần bấm "Đếm bằng camera"',
+                style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            value: ref.watch(autoCameraProvider),
+            activeThumbColor: AppColors.primary,
+            contentPadding: EdgeInsets.zero,
+            onChanged: (v) => ref.read(autoCameraProvider.notifier).set(v),
+          ),
+        ),
+        const SizedBox(height: 20),
         const Text(
           'Giọng đọc khi tập',
           style: TextStyle(

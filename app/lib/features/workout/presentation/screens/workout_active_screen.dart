@@ -15,6 +15,7 @@ import '../../../../core/voice/voice_models.dart';
 import '../../../../core/voice/voice_provider.dart';
 import '../controllers/workout_controller.dart';
 import '../widgets/workout_widgets.dart';
+import '../../data/camera/auto_camera_setting.dart';
 import 'camera_set_screen.dart';
 
 /// Màn "Đang tập" (Figma: Frame 16): một bài, một hiệp tại một thời điểm,
@@ -43,6 +44,9 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
   Timer? _restTimer;
 
   int? _lastAnnouncedExerciseIndex;
+
+  /// Hiệp đã tự mở camera (exerciseIndex/setNumber): quay lại từ camera thì không mở lại cho hiệp đó.
+  String? _autoCameraKey;
   final Set<int> _spokenDurationSeconds = {};
 
   @override
@@ -71,6 +75,25 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
     super.dispose();
   }
 
+  /// Bài đếm được bằng camera và người dùng bật "Tự mở camera khi bắt đầu hiệp".
+  bool _autoCameraFor(WorkoutPlanItem item) =>
+      ref.read(autoCameraProvider) &&
+      ref.read(repSessionFactoryProvider).supports(item.exercise?.camera);
+
+  /// Mở camera cho hiệp hiện tại (một lần mỗi hiệp), sau khung hình hiện tại.
+  void _maybeAutoCamera(WorkoutSessionState s, WorkoutPlanItem item) {
+    if (_restRemaining != null || !_autoCameraFor(item)) return;
+    final key = '${s.exerciseIndex}/${s.setNumber}';
+    if (_autoCameraKey == key) return;
+    _autoCameraKey = key;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final current = ref.read(activeWorkoutProvider);
+      if (!mounted || current == null || current.currentItem == null) return;
+      if ('${current.exerciseIndex}/${current.setNumber}' != key) return;
+      _countWithCamera(current);
+    });
+  }
+
   void _announceSetStart(WorkoutPlanItem item, WorkoutSessionState s) {
     final coach = ref.read(voiceCoachProvider);
     if (_lastAnnouncedExerciseIndex != s.exerciseIndex) {
@@ -82,6 +105,8 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
       final slug = item.exercise?.slug ?? item.exerciseId;
       coach.speakStartTip(slug);
     }
+    // Tự mở camera: màn camera tự đếm lùi và đọc "bắt đầu", không đọc hai lần
+    if (_autoCameraFor(item)) return;
     coach.speakLine(
       VoiceLineKey.startCountdown,
       params: {'n': '3'},
@@ -349,7 +374,10 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
       );
     }
     final item = s.currentItem;
-    if (item != null) _syncInputs(s);
+    if (item != null) {
+      _syncInputs(s);
+      _maybeAutoCamera(s, item);
+    }
 
     return PopScope(
       canPop: false,

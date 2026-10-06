@@ -271,6 +271,41 @@ void main() {
     FakeRepSessionFactory factoryOf(WorkoutHarness h) =>
         h.factory as FakeRepSessionFactory;
 
+    testWidgets('Tự mở camera: bấm Bắt đầu là vào màn đặt camera, quay lại thì không mở lại hiệp đó', (
+      tester,
+    ) async {
+      final h = WorkoutHarness(
+        plan: planWith([
+          ItemView(exerciseId: squatId, nameVi: 'Squat', sets: 2, reps: 10),
+        ]),
+        factory: FakeRepSessionFactory(cameraSnapshot),
+        autoCamera: true,
+      );
+      await h.pump(tester, '/workout/$sessionId');
+      await tapText(tester, 'Bắt đầu');
+      expect(find.text('Đặt điện thoại để camera đếm giúp bạn'), findsOneWidget);
+
+      // Quay lại: về màn tập, đếm tay được, không tự mở lại
+      final navigator = tester.state<NavigatorState>(find.byType(Navigator).last);
+      await navigator.maybePop();
+      await tester.pumpAndSettle();
+      expect(find.text('Đặt điện thoại để camera đếm giúp bạn'), findsNothing);
+      expect(find.text('Đếm bằng camera'), findsOneWidget);
+    });
+
+    testWidgets('Bài không đếm được bằng camera thì không tự mở', (tester) async {
+      final h = WorkoutHarness(
+        plan: planWith([
+          ItemView(exerciseId: squatId, nameVi: 'Squat', sets: 1, reps: 10),
+        ]),
+        autoCamera: true,
+      );
+      await h.pump(tester, '/workout/$sessionId');
+      await tapText(tester, 'Bắt đầu');
+      await tester.pump(const Duration(seconds: 2)); // câu "bắt đầu" hẹn 1,2 giây
+      expect(find.text('Đặt điện thoại để camera đếm giúp bạn'), findsNothing);
+    });
+
     testWidgets('sửa số thì camera_corrected, giữ nguyên thì camera', (
       tester,
     ) async {
