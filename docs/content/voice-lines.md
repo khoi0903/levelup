@@ -69,3 +69,9 @@ Script trả mã 0 khi hợp lệ, mã 1 khi có lỗi. Nó kiểm tra UTF-8, JS
 3. Viết 3–6 mẫu mỗi sự kiện, giữ `hold_last: ["{sec}"]`, có tổng kết không dùng `{kcal}`. Nếu thêm một chế độ tối giản mới, thống nhất và cập nhật quy tắc kiểm tra số mẫu/chỉ số cho ID đó.
 4. Cập nhật `STYLE_IDS` cùng quy tắc có liên quan trong script, bảng phong cách và phiên bản JSON theo thỏa thuận tích hợp. Chạy lại trình kiểm tra, nghe thử các mốc đếm/nghỉ/giữ và trường hợp thiếu calo trên thiết bị.
 5. Gửi Claude Code review nội dung; bên app thực hiện thay đổi tích hợp trong PR của mình.
+
+## Câu phải hiểu ngay khi nghe
+
+`lost_person`, `form_generic` và các câu nhắc an toàn phải nói thẳng việc cần làm (ví dụ "Camera chưa thấy cả người,
+lùi ra chút nha"), kể cả ở phong cách Hài hước / Gen Z. Không chơi chữ hay ẩn dụ ở các câu này: giọng máy đọc có
+thể sai từ ("vai chính" nghe thành "ba chính"), người đang tập không kịp đoán ý.

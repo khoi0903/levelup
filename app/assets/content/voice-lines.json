@@ -57,7 +57,7 @@
       "countEvery": 1,
       "lines": {
         "start_countdown": ["Chuẩn bị lên sóng, {n}", "Sân khấu sẵn rồi, {n}", "Đến giờ tập rồi, {n}"],
-        "go": ["Lên sóng nào!", "Bắt đầu, vai chính ơi!", "Đến lượt bạn rồi!"],
+        "go": ["Lên sóng nào!", "Bắt đầu thôi nào!", "Đến lượt bạn rồi!"],
         "rep": ["{n}", "Số {n} rồi", "{n}, ngon lành"],
         "almost_done": ["Còn {left} lần là hạ màn", "Thêm {left} lần, sắp hết tập rồi", "Còn {left} lần, đích đang chờ"],
         "last_rep": ["Lần cuối, sắp hạ màn!", "Một lần nữa, hết hiệp!", "Lần cuối lên sóng nào!"],
@@ -67,7 +67,7 @@
         "hold_remaining": ["Còn {sec} giây, thở đều cùng mình!", "Giữ thêm {sec} giây, sắp hạ màn!", "Đồng hồ còn {sec} giây nhé!"],
         "hold_last": ["{sec}"],
         "form_generic": ["Chậm lại, chỉnh dáng trước nhé!", "Tạm dừng, xem lại tư thế nhé!", "Xem hướng dẫn, rồi mình lên sóng tiếp!"],
-        "lost_person": ["Lùi ra để camera thấy cả người nhé!", "Vai chính ơi, đứng trọn trong khung nhé!", "Chọn chỗ để cả người vào hình nhé!"],
+        "lost_person": ["Lùi ra để camera thấy cả người nhé!", "Camera chưa thấy cả người, lùi ra chút nha!", "Chọn chỗ để cả người vào hình nhé!"],
         "exercise_next": ["Màn tiếp theo: {exercise}!", "Bài {exercise} sắp lên sóng!", "Đổi tiết mục sang {exercise} nhé!"],
         "workout_done": ["Hạ màn rồi, bạn đã tập {minutes} phút!", "Nhật ký có thêm {minutes} phút, ngon lành!", "Xong {minutes} phút, ước tính {kcal} ki lô calo. Hạ màn!"],
         "personal_record": ["Bảng kỷ lục có khách mới!", "Kỷ lục mới vừa lên sóng!", "Nhật ký vừa thêm một chiếc cúp!"]
