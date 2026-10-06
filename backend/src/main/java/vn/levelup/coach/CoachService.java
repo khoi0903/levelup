@@ -207,6 +207,15 @@ public class CoachService {
     }
 
     /** Tăng lượt chat hôm nay chỉ khi còn lượt; hết lượt thì 429 COACH_LIMIT. */
+    /** Lượt chat còn lại hôm nay theo ngày của người dùng (daily_stats.usage.coachMessages). */
+    private int remainingToday(User user) {
+        String today = LocalDates.today(user.timezone(), clock).toString();
+        Document day = mongo.findOne(Query.query(Criteria.where("userId").is(new ObjectId(user.id()))
+            .and("localDate").is(today)), Document.class, "daily_stats");
+        Object used = day == null ? null : day.get("usage", new Document()).get("coachMessages");
+        return Math.max(0, dailyLimit - (used instanceof Number n ? n.intValue() : 0));
+    }
+
     private int consumeQuota(ObjectId userId, String localDate) {
         if (dailyLimit <= 0) {
             throw limitReached();
@@ -457,7 +466,7 @@ public class CoachService {
         Map<String, Exercise> byId = docs.stream().anyMatch(d -> d.get("card") != null) ? allExercises() : Map.of();
         List<CoachViews.MessageView> views = docs.stream().map(d -> messageView(d, byId)).toList();
         Instant next = docs.size() == size ? docs.get(docs.size() - 1).getDate("createdAt").toInstant() : null;
-        return new CoachViews.HistoryResponse(views, next);
+        return new CoachViews.HistoryResponse(views, next, remainingToday(user));
     }
 
     // ------------------------------------------------------------------

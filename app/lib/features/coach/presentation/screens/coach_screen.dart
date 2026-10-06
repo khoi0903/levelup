@@ -141,47 +141,67 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                           ),
                         ),
                       )
-                    : state.messages.isEmpty && !state.isSending
-                    ? _buildWelcome(state)
                     : Builder(
                         builder: (context) {
                           final showTyping =
                               state.isSending && !state.hasStreamingReply;
-                          return ListView.builder(
-                            controller: _scrollController,
-                            reverse: true,
-                            physics: const BouncingScrollPhysics(),
-                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                            itemCount:
-                                state.messages.length +
-                                (showTyping ? 1 : 0) +
-                                (state.isLoadingMore ? 1 : 0),
-                            itemBuilder: (context, index) {
-                              // Danh sách đảo ngược: index 0 là dưới cùng
-                              if (showTyping) {
-                                if (index == 0) return _buildTyping();
-                                index -= 1;
-                              }
-                          if (index == state.messages.length) {
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              child: Center(
-                                child: SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                ),
+                          // Câu chào luôn ở đầu cuộc trò chuyện (khi đã tải tới tin cũ nhất)
+                          final showWelcome =
+                              state.nextBefore == null && !state.isLoadingMore;
+                          // Ít tin thì xếp từ trên xuống (shrinkWrap + Align top), nhiều tin thì cuộn như cũ
+                          return Align(
+                            alignment: Alignment.topCenter,
+                            child: ListView.builder(
+                              controller: _scrollController,
+                              reverse: true,
+                              shrinkWrap: true,
+                              physics: const BouncingScrollPhysics(),
+                              padding: const EdgeInsets.fromLTRB(
+                                16,
+                                12,
+                                16,
+                                16,
                               ),
-                            );
-                          }
-                          final msg = state.messages[index];
-                          return _buildMessageItem(context, msg, notifier);
+                              itemCount:
+                                  state.messages.length +
+                                  (showTyping ? 1 : 0) +
+                                  (state.isLoadingMore ? 1 : 0) +
+                                  (showWelcome ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                // Danh sách đảo ngược: index 0 là dưới cùng
+                                if (showTyping) {
+                                  if (index == 0) return _buildTyping();
+                                  index -= 1;
+                                }
+                                if (showWelcome &&
+                                    index == state.messages.length) {
+                                  return _buildWelcome(state);
+                                }
+                                if (index == state.messages.length) {
+                                  return const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 12),
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+                                final msg = state.messages[index];
+                                return _buildMessageItem(
+                                  context,
+                                  msg,
+                                  notifier,
+                                );
+                              },
+                            ),
+                          );
                         },
-                      );
-                    },
-                  ),
+                      ),
               ),
               _buildInputBar(state),
             ],
@@ -191,7 +211,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
     );
   }
 
-  /// Chưa có tin nào: coach chào trước và gợi ý vài câu để bắt đầu (không lưu vào lịch sử).
+  /// Câu chào của coach ở đầu cuộc trò chuyện (không lưu vào lịch sử). Chưa có tin nào thì kèm gợi ý.
   Widget _buildWelcome(CoachChatState state) {
     final name = ref.watch(currentUserProvider)?.displayName ?? '';
     final greeting = name.isEmpty ? 'Chào bạn!' : 'Chào $name!';
@@ -200,8 +220,8 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
       'Mình mệt, có nên nghỉ buổi hôm nay không?',
       'Tối nay ăn gì để đủ đạm?',
     ];
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildMessageItem(
           context,
@@ -210,31 +230,35 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
             role: 'coach',
             content:
                 '$greeting Mình là coach của bạn. Bạn có thể hỏi mình về buổi tập, '
-                'đổi lịch khi bận, hay ăn gì cho hợp mục tiêu. Bắt đầu bằng một câu dưới đây nhé:',
+                'đổi lịch khi bận, hay ăn gì cho hợp mục tiêu.'
+                '${state.messages.isEmpty ? ' Bắt đầu bằng một câu dưới đây nhé:' : ''}',
           ),
           ref.read(coachChatProvider.notifier),
         ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: suggestions
-              .map(
-                (q) => ActionChip(
-                  key: ValueKey('coach-suggestion-$q'),
-                  label: Text(q),
-                  backgroundColor: AppColors.surface,
-                  side: const BorderSide(color: AppColors.border),
-                  labelStyle: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
+        if (state.messages.isEmpty && !state.isSending) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: suggestions
+                .map(
+                  (q) => ActionChip(
+                    key: ValueKey('coach-suggestion-$q'),
+                    label: Text(q),
+                    backgroundColor: AppColors.surface,
+                    side: const BorderSide(color: AppColors.border),
+                    labelStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                    ),
+                    onPressed: state.isSending ? null : () => _handleSend(q),
                   ),
-                  onPressed: state.isSending ? null : () => _handleSend(q),
-                ),
-              )
-              .toList(),
-        ),
+                )
+                .toList(),
+          ),
+        ],
+        const SizedBox(height: 8),
       ],
     );
   }

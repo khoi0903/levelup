@@ -40,6 +40,7 @@ class CoachChatState {
     bool? hasStreamingReply,
     bool? isLoadingMore,
     String? nextBefore,
+    bool clearNextBefore = false,
     int? remainingToday,
     dynamic error,
     bool clearError = false,
@@ -50,7 +51,8 @@ class CoachChatState {
       isSending: isSending ?? this.isSending,
       hasStreamingReply: hasStreamingReply ?? this.hasStreamingReply,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
-      nextBefore: nextBefore ?? this.nextBefore,
+      // Hết lịch sử cũ: phải xóa được nextBefore (null), không giữ mốc cũ
+      nextBefore: clearNextBefore ? null : (nextBefore ?? this.nextBefore),
       remainingToday: remainingToday ?? this.remainingToday,
       error: clearError ? null : (error ?? this.error),
     );
@@ -75,6 +77,8 @@ class CoachChatNotifier extends StateNotifier<CoachChatState> {
         isLoading: false,
         messages: [...pendingMessages, ...res.messages],
         nextBefore: res.nextBefore,
+        clearNextBefore: res.nextBefore == null,
+        remainingToday: res.remainingToday,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e);
@@ -93,6 +97,7 @@ class CoachChatNotifier extends StateNotifier<CoachChatState> {
         isLoadingMore: false,
         messages: [...state.messages, ...res.messages],
         nextBefore: res.nextBefore,
+        clearNextBefore: res.nextBefore == null,
       );
     } catch (e) {
       state = state.copyWith(isLoadingMore: false, error: e);

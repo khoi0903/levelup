@@ -35,5 +35,6 @@ public final class CoachViews {
     public record InjuryView(String bodyArea, String note) {}
 
     /** Trang lịch sử, mới nhất trước. nextBefore: truyền vào ?before= để lấy trang cũ hơn, null khi hết. */
-    public record HistoryResponse(List<MessageView> messages, Instant nextBefore) {}
+    /** remainingToday: số tin còn gửi được hôm nay (để màn Coach hiện đúng ngay khi mở). */
+    public record HistoryResponse(List<MessageView> messages, Instant nextBefore, int remainingToday) {}
 }

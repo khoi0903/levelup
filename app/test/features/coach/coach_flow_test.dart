@@ -55,7 +55,8 @@ void main() {
           findsOneWidget,
         ); // chưa có trả lời vẫn thấy tin mình
         expect(find.byKey(const ValueKey('coach-typing')), findsOneWidget);
-        expect(find.textContaining('Mình là coach của bạn'), findsNothing);
+        expect(find.textContaining('Mình là coach của bạn'), findsOneWidget); // câu chào vẫn ở đầu
+      expect(find.byKey(const ValueKey('coach-suggestion-Tối nay ăn gì để đủ đạm?')), findsNothing); // gợi ý ẩn
 
         repo.reply.complete();
         await tester.pumpAndSettle();
