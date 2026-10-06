@@ -15,6 +15,8 @@ import '../../data/camera/rep_counting_session.dart';
 import '../../domain/models/exercise_response.dart';
 import '../../domain/models/workout_models.dart';
 import '../../domain/models/workout_session_state.dart';
+import '../../../../core/voice/voice_models.dart';
+import '../../../../core/voice/voice_provider.dart';
 import '../controllers/workout_controller.dart';
 import '../widgets/workout_widgets.dart';
 
@@ -103,6 +105,7 @@ class _CameraSetScreenState extends ConsumerState<CameraSetScreen> {
               ? const Center(child: CircularProgressIndicator())
               : switch (_stage) {
                   _Stage.setup => _SetupView(
+                    item: item,
                     name: item.nameVi,
                     subtitle: subtitle,
                     camera: camera,
@@ -159,6 +162,7 @@ List<String> cameraTipsVi(ExerciseCamera camera) {
 
 class _SetupView extends ConsumerStatefulWidget {
   const _SetupView({
+    required this.item,
     required this.name,
     required this.subtitle,
     required this.camera,
@@ -166,6 +170,7 @@ class _SetupView extends ConsumerStatefulWidget {
     required this.onManual,
   });
 
+  final WorkoutPlanItem item;
   final String name;
   final String subtitle;
   final ExerciseCamera camera;
@@ -213,9 +218,20 @@ class _SetupViewState extends ConsumerState<_SetupView> {
                 title: widget.name,
                 subtitle: widget.subtitle,
                 closeIcon: Icons.chevron_left_rounded,
+                trailing: const VoiceMuteButton(),
                 onClose: widget.onManual,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: ExerciseImage(
+                  slug: widget.item.exercise?.slug ?? widget.item.exerciseId,
+                  thumbnailUrl: widget.item.exercise?.thumbnailUrl,
+                  height: 160,
+                  width: double.infinity,
+                ),
+              ),
+              const SizedBox(height: 16),
               const Text(
                 'Đặt điện thoại để camera đếm giúp bạn',
                 style: TextStyle(
@@ -389,6 +405,16 @@ class _CountingViewState extends ConsumerState<_CountingView>
   bool _foreground = true;
   bool _autoFinishing = false;
 
+  // Countdown trước khi đếm: 3.. 2.. 1.. go
+  int _countdownSec = 3;
+  bool _countingDown = true;
+  Timer? _countdownTimer;
+
+  int _lastRep = 0;
+  final Set<int> _spokenHoldSeconds = {};
+  DateTime _lastFormIssueTime = DateTime.fromMillisecondsSinceEpoch(0);
+  DateTime _lastLostPersonTime = DateTime.fromMillisecondsSinceEpoch(0);
+
   /// Thời gian chờ sau khi đạt mục tiêu, để người tập thấy con số cuối rồi mới chuyển màn.
   static const autoFinishDelay = Duration(milliseconds: 900);
 
@@ -422,12 +448,118 @@ class _CountingViewState extends ConsumerState<_CountingView>
       _sub = session.results.listen((r) {
         if (!mounted) return;
         setState(() => _latest = r);
+        _handleVoiceFeedback(r);
         // Đủ mục tiêu thì tự kết thúc hiệp → màn xác nhận → nghỉ
         _maybeAutoFinish(r);
       });
-      unawaited(_start());
+      _start();
+      _startCountdown();
     } catch (e) {
       _error = 'Bài này chưa đếm được bằng camera trên máy bạn.';
+    }
+  }
+
+  void _startCountdown() {
+    final coach = ref.read(voiceCoachProvider);
+    _countdownSec = 3;
+    _countingDown = true;
+    coach.speakLine(
+      VoiceLineKey.startCountdown,
+      params: {'n': '$_countdownSec'},
+      interrupt: true,
+    );
+
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      setState(() {
+        _countdownSec--;
+      });
+      if (_countdownSec > 0) {
+        coach.speakLine(
+          VoiceLineKey.startCountdown,
+          params: {'n': '$_countdownSec'},
+          interrupt: true,
+        );
+      } else {
+        timer.cancel();
+        setState(() {
+          _countingDown = false;
+        });
+        coach.speakLine(VoiceLineKey.go, interrupt: true);
+      }
+    });
+  }
+
+  void _handleVoiceFeedback(RepSnapshot r) {
+    if (_countingDown || _autoFinishing || !_foreground) return;
+    final coach = ref.read(voiceCoachProvider);
+
+    // 1. Phản hồi số lần (Rep)
+    if (!r.isHold) {
+      if (r.repCount > _lastRep) {
+        final currentRep = r.repCount;
+        _lastRep = currentRep;
+        final target = widget.targetReps;
+        final countEvery = coach.countEveryForStyle();
+
+        if (target != null && target - currentRep == 3) {
+          coach.speakLine(
+            VoiceLineKey.almostDone,
+            params: {'left': '3'},
+            interrupt: true,
+          );
+        } else if (target != null && currentRep >= target) {
+          coach.speakLine(VoiceLineKey.lastRep, interrupt: true);
+        } else if (currentRep % countEvery == 0) {
+          coach.speakLine(
+            VoiceLineKey.rep,
+            params: {'n': '$currentRep'},
+            interrupt: true,
+          );
+        }
+      }
+    } else if (r.holding) {
+      // 2. Bài giữ (Hold/Duration)
+      final target = widget.targetSec;
+      if (target != null && target > 0) {
+        final remaining = target - r.holdDuration.inSeconds;
+        if ((remaining == 30 || remaining == 20 || remaining == 10) &&
+            !_spokenHoldSeconds.contains(remaining)) {
+          _spokenHoldSeconds.add(remaining);
+          coach.speakLine(
+            VoiceLineKey.holdRemaining,
+            params: {'sec': '$remaining'},
+            interrupt: true,
+          );
+        } else if (remaining <= 5 &&
+            remaining >= 1 &&
+            !_spokenHoldSeconds.contains(remaining)) {
+          _spokenHoldSeconds.add(remaining);
+          coach.speakLine(
+            VoiceLineKey.holdLast,
+            params: {'sec': '$remaining'},
+            interrupt: true,
+          );
+        }
+      }
+    }
+
+    // 3. Tư thế sai (Tối đa 1 lần / 8 giây)
+    final now = DateTime.now();
+    if (r.issues.isNotEmpty &&
+        now.difference(_lastFormIssueTime).inSeconds >= 8) {
+      _lastFormIssueTime = now;
+      coach.speakLine(VoiceLineKey.formGeneric, interrupt: false);
+    }
+
+    // 4. Mất người (Tối đa 1 lần / 8 giây)
+    if (r.personMissing &&
+        now.difference(_lastLostPersonTime).inSeconds >= 8) {
+      _lastLostPersonTime = now;
+      coach.speakLine(VoiceLineKey.lostPerson, interrupt: false);
     }
   }
 
@@ -458,6 +590,7 @@ class _CountingViewState extends ConsumerState<_CountingView>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    ref.read(voiceCoachProvider).setAppLifecycle(state);
     final foreground = state == AppLifecycleState.resumed;
     if (foreground == _foreground) return;
     _foreground = foreground;
@@ -484,6 +617,7 @@ class _CountingViewState extends ConsumerState<_CountingView>
 
   @override
   void dispose() {
+    _countdownTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     unawaited(_sub?.cancel());
     final session = _session;
@@ -501,7 +635,9 @@ class _CountingViewState extends ConsumerState<_CountingView>
     final error = _error ?? r.error;
     final controller = _session?.cameraController;
     final lastIssue = r.issues.isNotEmpty ? r.issues.last : null;
-    final statusText = !running
+    final statusText = _countingDown
+        ? 'Sắp bắt đầu ($_countdownSec)'
+        : !running
         ? (r.status == RepCountingStatus.paused
               ? 'Đã tạm dừng'
               : 'Đang mở camera…')
@@ -518,6 +654,7 @@ class _CountingViewState extends ConsumerState<_CountingView>
             title: widget.name,
             subtitle: widget.subtitle,
             stepLabel: statusText,
+            trailing: const VoiceMuteButton(),
             onClose: widget.onManual,
           ),
           const SizedBox(height: 14),
@@ -539,6 +676,36 @@ class _CountingViewState extends ConsumerState<_CountingView>
                             ),
                           ),
                   ),
+                  if (_countingDown)
+                    Positioned.fill(
+                      child: Container(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        alignment: Alignment.center,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '$_countdownSec',
+                              key: const ValueKey('camera-countdown-number'),
+                              style: const TextStyle(
+                                fontSize: 96,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Chuẩn bị...',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   if (running && r.personMissing)
                     const Positioned(
                       left: 12,
@@ -573,15 +740,21 @@ class _CountingViewState extends ConsumerState<_CountingView>
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
-              Text(
-                r.isHold
-                    ? formatClock(r.holdDuration.inSeconds)
-                    : '${r.repCount}',
-                key: const ValueKey('camera-rep-count'),
-                style: const TextStyle(
-                  fontSize: 64,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
+              Semantics(
+                liveRegion: true,
+                label: r.isHold
+                    ? '${r.holdDuration.inSeconds} giây'
+                    : '${r.repCount} lần',
+                child: Text(
+                  r.isHold
+                      ? formatClock(r.holdDuration.inSeconds)
+                      : '${r.repCount}',
+                  key: const ValueKey('camera-rep-count'),
+                  style: const TextStyle(
+                    fontSize: 64,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/voice/voice_provider.dart';
+export 'exercise_image.dart';
 
 /// Nút vuông 44px nền trắng, dùng cho đóng/quay lại (giống OnboardingHeader).
 class WorkoutIconButton extends StatelessWidget {
@@ -57,6 +60,7 @@ class WorkoutHeader extends StatelessWidget {
     this.progress,
     this.onClose,
     this.closeIcon = Icons.close_rounded,
+    this.trailing,
   });
 
   final String title;
@@ -65,6 +69,7 @@ class WorkoutHeader extends StatelessWidget {
   final double? progress;
   final VoidCallback? onClose;
   final IconData closeIcon;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -107,6 +112,10 @@ class WorkoutHeader extends StatelessWidget {
                 ],
               ),
             ),
+            if (trailing != null) ...[
+              trailing!,
+              const SizedBox(width: 8),
+            ],
             if (stepLabel != null)
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -392,3 +401,54 @@ String formIssueLabelVi(String code) => switch (code) {
   'back_rounding' => 'Lưng hơi cong',
   _ => code.replaceAll('_', ' '),
 };
+
+/// Nút loa bật/tắt nhanh giọng đọc huấn luyện viên trên màn hình tập.
+class VoiceMuteButton extends ConsumerWidget {
+  const VoiceMuteButton({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(voiceSettingsProvider);
+    final isMuted = !settings.effectiveActive;
+
+    return Semantics(
+      label: isMuted ? 'Bật tiếng giọng đọc khi tập' : 'Tắt tiếng giọng đọc khi tập',
+      button: true,
+      child: Tooltip(
+        message: isMuted ? 'Bật tiếng' : 'Tắt tiếng',
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            key: const ValueKey('voice-mute-button'),
+            onTap: () {
+              ref.read(voiceSettingsProvider.notifier).toggleMuteTemporarily();
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border),
+                boxShadow: const [
+                  BoxShadow(
+                    color: AppColors.cardNormalShadow,
+                    blurRadius: 10,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+                color: isMuted ? AppColors.textSecondary : AppColors.primary,
+                size: 22,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+

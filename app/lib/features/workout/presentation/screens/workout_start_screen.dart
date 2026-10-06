@@ -127,17 +127,21 @@ class _Overview extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-          child: PrimaryButton(
-            label: shouldOpenExtra ? 'Tập thêm' : 'Bắt đầu',
-            icon: Icon(
-              shouldOpenExtra ? Icons.add_rounded : Icons.play_arrow_rounded,
-              color: AppColors.surface,
+          child: Semantics(
+            label: shouldOpenExtra ? 'Mở danh sách bài tập thêm' : 'Bắt đầu buổi tập',
+            button: true,
+            child: PrimaryButton(
+              label: shouldOpenExtra ? 'Tập thêm' : 'Bắt đầu',
+              icon: Icon(
+                shouldOpenExtra ? Icons.add_rounded : Icons.play_arrow_rounded,
+                color: AppColors.surface,
+              ),
+              onPressed: setup.items.isEmpty
+                  ? null
+                  : (shouldOpenExtra
+                      ? () => context.push('/workout/extra')
+                      : onStart),
             ),
-            onPressed: setup.items.isEmpty
-                ? null
-                : (shouldOpenExtra
-                    ? () => context.push('/workout/extra')
-                    : onStart),
           ),
         ),
       ],
@@ -158,19 +162,16 @@ class _ExerciseRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: AppColors.primaryLight,
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              '$index',
-              style: const TextStyle(
-                fontWeight: FontWeight.w800,
-                color: AppColors.primary,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: SizedBox(
+              width: 44,
+              height: 44,
+              child: ExerciseImage(
+                slug: item.exercise?.slug ?? item.exerciseId,
+                thumbnailUrl: item.exercise?.thumbnailUrl,
+                width: 44,
+                height: 44,
               ),
             ),
           ),
@@ -179,13 +180,38 @@ class _ExerciseRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.nameVi,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      margin: const EdgeInsets.only(right: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryLight,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        '$index',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        item.nameVi,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 2),
                 Text(

@@ -722,6 +722,16 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                     size: 24,
                   ),
                   const SizedBox(width: 10),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: ExerciseImage(
+                      slug: exercise.slug,
+                      thumbnailUrl: exercise.thumbnailUrl,
+                      width: 44,
+                      height: 44,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

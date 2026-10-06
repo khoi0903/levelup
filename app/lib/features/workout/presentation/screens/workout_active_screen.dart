@@ -11,6 +11,8 @@ import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/secondary_button.dart';
 import '../../domain/models/workout_models.dart';
 import '../../domain/models/workout_session_state.dart';
+import '../../../../core/voice/voice_models.dart';
+import '../../../../core/voice/voice_provider.dart';
 import '../controllers/workout_controller.dart';
 import '../widgets/workout_widgets.dart';
 import 'camera_set_screen.dart';
@@ -25,7 +27,8 @@ class WorkoutActiveScreen extends ConsumerStatefulWidget {
       _WorkoutActiveScreenState();
 }
 
-class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
+class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
+    with WidgetsBindingObserver {
   static const _maxDurationSec = 7200;
 
   // Khóa của hiệp đang nhập; đổi khóa thì đặt lại ô nhập.
@@ -39,11 +42,52 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
   int? _restRemaining;
   Timer? _restTimer;
 
+  int? _lastAnnouncedExerciseIndex;
+  final Set<int> _spokenDurationSeconds = {};
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final s = ref.read(activeWorkoutProvider);
+      final item = s?.currentItem;
+      if (s != null && item != null) {
+        _announceSetStart(item, s);
+      }
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    ref.read(voiceCoachProvider).setAppLifecycle(state);
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     _restTimer?.cancel();
     super.dispose();
+  }
+
+  void _announceSetStart(WorkoutPlanItem item, WorkoutSessionState s) {
+    final coach = ref.read(voiceCoachProvider);
+    if (_lastAnnouncedExerciseIndex != s.exerciseIndex) {
+      _lastAnnouncedExerciseIndex = s.exerciseIndex;
+      coach.speakLine(
+        VoiceLineKey.exerciseNext,
+        params: {'exercise': item.nameVi},
+      );
+    }
+    coach.speakLine(
+      VoiceLineKey.startCountdown,
+      params: {'n': '3'},
+      interrupt: true,
+    );
+    Future.delayed(const Duration(milliseconds: 1200), () {
+      if (mounted) coach.speakLine(VoiceLineKey.go, interrupt: true);
+    });
   }
 
   void _syncInputs(WorkoutSessionState s) {
@@ -56,6 +100,7 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
     _reps = s.lastRepsFor(item.exerciseId) ?? item.reps ?? 10;
     _weight = s.lastWeightFor(item.exerciseId) ?? 0;
     _durationSec = 0;
+    _spokenDurationSeconds.clear();
     _stopTimer();
   }
 
@@ -71,6 +116,9 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
       return;
     }
     setState(() => _timerRunning = true);
+    final s = ref.read(activeWorkoutProvider);
+    final targetSec = s?.currentItem?.durationSec ?? 30;
+
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       // Backend nhận durationSec tối đa 7200 (WorkoutRequest.SetLog).
@@ -78,8 +126,54 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
         setState(_stopTimer);
       } else {
         setState(() => _durationSec++);
+        final remaining = targetSec - _durationSec;
+        final coach = ref.read(voiceCoachProvider);
+        if ((remaining == 30 || remaining == 20 || remaining == 10) &&
+            !_spokenDurationSeconds.contains(remaining)) {
+          _spokenDurationSeconds.add(remaining);
+          coach.speakLine(
+            VoiceLineKey.holdRemaining,
+            params: {'sec': '$remaining'},
+            interrupt: true,
+          );
+        } else if (remaining <= 5 &&
+            remaining >= 1 &&
+            !_spokenDurationSeconds.contains(remaining)) {
+          _spokenDurationSeconds.add(remaining);
+          coach.speakLine(
+            VoiceLineKey.holdLast,
+            params: {'sec': '$remaining'},
+            interrupt: true,
+          );
+        }
       }
     });
+  }
+
+  void _onIncrementReps(WorkoutPlanItem item) {
+    if (_reps >= 1000) return;
+    final nextReps = _reps + 1;
+    setState(() => _reps = nextReps);
+
+    final coach = ref.read(voiceCoachProvider);
+    final target = item.reps;
+    final countEvery = coach.countEveryForStyle();
+
+    if (target != null && target - nextReps == 3) {
+      coach.speakLine(
+        VoiceLineKey.almostDone,
+        params: {'left': '3'},
+        interrupt: true,
+      );
+    } else if (target != null && nextReps >= target) {
+      coach.speakLine(VoiceLineKey.lastRep, interrupt: true);
+    } else if (nextReps % countEvery == 0) {
+      coach.speakLine(
+        VoiceLineKey.rep,
+        params: {'n': '$nextReps'},
+        interrupt: true,
+      );
+    }
   }
 
   void _startRest(int seconds) {
@@ -89,6 +183,13 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
     _restTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       final left = (_restRemaining ?? 0) - 1;
+      if (left == 10) {
+        ref.read(voiceCoachProvider).speakLine(
+          VoiceLineKey.restEnding,
+          params: {'sec': '10'},
+          interrupt: true,
+        );
+      }
       if (left <= 0) {
         _endRest();
       } else {
@@ -101,6 +202,11 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
     _restTimer?.cancel();
     _restTimer = null;
     setState(() => _restRemaining = null);
+    final s = ref.read(activeWorkoutProvider);
+    final item = s?.currentItem;
+    if (s != null && item != null) {
+      _announceSetStart(item, s);
+    }
   }
 
   void _afterLog(int rest) {
@@ -116,6 +222,7 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
   void _logManual(WorkoutPlanItem item) {
     final duration = item.tracking == TrackingMode.duration;
     _stopTimer();
+    final s = ref.read(activeWorkoutProvider);
     final rest = ref
         .read(activeWorkoutProvider.notifier)
         .logSet(
@@ -128,6 +235,19 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
             repSource: RepSource.manual,
           ),
         );
+
+    final coach = ref.read(voiceCoachProvider);
+    if (s != null) {
+      coach.speakLine(
+        VoiceLineKey.setDone,
+        params: {'set': '${s.setNumber}', 'sets': '${item.sets}'},
+        interrupt: true,
+      );
+      if (rest > 0 && !s.allExercisesDone) {
+        coach.speakLine(VoiceLineKey.restStart, params: {'sec': '$rest'});
+      }
+    }
+
     _afterLog(rest);
   }
 
@@ -276,6 +396,7 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
                 title: 'LevelUp',
                 stepLabel: '${s.exerciseIndex + 1}/$total',
                 progress: progress,
+                trailing: const VoiceMuteButton(),
                 onClose: _confirmExit,
               ),
               const SizedBox(height: 18),
@@ -299,6 +420,7 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
               ),
               const SizedBox(height: 14),
               _GuideCard(
+                item: item,
                 instructions: exercise?.instructions,
                 hasVideo: exercise?.videoUrl != null,
               ),
@@ -320,16 +442,20 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: CounterCard(
-                        label: 'Số lần',
-                        value: '$_reps',
-                        valueKey: const ValueKey('manual-reps'),
-                        onDecrement: _reps > 0
-                            ? () => setState(() => _reps--)
-                            : null,
-                        onIncrement: _reps < 1000
-                            ? () => setState(() => _reps++)
-                            : null,
+                      child: Semantics(
+                        liveRegion: true,
+                        label: '$_reps lần',
+                        child: CounterCard(
+                          label: 'Số lần',
+                          value: '$_reps',
+                          valueKey: const ValueKey('manual-reps'),
+                          onDecrement: _reps > 0
+                              ? () => setState(() => _reps--)
+                              : null,
+                          onIncrement: _reps < 1000
+                              ? () => _onIncrementReps(item)
+                              : null,
+                        ),
                       ),
                     ),
                     if (item.tracking == TrackingMode.repsWeight) ...[
@@ -427,8 +553,13 @@ String _formatKg(double kg) =>
     kg == kg.roundToDouble() ? kg.toInt().toString() : kg.toStringAsFixed(1);
 
 class _GuideCard extends StatefulWidget {
-  const _GuideCard({required this.instructions, required this.hasVideo});
+  const _GuideCard({
+    required this.item,
+    required this.instructions,
+    required this.hasVideo,
+  });
 
+  final WorkoutPlanItem item;
   final String? instructions;
   final bool hasVideo;
 
@@ -447,33 +578,30 @@ class _GuideCardState extends State<_GuideCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            height: 150,
-            decoration: BoxDecoration(
-              color: AppColors.placeholder,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            alignment: Alignment.center,
-            // TODO(app): phát videoUrl khi thêm package video_player.
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Stack(
+              alignment: Alignment.center,
               children: [
-                Icon(
-                  widget.hasVideo
-                      ? Icons.play_circle_outline_rounded
-                      : Icons.fitness_center_rounded,
-                  size: 40,
-                  color: AppColors.primary,
+                ExerciseImage(
+                  slug: widget.item.exercise?.slug ?? widget.item.exerciseId,
+                  thumbnailUrl: widget.item.exercise?.thumbnailUrl,
+                  height: 160,
+                  width: double.infinity,
                 ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Video hướng dẫn động tác',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
+                if (widget.hasVideo)
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                      size: 36,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -636,14 +764,43 @@ class _RestView extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           AppCard(
-            child: Text(
-              'Tiếp theo: ${next.nameVi} · Hiệp $setNumber/${next.sets}',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: ExerciseImage(
+                    slug: next.exercise?.slug ?? next.exerciseId,
+                    thumbnailUrl: next.exercise?.thumbnailUrl,
+                    width: 44,
+                    height: 44,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Tiếp theo: ${next.nameVi}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Hiệp $setNumber/${next.sets}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
           const Spacer(),
