@@ -42,6 +42,9 @@ abstract interface class VoiceCoach {
 
   Future<void> stop();
 
+  /// Chờ giọng đọc nói xong các câu đang có (tối đa [max]), để đếm lùi trên màn khớp với tiếng.
+  Future<void> whenIdle({Duration max = const Duration(seconds: 6)});
+
   void updateSettings(VoiceSettings settings, {String? effectiveCoachStyle});
 
   void setAppLifecycle(AppLifecycleState state);
@@ -322,6 +325,10 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
       _ => 'supportive',
     };
   }
+
+  @override
+  Future<void> whenIdle({Duration max = const Duration(seconds: 6)}) =>
+      _queue.whenIdle(max: max);
 
   @override
   int countEveryForStyle([String? styleId]) {
@@ -691,6 +698,9 @@ class FakeVoiceCoach implements VoiceCoach {
       _ => 'supportive',
     };
   }
+
+  @override
+  Future<void> whenIdle({Duration max = const Duration(seconds: 6)}) async {}
 
   @override
   int countEveryForStyle([String? styleId]) {
