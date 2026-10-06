@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/voice/voice_models.dart';
+import '../../../../core/voice/voice_provider.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
@@ -14,10 +17,57 @@ import '../controllers/workout_controller.dart';
 import '../widgets/workout_widgets.dart';
 
 /// Màn Kết quả (F2): thời lượng, streak, tiến độ tuần, kỷ lục, huy hiệu.
-class WorkoutResultScreen extends ConsumerWidget {
+class WorkoutResultScreen extends ConsumerStatefulWidget {
   const WorkoutResultScreen({super.key});
 
-  void _home(BuildContext context, WidgetRef ref) {
+  @override
+  ConsumerState<WorkoutResultScreen> createState() =>
+      _WorkoutResultScreenState();
+}
+
+class _WorkoutResultScreenState extends ConsumerState<WorkoutResultScreen> {
+  bool _hasAnnounced = false;
+  Timer? _prTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _announceResult();
+    });
+  }
+
+  @override
+  void dispose() {
+    _prTimer?.cancel();
+    super.dispose();
+  }
+
+  void _announceResult() {
+    if (_hasAnnounced) return;
+    _hasAnnounced = true;
+
+    final activeSession = ref.read(activeWorkoutProvider);
+    final result = activeSession?.result;
+    if (result == null) return;
+
+    final coach = ref.read(voiceCoachProvider);
+    final minutes = (result.durationSec / 60).ceil();
+    final params = <String, Object?>{
+      'minutes': minutes > 0 ? '$minutes' : '1',
+      if (result.kcalBurned > 0) 'kcal': '${result.kcalBurned}',
+    };
+
+    coach.speakLine(VoiceLineKey.workoutDone, params: params);
+
+    if (result.personalRecords.isNotEmpty) {
+      _prTimer = Timer(const Duration(milliseconds: 2500), () {
+        if (mounted) coach.speakLine(VoiceLineKey.personalRecord);
+      });
+    }
+  }
+
+  void _home(BuildContext context) {
     // Làm mới Home để buổi vừa tập hiện là đã xong.
     ref.invalidate(homePlanProvider);
     ref.invalidate(userStatusFutureProvider);
@@ -26,7 +76,7 @@ class WorkoutResultScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final activeSession = ref.watch(activeWorkoutProvider);
     final result = activeSession?.result;
     if (result == null) {
@@ -48,7 +98,7 @@ class WorkoutResultScreen extends ConsumerWidget {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _home(context, ref);
+        if (!didPop) _home(context);
       },
       child: Scaffold(
         body: GradientBackground(
@@ -236,9 +286,13 @@ class WorkoutResultScreen extends ConsumerWidget {
                         },
                       ),
                       const SizedBox(height: 10),
-                      PrimaryButton(
+                      Semantics(
                         label: 'Về trang chủ',
-                        onPressed: () => _home(context, ref),
+                        button: true,
+                        child: PrimaryButton(
+                          label: 'Về trang chủ',
+                          onPressed: () => _home(context),
+                        ),
                       ),
                     ],
                   ),

@@ -11,6 +11,8 @@ import '../../../../core/widgets/primary_button.dart';
 
 import 'package:fitness_app/features/notifications/presentation/controllers/notifications_controller.dart';
 
+import '../../../../core/voice/voice_models.dart';
+import '../../../../core/voice/voice_provider.dart';
 import '../controllers/user_controller.dart';
 import '../../domain/models/me_response.dart';
 import '../../domain/models/settings_request.dart';
@@ -652,8 +654,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 24),
-
         // Nút Lưu cài đặt (PATCH /me)
         PrimaryButton(
           label: state.isSaving ? 'Đang lưu...' : 'Lưu cài đặt',
@@ -689,7 +689,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   );
                 },
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
+
+        // 7. Giọng đọc khi tập (lưu SharedPreferences cục bộ)
+        _buildVoiceSettingsSection(context),
+        const SizedBox(height: 24),
 
         // Đăng xuất (xóa token dev)
         Center(
@@ -945,5 +949,270 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       default:
         return 'Tập luyện';
     }
+  }
+
+  Widget _buildVoiceSettingsSection(BuildContext context) {
+    final voiceSettings = ref.watch(voiceSettingsProvider);
+    final voiceNotifier = ref.read(voiceSettingsProvider.notifier);
+    final voiceCoach = ref.read(voiceCoachProvider);
+    final styles = voiceCoach.styles;
+
+    final allStyles = [
+      (
+        'coach',
+        'Theo phong cách coach',
+        'Tự động theo huấn luyện viên (${_selectedCoachStyle == 'strict' ? 'Nghiêm khắc' : _selectedCoachStyle == 'funny' ? 'Hài hước' : 'Động viên'})',
+      ),
+      for (final id in [
+        'supportive',
+        'strict',
+        'funny',
+        'calm',
+        'hype',
+        'genz',
+        'minimal',
+      ])
+        (
+          id,
+          styles[id]?.nameVi ?? id,
+          styles[id]?.descriptionVi ?? '',
+        ),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Giọng đọc khi tập',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        GlassCard(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SwitchListTile(
+                key: const ValueKey('settings-voice-enabled'),
+                title: const Text(
+                  'Giọng đọc khi tập',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+                subtitle: const Text(
+                  'Đếm số lần, đếm lùi, nhắc tư thế và động viên khi tập',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                value: voiceSettings.enabled,
+                activeThumbColor: AppColors.primary,
+                contentPadding: EdgeInsets.zero,
+                onChanged: (val) => voiceNotifier.setEnabled(val),
+              ),
+              if (voiceSettings.enabled) ...[
+                const Divider(color: AppColors.border, height: 1),
+                const SizedBox(height: 12),
+                const Text(
+                  'Phong cách giọng',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                for (final styleItem in allStyles) ...[
+                  _buildVoiceStyleTile(
+                    id: styleItem.$1,
+                    title: styleItem.$2,
+                    desc: styleItem.$3,
+                    isSelected: voiceSettings.selectedStyleId == styleItem.$1,
+                    onSelect: () => voiceNotifier.setStyle(styleItem.$1),
+                    onPreview: () {
+                      final effectiveId = styleItem.$1 == 'coach'
+                          ? (_selectedCoachStyle == 'strict'
+                              ? 'strict'
+                              : _selectedCoachStyle == 'funny'
+                              ? 'funny'
+                              : 'supportive')
+                          : styleItem.$1;
+                      final targetStyle =
+                          styles[effectiveId] ?? styles['supportive']!;
+                      final sample =
+                          voiceCoach.pickLine(effectiveId, VoiceLineKey.go) ??
+                          'Bắt đầu nào!';
+                      final rate = (targetStyle.rate *
+                              voiceSettings.speed.multiplier)
+                          .clamp(0.1, 1.0);
+                      voiceCoach.speakText(
+                        sample,
+                        rate: rate,
+                        pitch: targetStyle.pitch,
+                        interrupt: true,
+                      );
+                    },
+                    hint: styleItem.$1 == 'minimal'
+                        ? 'Phù hợp người mắt kém: chỉ đọc số và lệnh ngắn'
+                        : null,
+                  ),
+                  const SizedBox(height: 6),
+                ],
+                const SizedBox(height: 8),
+                const Divider(color: AppColors.border, height: 1),
+                const SizedBox(height: 12),
+                const Text(
+                  'Tốc độ đọc',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: VoiceSpeed.values.map((speed) {
+                    final isSelected = voiceSettings.speed == speed;
+                    return Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                        child: ChoiceChip(
+                          key: ValueKey('settings-voice-speed-${speed.name}'),
+                          label: Text(speed.labelVi),
+                          selected: isSelected,
+                          showCheckmark: false,
+                          selectedColor: AppColors.primaryLight,
+                          backgroundColor: AppColors.surface,
+                          side: BorderSide(
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.border,
+                          ),
+                          labelStyle: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.textPrimary,
+                          ),
+                          onSelected: (_) => voiceNotifier.setSpeed(speed),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 8),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVoiceStyleTile({
+    required String id,
+    required String title,
+    required String desc,
+    required bool isSelected,
+    required VoidCallback onSelect,
+    required VoidCallback onPreview,
+    String? hint,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isSelected
+            ? AppColors.primaryLight.withValues(alpha: 0.5)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSelected ? AppColors.primary : AppColors.border,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            key: ValueKey('settings-voice-style-$id'),
+            onTap: onSelect,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              child: Row(
+                children: [
+                  Icon(
+                    isSelected
+                        ? Icons.radio_button_checked_rounded
+                        : Icons.radio_button_off_rounded,
+                    color: isSelected
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
+                    size: 22,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: isSelected
+                                ? FontWeight.w800
+                                : FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        if (desc.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            desc,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  Semantics(
+                    label: 'Nghe thử phong cách $title',
+                    button: true,
+                    child: IconButton(
+                      key: ValueKey('preview-voice-$id'),
+                      icon: const Icon(Icons.play_circle_fill_rounded),
+                      color: AppColors.primary,
+                      iconSize: 30,
+                      tooltip: 'Nghe thử',
+                      onPressed: onPreview,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (hint != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
+              child: Text(
+                hint,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontStyle: FontStyle.italic,
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }
