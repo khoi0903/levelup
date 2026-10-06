@@ -7,12 +7,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/router.dart';
 import '../../../../core/api/api_client.dart';
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/auth_constants.dart';
 import '../../../users/presentation/controllers/user_controller.dart';
 import '../../data/repositories/api_device_repository.dart';
 import '../../data/services/fake_push_service.dart';
 import '../../data/services/firebase_push_service.dart';
+import '../../data/services/local_notifier.dart';
 import '../../domain/models/notification_route_mapper.dart';
 import '../../domain/models/push_notification_message.dart';
 import '../../domain/repositories/device_repository.dart';
@@ -44,6 +44,14 @@ final pushServiceProvider = Provider<PushService>((ref) {
   return FirebasePushService();
 });
 
+/// Hiện thông báo lên thanh thông báo khi app đang mở. Dev/web/test: bản giả, không gọi plugin.
+final localNotifierProvider = Provider<LocalNotifier>((ref) {
+  if (kIsWeb || AuthConstants.isDevMode || Firebase.apps.isEmpty) {
+    return FakeLocalNotifier();
+  }
+  return FlutterLocalNotifier();
+});
+
 /// Provider cung cấp DeviceRepository gọi POST /devices.
 final deviceRepositoryProvider = Provider<DeviceRepository>((ref) {
   final client = ref.watch(apiClientProvider);
@@ -73,10 +81,11 @@ class NotificationCoordinator {
     if (_initialized) return;
     _initialized = true;
 
-    // 1. App đang mở (foreground): hiển thị SnackBar/Banner trong app
-    _messageSubscription = _pushService.onMessage.listen((message) {
-      showForegroundNotificationBanner(message);
-    });
+    // 1. App đang mở (foreground): Android không tự hiện thông báo FCM, nên app tự đẩy lên
+    //    thanh thông báo của điện thoại (bật xuống từ đầu màn hình). Bấm vào → mở đúng màn.
+    final local = _ref.read(localNotifierProvider);
+    await local.init(onTap: (route) => appRouter.go(mapNotificationRoute(route)));
+    _messageSubscription = _pushService.onMessage.listen(local.show);
 
     // 2. App chạy nền (background): người dùng nhấn vào thông báo hệ thống
     _messageOpenedSubscription = _pushService.onMessageOpenedApp.listen((
@@ -162,88 +171,3 @@ final notificationCoordinatorProvider = Provider<NotificationCoordinator>((
   ref.onDispose(() => coordinator.dispose());
   return coordinator;
 });
-
-/// Hiển thị banner/SnackBar nhỏ trong app khi nhận thông báo ở chế độ foreground (mục 5).
-void showForegroundNotificationBanner(PushNotificationMessage message) {
-  final messenger = rootScaffoldMessengerKey.currentState;
-  if (messenger == null) return;
-
-  final title = message.title;
-  final body = message.body;
-  if ((title == null || title.isEmpty) && (body == null || body.isEmpty)) {
-    return;
-  }
-
-  messenger.hideCurrentSnackBar();
-  messenger.showSnackBar(
-    SnackBar(
-      behavior: SnackBarBehavior.floating,
-      margin: const EdgeInsets.all(16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      backgroundColor: const Color(0xFF1E293B), // slate-800 đậm rõ nét
-      duration: const Duration(seconds: 4),
-      content: InkWell(
-        onTap: () {
-          messenger.hideCurrentSnackBar();
-          final path = mapNotificationRoute(message.route);
-          appRouter.go(path);
-        },
-        child: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(
-                Icons.notifications_active_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (title != null && title.isNotEmpty)
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14,
-                        color: Colors.white,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  if (body != null && body.isNotEmpty)
-                    Text(
-                      body,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.white70,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-      action: SnackBarAction(
-        label: 'Xem',
-        textColor: AppColors.accent,
-        onPressed: () {
-          final path = mapNotificationRoute(message.route);
-          appRouter.go(path);
-        },
-      ),
-    ),
-  );
-}
