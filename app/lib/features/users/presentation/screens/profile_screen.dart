@@ -1105,6 +1105,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     );
                   }).toList(),
                 ),
+                const SizedBox(height: 12),
+                const Divider(color: AppColors.border, height: 1),
+                const SizedBox(height: 4),
+                SwitchListTile(
+                  key: const ValueKey('settings-voice-start-tip'),
+                  title: const Text(
+                    'Đọc mẹo kỹ thuật đầu bài',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: const Text(
+                    'Đọc điểm kỹ thuật quan trọng khi chuyển sang bài mới',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  value: voiceSettings.readStartTip,
+                  activeThumbColor: AppColors.primary,
+                  contentPadding: EdgeInsets.zero,
+                  onChanged: (val) => voiceNotifier.setReadStartTip(val),
+                ),
                 const SizedBox(height: 8),
               ],
             ],

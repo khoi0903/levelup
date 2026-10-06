@@ -79,6 +79,8 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
         VoiceLineKey.exerciseNext,
         params: {'exercise': item.nameVi},
       );
+      final slug = item.exercise?.slug ?? item.exerciseId;
+      coach.speakStartTip(slug);
     }
     coach.speakLine(
       VoiceLineKey.startCountdown,
