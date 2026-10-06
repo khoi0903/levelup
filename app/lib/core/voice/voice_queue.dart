@@ -68,7 +68,9 @@ class VoiceQueue {
     // 1. Bắt đầu hiệp mới: bỏ các câu cũ đang chờ (đếm số, nhắc tư thế…) nhưng KHÔNG cắt câu đang đọc
     //    (ví dụ tên bài / mẹo kỹ thuật vừa đọc trước khi camera tự mở). Màn camera chờ whenIdle() rồi mới đếm lùi.
     if (entry.key == VoiceLineKey.startCountdown) {
-      _queue.removeWhere((i) => !i.isProtected);
+      // Giữ tên bài và mẹo kỹ thuật (đọc trước đếm lùi); chỉ bỏ câu của hiệp trước: số đếm, nhắc tư thế…
+      _queue.removeWhere((i) =>
+          !i.isProtected && !i.isStartTip && i.key != VoiceLineKey.exerciseNext);
       _queue.add(entry);
       _processQueue();
       return;

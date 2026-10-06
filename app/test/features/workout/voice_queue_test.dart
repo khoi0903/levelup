@@ -70,4 +70,14 @@ void main() {
     await slow.queue.whenIdle(max: const Duration(milliseconds: 300));
     expect(sw2.elapsedMilliseconds, lessThan(1500));
   });
+
+  test('đếm lùi giữ tên bài và mẹo kỹ thuật còn chờ (bài không có camera)', () async {
+    final h = _Harness();
+    await h.queue.enqueue(const VoiceQueueEntry(text: 'Bài tiếp theo: Plank', key: VoiceLineKey.exerciseNext));
+    await h.queue.enqueue(const VoiceQueueEntry(text: 'Khuỷu tay dưới vai', isStartTip: true));
+    await h.queue.enqueue(const VoiceQueueEntry(text: 'Chuẩn bị, 3', key: VoiceLineKey.startCountdown));
+    await h.queue.whenIdle(max: const Duration(seconds: 3));
+    expect(h.spoken, ['Bài tiếp theo: Plank', 'Khuỷu tay dưới vai', 'Chuẩn bị, 3']);
+    expect(h.cut, isEmpty);
+  });
 }
