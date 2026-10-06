@@ -4,6 +4,7 @@ import 'package:fitness_app/features/auth/presentation/controllers/auth_controll
 import 'package:go_router/go_router.dart';
 import 'package:fitness_app/features/notifications/data/repositories/fake_device_repository.dart';
 import 'package:fitness_app/features/notifications/data/services/fake_push_service.dart';
+import 'package:fitness_app/features/notifications/data/services/local_notifier.dart';
 import 'package:fitness_app/features/notifications/domain/models/notification_route_mapper.dart';
 import 'package:fitness_app/features/notifications/domain/models/push_notification_message.dart';
 import 'package:fitness_app/features/notifications/presentation/controllers/notifications_controller.dart';
@@ -384,30 +385,32 @@ void main() {
     );
   });
 
-  group('6. Foreground notification banner', () {
-    testWidgets('showForegroundNotificationBanner hiển thị title và body', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          scaffoldMessengerKey: rootScaffoldMessengerKey,
-          home: const Scaffold(body: Center(child: Text('Trang chính'))),
-        ),
+  group('6. Thông báo khi app đang mở', () {
+    test('đẩy lên thanh thông báo của điện thoại (không còn popup trong app)', () async {
+      final push = FakePushService();
+      final local = FakeLocalNotifier();
+      final container = ProviderContainer(
+        overrides: [
+          pushServiceProvider.overrideWithValue(push),
+          localNotifierProvider.overrideWithValue(local),
+          deviceRepositoryProvider.overrideWithValue(FakeDeviceRepository()),
+        ],
       );
-      await tester.pumpAndSettle();
+      addTearDown(container.dispose);
 
-      showForegroundNotificationBanner(
+      await container.read(notificationCoordinatorProvider).init();
+      push.emitForegroundMessage(
         const PushNotificationMessage(
           title: 'Nhắc nhở tập luyện',
           body: 'Đã đến giờ tập 15 phút hôm nay rồi!',
           data: {'route': '/workout'},
         ),
       );
-      await tester.pump();
+      await Future<void>.delayed(Duration.zero);
 
-      expect(find.text('Nhắc nhở tập luyện'), findsOneWidget);
-      expect(find.text('Đã đến giờ tập 15 phút hôm nay rồi!'), findsOneWidget);
-      expect(find.text('Xem'), findsOneWidget);
+      expect(local.shown, hasLength(1));
+      expect(local.shown.single.title, 'Nhắc nhở tập luyện');
+      expect(local.shown.single.route, '/workout');
     });
   });
 }
