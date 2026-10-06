@@ -162,6 +162,9 @@ class CoachFlowTest {
         assertNotNull(r.read("$.reply.card.toExerciseName"));
         assertTrue(r.<List<String>>read("$.reply.card.preview.items[*].exerciseId").contains(to));
         assertEquals(29, r.<Integer>read("$.remainingToday"));
+        // Mở lại màn Coach: lịch sử cũng trả số lượt còn lại
+        assertEquals(29, call(get("/coach/messages").header("Authorization", token), 200)
+            .<Integer>read("$.remainingToday"));
         String messageId = r.read("$.reply.id");
 
         // Chưa áp dụng: kế hoạch chưa đổi

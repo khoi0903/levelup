@@ -194,9 +194,13 @@ class CoachHistoryResponse {
   final List<CoachMessageView> messages;
   final String? nextBefore;
 
+  /// Lượt chat còn lại hôm nay (server cũ không trả → null).
+  final int? remainingToday;
+
   const CoachHistoryResponse({
     required this.messages,
     this.nextBefore,
+    this.remainingToday,
   });
 
   factory CoachHistoryResponse.fromJson(Map<String, dynamic> json) {
@@ -206,6 +210,7 @@ class CoachHistoryResponse {
               .toList() ??
           const [],
       nextBefore: json['nextBefore']?.toString(),
+      remainingToday: (json['remainingToday'] as num?)?.toInt(),
     );
   }
 
