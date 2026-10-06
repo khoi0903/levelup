@@ -83,15 +83,25 @@ final voiceSettingsProvider =
 });
 
 /// VoiceCoach provider - có thể override bằng FakeVoiceCoach trong tests.
+///
+/// Tạo MỘT lần cho cả app. Không ref.watch: trước đây watch userStatusFutureProvider (autoDispose, tải lại sau
+/// mỗi buổi tập / lưu cài đặt, tự hủy khi rời Trang chủ) và voiceSettingsProvider (đổi khi bấm nút loa) làm
+/// provider dựng lại → coach cũ bị dispose (dừng ngang câu) và tạo engine TTS mới giữa buổi tập.
+/// Giờ chỉ nghe thay đổi rồi cập nhật thông số cho coach đang chạy.
 final voiceCoachProvider = Provider<VoiceCoach>((ref) {
   final coach = FlutterTtsVoiceCoach();
   unawaited(coach.init());
 
-  final settings = ref.watch(voiceSettingsProvider);
-  final userAsync = ref.watch(userStatusFutureProvider);
-  final coachStyle = userAsync.valueOrNull?.profile?.coachStyle ?? 'supportive';
+  void apply() {
+    final coachStyle =
+        ref.read(currentUserProvider)?.profile?.coachStyle ?? 'supportive';
+    coach.updateSettings(ref.read(voiceSettingsProvider),
+        effectiveCoachStyle: coachStyle);
+  }
 
-  coach.updateSettings(settings, effectiveCoachStyle: coachStyle);
+  apply();
+  ref.listen(voiceSettingsProvider, (_, _) => apply());
+  ref.listen(currentUserProvider, (_, _) => apply());
 
   ref.onDispose(() {
     coach.dispose();

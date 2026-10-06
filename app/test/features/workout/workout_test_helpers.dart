@@ -1,3 +1,4 @@
+import 'package:fitness_app/features/workout/data/camera/auto_camera_setting.dart';
 import 'package:fitness_app/features/workout/data/camera/camera_setup_skip.dart';
 import 'dart:async';
 
@@ -183,6 +184,7 @@ class WorkoutHarness {
     RepSessionFactory? factory,
     FakePermissionGate? permission,
     CameraSetupSkip? setupSkip,
+    this.autoCamera = false,
   }) : planRepo = FakePlanRepository(planView: plan),
        repo = repo ?? FakeWorkoutRepository(exercises: testExercises),
        factory = factory ?? NoCameraFactory(),
@@ -194,6 +196,9 @@ class WorkoutHarness {
   final RepSessionFactory factory;
   final FakePermissionGate permission;
   final CameraSetupSkip setupSkip;
+
+  /// "Tự mở camera khi bắt đầu hiệp" (app mặc định bật). Test cũ đi luồng bấm tay nên mặc định tắt ở đây.
+  final bool autoCamera;
   final clock = FakeClock();
   late ProviderContainer container;
 
@@ -211,6 +216,7 @@ class WorkoutHarness {
         repSessionFactoryProvider.overrideWithValue(factory),
         cameraPermissionProvider.overrideWithValue(permission),
         cameraSetupSkipProvider.overrideWithValue(setupSkip),
+        autoCameraProvider.overrideWith((ref) => FixedAutoCamera(autoCamera)),
         workoutClockProvider.overrideWithValue(clock.call),
         userRepositoryProvider.overrideWithValue(FakeUserRepository()),
       ],
@@ -225,5 +231,12 @@ class WorkoutHarness {
       ),
     );
     await tester.pumpAndSettle();
+  }
+}
+
+/// Giá trị cố định cho test (không đọc SharedPreferences).
+class FixedAutoCamera extends AutoCameraNotifier {
+  FixedAutoCamera(bool value) {
+    state = value;
   }
 }
