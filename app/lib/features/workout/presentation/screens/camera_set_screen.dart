@@ -488,16 +488,19 @@ class _CountingViewState extends ConsumerState<_CountingView>
         _maybeAutoFinish(r);
       });
       _start();
-      _startCountdown();
+      unawaited(_startCountdown());
     } catch (e) {
       _error = 'Bài này chưa đếm được bằng camera trên máy bạn.';
     }
   }
 
-  void _startCountdown() {
+  Future<void> _startCountdown() async {
     final coach = ref.read(voiceCoachProvider);
     _countdownSec = 3;
-    _countingDown = true;
+    setState(() => _countingDown = true);
+    // Câu tên bài / mẹo kỹ thuật (đọc trước khi camera mở) nói xong rồi mới đếm, chữ và tiếng khớp nhau
+    await coach.whenIdle(max: const Duration(seconds: 6));
+    if (!mounted) return;
     coach.speakLine(
       VoiceLineKey.startCountdown,
       params: {'n': '$_countdownSec'},
@@ -513,9 +516,10 @@ class _CountingViewState extends ConsumerState<_CountingView>
         _countdownSec--;
       });
       if (_countdownSec > 0) {
+        // Chỉ đọc số (thay số cũ nếu chưa đọc xong), không lặp "Chuẩn bị"
         coach.speakLine(
-          VoiceLineKey.startCountdown,
-          params: {'n': '$_countdownSec'},
+          VoiceLineKey.holdLast,
+          params: {'sec': '$_countdownSec'},
           interrupt: true,
         );
       } else {

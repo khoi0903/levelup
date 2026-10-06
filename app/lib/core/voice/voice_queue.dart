@@ -65,11 +65,11 @@ class VoiceQueue {
   Future<void> enqueue(VoiceQueueEntry entry) async {
     if (!isActive()) return;
 
-    // 1. Khi bắt đầu hiệp mới: start_countdown xóa hàng đợi cũ rồi đọc
+    // 1. Bắt đầu hiệp mới: bỏ các câu cũ đang chờ (đếm số, nhắc tư thế…) nhưng KHÔNG cắt câu đang đọc
+    //    (ví dụ tên bài / mẹo kỹ thuật vừa đọc trước khi camera tự mở). Màn camera chờ whenIdle() rồi mới đếm lùi.
     if (entry.key == VoiceLineKey.startCountdown) {
-      _queue.clear();
+      _queue.removeWhere((i) => !i.isProtected);
       _queue.add(entry);
-      await _cancelCurrent();
       _processQueue();
       return;
     }
@@ -121,6 +121,14 @@ class VoiceQueue {
     await _cancelCurrent();
     _current = null;
     _isSpeaking = false;
+  }
+
+  /// Xong khi không còn câu đang đọc hoặc đang chờ (tối đa [max]).
+  Future<void> whenIdle({Duration max = const Duration(seconds: 6)}) async {
+    final deadline = DateTime.now().add(max);
+    while ((_isSpeaking || _queue.isNotEmpty) && DateTime.now().isBefore(deadline)) {
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
   }
 
   void clearQueue() {

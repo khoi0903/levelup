@@ -1,3 +1,5 @@
+import 'package:fitness_app/core/voice/voice_coach.dart';
+import 'package:fitness_app/core/voice/voice_provider.dart';
 import 'package:fitness_app/features/workout/data/camera/auto_camera_setting.dart';
 import 'package:fitness_app/features/workout/data/camera/camera_setup_skip.dart';
 import 'dart:async';
@@ -199,6 +201,9 @@ class WorkoutHarness {
 
   /// "Tự mở camera khi bắt đầu hiệp" (app mặc định bật). Test cũ đi luồng bấm tay nên mặc định tắt ở đây.
   final bool autoCamera;
+
+  /// Ghi lại câu giọng đọc đã "nói" để test kiểm tra.
+  final voice = FakeVoiceCoach();
   final clock = FakeClock();
   late ProviderContainer container;
 
@@ -217,6 +222,8 @@ class WorkoutHarness {
         cameraPermissionProvider.overrideWithValue(permission),
         cameraSetupSkipProvider.overrideWithValue(setupSkip),
         autoCameraProvider.overrideWith((ref) => FixedAutoCamera(autoCamera)),
+        // Giọng đọc giả: test không có engine TTS thật (không chờ "nói xong", không gọi plugin)
+        voiceCoachProvider.overrideWithValue(voice),
         workoutClockProvider.overrideWithValue(clock.call),
         userRepositoryProvider.overrideWithValue(FakeUserRepository()),
       ],
