@@ -95,11 +95,15 @@ class VoiceSettings {
   /// Tắt tiếng tạm thời khi đang tập (qua nút loa ở màn hình tập)
   final bool mutedTemporarily;
 
+  /// Đọc mẹo kỹ thuật khi bắt đầu bài tập mới (mặc định bật)
+  final bool readStartTip;
+
   const VoiceSettings({
     this.enabled = true,
     this.selectedStyleId = 'coach',
     this.speed = VoiceSpeed.normal,
     this.mutedTemporarily = false,
+    this.readStartTip = true,
   });
 
   bool get effectiveActive => enabled && !mutedTemporarily;
@@ -109,12 +113,63 @@ class VoiceSettings {
     String? selectedStyleId,
     VoiceSpeed? speed,
     bool? mutedTemporarily,
+    bool? readStartTip,
   }) {
     return VoiceSettings(
       enabled: enabled ?? this.enabled,
       selectedStyleId: selectedStyleId ?? this.selectedStyleId,
       speed: speed ?? this.speed,
       mutedTemporarily: mutedTemporarily ?? this.mutedTemporarily,
+      readStartTip: readStartTip ?? this.readStartTip,
     );
   }
 }
+
+class FormIssueCue {
+  final List<String> cue;
+  final List<String> minimal;
+
+  const FormIssueCue({
+    this.cue = const [],
+    this.minimal = const [],
+  });
+
+  factory FormIssueCue.fromJson(Map<String, dynamic> json) {
+    final rawCue = json['cue'];
+    final rawMinimal = json['minimal'];
+    return FormIssueCue(
+      cue: rawCue is List ? rawCue.map((e) => e.toString()).toList() : const [],
+      minimal: rawMinimal is List ? rawMinimal.map((e) => e.toString()).toList() : const [],
+    );
+  }
+}
+
+class ExerciseFormCues {
+  final List<String> startTip;
+  final Map<String, FormIssueCue> issues;
+
+  const ExerciseFormCues({
+    this.startTip = const [],
+    this.issues = const {},
+  });
+
+  factory ExerciseFormCues.fromJson(Map<String, dynamic> json) {
+    final rawStartTip = json['startTip'];
+    final rawIssues = json['issues'];
+    final parsedIssues = <String, FormIssueCue>{};
+    if (rawIssues is Map) {
+      rawIssues.forEach((k, v) {
+        if (v is Map<String, dynamic>) {
+          parsedIssues[k.toString()] = FormIssueCue.fromJson(v);
+        } else if (v is Map) {
+          parsedIssues[k.toString()] = FormIssueCue.fromJson(Map<String, dynamic>.from(v));
+        }
+      });
+    }
+    return ExerciseFormCues(
+      startTip: rawStartTip is List ? rawStartTip.map((e) => e.toString()).toList() : const [],
+      issues: parsedIssues,
+    );
+  }
+}
+

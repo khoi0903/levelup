@@ -117,6 +117,7 @@ class _CameraSetScreenState extends ConsumerState<CameraSetScreen> {
                     name: item.nameVi,
                     subtitle: subtitle,
                     camera: camera,
+                    slug: item.exercise?.slug ?? item.exerciseId,
                     targetReps: widget.args.targetReps ?? item.reps,
                     targetSec: item.durationSec,
                     onManual: _manual,
@@ -208,6 +209,12 @@ class _SetupViewState extends ConsumerState<_SetupView> {
   @override
   Widget build(BuildContext context) {
     final tips = cameraTipsVi(widget.camera);
+    final slug = widget.item.exercise?.slug ?? widget.item.exerciseId;
+    final coach = ref.watch(voiceCoachProvider);
+    final startTips = coach.getStartTips(slug).isNotEmpty
+        ? coach.getStartTips(slug)
+        : (widget.item.exercise?.cues ?? const <String>[]);
+
     return Column(
       children: [
         Expanded(
@@ -231,6 +238,32 @@ class _SetupViewState extends ConsumerState<_SetupView> {
                   width: double.infinity,
                 ),
               ),
+              if (startTips.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                TipBox(
+                  key: const ValueKey('camera-setup-start-tip'),
+                  icon: Icons.lightbulb_outline_rounded,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Mẹo kỹ thuật',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      for (final tip in startTips)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 2),
+                          child: Text(tip),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               const Text(
                 'Đặt điện thoại để camera đếm giúp bạn',
@@ -377,6 +410,7 @@ class _CountingView extends ConsumerStatefulWidget {
     required this.name,
     required this.subtitle,
     required this.camera,
+    this.slug = '',
     required this.targetReps,
     this.targetSec,
     required this.onManual,
@@ -386,6 +420,7 @@ class _CountingView extends ConsumerStatefulWidget {
   final String name;
   final String subtitle;
   final ExerciseCamera camera;
+  final String slug;
   final int? targetReps;
   final int? targetSec;
   final VoidCallback onManual;
@@ -552,7 +587,8 @@ class _CountingViewState extends ConsumerState<_CountingView>
     if (r.issues.isNotEmpty &&
         now.difference(_lastFormIssueTime).inSeconds >= 8) {
       _lastFormIssueTime = now;
-      coach.speakLine(VoiceLineKey.formGeneric, interrupt: false);
+      final issueCode = r.issues.last.code;
+      coach.speakFormCue(widget.slug, issueCode, interrupt: false);
     }
 
     // 4. Mất người (Tối đa 1 lần / 8 giây)

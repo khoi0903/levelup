@@ -26,7 +26,7 @@ const Map<String, VoiceStyle> defaultVoiceStyles = {
         'Tuyệt vời! Bạn đã tập {minutes} phút, đốt khoảng {kcal} calo.',
         'Hoàn thành buổi tập xuất sắc trong {minutes} phút!',
       ],
-      'personalRecord': [
+      'personal_record': [
         'Chúc mừng bạn, kỷ lục mới rồi!',
         'Đỉnh quá, kỷ lục cá nhân mới!',
       ],
@@ -57,7 +57,7 @@ const Map<String, VoiceStyle> defaultVoiceStyles = {
         'Kết thúc buổi tập. {minutes} phút, {kcal} calo. Tốt.',
         'Hoàn thành nhiệm vụ hôm nay trong {minutes} phút.',
       ],
-      'personalRecord': [
+      'personal_record': [
         'Kỷ lục mới! Giữ vững kỷ luật!',
         'Kỷ lục mới được thiết lập.',
       ],
@@ -88,7 +88,7 @@ const Map<String, VoiceStyle> defaultVoiceStyles = {
         'Ngon lành cành đào! {minutes} phút cày cuốc, bay màu {kcal} calo.',
         'Xong xuôi buổi tập {minutes} phút! Tự hào về bản thân đi!',
       ],
-      'personalRecord': [
+      'personal_record': [
         'Ui dời, phá kỷ lục luôn, xịn quá!',
         'Kỷ lục mới toanh, ai làm lại bạn nữa!',
       ],
@@ -119,7 +119,7 @@ const Map<String, VoiceStyle> defaultVoiceStyles = {
         'Bạn đã hoàn thành buổi tập tĩnh tâm và hiệu quả trong {minutes} phút.',
         'Tuyệt vời. Cơ thể bạn đã được chăm sóc chu đáo trong {minutes} phút.',
       ],
-      'personalRecord': [
+      'personal_record': [
         'Cột mốc mới đáng ghi nhận của bạn.',
         'Bạn vừa vượt qua giới hạn của chính mình.',
       ],
@@ -150,7 +150,7 @@ const Map<String, VoiceStyle> defaultVoiceStyles = {
         'Màn trình diễn đỉnh cao! {minutes} phút, đốt cháy {kcal} calo!',
         'Bạn là nhà vô địch hôm nay! Hoàn thành trong {minutes} phút!',
       ],
-      'personalRecord': [
+      'personal_record': [
         'Kỷ lục vô tiền khoáng hậu mới!',
         'Phá vỡ giới hạn rồi! Quá tuyệt vời!',
       ],
@@ -181,7 +181,7 @@ const Map<String, VoiceStyle> defaultVoiceStyles = {
         'Đỉnh nóc kịch trần! Tập {minutes} phút, bay {kcal} calo rùi.',
         'Tuyệt cú mèo! Xong buổi tập {minutes} phút rùi nè.',
       ],
-      'personalRecord': [
+      'personal_record': [
         'Phá kỷ lục luôn, keo lỳ quá bạn ơi!',
         'Kỷ lục mới nè, đỉnh chóp luôn!',
       ],
@@ -209,7 +209,7 @@ const Map<String, VoiceStyle> defaultVoiceStyles = {
       'lost_person': ['Lùi vào khung hình'],
       'exercise_next': ['Tiếp: {exercise}'],
       'workout_done': ['Hoàn thành'],
-      'personalRecord': ['Kỷ lục mới'],
+      'personal_record': ['Kỷ lục mới'],
     },
   ),
 };

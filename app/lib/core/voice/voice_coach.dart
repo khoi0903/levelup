@@ -8,8 +8,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
+import 'form_cues_defaults.dart';
 import 'voice_lines_defaults.dart';
 import 'voice_models.dart';
+import 'voice_queue.dart';
 
 abstract interface class VoiceCoach {
   Future<void> init();
@@ -17,6 +19,17 @@ abstract interface class VoiceCoach {
   Future<void> speakLine(
     VoiceLineKey key, {
     Map<String, Object?> params = const {},
+    bool interrupt = false,
+  });
+
+  Future<void> speakFormCue(
+    String slug,
+    String issueCode, {
+    bool interrupt = false,
+  });
+
+  Future<void> speakStartTip(
+    String slug, {
     bool interrupt = false,
   });
 
@@ -38,11 +51,15 @@ abstract interface class VoiceCoach {
   bool get isLanguageAvailable;
   bool get isSpeaking;
   Map<String, VoiceStyle> get styles;
+  Map<String, ExerciseFormCues> get formCues;
   VoiceSettings get settings;
 
   String resolveEffectiveStyleId(String? coachStyle);
   String formatLine(String template, Map<String, Object?> params);
   String? pickLine(String styleId, VoiceLineKey key, {Map<String, Object?> params = const {}});
+  String? pickFormCue(String styleId, String slug, String issueCode);
+  String? pickStartTip(String slug);
+  List<String> getStartTips(String slug);
   int countEveryForStyle([String? styleId]);
 }
 
@@ -51,9 +68,17 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
   FlutterTtsVoiceCoach({
     FlutterTts? tts,
     this.onVietnameseVoiceMissing,
-  }) : _tts = tts ?? FlutterTts();
+  }) : _tts = tts ?? FlutterTts() {
+    _queue = VoiceQueue(
+      onSpeak: _performSpeak,
+      onStopTts: _performStopTts,
+      isActive: () => _settings.effectiveActive && _isLanguageAvailable && _isForeground,
+    );
+  }
 
   final FlutterTts _tts;
+  late final VoiceQueue _queue;
+  Completer<void>? _speakCompleter;
 
   /// Callback thông báo khi máy không có giọng tiếng Việt (chỉ gọi 1 lần duy nhất).
   final void Function(String message)? onVietnameseVoiceMissing;
@@ -65,6 +90,7 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
   static bool _hasWarnedMissingVoice = false;
 
   Map<String, VoiceStyle> _styles = Map.of(defaultVoiceStyles);
+  Map<String, ExerciseFormCues> _formCues = Map.of(defaultFormCues);
   VoiceSettings _settings = const VoiceSettings();
   String? _effectiveCoachStyle = 'supportive';
 
@@ -80,10 +106,13 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
   bool get isLanguageAvailable => _isLanguageAvailable;
 
   @override
-  bool get isSpeaking => _isSpeaking;
+  bool get isSpeaking => _queue.isSpeaking || _isSpeaking;
 
   @override
   Map<String, VoiceStyle> get styles => Map.unmodifiable(_styles);
+
+  @override
+  Map<String, ExerciseFormCues> get formCues => Map.unmodifiable(_formCues);
 
   @override
   VoiceSettings get settings => _settings;
@@ -94,7 +123,23 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
     _isInitialized = true;
 
     await _loadVoiceLinesAsset();
+    await _loadFormCuesAsset();
     await _setupTts();
+  }
+
+  Future<void> _loadFormCuesAsset() async {
+    try {
+      final jsonString = await rootBundle.loadString(
+        'assets/content/form-cues.json',
+      );
+      final parsed = parseFormCuesJson(jsonString);
+      if (parsed.isNotEmpty) {
+        _formCues = parsed;
+      }
+    } catch (_) {
+      // Thiếu file hoặc lỗi parse → dùng fallback mặc định trong code, không crash
+      _formCues = Map.of(defaultFormCues);
+    }
   }
 
   Future<void> _loadVoiceLinesAsset() async {
@@ -142,17 +187,27 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
 
   Future<void> _setupTts() async {
     try {
+      await _tts.awaitSpeakCompletion(true);
       _tts.setStartHandler(() {
         _isSpeaking = true;
       });
       _tts.setCompletionHandler(() {
         _isSpeaking = false;
+        if (_speakCompleter != null && !_speakCompleter!.isCompleted) {
+          _speakCompleter!.complete();
+        }
       });
       _tts.setErrorHandler((dynamic msg) {
         _isSpeaking = false;
+        if (_speakCompleter != null && !_speakCompleter!.isCompleted) {
+          _speakCompleter!.complete();
+        }
       });
       _tts.setCancelHandler(() {
         _isSpeaking = false;
+        if (_speakCompleter != null && !_speakCompleter!.isCompleted) {
+          _speakCompleter!.complete();
+        }
       });
 
       // Kiểm tra ngôn ngữ vi-VN
@@ -202,6 +257,37 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
     }
   }
 
+  Future<void> _performSpeak(VoiceQueueEntry entry) async {
+    try {
+      if (entry.rate != null) await _tts.setSpeechRate(entry.rate!);
+      if (entry.pitch != null) await _tts.setPitch(entry.pitch!);
+
+      final completer = Completer<void>();
+      _speakCompleter = completer;
+
+      final result = await _tts.speak(entry.text);
+      if (result == 1 || result == true) {
+        await completer.future.timeout(
+          const Duration(seconds: 15),
+          onTimeout: () {},
+        );
+      }
+    } catch (_) {
+    } finally {
+      _speakCompleter = null;
+    }
+  }
+
+  Future<void> _performStopTts() async {
+    try {
+      if (_speakCompleter != null && !_speakCompleter!.isCompleted) {
+        _speakCompleter!.complete();
+      }
+      _speakCompleter = null;
+      await _tts.stop();
+    } catch (_) {}
+  }
+
   @override
   void updateSettings(VoiceSettings settings, {String? effectiveCoachStyle}) {
     _settings = settings;
@@ -246,7 +332,8 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
     Map<String, Object?> params = const {},
   }) {
     final style = _styles[styleId] ?? _styles['supportive'] ?? defaultVoiceStyles['supportive']!;
-    final lines = style.lines[key.key];
+    final lines = style.lines[key.key] ??
+        (key == VoiceLineKey.personalRecord ? style.lines['personalRecord'] : null);
     if (lines == null || lines.isEmpty) return null;
 
     final hasKcal = params.containsKey('kcal') &&
@@ -279,6 +366,131 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
   }
 
   @override
+  List<String> getStartTips(String slug) {
+    return _formCues[slug]?.startTip ?? const [];
+  }
+
+  @override
+  String? pickStartTip(String slug) {
+    final tips = getStartTips(slug);
+    if (tips.isEmpty) return null;
+
+    final cacheKey = 'start_tip_$slug';
+    final lastSpoken = _lastSpokenPerKey[cacheKey];
+
+    String chosen;
+    if (tips.length > 1 && lastSpoken != null) {
+      final filtered = tips.where((t) => t != lastSpoken).toList();
+      final pool = filtered.isNotEmpty ? filtered : tips;
+      chosen = pool[_random.nextInt(pool.length)];
+    } else {
+      chosen = tips[_random.nextInt(tips.length)];
+    }
+
+    _lastSpokenPerKey[cacheKey] = chosen;
+    return chosen;
+  }
+
+  @override
+  String? pickFormCue(String styleId, String slug, String issueCode) {
+    final exercise = _formCues[slug];
+    final issue = exercise?.issues[issueCode];
+
+    List<String>? candidates;
+    if (issue != null) {
+      if (styleId == 'minimal') {
+        if (issue.minimal.isNotEmpty) {
+          candidates = issue.minimal;
+        }
+      } else {
+        if (issue.cue.isNotEmpty) {
+          candidates = issue.cue;
+        }
+      }
+    }
+
+    if (candidates == null || candidates.isEmpty) {
+      return pickLine(styleId, VoiceLineKey.formGeneric);
+    }
+
+    final cacheKey = 'cue_${slug}_${issueCode}_$styleId';
+    final lastSpoken = _lastSpokenPerKey[cacheKey];
+
+    String chosen;
+    if (candidates.length > 1 && lastSpoken != null) {
+      final filtered = candidates.where((c) => c != lastSpoken).toList();
+      final pool = filtered.isNotEmpty ? filtered : candidates;
+      chosen = pool[_random.nextInt(pool.length)];
+    } else {
+      chosen = candidates[_random.nextInt(candidates.length)];
+    }
+
+    _lastSpokenPerKey[cacheKey] = chosen;
+    return chosen;
+  }
+
+  @override
+  Future<void> speakFormCue(
+    String slug,
+    String issueCode, {
+    bool interrupt = false,
+  }) async {
+    if (!_settings.effectiveActive || !_isLanguageAvailable || !_isForeground) {
+      return;
+    }
+
+    final styleId = resolveEffectiveStyleId(_effectiveCoachStyle);
+    final cue = pickFormCue(styleId, slug, issueCode);
+    if (cue == null || cue.isEmpty) return;
+
+    final style = _styles[styleId] ?? defaultVoiceStyles['supportive']!;
+    final effectiveRate = (style.rate * _settings.speed.multiplier).clamp(0.1, 1.0);
+    final effectivePitch = style.pitch.clamp(0.5, 2.0);
+
+    final isGeneric = cue == pickLine(styleId, VoiceLineKey.formGeneric);
+
+    await _queue.enqueue(
+      VoiceQueueEntry(
+        text: cue,
+        key: isGeneric ? VoiceLineKey.formGeneric : null,
+        rate: effectiveRate,
+        pitch: effectivePitch,
+        isFormCue: true,
+      ),
+    );
+  }
+
+  @override
+  Future<void> speakStartTip(
+    String slug, {
+    bool interrupt = false,
+  }) async {
+    if (!_settings.effectiveActive ||
+        !_settings.readStartTip ||
+        !_isLanguageAvailable ||
+        !_isForeground) {
+      return;
+    }
+
+    final tip = pickStartTip(slug);
+    if (tip == null || tip.isEmpty) return;
+
+    final styleId = resolveEffectiveStyleId(_effectiveCoachStyle);
+    final style = _styles[styleId] ?? defaultVoiceStyles['supportive']!;
+    final effectiveRate = (style.rate * _settings.speed.multiplier).clamp(0.1, 1.0);
+    final effectivePitch = style.pitch.clamp(0.5, 2.0);
+
+    await _queue.enqueue(
+      VoiceQueueEntry(
+        text: tip,
+        rate: effectiveRate,
+        pitch: effectivePitch,
+        isStartTip: true,
+      ),
+    );
+  }
+
+  @override
   String formatLine(String template, Map<String, Object?> params) {
     var result = template;
     params.forEach((k, v) {
@@ -306,20 +518,14 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
     final effectiveRate = (style.rate * _settings.speed.multiplier).clamp(0.1, 1.0);
     final effectivePitch = style.pitch.clamp(0.5, 2.0);
 
-    // Những sự kiện quan trọng (đếm số, đếm lùi, bắt đầu, xong hiệp, nhắc tư thế)
-    final isImportant = interrupt ||
-        key == VoiceLineKey.rep ||
-        key == VoiceLineKey.startCountdown ||
-        key == VoiceLineKey.go ||
-        key == VoiceLineKey.almostDone ||
-        key == VoiceLineKey.lastRep ||
-        key == VoiceLineKey.holdLast;
-
-    await speakText(
-      formatted,
-      rate: effectiveRate,
-      pitch: effectivePitch,
-      interrupt: isImportant,
+    await _queue.enqueue(
+      VoiceQueueEntry(
+        text: formatted,
+        key: key,
+        params: params,
+        rate: effectiveRate,
+        pitch: effectivePitch,
+      ),
     );
   }
 
@@ -334,30 +540,18 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
       return;
     }
 
-    try {
-      if (interrupt) {
-        await _tts.stop();
-      } else if (_isSpeaking) {
-        // Tránh đọc chồng chéo khi câu trước chưa kết thúc
-        return;
-      }
-
-      if (rate != null) await _tts.setSpeechRate(rate);
-      if (pitch != null) await _tts.setPitch(pitch);
-
-      _isSpeaking = true;
-      await _tts.speak(text);
-    } catch (_) {
-      _isSpeaking = false;
-    }
+    await _queue.enqueue(
+      VoiceQueueEntry(
+        text: text,
+        rate: rate,
+        pitch: pitch,
+      ),
+    );
   }
 
   @override
   Future<void> stop() async {
-    try {
-      _isSpeaking = false;
-      await _tts.stop();
-    } catch (_) {}
+    await _queue.stop();
   }
 
   @override
@@ -370,19 +564,66 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
 class FakeVoiceCoach implements VoiceCoach {
   FakeVoiceCoach({
     this.isLanguageAvailable = true,
+    this.simulatedSpeechDuration = Duration.zero,
     Map<String, VoiceStyle>? styles,
+    Map<String, ExerciseFormCues>? formCues,
     VoiceSettings? initialSettings,
   })  : styles = styles ?? Map.of(defaultVoiceStyles),
-        settings = initialSettings ?? const VoiceSettings();
+        formCues = formCues ?? Map.of(defaultFormCues),
+        settings = initialSettings ?? const VoiceSettings() {
+    _initQueue();
+  }
 
   @override
   bool isLanguageAvailable;
 
+  Duration simulatedSpeechDuration;
+  late final VoiceQueue _queue;
+  Completer<void>? _fakeSpeakCompleter;
+  Timer? _fakeSpeakTimer;
+
+  void _initQueue() {
+    _queue = VoiceQueue(
+      onSpeak: _performSpeak,
+      onStopTts: _performStopTts,
+      isActive: () => settings.effectiveActive && isLanguageAvailable && isForeground,
+    );
+  }
+
+  FutureOr<void> _performSpeak(VoiceQueueEntry entry) {
+    spokenLines.add(entry.text);
+    if (entry.key != null) {
+      spokenKeys.add(entry.key!);
+    }
+    if (simulatedSpeechDuration > Duration.zero) {
+      final completer = Completer<void>();
+      _fakeSpeakCompleter = completer;
+      _fakeSpeakTimer = Timer(simulatedSpeechDuration, () {
+        if (!completer.isCompleted) {
+          completer.complete();
+        }
+      });
+      return completer.future;
+    }
+  }
+
+  Future<void> _performStopTts() async {
+    _fakeSpeakTimer?.cancel();
+    _fakeSpeakTimer = null;
+    if (_fakeSpeakCompleter != null && !_fakeSpeakCompleter!.isCompleted) {
+      _fakeSpeakCompleter!.complete();
+    }
+    _fakeSpeakCompleter = null;
+  }
+
   @override
-  bool isSpeaking = false;
+  bool get isSpeaking => _queue.isSpeaking;
 
   @override
   Map<String, VoiceStyle> styles;
+
+  @override
+  Map<String, ExerciseFormCues> formCues;
 
   @override
   VoiceSettings settings;
@@ -399,6 +640,8 @@ class FakeVoiceCoach implements VoiceCoach {
 
   List<String> get spokenTexts => spokenLines;
   List<({VoiceLineKey key, String text, Map<String, Object?> params})> get calls => history;
+  List<VoiceQueueEntry> get waitingEntries => _queue.waitingEntries;
+  VoiceQueueEntry? get currentEntry => _queue.current;
 
   void setMutedTemporarily(bool muted) {
     settings = settings.copyWith(mutedTemporarily: muted);
@@ -409,6 +652,7 @@ class FakeVoiceCoach implements VoiceCoach {
     spokenKeys.clear();
     history.clear();
     _lastSpokenPerKey.clear();
+    _queue.clearQueue();
   }
 
   @override
@@ -426,7 +670,7 @@ class FakeVoiceCoach implements VoiceCoach {
   void setAppLifecycle(AppLifecycleState state) {
     isForeground = state == AppLifecycleState.resumed;
     if (!isForeground) {
-      isSpeaking = false;
+      unawaited(stop());
     }
   }
 
@@ -457,7 +701,8 @@ class FakeVoiceCoach implements VoiceCoach {
     Map<String, Object?> params = const {},
   }) {
     final style = styles[styleId] ?? styles['supportive'] ?? defaultVoiceStyles['supportive']!;
-    final lines = style.lines[key.key];
+    final lines = style.lines[key.key] ??
+        (key == VoiceLineKey.personalRecord ? style.lines['personalRecord'] : null);
     if (lines == null || lines.isEmpty) return null;
 
     final hasKcal = params.containsKey('kcal') &&
@@ -489,6 +734,126 @@ class FakeVoiceCoach implements VoiceCoach {
   }
 
   @override
+  List<String> getStartTips(String slug) {
+    return formCues[slug]?.startTip ?? const [];
+  }
+
+  @override
+  String? pickStartTip(String slug) {
+    final tips = getStartTips(slug);
+    if (tips.isEmpty) return null;
+
+    final cacheKey = 'start_tip_$slug';
+    final lastSpoken = _lastSpokenPerKey[cacheKey];
+
+    String chosen;
+    if (tips.length > 1 && lastSpoken != null) {
+      final filtered = tips.where((t) => t != lastSpoken).toList();
+      final pool = filtered.isNotEmpty ? filtered : tips;
+      chosen = pool[_random.nextInt(pool.length)];
+    } else {
+      chosen = tips[_random.nextInt(tips.length)];
+    }
+
+    _lastSpokenPerKey[cacheKey] = chosen;
+    return chosen;
+  }
+
+  @override
+  String? pickFormCue(String styleId, String slug, String issueCode) {
+    final exercise = formCues[slug];
+    final issue = exercise?.issues[issueCode];
+
+    List<String>? candidates;
+    if (issue != null) {
+      if (styleId == 'minimal') {
+        if (issue.minimal.isNotEmpty) {
+          candidates = issue.minimal;
+        }
+      } else {
+        if (issue.cue.isNotEmpty) {
+          candidates = issue.cue;
+        }
+      }
+    }
+
+    if (candidates == null || candidates.isEmpty) {
+      return pickLine(styleId, VoiceLineKey.formGeneric);
+    }
+
+    final cacheKey = 'cue_${slug}_${issueCode}_$styleId';
+    final lastSpoken = _lastSpokenPerKey[cacheKey];
+
+    String chosen;
+    if (candidates.length > 1 && lastSpoken != null) {
+      final filtered = candidates.where((c) => c != lastSpoken).toList();
+      final pool = filtered.isNotEmpty ? filtered : candidates;
+      chosen = pool[_random.nextInt(pool.length)];
+    } else {
+      chosen = candidates[_random.nextInt(candidates.length)];
+    }
+
+    _lastSpokenPerKey[cacheKey] = chosen;
+    return chosen;
+  }
+
+  @override
+  Future<void> speakFormCue(
+    String slug,
+    String issueCode, {
+    bool interrupt = false,
+  }) async {
+    if (!settings.effectiveActive || !isLanguageAvailable || !isForeground) {
+      return;
+    }
+
+    final styleId = resolveEffectiveStyleId(effectiveCoachStyle);
+    final exercise = formCues[slug];
+    final issue = exercise?.issues[issueCode];
+    final hasSpecific = issue != null &&
+        ((styleId == 'minimal' && issue.minimal.isNotEmpty) ||
+         (styleId != 'minimal' && issue.cue.isNotEmpty));
+
+    if (!hasSpecific) {
+      await speakLine(VoiceLineKey.formGeneric, interrupt: interrupt);
+      return;
+    }
+
+    final cue = pickFormCue(styleId, slug, issueCode);
+    if (cue == null || cue.isEmpty) return;
+
+    await _queue.enqueue(
+      VoiceQueueEntry(
+        text: cue,
+        isFormCue: true,
+      ),
+    );
+  }
+
+  @override
+  Future<void> speakStartTip(
+    String slug, {
+    bool interrupt = false,
+  }) async {
+    if (!settings.effectiveActive ||
+        !settings.readStartTip ||
+        !isLanguageAvailable ||
+        !isForeground) {
+      return;
+    }
+
+    final tip = pickStartTip(slug);
+    if (tip == null || tip.isEmpty) return;
+
+    await _queue.enqueue(
+      VoiceQueueEntry(
+        text: tip,
+        isStartTip: true,
+      ),
+    );
+  }
+
+  @override
   String formatLine(String template, Map<String, Object?> params) {
     var result = template;
     params.forEach((k, v) {
@@ -512,10 +877,15 @@ class FakeVoiceCoach implements VoiceCoach {
     if (template == null || template.isEmpty) return;
 
     final formatted = formatLine(template, params);
-    spokenLines.add(formatted);
-    spokenKeys.add(key);
     history.add((key: key, text: formatted, params: params));
-    isSpeaking = true;
+
+    await _queue.enqueue(
+      VoiceQueueEntry(
+        text: formatted,
+        key: key,
+        params: params,
+      ),
+    );
   }
 
   @override
@@ -528,17 +898,23 @@ class FakeVoiceCoach implements VoiceCoach {
     if (!settings.effectiveActive || !isLanguageAvailable || !isForeground) {
       return;
     }
-    spokenLines.add(text);
-    isSpeaking = true;
+
+    await _queue.enqueue(
+      VoiceQueueEntry(
+        text: text,
+        rate: rate,
+        pitch: pitch,
+      ),
+    );
   }
 
   @override
   Future<void> stop() async {
-    isSpeaking = false;
+    await _queue.stop();
   }
 
   @override
   void dispose() {
-    isSpeaking = false;
+    unawaited(stop());
   }
 }

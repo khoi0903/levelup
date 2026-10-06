@@ -1,8 +1,19 @@
 import 'package:fitness_app/core/voice/voice_coach.dart';
 import 'package:fitness_app/core/voice/voice_models.dart';
+import 'package:fitness_app/core/voice/voice_provider.dart';
+import 'package:fitness_app/features/workout/data/camera/rep_counting_session.dart';
+import 'package:fitness_app/features/workout/domain/models/exercise_response.dart';
+import 'package:fitness_app/features/workout/domain/models/workout_models.dart';
+import 'package:fitness_app/features/workout/domain/models/workout_session_state.dart';
+import 'package:fitness_app/features/workout/presentation/controllers/workout_controller.dart';
+import 'package:fitness_app/features/workout/presentation/screens/camera_set_screen.dart';
 import 'package:fitness_app/features/workout/presentation/widgets/exercise_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'workout_test_helpers.dart';
 
 void main() {
   group('VoiceCoach - chọn câu, placeholder, không lặp', () {
@@ -170,6 +181,376 @@ void main() {
 
       // Kiểm tra icon fitness_center_rounded fallback hiển thị
       expect(find.byIcon(Icons.fitness_center_rounded), findsOneWidget);
+    });
+  });
+
+  group('VoiceCoach - Form cues và startTip', () {
+    test('lỗi có câu riêng → đọc cue', () async {
+      final fakeCoach = FakeVoiceCoach();
+
+      await fakeCoach.speakFormCue('jumping-jack', 'arms_not_overhead');
+      expect(fakeCoach.spokenTexts, isNotEmpty);
+      final spoken = fakeCoach.spokenTexts.last;
+      expect(
+        ['Đưa hai tay lên trên đầu', 'Nâng tay cao trong tầm thoải mái'],
+        contains(spoken),
+      );
+    });
+
+    test('cùng mã lỗi lặp lại thì chọn câu khác trong danh sách (không lặp câu liền trước)', () {
+      final fakeCoach = FakeVoiceCoach();
+
+      // bodyweight-squat + shallow_depth có 2 câu:
+      // 'Hạ hông trong tầm thoải mái', 'Gập gối thêm, giữ gót bám sàn'
+      final first = fakeCoach.pickFormCue('supportive', 'bodyweight-squat', 'shallow_depth');
+      expect(first, isNotNull);
+
+      String? prev = first;
+      for (int i = 0; i < 6; i++) {
+        final next = fakeCoach.pickFormCue('supportive', 'bodyweight-squat', 'shallow_depth');
+        expect(next, isNotNull);
+        expect(next, isNot(equals(prev)));
+        prev = next;
+      }
+    });
+
+    test('phong cách Tối giản → minimal', () async {
+      final fakeCoach = FakeVoiceCoach(
+        initialSettings: const VoiceSettings(selectedStyleId: 'minimal'),
+      );
+
+      await fakeCoach.speakFormCue('jumping-jack', 'arms_not_overhead');
+      expect(fakeCoach.spokenTexts.last, equals('Tay lên cao'));
+
+      await fakeCoach.speakFormCue('plank', 'body_not_straight');
+      expect(fakeCoach.spokenTexts.last, equals('Hông ngang thân'));
+    });
+
+    test('mã lạ hoặc bài không có câu riêng → đọc form_generic', () async {
+      final fakeCoach = FakeVoiceCoach();
+
+      await fakeCoach.speakFormCue('jumping-jack', 'unknown_code_xyz');
+      expect(fakeCoach.spokenKeys.last, equals(VoiceLineKey.formGeneric));
+      expect(fakeCoach.spokenTexts, isNotEmpty);
+
+      await fakeCoach.speakFormCue('non-existent-exercise', 'shallow_depth');
+      expect(fakeCoach.spokenKeys.last, equals(VoiceLineKey.formGeneric));
+    });
+
+    test('startTip đọc sau exercise_next và tắt được trong cài đặt', () async {
+      final fakeCoach = FakeVoiceCoach();
+
+      // Khi bật (mặc định)
+      await fakeCoach.speakLine(
+        VoiceLineKey.exerciseNext,
+        params: {'exercise': 'Bật nhảy tại chỗ'},
+      );
+      await fakeCoach.speakStartTip('jumping-jack');
+
+      expect(fakeCoach.spokenTexts.length, 2);
+      expect(fakeCoach.spokenTexts[0], contains('Bật nhảy tại chỗ'));
+      expect(
+        ['Tiếp đất nhẹ với gối hơi chùng', 'Đưa tay lên trong tầm thoải mái'],
+        contains(fakeCoach.spokenTexts[1]),
+      );
+
+      // Khi tắt đọc mẹo kỹ thuật đầu bài
+      fakeCoach.clearHistory();
+      fakeCoach.settings = fakeCoach.settings.copyWith(readStartTip: false);
+
+      await fakeCoach.speakLine(
+        VoiceLineKey.exerciseNext,
+        params: {'exercise': 'Bật nhảy tại chỗ'},
+      );
+      await fakeCoach.speakStartTip('jumping-jack');
+
+      expect(fakeCoach.spokenTexts.length, 1);
+      expect(fakeCoach.spokenTexts[0], contains('Bật nhảy tại chỗ'));
+    });
+  });
+
+  group('CameraSetScreen - hiển thị startTip dưới dạng chữ', () {
+    testWidgets('màn đặt camera hiện startTip của bài dạng chữ', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+
+      final item = WorkoutPlanItem(
+        exerciseId: 'jumping-jack',
+        nameVi: 'Bật nhảy tại chỗ',
+        sets: 3,
+        reps: 15,
+        exercise: const ExerciseResponse(
+          id: 'jumping-jack',
+          slug: 'jumping-jack',
+          nameVi: 'Bật nhảy tại chỗ',
+          camera: ExerciseCamera(
+            cameraPosition: 'front',
+          ),
+        ),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: CameraSetScreen(
+              args: CameraSetArgs(item: item, setNumber: 1),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.byKey(const ValueKey('camera-setup-start-tip')), findsOneWidget);
+      expect(find.text('Tiếp đất nhẹ với gối hơi chùng'), findsOneWidget);
+      expect(find.text('Đưa tay lên trong tầm thoải mái'), findsOneWidget);
+    });
+
+    testWidgets('CameraSetScreen khi camera báo FormIssue đọc cue riêng của bài', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final fakeCoach = FakeVoiceCoach();
+
+      final item = WorkoutPlanItem(
+        exerciseId: 'jumping-jack',
+        nameVi: 'Bật nhảy tại chỗ',
+        sets: 3,
+        reps: 15,
+        exercise: const ExerciseResponse(
+          id: 'jumping-jack',
+          slug: 'jumping-jack',
+          nameVi: 'Bật nhảy tại chỗ',
+          camera: ExerciseCamera(
+            cameraPosition: 'front',
+            config: {'supported': true},
+          ),
+        ),
+      );
+
+      final sessionFactory = FakeRepSessionFactory(const RepSnapshot(repCount: 0));
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            voiceCoachProvider.overrideWithValue(fakeCoach),
+            repSessionFactoryProvider.overrideWithValue(sessionFactory),
+            cameraPermissionProvider.overrideWithValue(FakePermissionGate()),
+          ],
+          child: MaterialApp(
+            home: CameraSetScreen(
+              args: CameraSetArgs(item: item, setNumber: 1),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      // Bấm "Tôi đã sẵn sàng"
+      await tester.tap(find.text('Tôi đã sẵn sàng'));
+      await tester.pump();
+      // Chờ countdown 3.. 2.. 1.. go
+      await tester.pump(const Duration(seconds: 4));
+
+      expect(sessionFactory.created, isNotEmpty);
+      final session = sessionFactory.created.first;
+
+      // Giả lập camera phát hiện lỗi tư thế arms_not_overhead
+      session.emit(const RepSnapshot(
+        repCount: 1,
+        issues: [FormIssueLog(repIndex: 1, code: 'arms_not_overhead', severity: 2)],
+      ));
+      await tester.pump();
+
+      // Kiểm tra fakeCoach nhận được câu sửa của jumping-jack + arms_not_overhead
+      expect(
+        fakeCoach.spokenTexts.any((t) =>
+            t == 'Đưa hai tay lên trên đầu' ||
+            t == 'Nâng tay cao trong tầm thoải mái'),
+        isTrue,
+      );
+    });
+  });
+
+  group('VoiceCoach - Hàng đợi giọng đọc và xử lý câu nói', () {
+    test('câu không bị cắt: câu sau chờ câu trước đọc xong mới đọc', () async {
+      final fakeCoach = FakeVoiceCoach(
+        simulatedSpeechDuration: const Duration(milliseconds: 50),
+      );
+
+      // Phát câu 1 (mất 50ms) và câu 2
+      fakeCoach.speakLine(VoiceLineKey.go);
+      fakeCoach.speakLine(VoiceLineKey.rep, params: {'n': '1'});
+
+      // Tại thời điểm 20ms: chỉ có câu go bắt đầu đọc
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(fakeCoach.spokenTexts.length, 1);
+      expect(fakeCoach.isSpeaking, isTrue);
+
+      // Chờ câu go xong (50ms) -> rep 1 bắt đầu đọc
+      await Future<void>.delayed(const Duration(milliseconds: 40));
+      expect(fakeCoach.spokenTexts.length, 2);
+
+      // Chờ rep 1 đọc xong
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(fakeCoach.isSpeaking, isFalse);
+    });
+
+    test('rep đến dồn dập chỉ đọc số mới nhất, không xếp chồng rep', () async {
+      final fakeCoach = FakeVoiceCoach(
+        simulatedSpeechDuration: const Duration(milliseconds: 60),
+      );
+
+      // Rep 1 bắt đầu đọc (mất 60ms)
+      fakeCoach.speakLine(VoiceLineKey.rep, params: {'n': '1'});
+
+      // Trong khi rep 1 đang đọc, dồn dập rep 2, rep 3, rep 4
+      await Future<void>.delayed(const Duration(milliseconds: 15));
+      fakeCoach.speakLine(VoiceLineKey.rep, params: {'n': '2'});
+      fakeCoach.speakLine(VoiceLineKey.rep, params: {'n': '3'});
+      fakeCoach.speakLine(VoiceLineKey.rep, params: {'n': '4'});
+
+      // Chờ rep 1 và rep kế tiếp kết thúc
+      await Future<void>.delayed(const Duration(milliseconds: 130));
+
+      // Chỉ đọc rep 1 rồi tới rep 4, bỏ qua rep 2 và 3
+      expect(fakeCoach.spokenTexts.length, 2);
+      expect(fakeCoach.spokenTexts[0], contains('1'));
+      expect(fakeCoach.spokenTexts[1], contains('4'));
+    });
+
+    test('almost_done và last_rep đọc ngay sau số của lần đó, không thay thế số', () async {
+      final fakeCoach = FakeVoiceCoach(
+        simulatedSpeechDuration: const Duration(milliseconds: 40),
+      );
+
+      fakeCoach.speakLine(VoiceLineKey.rep, params: {'n': '7'});
+      fakeCoach.speakLine(VoiceLineKey.almostDone, params: {'left': '3'});
+
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      expect(fakeCoach.spokenTexts.length, 2);
+      expect(fakeCoach.spokenTexts[0], contains('7'));
+      expect(fakeCoach.spokenTexts[1], contains('3'));
+    });
+
+    test('set_done rồi rest_start đọc đủ cả hai theo thứ tự', () async {
+      final fakeCoach = FakeVoiceCoach(
+        simulatedSpeechDuration: const Duration(milliseconds: 40),
+      );
+
+      fakeCoach.speakLine(VoiceLineKey.setDone, params: {'set': '1', 'sets': '3'});
+      fakeCoach.speakLine(VoiceLineKey.restStart, params: {'sec': '60'});
+
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      expect(fakeCoach.spokenTexts.length, 2);
+      expect(fakeCoach.spokenKeys, [VoiceLineKey.setDone, VoiceLineKey.restStart]);
+    });
+
+    test('stop() xóa hàng đợi và dừng câu đang đọc', () async {
+      final fakeCoach = FakeVoiceCoach(
+        simulatedSpeechDuration: const Duration(milliseconds: 60),
+      );
+
+      fakeCoach.speakLine(VoiceLineKey.rep, params: {'n': '1'});
+      fakeCoach.speakLine(VoiceLineKey.rep, params: {'n': '2'});
+      fakeCoach.speakLine(VoiceLineKey.setDone, params: {'set': '1', 'sets': '3'});
+
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      await fakeCoach.stop();
+
+      expect(fakeCoach.isSpeaking, isFalse);
+
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      expect(fakeCoach.spokenTexts.length, 1);
+    });
+
+    test('start_countdown xóa hàng đợi cũ rồi đọc', () async {
+      final fakeCoach = FakeVoiceCoach(
+        simulatedSpeechDuration: const Duration(milliseconds: 50),
+      );
+
+      fakeCoach.speakLine(VoiceLineKey.rep, params: {'n': '1'});
+      fakeCoach.speakLine(VoiceLineKey.restEnding, params: {'sec': '5'});
+
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      fakeCoach.speakLine(VoiceLineKey.startCountdown, params: {'sec': '3'});
+
+      await Future<void>.delayed(const Duration(milliseconds: 80));
+
+      expect(fakeCoach.spokenKeys.contains(VoiceLineKey.restEnding), isFalse);
+      expect(fakeCoach.spokenKeys.contains(VoiceLineKey.startCountdown), isTrue);
+    });
+
+    test('hàng đợi tối đa 3 câu: đầy thì bỏ câu cũ nhất không quan trọng, không bỏ protected', () async {
+      final fakeCoach = FakeVoiceCoach(
+        simulatedSpeechDuration: const Duration(milliseconds: 100),
+      );
+
+      // Câu đang đọc chiếm slot phát
+      fakeCoach.speakLine(VoiceLineKey.go);
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+
+      // Thêm 3 câu không quan trọng vào hàng đợi (đạt max 3)
+      await fakeCoach.speakFormCue('jumping-jack', 'arms_not_overhead');
+      fakeCoach.speakLine(VoiceLineKey.restEnding, params: {'sec': '5'});
+      fakeCoach.speakLine(VoiceLineKey.lostPerson);
+
+      expect(fakeCoach.waitingEntries.length, 3);
+
+      // Thêm set_done (protected): câu form cue cũ nhất bị bỏ
+      fakeCoach.speakLine(VoiceLineKey.setDone, params: {'set': '1', 'sets': '3'});
+      expect(fakeCoach.waitingEntries.length, 3);
+      expect(fakeCoach.waitingEntries.any((e) => e.isFormCue), isFalse);
+
+      // Thêm rest_start (protected): rest_ending bị bỏ
+      fakeCoach.speakLine(VoiceLineKey.restStart, params: {'sec': '30'});
+      expect(fakeCoach.waitingEntries.length, 3);
+      expect(fakeCoach.waitingEntries.any((e) => e.key == VoiceLineKey.restEnding), isFalse);
+
+      // Thêm workout_done (protected): lostPerson bị bỏ
+      fakeCoach.speakLine(VoiceLineKey.workoutDone, params: {'minutes': '15', 'kcal': '100'});
+      expect(fakeCoach.waitingEntries.length, 3);
+      expect(fakeCoach.waitingEntries.any((e) => e.key == VoiceLineKey.lostPerson), isFalse);
+
+      // Cả 3 câu chờ hiện tại đều là protected
+      expect(
+        fakeCoach.waitingEntries.every((e) => e.isProtected),
+        isTrue,
+      );
+
+      // Thêm tiếp personal_record (protected): không bỏ câu protected nào
+      fakeCoach.speakLine(VoiceLineKey.personalRecord);
+      expect(fakeCoach.waitingEntries.any((e) => e.key == VoiceLineKey.personalRecord), isTrue);
+      expect(fakeCoach.waitingEntries.any((e) => e.key == VoiceLineKey.setDone), isTrue);
+      expect(fakeCoach.waitingEntries.any((e) => e.key == VoiceLineKey.restStart), isTrue);
+      expect(fakeCoach.waitingEntries.any((e) => e.key == VoiceLineKey.workoutDone), isTrue);
+    });
+
+    test('hold_last: nếu số trước chưa đọc xong thì bỏ số đó, đọc số mới ngay lập tức', () async {
+      final fakeCoach = FakeVoiceCoach(
+        simulatedSpeechDuration: const Duration(milliseconds: 80),
+      );
+
+      // Đếm lùi 5
+      fakeCoach.speakLine(VoiceLineKey.holdLast, params: {'sec': '5'});
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(fakeCoach.spokenTexts.length, 1);
+      expect(fakeCoach.spokenTexts[0], contains('5'));
+
+      // 1 giây sau (ở test giả lập 20ms), số 4 đến khi 5 chưa xong
+      fakeCoach.speakLine(VoiceLineKey.holdLast, params: {'sec': '4'});
+      // Số 4 được đọc ngay lập tức vì 5 bị huỷ
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      expect(fakeCoach.spokenTexts.length, 2);
+      expect(fakeCoach.spokenTexts[1], contains('4'));
+
+      // Số 3 đến khi 4 chưa xong
+      fakeCoach.speakLine(VoiceLineKey.holdLast, params: {'sec': '3'});
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      expect(fakeCoach.spokenTexts.length, 3);
+      expect(fakeCoach.spokenTexts[2], contains('3'));
     });
   });
 }

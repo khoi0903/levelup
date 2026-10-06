@@ -10,6 +10,7 @@ import 'voice_models.dart';
 const String _prefVoiceEnabled = 'voice_coach_enabled';
 const String _prefVoiceStyle = 'voice_coach_style';
 const String _prefVoiceSpeed = 'voice_coach_speed';
+const String _prefVoiceStartTip = 'voice_coach_start_tip';
 
 class VoiceSettingsNotifier extends StateNotifier<VoiceSettings> {
   VoiceSettingsNotifier() : super(const VoiceSettings()) {
@@ -23,12 +24,14 @@ class VoiceSettingsNotifier extends StateNotifier<VoiceSettings> {
       final style = prefs.getString(_prefVoiceStyle) ?? 'coach';
       final speedStr = prefs.getString(_prefVoiceSpeed) ?? 'normal';
       final speed = VoiceSpeed.fromString(speedStr);
+      final readStartTip = prefs.getBool(_prefVoiceStartTip) ?? true;
 
       state = VoiceSettings(
         enabled: enabled,
         selectedStyleId: style,
         speed: speed,
         mutedTemporarily: false,
+        readStartTip: readStartTip,
       );
     } catch (_) {}
   }
@@ -54,6 +57,14 @@ class VoiceSettingsNotifier extends StateNotifier<VoiceSettings> {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_prefVoiceSpeed, speed.name);
+    } catch (_) {}
+  }
+
+  Future<void> setReadStartTip(bool enabled) async {
+    state = state.copyWith(readStartTip: enabled);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_prefVoiceStartTip, enabled);
     } catch (_) {}
   }
 
