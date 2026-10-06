@@ -265,7 +265,12 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
       final completer = Completer<void>();
       _speakCompleter = completer;
 
-      final result = await _tts.speak(entry.text);
+      // awaitSpeakCompletion(true) làm speak() chờ đọc xong; có máy không báo xong khi bị stop()
+      // → giới hạn thời gian để hàng đợi không kẹt (câu dài nhất < 15 giây).
+      final result = await _tts.speak(entry.text).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () => 0,
+      );
       if (result == 1 || result == true) {
         await completer.future.timeout(
           const Duration(seconds: 15),
