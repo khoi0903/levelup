@@ -17,6 +17,8 @@ import 'package:fitness_app/features/workout/data/camera/rep_counting_session.da
 import 'package:fitness_app/features/workout/data/repositories/fake_workout_repository.dart';
 import 'package:fitness_app/features/coach/data/repositories/fake_coach_repository.dart';
 import 'package:fitness_app/features/coach/presentation/controllers/coach_controller.dart';
+import 'package:fitness_app/features/workout/data/repositories/memory_workout_draft_repository.dart';
+import 'package:fitness_app/features/workout/domain/repositories/workout_draft_repository.dart';
 import 'package:fitness_app/features/workout/domain/models/exercise_response.dart';
 import 'package:fitness_app/features/workout/presentation/controllers/workout_controller.dart';
 import 'package:flutter/material.dart';
@@ -186,12 +188,14 @@ class WorkoutHarness {
   WorkoutHarness({
     required PlanView plan,
     FakeWorkoutRepository? repo,
+    WorkoutDraftRepository? draftRepo,
     RepSessionFactory? factory,
     FakePermissionGate? permission,
     CameraSetupSkip? setupSkip,
     this.autoCamera = false,
   }) : planRepo = FakePlanRepository(planView: plan),
        repo = repo ?? FakeWorkoutRepository(exercises: testExercises),
+       draftRepo = draftRepo ?? MemoryWorkoutDraftRepository(),
        factory = factory ?? NoCameraFactory(),
        permission = permission ?? FakePermissionGate(),
        setupSkip = setupSkip ?? MemoryCameraSetupSkip() {
@@ -201,6 +205,7 @@ class WorkoutHarness {
 
   final FakePlanRepository planRepo;
   final FakeWorkoutRepository repo;
+  final WorkoutDraftRepository draftRepo;
   final RepSessionFactory factory;
   final FakePermissionGate permission;
   final CameraSetupSkip setupSkip;
@@ -224,6 +229,7 @@ class WorkoutHarness {
       overrides: [
         planRepositoryProvider.overrideWithValue(planRepo),
         workoutRepositoryProvider.overrideWithValue(repo),
+        workoutDraftRepositoryProvider.overrideWithValue(draftRepo),
         repSessionFactoryProvider.overrideWithValue(factory),
         cameraPermissionProvider.overrideWithValue(permission),
         cameraSetupSkipProvider.overrideWithValue(setupSkip),

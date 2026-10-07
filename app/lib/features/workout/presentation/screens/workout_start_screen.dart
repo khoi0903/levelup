@@ -15,11 +15,18 @@ import '../widgets/workout_widgets.dart';
 
 /// Tổng quan buổi tập: danh sách bài với số hiệp/lần, nút "Bắt đầu".
 /// [sessionId] null thì lấy buổi kế tiếp trong kế hoạch.
-class WorkoutStartScreen extends ConsumerWidget {
+class WorkoutStartScreen extends ConsumerStatefulWidget {
   const WorkoutStartScreen({super.key, this.sessionId, this.quick5 = false});
 
   final String? sessionId;
   final bool quick5;
+
+  @override
+  ConsumerState<WorkoutStartScreen> createState() => _WorkoutStartScreenState();
+}
+
+class _WorkoutStartScreenState extends ConsumerState<WorkoutStartScreen> {
+  bool _hasCheckedResume = false;
 
   void _close(BuildContext context) {
     if (context.canPop()) {
@@ -29,9 +36,82 @@ class WorkoutStartScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _checkResume(WorkoutSetup setup) async {
+    if (!mounted) return;
+
+    // 1. Nếu activeWorkoutProvider đang giữ buổi chưa xong của CÙNG session.id -> vào thẳng màn đang tập
+    final active = ref.read(activeWorkoutProvider);
+    if (active != null &&
+        active.endedAt == null &&
+        isSameWorkoutSession(active.session.id, setup.session.id)) {
+      context.pushReplacement('/workout/active');
+      return;
+    }
+
+    // 2. Đọc getActiveDraft()
+    final repo = ref.read(workoutDraftRepositoryProvider);
+    final now = ref.read(workoutClockProvider)();
+    final draft = await repo.getActiveDraft();
+    if (!mounted || draft == null || !draft.isActive || draft.isExpired(now)) {
+      return;
+    }
+
+    // Nếu nháp của cùng session.id và còn hiệp chưa xong
+    if (isSameWorkoutSession(draft.sessionId, setup.session.id)) {
+      WorkoutSessionState draftState;
+      try {
+        draftState = draft.sessionState;
+      } catch (_) {
+        return;
+      }
+
+      final totalSets = draftState.totalSets;
+      final completedSets = draftState.completedSets;
+      final hasUnfinished = completedSets < totalSets &&
+          !draftState.allExercisesDone &&
+          draftState.endedAt == null;
+
+      if (!hasUnfinished) return;
+
+      final resume = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Buổi tập đang dở'),
+          content: Text(
+            'Bạn đang tập dở buổi này (đã xong $completedSets/$totalSets hiệp). Tiếp tục?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Tập lại từ đầu'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Tiếp tục'),
+            ),
+          ],
+        ),
+      );
+
+      if (!mounted) return;
+
+      if (resume == true) {
+        ref.read(activeWorkoutProvider.notifier).restore(draftState);
+        context.pushReplacement('/workout/active');
+      } else if (resume == false) {
+        await repo.deleteDraft(draft.clientId);
+        if (!mounted) return;
+        ref.read(activeWorkoutProvider.notifier).discard(draft.clientId);
+        ref.read(activeWorkoutProvider.notifier).start(setup);
+        context.pushReplacement('/workout/active');
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final args = (sessionId: sessionId, quick5: quick5);
+  Widget build(BuildContext context) {
+    final args = (sessionId: widget.sessionId, quick5: widget.quick5);
     final setupAsync = ref.watch(workoutSetupProvider(args));
 
     return Scaffold(
@@ -44,15 +124,35 @@ class WorkoutStartScreen extends ConsumerWidget {
               onRetry: () => ref.invalidate(workoutSetupProvider(args)),
               onClose: () => _close(context),
             ),
-            data: (setup) => _Overview(
-              setup: setup,
-              args: args,
-              onClose: () => _close(context),
-              onStart: () {
-                ref.read(activeWorkoutProvider.notifier).start(setup);
-                context.pushReplacement('/workout/active');
-              },
-            ),
+            data: (setup) {
+              if (!_hasCheckedResume) {
+                _hasCheckedResume = true;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _checkResume(setup);
+                });
+              }
+              return _Overview(
+                setup: setup,
+                args: args,
+                onClose: () => _close(context),
+                onStart: () async {
+                  final repo = ref.read(workoutDraftRepositoryProvider);
+                  final activeDraft = await repo.getActiveDraft();
+                  if (activeDraft != null && activeDraft.isActive) {
+                    if (!isSameWorkoutSession(
+                      activeDraft.sessionId,
+                      setup.session.id,
+                    )) {
+                      await repo.deleteDraft(activeDraft.clientId);
+                    }
+                  }
+                  ref.read(activeWorkoutProvider.notifier).start(setup);
+                  if (context.mounted) {
+                    context.pushReplacement('/workout/active');
+                  }
+                },
+              );
+            },
           ),
         ),
       ),

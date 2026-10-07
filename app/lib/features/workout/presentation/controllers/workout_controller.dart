@@ -90,6 +90,14 @@ String localDateString(DateTime now) =>
 bool isSessionOpen(SessionView s) =>
     s.status != 'completed' && s.status != 'rest' && s.status != 'missed';
 
+/// Kiểm tra hai id buổi tập có cùng một buổi (hoặc cùng buổi tập thêm).
+bool isSameWorkoutSession(String? a, String? b) {
+  if (a == null || b == null) return false;
+  if (a == b) return true;
+  if (a.startsWith('extra-') && b.startsWith('extra-')) return true;
+  return false;
+}
+
 /// Buổi nên tập tiếp: buổi còn mở sớm nhất từ hôm nay trở đi, nếu không có
 /// thì buổi còn mở đầu tiên, cuối cùng là buổi đầu tiên.
 SessionView? pickNextSession(PlanView plan, String today) {
@@ -189,12 +197,35 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
   }
 
   void start(WorkoutSetup setup) {
+    final oldState = state;
+    if (oldState != null &&
+        !isSameWorkoutSession(oldState.session.id, setup.session.id)) {
+      try {
+        _ref
+            .read(workoutDraftRepositoryProvider)
+            .deleteDraft(oldState.clientId);
+      } catch (_) {}
+    }
+    _cleanupOtherActiveDrafts(setup.session.id);
     state = WorkoutSessionState(
       session: setup.session,
       items: setup.items,
       clientId: _ref.read(clientIdGeneratorProvider)(),
       startedAt: _now(),
     );
+  }
+
+  void _cleanupOtherActiveDrafts(String currentSessionId) {
+    try {
+      final repo = _ref.read(workoutDraftRepositoryProvider);
+      repo.getActiveDraft().then((active) {
+        if (active != null && active.isActive) {
+          if (!isSameWorkoutSession(active.sessionId, currentSessionId)) {
+            repo.deleteDraft(active.clientId);
+          }
+        }
+      }).catchError((_) {});
+    } catch (_) {}
   }
 
   /// Ghi hiệp vừa xong của bài hiện tại rồi chuyển hiệp/bài.
@@ -356,11 +387,21 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
     state = restored;
   }
 
-  void discard() {
+  void discard([String? clientId]) {
     final s = state;
-    if (s != null) {
+    final idToDelete = clientId ?? s?.clientId;
+    if (idToDelete != null) {
       try {
-        _ref.read(workoutDraftRepositoryProvider).deleteDraft(s.clientId);
+        _ref.read(workoutDraftRepositoryProvider).deleteDraft(idToDelete);
+      } catch (_) {}
+    } else {
+      try {
+        final repo = _ref.read(workoutDraftRepositoryProvider);
+        repo.getActiveDraft().then((active) {
+          if (active != null && active.isActive) {
+            repo.deleteDraft(active.clientId);
+          }
+        }).catchError((_) {});
       } catch (_) {}
     }
     clear();

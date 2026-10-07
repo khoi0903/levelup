@@ -21,6 +21,15 @@ class WorkoutDraft {
   bool get isActive => status == 'active';
   bool get isPendingSubmit => status == 'pending_submit';
 
+  bool get hasUnfinishedSets {
+    if (!isActive) return false;
+    try {
+      return sessionState.hasUnfinishedSets;
+    } catch (_) {
+      return false;
+    }
+  }
+
   bool isExpired(
     DateTime now, {
     Duration maxAge = const Duration(hours: 12),

@@ -93,8 +93,9 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
       final current = ref.read(activeWorkoutProvider);
       if (!mounted || current == null || current.currentItem == null) return;
       if ('${current.exerciseIndex}/${current.setNumber}/${item.exerciseId}' !=
-          key)
+          key) {
         return;
+      }
       _countWithCamera(current);
     });
   }

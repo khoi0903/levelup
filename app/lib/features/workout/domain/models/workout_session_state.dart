@@ -199,6 +199,13 @@ class WorkoutSessionState {
   int setsDoneFor(String exerciseId) =>
       sets.where((s) => s.exerciseId == exerciseId).length;
 
+  int get totalSets => items.fold<int>(0, (sum, i) => sum + i.sets);
+
+  int get completedSets => sets.length;
+
+  bool get hasUnfinishedSets =>
+      endedAt == null && !allExercisesDone && completedSets < totalSets;
+
   WorkoutSessionState copyWith({
     SessionView? session,
     List<WorkoutPlanItem>? items,
