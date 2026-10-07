@@ -240,5 +240,55 @@ void main() {
         findsOneWidget,
       );
     });
+    testWidgets('Buổi đã bị chốt bỏ (skipped): ẩn nút Đổi, gợi ý tập thêm', (
+      tester,
+    ) async {
+      final h = WorkoutHarness(
+        plan: planWith(const [squatItem], status: 'skipped'),
+      );
+      await h.pump(tester, '/workout/$sessionId');
+
+      expect(find.text('Squat'), findsOneWidget);
+      expect(find.text('Đổi'), findsNothing);
+      expect(
+        find.text(
+          'Buổi này đã qua và được tính là bỏ. Bạn có thể chọn tập thêm.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Tập thêm'), findsOneWidget);
+    });
+
+    test('pickNextSession bỏ qua buổi skipped', () {
+      const done = SessionView(
+        id: 'mon',
+        scheduledDate: '2026-10-05',
+        scheduledTime: '06:00',
+        title: 'T2',
+        durationMin: 15,
+        status: 'completed',
+        variant: 'normal',
+        items: [],
+      );
+      const skipped = SessionView(
+        id: 'tue',
+        scheduledDate: '2026-10-06',
+        scheduledTime: '06:00',
+        title: 'T3',
+        durationMin: 15,
+        status: 'skipped',
+        variant: 'light',
+        items: [],
+      );
+      const plan = PlanView(
+        id: 'plan',
+        weekStart: '2026-10-05',
+        status: 'active',
+        targetSessions: 2,
+        sessions: [done, skipped],
+      );
+      expect(isSessionOpen(skipped), isFalse);
+      expect(pickNextSession(plan, '2026-10-07')?.id, 'mon');
+    });
   });
 }

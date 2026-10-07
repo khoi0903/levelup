@@ -574,9 +574,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 10),
             Center(
               child: TextButton(
-                onPressed: () => context.push(
-                  '/skip-report?sessionId=${todaySession.id}',
-                ),
+                onPressed: () =>
+                    context.push('/skip-report?sessionId=${todaySession.id}'),
                 child: const Text(
                   'Không tập được hôm nay?',
                   key: ValueKey('home-skip-report-button'),
@@ -903,7 +902,8 @@ String _sessionDayLabel(String scheduledDate) {
     d.month,
     d.day,
   ).difference(DateTime(now.year, now.month, now.day)).inDays;
-  if (diff <= 0) return 'Hôm nay';
+  if (diff == 0) return 'Hôm nay';
+  if (diff == -1) return 'Hôm qua';
   if (diff == 1) return 'Ngày mai';
   const names = [
     'Thứ Hai',

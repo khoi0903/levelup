@@ -93,8 +93,9 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
       final current = ref.read(activeWorkoutProvider);
       if (!mounted || current == null || current.currentItem == null) return;
       if ('${current.exerciseIndex}/${current.setNumber}/${item.exerciseId}' !=
-          key)
+          key) {
         return;
+      }
       _countWithCamera(current);
     });
   }
@@ -466,7 +467,8 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
                       ),
                     ),
                   ),
-                  if (s.setsDoneFor(item.exerciseId) == 0) ...[
+                  if (s.setsDoneFor(item.exerciseId) == 0 &&
+                      (s.isExtra || s.session.status == 'planned')) ...[
                     const SizedBox(width: 8),
                     TextButton.icon(
                       key: const ValueKey('swap-exercise-active-btn'),

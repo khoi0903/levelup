@@ -65,7 +65,11 @@ const testExercises = [
   ),
 ];
 
-PlanView planWith(List<ItemView> items, {String? variant}) => PlanView(
+PlanView planWith(
+  List<ItemView> items, {
+  String? variant,
+  String status = 'planned',
+}) => PlanView(
   id: 'plan',
   weekStart: '2026-10-05',
   status: 'active',
@@ -77,7 +81,7 @@ PlanView planWith(List<ItemView> items, {String? variant}) => PlanView(
       scheduledTime: '18:00',
       title: 'Toàn thân',
       durationMin: 12,
-      status: 'planned',
+      status: status,
       variant: variant ?? 'normal',
       items: items,
     ),
