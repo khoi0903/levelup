@@ -36,8 +36,14 @@ class FakeWorkoutRepository implements WorkoutRepository {
   final List<Map<String, dynamic>> sentSwaps = [];
   final List<Map<String, dynamic>> sentAlternativeQueries = [];
 
+  /// Số lần GET /exercises (màn tập thêm chỉ được tải một lần).
+  int getExercisesCalls = 0;
+
   @override
-  Future<List<ExerciseResponse>> getExercises() async => exercises;
+  Future<List<ExerciseResponse>> getExercises() async {
+    getExercisesCalls++;
+    return exercises;
+  }
 
   @override
   Future<WorkoutResult> saveWorkout(WorkoutRequest request) async {

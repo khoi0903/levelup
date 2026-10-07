@@ -36,12 +36,25 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
 
   // Lưu cấu hình bài tập tự chọn: exerciseId -> {sets, reps, durationSec}
   final Map<String, ({int sets, int? reps, int? durationSec})>
-      _customSelections = {};
+  _customSelections = {};
+
+  /// Tải một lần; chọn bài (setState) không được gọi lại API, nếu không màn hình nháy về vòng tải.
+  late Future<(List<ExerciseResponse>, PlanView)> _data;
+
+  Future<(List<ExerciseResponse>, PlanView)> _load() =>
+      Future.wait([
+        ref.read(workoutRepositoryProvider).getExercises(),
+        ref.read(planRepositoryProvider).getCurrentPlan(),
+      ]).then(
+        (values) =>
+            (values[0] as List<ExerciseResponse>, values[1] as PlanView),
+      );
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _data = _load();
   }
 
   @override
@@ -66,21 +79,13 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
 
   @override
   Widget build(BuildContext context) {
-    final workoutRepo = ref.watch(workoutRepositoryProvider);
     final userAsync = ref.watch(userStatusFutureProvider);
-    final planRepo = ref.watch(planRepositoryProvider);
 
     return Scaffold(
       body: GradientBackground(
         child: SafeArea(
           child: FutureBuilder<(List<ExerciseResponse>, PlanView)>(
-            future: Future.wait([
-              workoutRepo.getExercises(),
-              planRepo.getCurrentPlan(),
-            ]).then((values) => (
-                  values[0] as List<ExerciseResponse>,
-                  values[1] as PlanView,
-                )),
+            future: _data,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
@@ -100,12 +105,13 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                       ),
                       const Spacer(),
                       const ErrorBanner(
-                        message: 'Không tải được danh sách bài tập. Thử lại sau.',
+                        message:
+                            'Không tải được danh sách bài tập. Thử lại sau.',
                       ),
                       const SizedBox(height: 16),
                       PrimaryButton(
                         label: 'Thử lại',
-                        onPressed: () => setState(() {}),
+                        onPressed: () => setState(() => _data = _load()),
                       ),
                       const Spacer(),
                     ],
@@ -120,7 +126,9 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
               final todayStr = localDateString(DateTime.now());
 
               // Tìm buổi hôm nay đã hoàn thành nếu có
-              final todayDoneSession = plan.sessions.cast<SessionView?>().firstWhere(
+              final todayDoneSession = plan.sessions
+                  .cast<SessionView?>()
+                  .firstWhere(
                     (s) =>
                         s != null &&
                         s.scheduledDate == todayStr &&
@@ -177,7 +185,10 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
 
                   // Tabs: Gợi ý / Tự chọn
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 6,
+                    ),
                     child: Container(
                       height: 44,
                       decoration: BoxDecoration(
@@ -221,9 +232,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                         ),
 
                         // Tab 2: Tự chọn bài
-                        _buildCustomTab(
-                          safeExercises: safeExercises,
-                        ),
+                        _buildCustomTab(safeExercises: safeExercises),
                       ],
                     ),
                   ),
@@ -267,10 +276,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
         const SizedBox(height: 4),
         const Text(
           'Đã lọc theo nơi tập và dụng cụ của bạn',
-          style: TextStyle(
-            fontSize: 13,
-            color: AppColors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 12),
 
@@ -392,9 +398,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
             ),
             height: 44,
             onPressed: () {
-              final exercisesById = {
-                for (final e in allExercises) e.id: e,
-              };
+              final exercisesById = {for (final e in allExercises) e.id: e};
               final setup = buildRedoWorkoutSetup(
                 originalSession: todaySession,
                 exercisesById: exercisesById,
@@ -480,9 +484,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
   // ---------------------------------------------------------------------------
   // TAB 2: Tự chọn bài
   // ---------------------------------------------------------------------------
-  Widget _buildCustomTab({
-    required List<ExerciseResponse> safeExercises,
-  }) {
+  Widget _buildCustomTab({required List<ExerciseResponse> safeExercises}) {
     // Lọc theo tìm kiếm không dấu
     final queryNorm = removeVietnameseDiacritics(_searchQuery);
     var filtered = safeExercises.where((e) {
@@ -536,7 +538,8 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                 Expanded(
                   child: TextField(
                     controller: _searchController,
-                    onChanged: (val) => setState(() => _searchQuery = val.trim()),
+                    onChanged: (val) =>
+                        setState(() => _searchQuery = val.trim()),
                     decoration: const InputDecoration(
                       hintText: 'Tìm bài tập (không dấu)...',
                       hintStyle: TextStyle(
@@ -597,7 +600,9 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                   itemCount: filtered.length,
                   itemBuilder: (context, index) {
                     final exercise = filtered[index];
-                    final isSelected = _customSelections.containsKey(exercise.id);
+                    final isSelected = _customSelections.containsKey(
+                      exercise.id,
+                    );
                     return _buildExerciseSelectableTile(exercise, isSelected);
                   },
                 ),
@@ -626,7 +631,9 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                 : () {
                     final items = <WorkoutPlanItem>[];
                     for (final entry in _customSelections.entries) {
-                      final ex = safeExercises.firstWhere((e) => e.id == entry.key);
+                      final ex = safeExercises.firstWhere(
+                        (e) => e.id == entry.key,
+                      );
                       final cfg = entry.value;
                       items.add(
                         WorkoutPlanItem(
@@ -641,9 +648,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                       );
                     }
 
-                    final setup = buildCustomWorkoutSetup(
-                      selectedItems: items,
-                    );
+                    final setup = buildCustomWorkoutSetup(selectedItems: items);
                     _startSetup(setup);
                   },
           ),
@@ -718,7 +723,9 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                     isSelected
                         ? Icons.check_box_rounded
                         : Icons.check_box_outline_blank_rounded,
-                    color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                    color: isSelected
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
                     size: 24,
                   ),
                   const SizedBox(width: 10),
@@ -748,7 +755,9 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                         Row(
                           children: [
                             Text(
-                              isDuration ? 'Tính theo thời gian' : 'Tính theo lần',
+                              isDuration
+                                  ? 'Tính theo thời gian'
+                                  : 'Tính theo lần',
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: AppColors.textSecondary,
@@ -869,7 +878,9 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: Text(
-                          isDuration ? '${durationSec ?? 30}s' : '${reps ?? 12}',
+                          isDuration
+                              ? '${durationSec ?? 30}s'
+                              : '${reps ?? 12}',
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
@@ -913,10 +924,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
     );
   }
 
-  Widget _stepperButton({
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
+  Widget _stepperButton({required IconData icon, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(6),

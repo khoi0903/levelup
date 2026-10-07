@@ -336,6 +336,15 @@ void main() {
         final startBtn = find.byKey(const ValueKey('start-custom-workout-button'));
         expect(startBtn, findsOneWidget);
         expect(find.text('Bắt đầu (1 bài)'), findsOneWidget);
+        // Chọn bài không tải lại danh sách (trước đây màn hình nháy trắng mỗi lần chọn)
+        expect(workoutRepo.getExercisesCalls, 1);
+        await tester.tap(find.text('Hít đất'));
+        await tester.pump();
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Hít đất'));
+        await tester.pumpAndSettle();
+        expect(workoutRepo.getExercisesCalls, 1);
 
         // Bấm Bắt đầu
         await tester.tap(startBtn);
