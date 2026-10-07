@@ -90,13 +90,10 @@ String localDateString(DateTime now) =>
 bool isSessionOpen(SessionView s) =>
     s.status != 'completed' && s.status != 'rest' && s.status != 'missed';
 
-/// Kiểm tra hai id buổi tập có cùng một buổi (hoặc cùng buổi tập thêm).
-bool isSameWorkoutSession(String? a, String? b) {
-  if (a == null || b == null) return false;
-  if (a == b) return true;
-  if (a.startsWith('extra-') && b.startsWith('extra-')) return true;
-  return false;
-}
+/// Hai id là cùng một buổi. Buổi tập thêm mỗi lần tạo có id riêng (`extra-<thời điểm>-<số ngẫu nhiên>`),
+/// nên tạo buổi tập thêm mới không bị coi là buổi tập thêm đang dở.
+bool isSameWorkoutSession(String? a, String? b) =>
+    a != null && b != null && a == b;
 
 /// Buổi nên tập tiếp: buổi còn mở sớm nhất từ hôm nay trở đi, nếu không có
 /// thì buổi còn mở đầu tiên, cuối cùng là buổi đầu tiên.
@@ -218,13 +215,16 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
   void _cleanupOtherActiveDrafts(String currentSessionId) {
     try {
       final repo = _ref.read(workoutDraftRepositoryProvider);
-      repo.getActiveDraft().then((active) {
-        if (active != null && active.isActive) {
-          if (!isSameWorkoutSession(active.sessionId, currentSessionId)) {
-            repo.deleteDraft(active.clientId);
-          }
-        }
-      }).catchError((_) {});
+      repo
+          .getActiveDraft()
+          .then((active) {
+            if (active != null && active.isActive) {
+              if (!isSameWorkoutSession(active.sessionId, currentSessionId)) {
+                repo.deleteDraft(active.clientId);
+              }
+            }
+          })
+          .catchError((_) {});
     } catch (_) {}
   }
 
@@ -397,11 +397,14 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
     } else {
       try {
         final repo = _ref.read(workoutDraftRepositoryProvider);
-        repo.getActiveDraft().then((active) {
-          if (active != null && active.isActive) {
-            repo.deleteDraft(active.clientId);
-          }
-        }).catchError((_) {});
+        repo
+            .getActiveDraft()
+            .then((active) {
+              if (active != null && active.isActive) {
+                repo.deleteDraft(active.clientId);
+              }
+            })
+            .catchError((_) {});
       } catch (_) {}
     }
     clear();
