@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../constants/auth_constants.dart';
 import '../../features/auth/presentation/controllers/auth_controller.dart';
 import 'api_exceptions.dart';
@@ -23,7 +26,9 @@ final authTokenProvider = Provider<AuthTokenProvider>((ref) {
   };
 });
 
-final unauthorizedHandlerProvider = Provider<UnauthorizedHandler?>((ref) => null);
+final unauthorizedHandlerProvider = Provider<UnauthorizedHandler?>(
+  (ref) => null,
+);
 
 final apiBaseUrlProvider = Provider<String>((ref) {
   return const String.fromEnvironment(
@@ -41,17 +46,17 @@ class ApiClient {
     required AuthTokenProvider tokenProvider,
     this.onUnauthorized,
   }) : dio = Dio(
-          BaseOptions(
-            baseUrl: baseUrl,
-            connectTimeout: const Duration(seconds: 10),
-            receiveTimeout: const Duration(seconds: 10),
-            sendTimeout: const Duration(seconds: 10),
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
-          ),
-        ) {
+         BaseOptions(
+           baseUrl: baseUrl,
+           connectTimeout: const Duration(seconds: 10),
+           receiveTimeout: const Duration(seconds: 10),
+           sendTimeout: const Duration(seconds: 10),
+           headers: {
+             'Content-Type': 'application/json',
+             'Accept': 'application/json',
+           },
+         ),
+       ) {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
@@ -61,10 +66,14 @@ class ApiClient {
           }
           handler.next(options);
         },
-        onError: (DioException error, handler) {
+        onError: (DioException error, handler) async {
           final response = error.response;
           if (response?.statusCode == 401) {
             onUnauthorized?.call();
+          }
+          // Request dạng stream (coach): body lỗi là luồng byte, đọc ra JSON để lấy mã lỗi thật
+          if (response != null && response.data is ResponseBody) {
+            response.data = await _readErrorBody(response.data as ResponseBody);
           }
           if (response != null && response.data is Map<String, dynamic>) {
             final data = response.data as Map<String, dynamic>;
@@ -93,10 +102,13 @@ class ApiClient {
             );
           } else {
             final statusCode = response?.statusCode;
-            final isNetwork = error.type == DioExceptionType.connectionTimeout ||
+            final isNetwork =
+                error.type == DioExceptionType.connectionTimeout ||
                 error.type == DioExceptionType.sendTimeout ||
                 error.type == DioExceptionType.receiveTimeout ||
-                error.type == DioExceptionType.connectionError;
+                error.type == DioExceptionType.connectionError ||
+                // Không có phản hồi (máy chủ đóng kết nối, đang khởi động lại): cũng là lỗi kết nối
+                (response == null && error.type == DioExceptionType.unknown);
             return handler.reject(
               DioException(
                 requestOptions: error.requestOptions,
@@ -113,6 +125,18 @@ class ApiClient {
         },
       ),
     );
+  }
+
+  static Future<Object?> _readErrorBody(ResponseBody body) async {
+    try {
+      final bytes = await body.stream
+          .fold<List<int>>(<int>[], (all, chunk) => all..addAll(chunk))
+          .timeout(const Duration(seconds: 5));
+      final decoded = jsonDecode(utf8.decode(bytes, allowMalformed: true));
+      return decoded is Map<String, dynamic> ? decoded : null;
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<Response<T>> get<T>(

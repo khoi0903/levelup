@@ -87,8 +87,12 @@ String localDateString(DateTime now) =>
     '${now.month.toString().padLeft(2, '0')}-'
     '${now.day.toString().padLeft(2, '0')}';
 
+/// Buổi còn tập được. Backend chỉ dùng planned/completed/skipped/rest; skipped là buổi đã qua bị chốt bỏ.
 bool isSessionOpen(SessionView s) =>
-    s.status != 'completed' && s.status != 'rest' && s.status != 'missed';
+    s.status != 'completed' &&
+    s.status != 'rest' &&
+    s.status != 'skipped' &&
+    s.status != 'missed';
 
 /// Buổi nên tập tiếp: buổi còn mở sớm nhất từ hôm nay trở đi, nếu không có
 /// thì buổi còn mở đầu tiên, cuối cùng là buổi đầu tiên.

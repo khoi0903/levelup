@@ -87,10 +87,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final plan = planAsync.valueOrNull;
     final todayStr = localDateString(DateTime.now());
     final todaySession = plan == null ? null : pickNextSession(plan, todayStr);
-    // Đã tập xong, không có buổi hôm nay, hoặc buổi kế tiếp ở ngày sau: tập lúc này là "Tập thêm"
+    // Đã tập xong, buổi đã đóng (bỏ/nghỉ), buổi không có bài, hoặc ở ngày sau: tập lúc này là "Tập thêm"
     final todayDone =
         todaySession == null ||
-        todaySession.status == 'completed' ||
+        !isSessionOpen(todaySession) ||
+        todaySession.items.isEmpty ||
         !canLinkToPlan(todaySession.scheduledDate, DateTime.now());
 
     final totalTarget =
@@ -574,9 +575,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 10),
             Center(
               child: TextButton(
-                onPressed: () => context.push(
-                  '/skip-report?sessionId=${todaySession.id}',
-                ),
+                onPressed: () =>
+                    context.push('/skip-report?sessionId=${todaySession.id}'),
                 child: const Text(
                   'Không tập được hôm nay?',
                   key: ValueKey('home-skip-report-button'),
@@ -903,7 +903,8 @@ String _sessionDayLabel(String scheduledDate) {
     d.month,
     d.day,
   ).difference(DateTime(now.year, now.month, now.day)).inDays;
-  if (diff <= 0) return 'Hôm nay';
+  if (diff == 0) return 'Hôm nay';
+  if (diff == -1) return 'Hôm qua';
   if (diff == 1) return 'Ngày mai';
   const names = [
     'Thứ Hai',
