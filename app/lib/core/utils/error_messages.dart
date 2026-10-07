@@ -48,7 +48,7 @@ String mapErrorMessage(dynamic error, {String? defaultMessage}) {
       case 'SESSION_NOT_FOUND':
         return 'Không tìm thấy thông tin buổi tập.';
       case 'SESSION_NOT_PLANNED':
-        return 'Buổi tập không ở trạng thái chờ thực hiện.';
+        return 'Buổi này đã tập hoặc đã bỏ, không đổi được nữa.';
       case 'AI_UNAVAILABLE':
         return 'Trợ lý AI đang bận. Vui lòng thử lại sau giây lát.';
       case 'VALIDATION_ERROR':
@@ -80,12 +80,15 @@ String mapErrorMessage(dynamic error, {String? defaultMessage}) {
         case 503:
           return 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau.';
         default:
-          return defaultMessage ?? 'Có lỗi xảy ra (${error.statusCode}). Vui lòng thử lại.';
+          return defaultMessage ??
+              'Có lỗi xảy ra (${error.statusCode}). Vui lòng thử lại.';
       }
     }
 
-    return defaultMessage ?? 'Đã có lỗi xảy ra (${error.code}). Vui lòng thử lại.';
+    return defaultMessage ??
+        'Đã có lỗi xảy ra (${error.code}). Vui lòng thử lại.';
   }
 
-  return defaultMessage ?? (error?.toString() ?? 'Đã có lỗi xảy ra. Vui lòng thử lại.');
+  return defaultMessage ??
+      (error?.toString() ?? 'Đã có lỗi xảy ra. Vui lòng thử lại.');
 }

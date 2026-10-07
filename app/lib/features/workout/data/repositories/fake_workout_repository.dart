@@ -1,6 +1,7 @@
 import '../../../../core/api/api_exceptions.dart';
 import '../../../onboarding/data/repositories/fake_plan_repository.dart';
 import '../../../onboarding/domain/models/plan_models.dart';
+import '../../domain/models/exercise_alternative.dart';
 import '../../domain/models/exercise_response.dart';
 import '../../domain/models/workout_models.dart';
 import '../../domain/repositories/workout_repository.dart';
@@ -13,11 +14,17 @@ class FakeWorkoutRepository implements WorkoutRepository {
     this.failuresBeforeSuccess = 0,
     this.failure = const ApiException(code: 'NETWORK_ERROR'),
     this.plan,
+    this.planRepo,
+    this.fakeAlternatives,
   }) : exercises = exercises ?? defaultExercises;
 
   final List<ExerciseResponse> exercises;
   final WorkoutResult? result;
-  final PlanView? plan;
+  PlanView? plan;
+  FakePlanRepository? planRepo;
+  List<ExerciseAlternative>? fakeAlternatives;
+  ApiException? swapFailure;
+  ApiException? alternativesFailure;
 
   /// Số lần POST /workouts đầu tiên ném [failure] (mô phỏng mất mạng).
   int failuresBeforeSuccess;
@@ -26,6 +33,8 @@ class FakeWorkoutRepository implements WorkoutRepository {
   /// Mọi request đã gửi, kể cả lần lỗi.
   final List<WorkoutRequest> sentRequests = [];
   final List<String> quick5Sessions = [];
+  final List<Map<String, dynamic>> sentSwaps = [];
+  final List<Map<String, dynamic>> sentAlternativeQueries = [];
 
   @override
   Future<List<ExerciseResponse>> getExercises() async => exercises;
@@ -96,7 +105,110 @@ class FakeWorkoutRepository implements WorkoutRepository {
     );
   }
 
+  @override
+  Future<List<ExerciseAlternative>> getAlternatives({
+    required String sessionId,
+    required String exerciseId,
+  }) async {
+    sentAlternativeQueries.add({
+      'sessionId': sessionId,
+      'exerciseId': exerciseId,
+    });
+    if (alternativesFailure != null) {
+      throw alternativesFailure!;
+    }
+    if (fakeAlternatives != null) {
+      return fakeAlternatives!;
+    }
+    return exercises
+        .where((e) => e.id != exerciseId)
+        .take(6)
+        .map(
+          (e) => ExerciseAlternative(
+            exerciseId: e.id,
+            nameVi: e.nameVi,
+            slug: e.slug,
+            thumbnailUrl: e.thumbnailUrl,
+            primaryMuscle: e.primaryMuscle,
+            tracking: e.tracking,
+            cameraSupported: e.camera != null,
+            reason: 'Cùng nhóm cơ · Không cần dụng cụ',
+          ),
+        )
+        .toList();
+  }
+
+  @override
+  Future<PlanView> swapExercise({
+    required String sessionId,
+    required String fromExerciseId,
+    required String toExerciseId,
+    required bool remember,
+  }) async {
+    sentSwaps.add({
+      'sessionId': sessionId,
+      'fromExerciseId': fromExerciseId,
+      'toExerciseId': toExerciseId,
+      'remember': remember,
+    });
+    if (swapFailure != null) {
+      throw swapFailure!;
+    }
+    final toEx = exercises.firstWhere(
+      (e) => e.id == toExerciseId,
+      orElse: () => ExerciseResponse(
+        id: toExerciseId,
+        slug: toExerciseId,
+        nameVi: 'Bài mới',
+      ),
+    );
+    final base = plan ?? await FakePlanRepository().getCurrentPlan();
+    final updatedSessions = base.sessions.map((s) {
+      if (s.id == sessionId) {
+        final updatedItems = s.items.map((i) {
+          if (i.exerciseId == fromExerciseId) {
+            return ItemView(
+              exerciseId: toExerciseId,
+              nameVi: toEx.nameVi,
+              sets: i.sets,
+              reps: toEx.tracking == 'duration' ? null : (i.reps ?? 10),
+              durationSec: toEx.tracking == 'duration'
+                  ? (i.durationSec ?? 30)
+                  : null,
+              restSec: i.restSec,
+            );
+          }
+          return i;
+        }).toList();
+        return SessionView(
+          id: s.id,
+          scheduledDate: s.scheduledDate,
+          scheduledTime: s.scheduledTime,
+          title: s.title,
+          durationMin: s.durationMin,
+          variant: s.variant,
+          status: s.status,
+          items: updatedItems,
+          adjustedReason: s.adjustedReason,
+        );
+      }
+      return s;
+    }).toList();
+    final newPlan = PlanView(
+      id: base.id,
+      weekStart: base.weekStart,
+      status: base.status,
+      targetSessions: base.targetSessions,
+      sessions: updatedSessions,
+      injuryNote: base.injuryNote,
+    );
+    plan = newPlan;
+    planRepo?.planView = newPlan;
+    return newPlan;
+  }
+
   /// Khớp id bài trong FakePlanRepository.
+
   static const List<ExerciseResponse> defaultExercises = [
     ExerciseResponse(
       id: 'ex1',

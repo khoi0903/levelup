@@ -3,7 +3,7 @@ import '../../domain/models/plan_models.dart';
 import '../../domain/repositories/plan_repository.dart';
 
 class FakePlanRepository implements PlanRepository {
-  final PlanView? planView;
+  PlanView? planView;
 
   FakePlanRepository({this.planView});
 
@@ -52,7 +52,11 @@ class FakePlanRepository implements PlanRepository {
           status: 'pending',
           items: [
             ItemView(exerciseId: 'ex1', nameVi: 'Bật nhảy tại chỗ', reps: 15),
-            ItemView(exerciseId: 'ex6', nameVi: 'Giãn cơ toàn thân', durationSec: 60),
+            ItemView(
+              exerciseId: 'ex6',
+              nameVi: 'Giãn cơ toàn thân',
+              durationSec: 60,
+            ),
           ],
         ),
       ],
@@ -73,8 +77,8 @@ class FakePlanRepository implements PlanRepository {
       injuryNote: hasLowerBack
           ? 'Đã bỏ các động tác gây áp lực lên lưng dưới'
           : (state.injuries.isNotEmpty
-              ? 'Đã điều chỉnh các bài tập theo tình trạng chấn thương của bạn'
-              : null),
+                ? 'Đã điều chỉnh các bài tập theo tình trạng chấn thương của bạn'
+                : null),
     );
   }
 }

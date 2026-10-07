@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../../../../core/api/api_client.dart';
 import '../../../../core/api/api_exceptions.dart';
 import '../../../onboarding/domain/models/plan_models.dart';
+import '../../domain/models/exercise_alternative.dart';
 import '../../domain/models/exercise_response.dart';
 import '../../domain/models/workout_models.dart';
 import '../../domain/repositories/workout_repository.dart';
@@ -44,5 +45,38 @@ class ApiWorkoutRepository implements WorkoutRepository {
         statusCode: e.response?.statusCode,
       );
     }
+  }
+
+  @override
+  Future<List<ExerciseAlternative>> getAlternatives({
+    required String sessionId,
+    required String exerciseId,
+  }) async {
+    final response = await client.get(
+      '/plans/sessions/$sessionId/alternatives',
+      queryParameters: {'exerciseId': exerciseId},
+    );
+    final data = response.data as List<dynamic>? ?? const [];
+    return data
+        .map((e) => ExerciseAlternative.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  @override
+  Future<PlanView> swapExercise({
+    required String sessionId,
+    required String fromExerciseId,
+    required String toExerciseId,
+    required bool remember,
+  }) async {
+    final response = await client.post(
+      '/plans/sessions/$sessionId/swap',
+      data: {
+        'fromExerciseId': fromExerciseId,
+        'toExerciseId': toExerciseId,
+        'remember': remember,
+      },
+    );
+    return PlanView.fromJson(response.data as Map<String, dynamic>);
   }
 }

@@ -228,6 +228,49 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
     _saveDraft(status: 'active');
   }
 
+  /// Đổi bài tập hiện tại sang bài mới (khi chưa ghi hiệp nào).
+  void swapCurrentExercise(WorkoutPlanItem newItem) {
+    final s = state;
+    if (s == null || s.currentItem == null) return;
+    final index = s.exerciseIndex;
+    final updatedItems = List<WorkoutPlanItem>.from(s.items);
+    final oldExerciseId = updatedItems[index].exerciseId;
+    updatedItems[index] = newItem;
+
+    final updatedSessionItems = s.session.items.map((it) {
+      if (it.exerciseId == oldExerciseId) {
+        return ItemView(
+          exerciseId: newItem.exerciseId,
+          nameVi: newItem.nameVi,
+          sets: newItem.sets,
+          reps: newItem.reps,
+          durationSec: newItem.durationSec,
+          restSec: newItem.restSec,
+        );
+      }
+      return it;
+    }).toList();
+
+    final updatedSession = SessionView(
+      id: s.session.id,
+      scheduledDate: s.session.scheduledDate,
+      scheduledTime: s.session.scheduledTime,
+      title: s.session.title,
+      durationMin: s.session.durationMin,
+      variant: s.session.variant,
+      status: s.session.status,
+      items: updatedSessionItems,
+      adjustedReason: s.session.adjustedReason,
+    );
+
+    state = s.copyWith(
+      session: updatedSession,
+      items: updatedItems,
+      setNumber: 1,
+    );
+    _saveDraft(status: 'active');
+  }
+
   /// Chốt giờ kết thúc một lần; gửi lại vẫn dùng đúng giờ này.
   void finish() {
     final s = state;

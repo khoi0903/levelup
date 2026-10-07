@@ -27,6 +27,13 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    final draft = ref.read(coachDraftMessageProvider);
+    if (draft != null && draft.isNotEmpty) {
+      _textController.text = draft;
+      Future.microtask(() {
+        if (mounted) ref.read(coachDraftMessageProvider.notifier).state = null;
+      });
+    }
   }
 
   void _onScroll() {
@@ -63,6 +70,13 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<String?>(coachDraftMessageProvider, (prev, next) {
+      if (next != null && next.isNotEmpty) {
+        _textController.text = next;
+        ref.read(coachDraftMessageProvider.notifier).state = null;
+      }
+    });
+
     final state = ref.watch(coachChatProvider);
     final notifier = ref.read(coachChatProvider.notifier);
 
