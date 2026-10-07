@@ -20,6 +20,7 @@ import vn.levelup.common.LocalDates;
 import vn.levelup.exercises.Exercise;
 import vn.levelup.exercises.ExerciseFilter;
 import vn.levelup.exercises.ExerciseRepository;
+import vn.levelup.plans.ExerciseSwapService;
 import vn.levelup.plans.TrainingPlan;
 import vn.levelup.plans.Week1PlanBuilder;
 
@@ -91,8 +92,9 @@ public class RestartWeekService {
                 injuries.add(injury.getString("bodyArea"));
             }
         }
+        Set<String> disliked = ExerciseSwapService.dislikes(mongo, userId);
         List<Exercise> safe = ExerciseFilter.forUser(exercises.findByIsActiveTrue(), profile.getString("location"),
-            equipment, injuries);
+            equipment, injuries).stream().filter(e -> !disliked.contains(e.id())).toList();
         Week1PlanBuilder.Draft draft = Week1PlanBuilder.build(today, availability, RESTART_MINUTES, safe);
         if (draft.sessions().isEmpty()) {
             return 0;
