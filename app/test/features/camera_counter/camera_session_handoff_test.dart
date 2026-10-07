@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fitness_app/features/camera_counter/data/camera_rep_session.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'session_handoff_helpers.dart';
@@ -95,5 +96,29 @@ void main() {
     expect(reps, 1);
     expect(hardware.cameras[0].disposed, 1);
     expect(hardware.detectors[0].closed, 1);
+  });
+
+  testWidgets('hung set 1 teardown does not block set 2 forever', (
+    tester,
+  ) async {
+    final hardware = SharedCameraHardware();
+    final first = hardware.create(squatConfig());
+    await first.start();
+    hardware.cameras[0].release = Completer<void>(); // never completes
+    unawaited(first.stop());
+    await tester.pump();
+
+    final second = hardware.create(squatConfig());
+    var started = false;
+    unawaited(second.start().then((_) => started = true));
+    await tester.pump(const Duration(seconds: 1));
+    expect(started, isFalse, reason: 'still waits for set 1 to release');
+    await tester.pump(CameraRepSession.cameraReleaseTimeout);
+    await tester.pump();
+    expect(started, isTrue);
+    expect(hardware.cameras[1].initialized, 1);
+    await hardware.rep(tester, 1);
+    expect(second.latestResult.repCount, 1);
+    await second.stop();
   });
 }

@@ -90,10 +90,12 @@ class CameraRepSession {
   Completer<void>? _cameraLease;
   int? _loggedFrameGeneration;
 
+  /// Chờ phiên trước nhả camera tối đa chừng này; cleanup bị treo không được chặn mọi hiệp sau.
+  static const cameraReleaseTimeout = Duration(seconds: 3);
+
+  // Ghi cả ở bản release (vài dòng mỗi hiệp) để soi bằng adb logcat trên máy thật.
   void _debug(String event) {
-    if (kDebugMode) {
-      debugPrint('[camera session=$_sessionId generation=$_generation] $event');
-    }
+    debugPrint('[camera session=$_sessionId generation=$_generation] $event');
   }
 
   Future<void> _acquireCamera() async {
@@ -101,7 +103,13 @@ class CameraRepSession {
     final lease = Completer<void>();
     _cameraLease = lease;
     _cameraReleased = lease.future;
-    if (previous != null) await previous;
+    if (previous != null) {
+      try {
+        await previous.timeout(cameraReleaseTimeout);
+      } on TimeoutException {
+        _debug('previous camera release timed out, starting anyway');
+      }
+    }
   }
 
   void _releaseCamera() {
