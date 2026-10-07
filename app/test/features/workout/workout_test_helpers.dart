@@ -14,6 +14,8 @@ import 'package:fitness_app/features/users/presentation/controllers/user_control
 import 'package:fitness_app/features/workout/data/camera/camera_permission.dart';
 import 'package:fitness_app/features/workout/data/camera/rep_counting_session.dart';
 import 'package:fitness_app/features/workout/data/repositories/fake_workout_repository.dart';
+import 'package:fitness_app/features/coach/data/repositories/fake_coach_repository.dart';
+import 'package:fitness_app/features/coach/presentation/controllers/coach_controller.dart';
 import 'package:fitness_app/features/workout/domain/models/exercise_response.dart';
 import 'package:fitness_app/features/workout/presentation/controllers/workout_controller.dart';
 import 'package:flutter/material.dart';
@@ -191,7 +193,11 @@ class WorkoutHarness {
        repo = repo ?? FakeWorkoutRepository(exercises: testExercises),
        factory = factory ?? NoCameraFactory(),
        permission = permission ?? FakePermissionGate(),
-       setupSkip = setupSkip ?? MemoryCameraSetupSkip();
+       setupSkip = setupSkip ?? MemoryCameraSetupSkip() {
+    this.repo.planRepo ??= planRepo;
+    this.repo.plan ??= plan;
+  }
+
 
   final FakePlanRepository planRepo;
   final FakeWorkoutRepository repo;
@@ -226,7 +232,11 @@ class WorkoutHarness {
         voiceCoachProvider.overrideWithValue(voice),
         workoutClockProvider.overrideWithValue(clock.call),
         userRepositoryProvider.overrideWithValue(FakeUserRepository()),
+        coachRepositoryProvider.overrideWithValue(
+          FakeCoachRepository(initialMessages: const []),
+        ),
       ],
+
     );
     addTearDown(container.dispose);
     await tester.pumpWidget(

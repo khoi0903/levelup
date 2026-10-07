@@ -196,6 +196,8 @@ class WorkoutSessionState {
       sets.where((s) => s.exerciseId == exerciseId).length;
 
   WorkoutSessionState copyWith({
+    SessionView? session,
+    List<WorkoutPlanItem>? items,
     DateTime? endedAt,
     int? exerciseIndex,
     int? setNumber,
@@ -205,8 +207,8 @@ class WorkoutSessionState {
     ApiException? error,
     bool clearError = false,
   }) => WorkoutSessionState(
-    session: session,
-    items: items,
+    session: session ?? this.session,
+    items: items ?? this.items,
     clientId: clientId,
     startedAt: startedAt,
     endedAt: endedAt ?? this.endedAt,
@@ -218,6 +220,7 @@ class WorkoutSessionState {
     error: clearError ? null : (error ?? this.error),
   );
 }
+
 
 /// Buổi lên lịch [scheduledDate] ("YYYY-MM-DD") được tính vào lịch khi tập lúc [startedAt]:
 /// cùng tuần (tuần bắt đầu Thứ Hai) và không ở tương lai. Khớp quy tắc ở backend.

@@ -12,6 +12,10 @@ final coachRepositoryProvider = Provider<CoachRepository>((ref) {
   return ApiCoachRepository(client: client);
 });
 
+/// Tin nhắn soạn sẵn khi chuyển từ màn khác sang (ví dụ: đổi bài).
+final coachDraftMessageProvider = StateProvider<String?>((ref) => null);
+
+
 class CoachChatState {
   final List<CoachMessageView> messages;
   final bool isLoading;

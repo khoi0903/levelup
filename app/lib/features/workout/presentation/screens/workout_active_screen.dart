@@ -14,9 +14,11 @@ import '../../domain/models/workout_session_state.dart';
 import '../../../../core/voice/voice_models.dart';
 import '../../../../core/voice/voice_provider.dart';
 import '../controllers/workout_controller.dart';
+import '../widgets/swap_exercise_sheet.dart';
 import '../widgets/workout_widgets.dart';
 import '../../data/camera/auto_camera_setting.dart';
 import 'camera_set_screen.dart';
+
 
 /// Màn "Đang tập" (Figma: Frame 16): một bài, một hiệp tại một thời điểm,
 /// nghỉ giữa hiệp theo restSec, bỏ qua bài.
@@ -42,6 +44,7 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
 
   int? _restRemaining;
   Timer? _restTimer;
+  Timer? _countdownTimer;
 
   int? _lastAnnouncedExerciseIndex;
 
@@ -72,8 +75,10 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
     WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     _restTimer?.cancel();
+    _countdownTimer?.cancel();
     super.dispose();
   }
+
 
   /// Bài đếm được bằng camera và người dùng bật "Tự mở camera khi bắt đầu hiệp".
   bool _autoCameraFor(WorkoutPlanItem item) =>
@@ -83,15 +88,30 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
   /// Mở camera cho hiệp hiện tại (một lần mỗi hiệp), sau khung hình hiện tại.
   void _maybeAutoCamera(WorkoutSessionState s, WorkoutPlanItem item) {
     if (_restRemaining != null || !_autoCameraFor(item)) return;
-    final key = '${s.exerciseIndex}/${s.setNumber}';
+    final key = '${s.exerciseIndex}/${s.setNumber}/${item.exerciseId}';
     if (_autoCameraKey == key) return;
     _autoCameraKey = key;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final current = ref.read(activeWorkoutProvider);
       if (!mounted || current == null || current.currentItem == null) return;
-      if ('${current.exerciseIndex}/${current.setNumber}' != key) return;
+      if ('${current.exerciseIndex}/${current.setNumber}/${item.exerciseId}' != key) return;
       _countWithCamera(current);
     });
+  }
+
+  void _openSwapSheet(WorkoutSessionState s, WorkoutPlanItem item) {
+    showSwapExerciseSheet(
+      context: context,
+      sessionId: s.session.id,
+      item: item,
+      currentItems: s.items,
+      isExtra: s.isExtra,
+      onSwap: (newItem, alt) {
+        ref.read(activeWorkoutProvider.notifier).swapCurrentExercise(newItem);
+        _lastAnnouncedExerciseIndex = null;
+        _announceSetStart(newItem, s);
+      },
+    );
   }
 
   void _announceSetStart(WorkoutPlanItem item, WorkoutSessionState s) {
@@ -112,15 +132,17 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
       params: {'n': '3'},
       interrupt: true,
     );
-    Future.delayed(const Duration(milliseconds: 1200), () {
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer(const Duration(milliseconds: 1200), () {
       if (mounted) coach.speakLine(VoiceLineKey.go, interrupt: true);
     });
   }
 
+
   void _syncInputs(WorkoutSessionState s) {
     final item = s.currentItem;
     if (item == null) return;
-    final key = '${s.exerciseIndex}/${s.setNumber}';
+    final key = '${s.exerciseIndex}/${s.setNumber}/${item.exerciseId}';
     if (key == _inputKey) return;
     _inputKey = key;
     // Hiệp sau giữ số lần người dùng vừa chọn cho cùng bài (giống mức tạ)
@@ -130,6 +152,7 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
     _spokenDurationSeconds.clear();
     _stopTimer();
   }
+
 
   void _stopTimer() {
     _timer?.cancel();
@@ -430,14 +453,51 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
                 onClose: _confirmExit,
               ),
               const SizedBox(height: 18),
-              Text(
-                item.nameVi,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                ),
+              Row(
+
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Text(
+                      item.nameVi,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  if (s.setsDoneFor(item.exerciseId) == 0) ...[
+                    const SizedBox(width: 8),
+                    TextButton.icon(
+                      key: const ValueKey('swap-exercise-active-btn'),
+                      onPressed: () => _openSwapSheet(s, item),
+                      icon: const Icon(
+                        Icons.swap_horiz_rounded,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
+                      label: const Text(
+                        'Đổi bài này',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
+                  ],
+                ],
               ),
+
               const SizedBox(height: 4),
               Text(
                 'Hiệp ${s.setNumber}/${item.sets} · $target',

@@ -48,7 +48,7 @@ String mapErrorMessage(dynamic error, {String? defaultMessage}) {
       case 'SESSION_NOT_FOUND':
         return 'Không tìm thấy thông tin buổi tập.';
       case 'SESSION_NOT_PLANNED':
-        return 'Buổi tập không ở trạng thái chờ thực hiện.';
+        return 'Buổi này đã tập hoặc đã bỏ, không đổi được nữa.';
       case 'AI_UNAVAILABLE':
         return 'Trợ lý AI đang bận. Vui lòng thử lại sau giây lát.';
       case 'VALIDATION_ERROR':

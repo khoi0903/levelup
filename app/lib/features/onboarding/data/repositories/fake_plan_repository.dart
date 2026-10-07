@@ -3,7 +3,7 @@ import '../../domain/models/plan_models.dart';
 import '../../domain/repositories/plan_repository.dart';
 
 class FakePlanRepository implements PlanRepository {
-  final PlanView? planView;
+  PlanView? planView;
 
   FakePlanRepository({this.planView});
 

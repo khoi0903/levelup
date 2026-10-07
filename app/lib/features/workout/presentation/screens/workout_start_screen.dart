@@ -7,9 +7,12 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
+import '../../../onboarding/domain/models/plan_models.dart';
 import '../../domain/models/workout_session_state.dart';
 import '../controllers/workout_controller.dart';
+import '../widgets/swap_exercise_sheet.dart';
 import '../widgets/workout_widgets.dart';
+
 
 /// Tổng quan buổi tập: danh sách bài với số hiệp/lần, nút "Bắt đầu".
 /// [sessionId] null thì lấy buổi kế tiếp trong kế hoạch.
@@ -44,6 +47,7 @@ class WorkoutStartScreen extends ConsumerWidget {
             ),
             data: (setup) => _Overview(
               setup: setup,
+              args: args,
               onClose: () => _close(context),
               onStart: () {
                 ref.read(activeWorkoutProvider.notifier).start(setup);
@@ -53,23 +57,26 @@ class WorkoutStartScreen extends ConsumerWidget {
           ),
         ),
       ),
+
     );
   }
 }
 
-class _Overview extends StatelessWidget {
+class _Overview extends ConsumerWidget {
   const _Overview({
     required this.setup,
+    required this.args,
     required this.onClose,
     required this.onStart,
   });
 
   final WorkoutSetup setup;
+  final WorkoutSetupArgs args;
   final VoidCallback onClose;
   final VoidCallback onStart;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final session = setup.session;
     final isExtra = session.id.startsWith('extra-');
     final isFuture = !isExtra && !canLinkToPlan(session.scheduledDate, DateTime.now());
@@ -114,7 +121,64 @@ class _Overview extends StatelessWidget {
                 const SizedBox(height: 12),
               ],
               for (var i = 0; i < setup.items.length; i++) ...[
-                _ExerciseRow(index: i + 1, item: setup.items[i]),
+                _ExerciseRow(
+                  index: i + 1,
+                  item: setup.items[i],
+                  onSwap: () {
+                    showSwapExerciseSheet(
+                      context: context,
+                      sessionId: session.id,
+                      item: setup.items[i],
+                      currentItems: setup.items,
+                      isExtra: isExtra,
+                      onSwap: (newItem, alt) {
+                        if (isExtra) {
+                          final currentExtra =
+                              ref.read(extraWorkoutSetupProvider);
+                          if (currentExtra != null) {
+                            final newItems = currentExtra.items.map((it) {
+                              return it.exerciseId ==
+                                      setup.items[i].exerciseId
+                                  ? newItem
+                                  : it;
+                            }).toList();
+                            final newSessionItems = currentExtra
+                                .session.items
+                                .map((it) {
+                              return it.exerciseId ==
+                                      setup.items[i].exerciseId
+                                  ? ItemView(
+                                      exerciseId: newItem.exerciseId,
+                                      nameVi: newItem.nameVi,
+                                      sets: newItem.sets,
+                                      reps: newItem.reps,
+                                      durationSec: newItem.durationSec,
+                                      restSec: newItem.restSec,
+                                    )
+                                  : it;
+                            }).toList();
+                            final newSession = SessionView(
+                              id: currentExtra.session.id,
+                              scheduledDate: currentExtra.session.scheduledDate,
+                              scheduledTime: currentExtra.session.scheduledTime,
+                              title: currentExtra.session.title,
+                              durationMin: currentExtra.session.durationMin,
+                              variant: currentExtra.session.variant,
+                              status: currentExtra.session.status,
+                              items: newSessionItems,
+                            );
+                            ref.read(extraWorkoutSetupProvider.notifier).state =
+                                WorkoutSetup(
+                              session: newSession,
+                              items: newItems,
+                            );
+                          }
+                        }
+                        ref.invalidate(workoutSetupProvider(args));
+                      },
+                    );
+                  },
+                ),
                 const SizedBox(height: 10),
               ],
               if (setup.items.isEmpty)
@@ -150,10 +214,15 @@ class _Overview extends StatelessWidget {
 }
 
 class _ExerciseRow extends StatelessWidget {
-  const _ExerciseRow({required this.index, required this.item});
+  const _ExerciseRow({
+    required this.index,
+    required this.item,
+    required this.onSwap,
+  });
 
   final int index;
   final WorkoutPlanItem item;
+  final VoidCallback onSwap;
 
   @override
   Widget build(BuildContext context) {
@@ -227,7 +296,7 @@ class _ExerciseRow extends StatelessWidget {
               ],
             ),
           ),
-          if (hasCamera)
+          if (hasCamera) ...[
             const Tooltip(
               message: 'Đếm được bằng camera',
               child: Icon(
@@ -236,11 +305,36 @@ class _ExerciseRow extends StatelessWidget {
                 color: AppColors.primary,
               ),
             ),
+            const SizedBox(width: 6),
+          ],
+          TextButton.icon(
+            key: ValueKey('swap-btn-${item.exerciseId}'),
+            onPressed: onSwap,
+            icon: const Icon(
+              Icons.swap_horiz_rounded,
+              size: 16,
+              color: AppColors.primary,
+            ),
+            label: const Text(
+              'Đổi',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
+              ),
+            ),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
         ],
       ),
     );
   }
 }
+
 
 class _ErrorView extends StatelessWidget {
   const _ErrorView({
