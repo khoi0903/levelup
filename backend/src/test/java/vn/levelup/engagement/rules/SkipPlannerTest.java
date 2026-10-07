@@ -48,7 +48,7 @@ class SkipPlannerTest {
     }
 
     @Test
-    void busy_shortens_next_session_and_moves_the_following_to_a_free_day() {
+    void busy_shortens_next_session_without_moving_others() {
         TrainingPlan.Session past = session(MONDAY, "skipped", SQUAT);
         TrainingPlan.Session today = session(WEDNESDAY, "planned", SQUAT, PUSHUP, BRIDGE, LUNGE);
         TrainingPlan.Session thursday = session(WEDNESDAY.plusDays(1), "planned", BRIDGE);
@@ -57,15 +57,12 @@ class SkipPlannerTest {
             null, CATALOG, ALL);
 
         assertEquals("shortened", out.action());
-        assertEquals(2, out.changed().size());
+        assertEquals(1, out.changed().size(), "không dời buổi nào");
         TrainingPlan.Session shortened = out.changed().get(0);
         assertEquals(today.id(), shortened.id());
         assertEquals(10, shortened.durationMin());
         assertTrue(vn.levelup.training.rules.SessionRules.estimateSec(shortened.items()) <= 600);
         assertEquals("skip_busy", shortened.adjustedReason());
-        TrainingPlan.Session moved = out.changed().get(1);
-        assertEquals(thursday.id(), moved.id());
-        assertEquals("2026-10-03", moved.scheduledDate());     // Thứ Sáu đã có buổi, Thứ Bảy trống
     }
 
     @Test

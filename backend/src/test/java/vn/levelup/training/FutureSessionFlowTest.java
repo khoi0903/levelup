@@ -63,4 +63,42 @@ class FutureSessionFlowTest extends FlowTestBase {
         Document log = mongo.findOne(Query.query(Criteria.where("userId").is(me)), Document.class, "workout_logs");
         assertFalse(log.containsKey("plannedSessionId"));            // tính là tập thêm
     }
+
+    /** Chỉnh lùi ngày trên điện thoại: startedAt hai ngày trước không đánh dấu buổi cũ, không cộng chỉ tiêu tuần. */
+    @Test
+    void backdated_phone_clock_does_not_mark_old_session_or_count() throws Exception {
+        String exerciseId = onboard().read("$.plan.sessions[0].items[0].exerciseId");
+        ObjectId me = userId();
+        LocalDate twoDaysAgo = LocalDate.now(LocalDates.DEFAULT_ZONE).minusDays(2);
+
+        ObjectId oldSession = new ObjectId();
+        Document item = new Document("exerciseId", new ObjectId(exerciseId)).append("targetSets", 2)
+            .append("targetReps", 10).append("restSec", 45);
+        mongo.updateMulti(Query.query(Criteria.where("userId").is(me)), new Update().set("status", "replaced"),
+            "training_plans");
+        mongo.insert(new Document("userId", me)
+            .append("weekStart", LocalDates.weekStart(twoDaysAgo).toString())
+            .append("status", "active").append("targetSessions", 1).append("createdBy", "rule")
+            .append("sessions", List.of(new Document("_id", oldSession)
+                .append("scheduledDate", twoDaysAgo.toString()).append("scheduledTime", "18:30")
+                .append("title", "Buổi hai ngày trước").append("durationMin", 15).append("variant", "normal")
+                .append("status", "planned").append("items", List.of(item))))
+            .append("createdAt", new java.util.Date()), "training_plans");
+
+        Instant start = twoDaysAgo.atTime(18, 0).atZone(LocalDates.DEFAULT_ZONE).toInstant();
+        String body = """
+            {"clientId":"backdate-%s","plannedSessionId":"%s","startedAt":"%s","endedAt":"%s","variant":"normal",
+             "sets":[{"exerciseId":"%s","setIndex":1,"reps":10}]}"""
+            .formatted(uid.substring(3, 15), oldSession.toHexString(), start, start.plus(20, ChronoUnit.MINUTES),
+                exerciseId);
+        var r = call(post("/workouts").header("Authorization", token).contentType(MediaType.APPLICATION_JSON)
+            .content(body), 200);
+
+        assertFalse(r.<Boolean>read("$.countsForStreak"), "buổi quá 24 giờ theo giờ máy chủ không cộng chỉ tiêu");
+        Document plan = mongo.findOne(Query.query(Criteria.where("userId").is(me).and("status").is("active")),
+            Document.class, "training_plans");
+        assertEquals("planned", plan.getList("sessions", Document.class).getFirst().getString("status"));
+        Document log = mongo.findOne(Query.query(Criteria.where("userId").is(me)), Document.class, "workout_logs");
+        assertFalse(log.containsKey("plannedSessionId"));
+    }
 }

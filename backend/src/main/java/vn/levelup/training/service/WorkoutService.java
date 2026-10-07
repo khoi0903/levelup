@@ -46,6 +46,12 @@ public class WorkoutService {
     static final int DEFAULT_TARGET = 3;
     static final String COMEBACK = "comeback_days_7";
     private static final Duration CLOCK_SKEW = Duration.ofMinutes(5);
+    /**
+     * startedAt do app gửi (giờ điện thoại, sửa được). Chỉ cộng chỉ tiêu tuần cho buổi bắt đầu trong khoảng này
+     * tính theo giờ máy chủ: chỉnh lùi ngày trên máy không cộng được vào ngày/tuần cũ; nháp offline gửi trễ quá
+     * thì vẫn lưu lịch sử nhưng không tính.
+     */
+    static final Duration STREAK_WINDOW = Duration.ofHours(24);
 
     private final MongoTemplate mongo;
     private final ExerciseRepository exercises;
@@ -90,7 +96,10 @@ public class WorkoutService {
 
         LocalDate localDate = r.startedAt().atZone(LocalDates.zone(user.timezone())).toLocalDate();
         String weekStart = LocalDates.weekStart(localDate).toString();
-        boolean counts = WorkoutRules.countsForStreak(durationSec);
+        boolean fresh = !r.startedAt().isBefore(now.minus(STREAK_WINDOW));
+        boolean counts = fresh && WorkoutRules.countsForStreak(durationSec);
+        // Ngày hôm nay theo giờ máy chủ (múi giờ người dùng), không theo giờ điện thoại
+        LocalDate serverToday = LocalDates.today(user.timezone(), clock);
         int kcalBurned = WorkoutRules.kcalBurned(r.sets(), mets, durationSec, latestWeightKg(userId, user));
         ObjectId logId = new ObjectId();
 
@@ -131,13 +140,14 @@ public class WorkoutService {
 
         // 2. Buổi trong kế hoạch: planned -> completed
         TrainingPlan plan = null;
-        if (r.plannedSessionId() != null) {
+        if (r.plannedSessionId() != null && localDate.equals(serverToday)) {
             ObjectId sessionId = new ObjectId(r.plannedSessionId());
-            // Chỉ buổi cùng tuần với buổi tập và không ở tương lai (tập đúng ngày hoặc tập bù).
-            // Tập trước buổi của ngày sau / tuần sau là "tập thêm": lưu log nhưng không đánh dấu lịch.
+            // Lịch dùng để nhắc: chỉ tập đúng ngày của buổi (hôm nay theo giờ máy chủ) mới tính buổi đó.
+            // Tập ngày khác (sớm hơn lịch hay sau khi lỡ) là "tập thêm", tính riêng: lưu log nhưng không đánh
+            // dấu lịch, không có tập bù.
             Query session = Query.query(Criteria.where("userId").is(userId).and("status").is("active")
                 .and("sessions").elemMatch(Criteria.where("_id").is(sessionId).and("status").is("planned")
-                    .and("scheduledDate").gte(weekStart).lte(localDate.toString())));
+                    .and("scheduledDate").is(localDate.toString())));
             plan = mongo.findOne(session, TrainingPlan.class);
             if (plan != null) {
                 log.append("plannedSessionId", sessionId);
