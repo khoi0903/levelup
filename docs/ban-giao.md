@@ -6,7 +6,7 @@ Tài liệu vận hành bản demo Android kết nối Render. Claude Code revie
 
 **App Flutter → backend Java 21/Spring Boot trên Render → MongoDB Atlas (`fitness`)**. App đăng nhập **Firebase Auth**, gửi Firebase ID token trong `Authorization: Bearer`; backend xác minh, lấy người dùng từ token để lọc dữ liệu. API mô tả qua OpenAPI (`/swagger-ui.html`, `/v3/api-docs`), chỉ bật ở profile dev (server thật bật bằng `SPRINGDOC_ENABLED=true` khi cần).
 
-Backend gọi **Gemini qua interface `coach/AiClient`** dùng chung cho coach, tổng kết tuần, nhận diện món ăn. AI đề xuất/gọi công cụ; backend kiểm tra trước khi ghi database. Khóa Gemini ở server; gói miễn phí chỉ dùng dữ liệu thử.
+Backend gọi **Gemini qua interface `coach/ai/AiClient`** dùng chung cho coach, tổng kết tuần, nhận diện món ăn. AI đề xuất/gọi công cụ; backend kiểm tra trước khi ghi database. Khóa Gemini ở server; gói miễn phí chỉ dùng dữ liệu thử.
 
 Thông báo qua một cổng gửi backend rồi tới **Firebase Cloud Messaging (FCM)** và điện thoại, có `dedupeKey`, `maxPerDay` và giờ yên lặng. **cron-job.org** gọi **`POST /jobs/tick` mỗi 10 phút** trên Render với header **`X-Job-Secret`** để chạy nhắc nhở, chốt ngày/tuần, tổng kết theo giờ địa phương. Header dùng `JOB_SECRET`, không dùng ID token người dùng.
 

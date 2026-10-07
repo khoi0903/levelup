@@ -49,10 +49,12 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import vn.levelup.coach.ai.AiClient;
+import vn.levelup.coach.rules.SafeSessions;
+import vn.levelup.shared.util.LocalDates;
+import vn.levelup.training.model.Exercise;
+import vn.levelup.training.repository.ExerciseRepository;
 
-import vn.levelup.common.LocalDates;
-import vn.levelup.exercises.Exercise;
-import vn.levelup.exercises.ExerciseRepository;
 
 /**
  * Chat với coach trên MongoDB dev (localhost:27018, cần seed bài tập). Không bao giờ gọi Claude thật:
@@ -267,7 +269,7 @@ class CoachFlowTest {
         onboard();
         when(ai.available()).thenReturn(false);
         mongo.upsert(Query.query(Criteria.where("userId").is(userDoc().getObjectId("_id"))
-            .and("localDate").is(java.time.LocalDate.now(vn.levelup.common.LocalDates.DEFAULT_ZONE).toString())),
+            .and("localDate").is(java.time.LocalDate.now(vn.levelup.shared.util.LocalDates.DEFAULT_ZONE).toString())),
             Update.update("usage.coachMessages", 999), "daily_stats");
         var started = mvc.perform(post("/coach/messages/stream").header("Authorization", token)
                 .contentType(MediaType.APPLICATION_JSON).content("{\"text\":\"chào\"}"))

@@ -20,17 +20,17 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import vn.levelup.engagement.notification.NotificationGateway;
+import vn.levelup.engagement.service.DailyCloseService;
+import vn.levelup.engagement.service.WeekCloseListeners;
+import vn.levelup.engagement.service.WeekCloseService;
+import vn.levelup.identity.model.User;
+import vn.levelup.shared.util.LocalDates;
+import vn.levelup.training.model.Exercise;
+import vn.levelup.training.model.TrainingPlan;
+import vn.levelup.training.repository.ExerciseRepository;
+import vn.levelup.training.service.PlanReader;
 
-import vn.levelup.common.LocalDates;
-import vn.levelup.exercises.Exercise;
-import vn.levelup.exercises.ExerciseRepository;
-import vn.levelup.jobs.DailyCloseService;
-import vn.levelup.jobs.WeekCloseService;
-import vn.levelup.motivation.WeekCloseListeners;
-import vn.levelup.notifications.NotificationGateway;
-import vn.levelup.plans.PlanReader;
-import vn.levelup.plans.TrainingPlan;
-import vn.levelup.users.User;
 
 /** Nút giả lập: gọi đúng hàm job thật dùng, chỉ bỏ qua điều kiện giờ giấc. */
 @Service

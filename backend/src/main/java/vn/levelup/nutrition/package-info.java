@@ -1,7 +1,7 @@
 /**
- * F8: nhận diện món, bữa ăn, nước, mục tiêu calo. POST /meals/recognize, GET /foods/search,
- * POST /meals, GET /nutrition/today, POST /water
+ * Dinh dưỡng: tìm món, chụp ảnh món ăn nhận diện calo, nước, tổng kết trong ngày.
+ * Endpoint: GET /foods/search, POST /meals, POST /water, GET /nutrition/today.
  *
- * Xem luồng chi tiết trong docs/04-backend-flow.html.
+ * Cấu trúc nhóm và tầng: backend/README.md. Luồng chi tiết: docs/04-backend-flow.html.
  */
 package vn.levelup.nutrition;
