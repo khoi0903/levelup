@@ -83,6 +83,7 @@ coll("users", {
         waterReminder:     { bsonType: "bool" }       // nhắc uống nước, tự bật, không tính vào maxPerDay
       }
     },
+    exerciseDislikes: { bsonType: "array", items: { bsonType: "objectId" } },  // "Không gợi ý bài này nữa"
     devices: { bsonType: "array", items: { bsonType: "object",
                properties: { platform: { enum: ["ios", "android", "web"] }, token: { bsonType: "string" }, lastSeenAt: { bsonType: "date" } } } },
     sharing: { bsonType: "object", properties: {                         // buddy thấy gì (mặc định tắt hết)

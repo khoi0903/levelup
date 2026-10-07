@@ -38,6 +38,7 @@ import vn.levelup.exercises.Exercise;
 import vn.levelup.exercises.ExerciseRepository;
 import vn.levelup.motivation.WeekClosedListener;
 import vn.levelup.notifications.NotificationGateway;
+import vn.levelup.plans.ExerciseSwapService;
 import vn.levelup.plans.PlanView;
 import vn.levelup.plans.TrainingPlan;
 import vn.levelup.plans.Week1PlanBuilder;
@@ -198,7 +199,9 @@ public class WeeklyReviewService implements WeekClosedListener {
         Set<String> injuries = user.injuries() == null ? Set.of() : user.injuries().stream()
             .filter(i -> !Boolean.FALSE.equals(i.active()) && i.bodyArea() != null)
             .map(User.Injury::bodyArea).collect(Collectors.toSet());
-        List<Exercise> safe = SafeSessions.safeList(byId.values(), location, equipment, injuries);
+        Set<String> disliked = ExerciseSwapService.dislikes(mongo, new ObjectId(user.id()));
+        List<Exercise> safe = SafeSessions.safeList(byId.values(), location, equipment, injuries).stream()
+            .filter(e -> !disliked.contains(e.id())).toList();   // bài đã "không gợi ý nữa": makeSafe tự thay
 
         List<TrainingPlan.Session> sessions = thisPlan == null || thisPlan.sessions() == null ? List.of()
             : ReviewRules.nextWeek(thisPlan.sessions(), next, recommendation);
