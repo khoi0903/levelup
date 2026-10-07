@@ -1,6 +1,6 @@
 # Câu nhắc tư thế theo từng bài
 
-Nguồn phát giọng: `app/assets/content/form-cues.json`, phiên bản `1`. Bộ nội dung hiện có 20 bài, 22 cặp `(slug, code)` và 106 câu. Nội dung dựa trên `instructions`, `cues` trong `mongo/seed/exercises.json` và `formRules` thuộc `activeVersion` trong `mongo/cv-configs.json`, đối chiếu bảng trong `docs/prompts/codex-form-cues.md`.
+Nguồn phát giọng: `app/assets/content/form-cues.json`, phiên bản `1`. Bộ nội dung hiện có 34 bài, 27 cặp `(slug, code)` và 135 câu. Nội dung dựa trên `instructions`, `cues` trong `mongo/seed/exercises.json` và `formRules` thuộc `activeVersion` trong `mongo/cv-configs.json`, đối chiếu bảng gốc trong `docs/prompts/codex-form-cues.md` và phần mở rộng trong `docs/content/bodyweight-exercises.md`.
 
 ## Hợp đồng với app
 
@@ -8,7 +8,7 @@ Nguồn phát giọng: `app/assets/content/form-cues.json`, phiên bản `1`. B�
 - `exercises[slug].issues[code].cue`: 2–3 mẫu nhắc sửa cụ thể, mỗi mẫu tối đa 8 từ. Chọn một mẫu cho mỗi lần nhắc.
 - `minimal`: đúng một mẫu, tối đa 4 từ, dùng cho phong cách Tối giản. Những phong cách khác dùng `cue` và có thể thêm lời trước/sau theo phong cách.
 - Tra bằng cả `slug` và `FormIssue.code`; cùng một mã có thể cần câu khác ở bài khác. Thiếu bài hoặc mã thì dùng `form_generic` trong `voice-lines.json`. Giữ giới hạn nhắc tư thế một lần mỗi 8 giây theo prompt tích hợp.
-- Mỗi bài trong seed đều có `startTip` và `issues`, kể cả khi `cv.supported` đang là `false`. Bài chưa có lỗi trong cấu hình dùng `issues: {}`. Hiện cả 20 bài đều có lỗi ở cấu hình đang hoạt động.
+- Mỗi bài trong seed đều có `startTip` và `issues`, kể cả khi `cv.supported` đang là `false`. Bài chưa có lỗi trong cấu hình dùng `issues: {}`. Hiện 23 bài có lỗi ở cấu hình đang hoạt động; 11 bài mới chưa có camera dùng `issues: {}`.
 
 Khai báo asset, chọn câu, cài đặt và phát giọng do phần app tích hợp riêng. Không đọc toàn bộ mảng liên tiếp. Khi có nhiều mẫu, ưu tiên tránh mẫu vừa đọc; mẫu tối giản duy nhất vẫn tuân thủ khoảng cách giữa các lần nhắc.
 
@@ -40,6 +40,22 @@ Các mẫu trong cùng ô cách nhau bằng xuống dòng; mỗi dòng là một
 | Ngồi kéo dây kháng lực<br>`seated-resistance-band-row` | Giữ dây chắc quanh bàn chân, lưng thẳng tự nhiên<br>Kéo dây chậm về eo, giữ thân ổn định | `row_not_high_enough` | Kéo hai đầu dây về eo<br>Đưa khuỷu tay ra sau có kiểm soát | Kéo dây về eo |
 | Cuốn tay trước với tạ đơn<br>`dumbbell-biceps-curl` | Giữ khuỷu tay sát thân và cổ tay thẳng<br>Cuốn tạ chậm, giữ thân ổn định | `curl_not_full_range` | Gập khuỷu tay thêm có kiểm soát<br>Cuốn tạ gần vai, giữ khuỷu sát thân | Cuốn tạ gần vai |
 | Đẩy ngực tạ đơn trên sàn<br>`dumbbell-floor-press` | Giữ cổ tay thẳng khi đẩy tạ lên trên ngực<br>Hạ tạ chậm, để cánh tay chạm sàn nhẹ | `press_not_locked_out` | Duỗi tay lên trên ngực nhẹ nhàng<br>Đẩy tạ lên trong tầm kiểm soát | Duỗi tay lên |
+| Xoay tay vòng tròn nhỏ<br>`arm-circles` | Xoay vòng nhỏ, giữ vai xa tai | — | — | — |
+| Nâng tay chữ Y và T nằm sấp<br>`prone-y-t-raise` | Nâng tay thấp, giữ ngực trên thảm và cổ thẳng | — | — | — |
+| Trượt tay trên tường<br>`wall-slide` | Trượt tay chậm, giữ bụng nhẹ và vai thả lỏng | — | — | — |
+| Hít đất tường tay hẹp<br>`close-grip-wall-push-up` | Giữ khuỷu sát thân, đưa ngực gần tường chậm | `pushup_not_deep_enough` | Gập khuỷu trong tầm thoải mái<br>Đưa ngực gần tường thật chậm | Gập khuỷu chậm |
+| Hít đất tường tay hẹp<br>`close-grip-wall-push-up` | Giữ khuỷu sát thân, đưa ngực gần tường chậm | `body_not_straight` | Chỉnh vai, hông, cổ chân thẳng hàng<br>Giữ bụng nhẹ, thân thẳng theo chân | Giữ thân thẳng |
+| Duỗi tay sau vào tường<br>`wall-triceps-extension` | Gập khuỷu chậm, giữ thân thẳng và đầu cách tường | `triceps_not_bent_enough` | Gập khuỷu chậm trong tầm thoải mái<br>Đưa cẳng tay về gần tường chậm | Gập khuỷu chậm |
+| Duỗi tay sau vào tường<br>`wall-triceps-extension` | Gập khuỷu chậm, giữ thân thẳng và đầu cách tường | `body_not_straight` | Chỉnh vai, hông, cổ chân thẳng hàng<br>Giữ bụng nhẹ, thân thẳng theo chân | Giữ thân thẳng |
+| Cuốn tay trước tự kháng lực<br>`self-resisted-biceps-curl` | Dùng lực cản nhẹ, giữ cổ tay thẳng | — | — | — |
+| Nâng thân nằm sấp nhẹ<br>`low-superman` | Nâng thân thấp, giữ cổ theo đường lưng | — | — | — |
+| Thiên thần tuyết nằm sấp<br>`prone-snow-angel` | Quét tay chậm, giữ ngực trên thảm | — | — | — |
+| Chèo tay nằm sấp không tạ<br>`prone-row` | Kéo khuỷu về sườn, giữ vai xa tai | — | — | — |
+| Trượt gót nằm ngửa<br>`supine-heel-slide` | Trượt gót chậm, giữ lưng dưới ổn định | — | — | — |
+| Kéo gối chậm chống tay<br>`slow-mountain-climber` | Kéo gối chậm, giữ hông ổn định | — | — | — |
+| Đá chân sau chống gối<br>`quadruped-glute-kickback` | Giữ gối gập, nâng đùi trong tầm thoải mái | — | — | — |
+| Gập gối đứng không tạ<br>`standing-hamstring-curl` | Gập gối chậm, chạm tay vào tường giữ thăng bằng | `hamstring_not_curled_enough` | Gập gối trong tầm thoải mái<br>Đưa gót về sau có kiểm soát | Gập gối chậm |
+| Bước ngang chạm chân<br>`side-step-touch` | Bước ngắn, đặt chân nhẹ và thở đều | — | — | — |
 
 ## Quy tắc viết
 
@@ -68,8 +84,8 @@ python docs/content/validate_form_cues.py --json path/to/form-cues.json
 
 Script trả mã `0` khi hợp lệ, mã `1` khi lỗi. Nó đọc trực tiếp seed và cấu hình CV, không sao chép danh sách mã lỗi vào script. Nó kiểm tra:
 
-- Đúng 20 slug trong seed; không thiếu, thừa hoặc trùng slug. Không lọc theo `cv.supported`.
-- Đúng 22 cặp bài/mã lỗi và khớp từng bài với `formRules` của `activeVersion`. Nếu có nhiều góc camera cùng phiên bản hoạt động, lấy hợp các mã. Bỏ qua các phiên bản cũ; lỗi nếu không tìm thấy phiên bản hoạt động.
+- Đúng 34 slug trong seed; không thiếu, thừa hoặc trùng slug. Không lọc theo `cv.supported`.
+- Đúng 27 cặp bài/mã lỗi và khớp từng bài với `formRules` của `activeVersion`. Nếu có nhiều góc camera cùng phiên bản hoạt động, lấy hợp các mã. Bỏ qua các phiên bản cũ; lỗi nếu không tìm thấy phiên bản hoạt động.
 - JSON UTF-8 không BOM, không khóa trùng, không giá trị số ngoài chuẩn JSON; đúng phiên bản số nguyên `1` và đúng các trường dữ liệu.
 - Số mẫu 1–2 / 2–3 / 1 và giới hạn từ 12 / 8 / 4; chuỗi không rỗng, chuẩn NFC, không ký tự điều khiển, emoji, chữ số, placeholder hoặc ký hiệu khó đọc. Không cho mẫu trùng trong cùng mảng, kể cả chỉ khác hoa/thường, khoảng trắng hoặc dấu câu cuối.
 
