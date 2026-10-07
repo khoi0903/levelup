@@ -80,4 +80,3 @@ class ApiWorkoutRepository implements WorkoutRepository {
     return PlanView.fromJson(response.data as Map<String, dynamic>);
   }
 }
-

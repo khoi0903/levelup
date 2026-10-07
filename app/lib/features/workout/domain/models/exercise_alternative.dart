@@ -36,7 +36,10 @@ class ExerciseAlternative {
     );
   }
 
-  factory ExerciseAlternative.fromExercise(ExerciseResponse ex, {String? reason}) {
+  factory ExerciseAlternative.fromExercise(
+    ExerciseResponse ex, {
+    String? reason,
+  }) {
     return ExerciseAlternative(
       exerciseId: ex.id,
       nameVi: ex.nameVi,

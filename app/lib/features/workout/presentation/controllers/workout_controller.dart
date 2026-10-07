@@ -271,7 +271,6 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
     _saveDraft(status: 'active');
   }
 
-
   /// Chốt giờ kết thúc một lần; gửi lại vẫn dùng đúng giờ này.
   void finish() {
     final s = state;

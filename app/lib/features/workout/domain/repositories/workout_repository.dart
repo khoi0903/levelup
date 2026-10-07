@@ -27,4 +27,3 @@ abstract class WorkoutRepository {
     required bool remember,
   });
 }
-

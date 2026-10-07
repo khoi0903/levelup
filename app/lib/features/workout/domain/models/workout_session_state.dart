@@ -71,17 +71,20 @@ class WorkoutPlanItem {
     if (exercise != null) 'exercise': exercise!.toJson(),
   };
 
-  factory WorkoutPlanItem.fromJson(Map<String, dynamic> json) => WorkoutPlanItem(
-    exerciseId: json['exerciseId'] as String,
-    nameVi: json['nameVi'] as String? ?? 'Bài tập',
-    sets: (json['sets'] as num?)?.toInt() ?? 1,
-    reps: (json['reps'] as num?)?.toInt(),
-    durationSec: (json['durationSec'] as num?)?.toInt(),
-    restSec: (json['restSec'] as num?)?.toInt() ?? 0,
-    exercise: json['exercise'] != null
-        ? ExerciseResponse.fromJson(json['exercise'] as Map<String, dynamic>)
-        : null,
-  );
+  factory WorkoutPlanItem.fromJson(Map<String, dynamic> json) =>
+      WorkoutPlanItem(
+        exerciseId: json['exerciseId'] as String,
+        nameVi: json['nameVi'] as String? ?? 'Bài tập',
+        sets: (json['sets'] as num?)?.toInt() ?? 1,
+        reps: (json['reps'] as num?)?.toInt(),
+        durationSec: (json['durationSec'] as num?)?.toInt(),
+        restSec: (json['restSec'] as num?)?.toInt() ?? 0,
+        exercise: json['exercise'] != null
+            ? ExerciseResponse.fromJson(
+                json['exercise'] as Map<String, dynamic>,
+              )
+            : null,
+      );
 }
 
 /// Dữ liệu để mở một buổi: buổi trong kế hoạch và các bài đã ghép.
@@ -146,7 +149,8 @@ class WorkoutSessionState {
             : null,
         exerciseIndex: (json['exerciseIndex'] as num?)?.toInt() ?? 0,
         setNumber: (json['setNumber'] as num?)?.toInt() ?? 1,
-        sets: (json['sets'] as List<dynamic>?)
+        sets:
+            (json['sets'] as List<dynamic>?)
                 ?.map((s) => SetLog.fromJson(s as Map<String, dynamic>))
                 .toList() ??
             const [],
@@ -221,7 +225,6 @@ class WorkoutSessionState {
   );
 }
 
-
 /// Buổi lên lịch [scheduledDate] ("YYYY-MM-DD") được tính vào lịch khi tập lúc [startedAt]:
 /// cùng tuần (tuần bắt đầu Thứ Hai) và không ở tương lai. Khớp quy tắc ở backend.
 bool canLinkToPlan(String scheduledDate, DateTime startedAt) {
@@ -229,7 +232,9 @@ bool canLinkToPlan(String scheduledDate, DateTime startedAt) {
   if (scheduled == null) return false;
   final local = startedAt.toLocal();
   final today = DateTime(local.year, local.month, local.day);
-  final weekStart = today.subtract(Duration(days: today.weekday - DateTime.monday));
+  final weekStart = today.subtract(
+    Duration(days: today.weekday - DateTime.monday),
+  );
   final day = DateTime(scheduled.year, scheduled.month, scheduled.day);
   return !day.isBefore(weekStart) && !day.isAfter(today);
 }

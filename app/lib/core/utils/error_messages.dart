@@ -80,12 +80,15 @@ String mapErrorMessage(dynamic error, {String? defaultMessage}) {
         case 503:
           return 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau.';
         default:
-          return defaultMessage ?? 'Có lỗi xảy ra (${error.statusCode}). Vui lòng thử lại.';
+          return defaultMessage ??
+              'Có lỗi xảy ra (${error.statusCode}). Vui lòng thử lại.';
       }
     }
 
-    return defaultMessage ?? 'Đã có lỗi xảy ra (${error.code}). Vui lòng thử lại.';
+    return defaultMessage ??
+        'Đã có lỗi xảy ra (${error.code}). Vui lòng thử lại.';
   }
 
-  return defaultMessage ?? (error?.toString() ?? 'Đã có lỗi xảy ra. Vui lòng thử lại.');
+  return defaultMessage ??
+      (error?.toString() ?? 'Đã có lỗi xảy ra. Vui lòng thử lại.');
 }

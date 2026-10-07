@@ -172,8 +172,9 @@ class FakeWorkoutRepository implements WorkoutRepository {
               nameVi: toEx.nameVi,
               sets: i.sets,
               reps: toEx.tracking == 'duration' ? null : (i.reps ?? 10),
-              durationSec:
-                  toEx.tracking == 'duration' ? (i.durationSec ?? 30) : null,
+              durationSec: toEx.tracking == 'duration'
+                  ? (i.durationSec ?? 30)
+                  : null,
               restSec: i.restSec,
             );
           }

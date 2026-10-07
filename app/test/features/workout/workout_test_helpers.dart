@@ -2,6 +2,7 @@ import 'package:fitness_app/core/voice/voice_coach.dart';
 import 'package:fitness_app/core/voice/voice_provider.dart';
 import 'package:fitness_app/features/workout/data/camera/auto_camera_setting.dart';
 import 'package:fitness_app/features/workout/data/camera/camera_setup_skip.dart';
+
 import 'dart:async';
 
 import 'package:camera/camera.dart';
@@ -198,7 +199,6 @@ class WorkoutHarness {
     this.repo.plan ??= plan;
   }
 
-
   final FakePlanRepository planRepo;
   final FakeWorkoutRepository repo;
   final RepSessionFactory factory;
@@ -236,7 +236,6 @@ class WorkoutHarness {
           FakeCoachRepository(initialMessages: const []),
         ),
       ],
-
     );
     addTearDown(container.dispose);
     await tester.pumpWidget(

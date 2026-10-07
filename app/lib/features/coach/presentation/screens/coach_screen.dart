@@ -36,7 +36,6 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
     }
   }
 
-
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 100) {

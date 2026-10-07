@@ -13,7 +13,6 @@ import '../controllers/workout_controller.dart';
 import '../widgets/swap_exercise_sheet.dart';
 import '../widgets/workout_widgets.dart';
 
-
 /// Tổng quan buổi tập: danh sách bài với số hiệp/lần, nút "Bắt đầu".
 /// [sessionId] null thì lấy buổi kế tiếp trong kế hoạch.
 class WorkoutStartScreen extends ConsumerWidget {
@@ -57,7 +56,6 @@ class WorkoutStartScreen extends ConsumerWidget {
           ),
         ),
       ),
-
     );
   }
 }
@@ -79,7 +77,8 @@ class _Overview extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final session = setup.session;
     final isExtra = session.id.startsWith('extra-');
-    final isFuture = !isExtra && !canLinkToPlan(session.scheduledDate, DateTime.now());
+    final isFuture =
+        !isExtra && !canLinkToPlan(session.scheduledDate, DateTime.now());
     final done = !isExtra && session.status == 'completed';
     final shouldOpenExtra = done || isFuture;
 
@@ -133,30 +132,30 @@ class _Overview extends ConsumerWidget {
                       isExtra: isExtra,
                       onSwap: (newItem, alt) {
                         if (isExtra) {
-                          final currentExtra =
-                              ref.read(extraWorkoutSetupProvider);
+                          final currentExtra = ref.read(
+                            extraWorkoutSetupProvider,
+                          );
                           if (currentExtra != null) {
                             final newItems = currentExtra.items.map((it) {
-                              return it.exerciseId ==
-                                      setup.items[i].exerciseId
+                              return it.exerciseId == setup.items[i].exerciseId
                                   ? newItem
                                   : it;
                             }).toList();
-                            final newSessionItems = currentExtra
-                                .session.items
+                            final newSessionItems = currentExtra.session.items
                                 .map((it) {
-                              return it.exerciseId ==
-                                      setup.items[i].exerciseId
-                                  ? ItemView(
-                                      exerciseId: newItem.exerciseId,
-                                      nameVi: newItem.nameVi,
-                                      sets: newItem.sets,
-                                      reps: newItem.reps,
-                                      durationSec: newItem.durationSec,
-                                      restSec: newItem.restSec,
-                                    )
-                                  : it;
-                            }).toList();
+                                  return it.exerciseId ==
+                                          setup.items[i].exerciseId
+                                      ? ItemView(
+                                          exerciseId: newItem.exerciseId,
+                                          nameVi: newItem.nameVi,
+                                          sets: newItem.sets,
+                                          reps: newItem.reps,
+                                          durationSec: newItem.durationSec,
+                                          restSec: newItem.restSec,
+                                        )
+                                      : it;
+                                })
+                                .toList();
                             final newSession = SessionView(
                               id: currentExtra.session.id,
                               scheduledDate: currentExtra.session.scheduledDate,
@@ -167,8 +166,9 @@ class _Overview extends ConsumerWidget {
                               status: currentExtra.session.status,
                               items: newSessionItems,
                             );
-                            ref.read(extraWorkoutSetupProvider.notifier).state =
-                                WorkoutSetup(
+                            ref
+                                .read(extraWorkoutSetupProvider.notifier)
+                                .state = WorkoutSetup(
                               session: newSession,
                               items: newItems,
                             );
@@ -192,7 +192,9 @@ class _Overview extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
           child: Semantics(
-            label: shouldOpenExtra ? 'Mở danh sách bài tập thêm' : 'Bắt đầu buổi tập',
+            label: shouldOpenExtra
+                ? 'Mở danh sách bài tập thêm'
+                : 'Bắt đầu buổi tập',
             button: true,
             child: PrimaryButton(
               label: shouldOpenExtra ? 'Tập thêm' : 'Bắt đầu',
@@ -203,8 +205,8 @@ class _Overview extends ConsumerWidget {
               onPressed: setup.items.isEmpty
                   ? null
                   : (shouldOpenExtra
-                      ? () => context.push('/workout/extra')
-                      : onStart),
+                        ? () => context.push('/workout/extra')
+                        : onStart),
             ),
           ),
         ),
@@ -334,7 +336,6 @@ class _ExerciseRow extends StatelessWidget {
     );
   }
 }
-
 
 class _ErrorView extends StatelessWidget {
   const _ErrorView({

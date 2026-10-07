@@ -19,7 +19,6 @@ import '../widgets/workout_widgets.dart';
 import '../../data/camera/auto_camera_setting.dart';
 import 'camera_set_screen.dart';
 
-
 /// Màn "Đang tập" (Figma: Frame 16): một bài, một hiệp tại một thời điểm,
 /// nghỉ giữa hiệp theo restSec, bỏ qua bài.
 class WorkoutActiveScreen extends ConsumerStatefulWidget {
@@ -79,7 +78,6 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
     super.dispose();
   }
 
-
   /// Bài đếm được bằng camera và người dùng bật "Tự mở camera khi bắt đầu hiệp".
   bool _autoCameraFor(WorkoutPlanItem item) =>
       ref.read(autoCameraProvider) &&
@@ -94,7 +92,9 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final current = ref.read(activeWorkoutProvider);
       if (!mounted || current == null || current.currentItem == null) return;
-      if ('${current.exerciseIndex}/${current.setNumber}/${item.exerciseId}' != key) return;
+      if ('${current.exerciseIndex}/${current.setNumber}/${item.exerciseId}' !=
+          key)
+        return;
       _countWithCamera(current);
     });
   }
@@ -138,7 +138,6 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
     });
   }
 
-
   void _syncInputs(WorkoutSessionState s) {
     final item = s.currentItem;
     if (item == null) return;
@@ -152,7 +151,6 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
     _spokenDurationSeconds.clear();
     _stopTimer();
   }
-
 
   void _stopTimer() {
     _timer?.cancel();
@@ -234,11 +232,13 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
       if (!mounted) return;
       final left = (_restRemaining ?? 0) - 1;
       if (left == 10) {
-        ref.read(voiceCoachProvider).speakLine(
-          VoiceLineKey.restEnding,
-          params: {'sec': '10'},
-          interrupt: true,
-        );
+        ref
+            .read(voiceCoachProvider)
+            .speakLine(
+              VoiceLineKey.restEnding,
+              params: {'sec': '10'},
+              interrupt: true,
+            );
       }
       if (left <= 0) {
         _endRest();
@@ -454,7 +454,6 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
               ),
               const SizedBox(height: 18),
               Row(
-
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(

@@ -15,7 +15,6 @@ final coachRepositoryProvider = Provider<CoachRepository>((ref) {
 /// Tin nhắn soạn sẵn khi chuyển từ màn khác sang (ví dụ: đổi bài).
 final coachDraftMessageProvider = StateProvider<String?>((ref) => null);
 
-
 class CoachChatState {
   final List<CoachMessageView> messages;
   final bool isLoading;
@@ -75,7 +74,9 @@ class CoachChatNotifier extends StateNotifier<CoachChatState> {
     try {
       final res = await _repository.getHistory(limit: 20);
       final pendingMessages = state.messages
-          .where((m) => m.id.startsWith('pending-') || m.id.startsWith('streaming-'))
+          .where(
+            (m) => m.id.startsWith('pending-') || m.id.startsWith('streaming-'),
+          )
           .toList();
       state = state.copyWith(
         isLoading: false,
@@ -133,7 +134,8 @@ class CoachChatNotifier extends StateNotifier<CoachChatState> {
       messages: [pending, ...state.messages],
     );
 
-    final streamingReplyId = 'streaming-${DateTime.now().microsecondsSinceEpoch}';
+    final streamingReplyId =
+        'streaming-${DateTime.now().microsecondsSinceEpoch}';
     var accumulatedDelta = '';
     var hasReceivedDelta = false;
 

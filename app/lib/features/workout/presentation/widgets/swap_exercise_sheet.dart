@@ -17,13 +17,13 @@ import 'workout_widgets.dart';
 
 /// Hiển thị bottom sheet "Đổi bài [tên]".
 Future<void> showSwapExerciseSheet({
-
   required BuildContext context,
   required String sessionId,
   required WorkoutPlanItem item,
   required List<WorkoutPlanItem> currentItems,
   required bool isExtra,
-  required void Function(WorkoutPlanItem newItem, ExerciseAlternative alt) onSwap,
+  required void Function(WorkoutPlanItem newItem, ExerciseAlternative alt)
+  onSwap,
 }) {
   return showModalBottomSheet(
     context: context,
@@ -84,14 +84,19 @@ class _SwapExerciseSheetState extends ConsumerState<SwapExerciseSheet> {
       if (widget.isExtra) {
         final exercises = await repo.getExercises();
         _allExercises = exercises;
-        final existingIds =
-            widget.currentItems.map((i) => i.exerciseId).toSet();
+        final existingIds = widget.currentItems
+            .map((i) => i.exerciseId)
+            .toSet();
         final available = exercises
             .where((e) => e.isActive && !existingIds.contains(e.id))
             .toList();
 
-        final currentMuscle = widget.item.exercise?.primaryMuscle ??
-            exercises.where((e) => e.id == widget.item.exerciseId).firstOrNull?.primaryMuscle;
+        final currentMuscle =
+            widget.item.exercise?.primaryMuscle ??
+            exercises
+                .where((e) => e.id == widget.item.exerciseId)
+                .firstOrNull
+                ?.primaryMuscle;
 
         available.sort((a, b) {
           final aSame =
@@ -114,9 +119,10 @@ class _SwapExerciseSheetState extends ConsumerState<SwapExerciseSheet> {
                 tracking: e.tracking,
                 cameraSupported: e.camera != null,
                 reason:
-                    (e.primaryMuscle != null && e.primaryMuscle == currentMuscle)
-                        ? 'Cùng nhóm cơ'
-                        : null,
+                    (e.primaryMuscle != null &&
+                        e.primaryMuscle == currentMuscle)
+                    ? 'Cùng nhóm cơ'
+                    : null,
               ),
             )
             .toList();
@@ -147,7 +153,8 @@ class _SwapExerciseSheetState extends ConsumerState<SwapExerciseSheet> {
       final exercises = _allExercises.isNotEmpty
           ? _allExercises
           : await ref.read(workoutRepositoryProvider).getExercises();
-      final newExercise = exercises.where((e) => e.id == alt.exerciseId).firstOrNull ??
+      final newExercise =
+          exercises.where((e) => e.id == alt.exerciseId).firstOrNull ??
           ExerciseResponse(
             id: alt.exerciseId,
             slug: alt.slug ?? alt.exerciseId,
@@ -155,8 +162,7 @@ class _SwapExerciseSheetState extends ConsumerState<SwapExerciseSheet> {
             primaryMuscle: alt.primaryMuscle,
             tracking: alt.tracking,
           );
-      final isDuration =
-          (newExercise.tracking ?? alt.tracking) == 'duration';
+      final isDuration = (newExercise.tracking ?? alt.tracking) == 'duration';
       final newItem = WorkoutPlanItem(
         exerciseId: alt.exerciseId,
         nameVi: alt.nameVi,
@@ -180,12 +186,14 @@ class _SwapExerciseSheetState extends ConsumerState<SwapExerciseSheet> {
     }
 
     try {
-      await ref.read(workoutRepositoryProvider).swapExercise(
-        sessionId: widget.sessionId,
-        fromExerciseId: widget.item.exerciseId,
-        toExerciseId: alt.exerciseId,
-        remember: _remember,
-      );
+      await ref
+          .read(workoutRepositoryProvider)
+          .swapExercise(
+            sessionId: widget.sessionId,
+            fromExerciseId: widget.item.exerciseId,
+            toExerciseId: alt.exerciseId,
+            remember: _remember,
+          );
 
       if (!mounted) return;
       final messenger = ScaffoldMessenger.of(context);
@@ -195,14 +203,15 @@ class _SwapExerciseSheetState extends ConsumerState<SwapExerciseSheet> {
 
       ExerciseResponse? newExercise;
       try {
-        final exercises =
-            await ref.read(workoutRepositoryProvider).getExercises();
-        newExercise =
-            exercises.where((e) => e.id == alt.exerciseId).firstOrNull;
+        final exercises = await ref
+            .read(workoutRepositoryProvider)
+            .getExercises();
+        newExercise = exercises
+            .where((e) => e.id == alt.exerciseId)
+            .firstOrNull;
       } catch (_) {}
 
-      final isDuration =
-          (newExercise?.tracking ?? alt.tracking) == 'duration';
+      final isDuration = (newExercise?.tracking ?? alt.tracking) == 'duration';
       final newItem = WorkoutPlanItem(
         exerciseId: alt.exerciseId,
         nameVi: alt.nameVi,
@@ -215,14 +224,12 @@ class _SwapExerciseSheetState extends ConsumerState<SwapExerciseSheet> {
 
       widget.onSwap(newItem, alt);
       messenger.showSnackBar(
-        SnackBar(
-          content: Text('Đã đổi ${widget.item.nameVi} → ${alt.nameVi}'),
-        ),
+        SnackBar(content: Text('Đã đổi ${widget.item.nameVi} → ${alt.nameVi}')),
       );
     } catch (e) {
-
       if (!mounted) return;
-      final isNotPlanned = (e is ApiException &&
+      final isNotPlanned =
+          (e is ApiException &&
           (e.statusCode == 409 || e.code == 'SESSION_NOT_PLANNED'));
       final message = isNotPlanned
           ? 'Buổi này đã tập hoặc đã bỏ, không đổi được nữa'
@@ -342,7 +349,8 @@ class _SwapExerciseSheetState extends ConsumerState<SwapExerciseSheet> {
                                   onChanged: _isSwapping
                                       ? null
                                       : (val) => setState(
-                                          () => _remember = val ?? false),
+                                          () => _remember = val ?? false,
+                                        ),
                                 ),
                                 const Expanded(
                                   child: Text(

@@ -4,7 +4,6 @@ import 'package:fitness_app/features/workout/domain/models/workout_session_state
 import 'package:fitness_app/features/workout/presentation/controllers/workout_controller.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-
 import 'workout_test_helpers.dart';
 
 const squatItem = ItemView(
@@ -89,133 +88,138 @@ void main() {
       );
     });
 
-    testWidgets('Buổi extra đổi trong máy không gọi API và không có ô không gợi ý nữa', (
-      tester,
-    ) async {
-      const extraId = 'extra-123';
-      final h = WorkoutHarness(plan: planWith(const [squatItem]));
+    testWidgets(
+      'Buổi extra đổi trong máy không gọi API và không có ô không gợi ý nữa',
+      (tester) async {
+        const extraId = 'extra-123';
+        final h = WorkoutHarness(plan: planWith(const [squatItem]));
 
-      // Khởi tạo buổi extra trong provider
-      const extraSession = SessionView(
-        id: extraId,
-        scheduledDate: '2026-10-05',
-        scheduledTime: '18:00',
-        title: 'Tập thêm',
-        durationMin: 15,
-        variant: 'normal',
-        status: 'planned',
-        items: [squatItem],
-      );
-      final extraSetup = WorkoutSetup(
-        session: extraSession,
-        items: [WorkoutPlanItem.from(squatItem, testExercises[0])],
-      );
+        // Khởi tạo buổi extra trong provider
+        const extraSession = SessionView(
+          id: extraId,
+          scheduledDate: '2026-10-05',
+          scheduledTime: '18:00',
+          title: 'Tập thêm',
+          durationMin: 15,
+          variant: 'normal',
+          status: 'planned',
+          items: [squatItem],
+        );
+        final extraSetup = WorkoutSetup(
+          session: extraSession,
+          items: [WorkoutPlanItem.from(squatItem, testExercises[0])],
+        );
 
-      await h.pump(tester, '/workout/$extraId');
-      h.container.read(extraWorkoutSetupProvider.notifier).state = extraSetup;
-      h.container.invalidate(workoutSetupProvider((sessionId: extraId, quick5: false)));
-      await tester.pumpAndSettle();
+        await h.pump(tester, '/workout/$extraId');
+        h.container.read(extraWorkoutSetupProvider.notifier).state = extraSetup;
+        h.container.invalidate(
+          workoutSetupProvider((sessionId: extraId, quick5: false)),
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Squat'), findsOneWidget);
-      await tapText(tester, 'Đổi');
+        expect(find.text('Squat'), findsOneWidget);
+        await tapText(tester, 'Đổi');
 
-      // Buổi extra không có ô "Không gợi ý bài này nữa"
-      expect(find.text('Không gợi ý bài này nữa'), findsNothing);
+        // Buổi extra không có ô "Không gợi ý bài này nữa"
+        expect(find.text('Không gợi ý bài này nữa'), findsNothing);
 
-      // Đổi sang Plank
-      await tapText(tester, 'Plank');
+        // Đổi sang Plank
+        await tapText(tester, 'Plank');
 
-      // Không gọi backend swap API
-      expect(h.repo.sentSwaps, isEmpty);
+        // Không gọi backend swap API
+        expect(h.repo.sentSwaps, isEmpty);
 
-      // Hiện SnackBar và cập nhật bài trong máy
-      expect(find.text('Đã đổi Squat → Plank'), findsOneWidget);
-      expect(find.text('Plank'), findsOneWidget);
-    });
+        // Hiện SnackBar và cập nhật bài trong máy
+        expect(find.text('Đã đổi Squat → Plank'), findsOneWidget);
+        expect(find.text('Plank'), findsOneWidget);
+      },
+    );
 
-    testWidgets('Màn đang tập: hiện nút khi chưa tập hiệp nào, ẩn nút khi đã ghi hiệp', (
-      tester,
-    ) async {
-      final h = WorkoutHarness(plan: planWith(const [squatItem]));
-      await h.pump(tester, '/workout/$sessionId');
+    testWidgets(
+      'Màn đang tập: hiện nút khi chưa tập hiệp nào, ẩn nút khi đã ghi hiệp',
+      (tester) async {
+        final h = WorkoutHarness(plan: planWith(const [squatItem]));
+        await h.pump(tester, '/workout/$sessionId');
 
-      await tapText(tester, 'Bắt đầu');
+        await tapText(tester, 'Bắt đầu');
 
-      // Lúc mới bắt đầu, chưa ghi hiệp nào: nút "Đổi bài này" hiện
-      expect(find.text('Đổi bài này'), findsOneWidget);
+        // Lúc mới bắt đầu, chưa ghi hiệp nào: nút "Đổi bài này" hiện
+        expect(find.text('Đổi bài này'), findsOneWidget);
 
-      // Ghi 1 hiệp
-      await tapText(tester, 'Xong hiệp');
+        // Ghi 1 hiệp
+        await tapText(tester, 'Xong hiệp');
 
-      // Đã ghi hiệp: nút "Đổi bài này" ẩn
-      expect(find.text('Đổi bài này'), findsNothing);
-    });
+        // Đã ghi hiệp: nút "Đổi bài này" ẩn
+        expect(find.text('Đổi bài này'), findsNothing);
+      },
+    );
 
-    testWidgets('Màn đang tập: đổi bài thành công cập nhật WorkoutSessionState và draft', (
-      tester,
-    ) async {
-      final h = WorkoutHarness(plan: planWith(const [squatItem]));
-      await h.pump(tester, '/workout/$sessionId');
-      await tapText(tester, 'Bắt đầu');
+    testWidgets(
+      'Màn đang tập: đổi bài thành công cập nhật WorkoutSessionState và draft',
+      (tester) async {
+        final h = WorkoutHarness(plan: planWith(const [squatItem]));
+        await h.pump(tester, '/workout/$sessionId');
+        await tapText(tester, 'Bắt đầu');
 
-      expect(find.text('Squat'), findsOneWidget);
-      expect(find.text('Hiệp 1/2 · Mục tiêu 10 lần'), findsOneWidget);
+        expect(find.text('Squat'), findsOneWidget);
+        expect(find.text('Hiệp 1/2 · Mục tiêu 10 lần'), findsOneWidget);
 
-      await tapText(tester, 'Đổi bài này');
-      expect(find.text('Đổi bài Squat'), findsOneWidget);
+        await tapText(tester, 'Đổi bài này');
+        expect(find.text('Đổi bài Squat'), findsOneWidget);
 
-      await tapText(tester, 'Plank');
+        await tapText(tester, 'Plank');
 
-      expect(find.text('Đã đổi Squat → Plank'), findsOneWidget);
-      expect(find.text('Plank'), findsOneWidget);
+        expect(find.text('Đã đổi Squat → Plank'), findsOneWidget);
+        expect(find.text('Plank'), findsOneWidget);
 
-      // Plank tính theo thời gian: mục tiêu chuyển sang 30 giây, vẫn giữ 2 hiệp
-      expect(find.text('Hiệp 1/2 · Mục tiêu 30 giây'), findsOneWidget);
+        // Plank tính theo thời gian: mục tiêu chuyển sang 30 giây, vẫn giữ 2 hiệp
+        expect(find.text('Hiệp 1/2 · Mục tiêu 30 giây'), findsOneWidget);
 
-      final state = h.container.read(activeWorkoutProvider);
-      expect(state?.currentItem?.exerciseId, plankId);
-      expect(state?.currentItem?.nameVi, 'Plank');
-      expect(state?.currentItem?.sets, 2);
-      expect(state?.currentItem?.durationSec, 30);
-      expect(state?.currentItem?.reps, isNull);
+        final state = h.container.read(activeWorkoutProvider);
+        expect(state?.currentItem?.exerciseId, plankId);
+        expect(state?.currentItem?.nameVi, 'Plank');
+        expect(state?.currentItem?.sets, 2);
+        expect(state?.currentItem?.durationSec, 30);
+        expect(state?.currentItem?.reps, isNull);
 
-      await tester.pump(const Duration(seconds: 2));
-    });
+        await tester.pump(const Duration(seconds: 2));
+      },
+    );
 
+    testWidgets(
+      'Sheet: lỗi hiện mapErrorMessage + thử lại, rỗng hiện thông báo',
+      (tester) async {
+        final h = WorkoutHarness(plan: planWith(const [squatItem]));
+        h.repo.alternativesFailure = const ApiException(code: 'NETWORK_ERROR');
 
-    testWidgets('Sheet: lỗi hiện mapErrorMessage + thử lại, rỗng hiện thông báo', (
-      tester,
-    ) async {
-      final h = WorkoutHarness(plan: planWith(const [squatItem]));
-      h.repo.alternativesFailure = const ApiException(
-        code: 'NETWORK_ERROR',
-      );
+        await h.pump(tester, '/workout/$sessionId');
+        await tapText(tester, 'Đổi');
 
-      await h.pump(tester, '/workout/$sessionId');
-      await tapText(tester, 'Đổi');
+        // Hiện thông báo lỗi mạng
+        expect(
+          find.text(
+            'Không kết nối được máy chủ. Vui lòng kiểm tra kết nối mạng.',
+          ),
+          findsOneWidget,
+        );
+        expect(find.text('Thử lại'), findsOneWidget);
 
-      // Hiện thông báo lỗi mạng
-      expect(
-        find.text('Không kết nối được máy chủ. Vui lòng kiểm tra kết nối mạng.'),
-        findsOneWidget,
-      );
-      expect(find.text('Thử lại'), findsOneWidget);
+        // Thử lại thành công
+        h.repo.alternativesFailure = null;
+        await tapText(tester, 'Thử lại');
 
-      // Thử lại thành công
-      h.repo.alternativesFailure = null;
-      await tapText(tester, 'Thử lại');
+        expect(find.text('Squat ôm tạ'), findsOneWidget);
 
-      expect(find.text('Squat ôm tạ'), findsOneWidget);
+        // Đóng sheet
+        await tester.tap(find.byTooltip('Đóng'));
+        await tester.pumpAndSettle();
 
-      // Đóng sheet
-      await tester.tap(find.byTooltip('Đóng'));
-      await tester.pumpAndSettle();
-
-      // Trường hợp rỗng
-      h.repo.fakeAlternatives = [];
-      await tapText(tester, 'Đổi');
-      expect(find.text('Chưa có bài thay thế phù hợp'), findsOneWidget);
-    });
+        // Trường hợp rỗng
+        h.repo.fakeAlternatives = [];
+        await tapText(tester, 'Đổi');
+        expect(find.text('Chưa có bài thay thế phù hợp'), findsOneWidget);
+      },
+    );
 
     testWidgets('Hỏi coach gợi ý thêm mở tab Coach với câu soạn sẵn', (
       tester,
@@ -238,5 +242,3 @@ void main() {
     });
   });
 }
-
-
