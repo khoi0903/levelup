@@ -87,10 +87,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final plan = planAsync.valueOrNull;
     final todayStr = localDateString(DateTime.now());
     final todaySession = plan == null ? null : pickNextSession(plan, todayStr);
-    // Đã tập xong, không có buổi hôm nay, hoặc buổi kế tiếp ở ngày sau: tập lúc này là "Tập thêm"
+    // Đã tập xong, buổi đã đóng (bỏ/nghỉ), buổi không có bài, hoặc ở ngày sau: tập lúc này là "Tập thêm"
     final todayDone =
         todaySession == null ||
-        todaySession.status == 'completed' ||
+        !isSessionOpen(todaySession) ||
+        todaySession.items.isEmpty ||
         !canLinkToPlan(todaySession.scheduledDate, DateTime.now());
 
     final totalTarget =
