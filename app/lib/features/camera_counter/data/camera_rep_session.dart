@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart'
     as mlkit;
 
@@ -81,6 +82,36 @@ class CameraRepSession {
 
   final Duration presenceInterval;
 
+  // CameraX keeps provider/analyzer state across controllers. Reserve access
+  // for the whole camera lifetime, including asynchronous pause/stop cleanup.
+  static Future<void>? _cameraReleased;
+  static int _nextSessionId = 0;
+  final int _sessionId = ++_nextSessionId;
+  Completer<void>? _cameraLease;
+  int? _loggedFrameGeneration;
+
+  void _debug(String event) {
+    if (kDebugMode) {
+      debugPrint('[camera session=$_sessionId generation=$_generation] $event');
+    }
+  }
+
+  Future<void> _acquireCamera() async {
+    final previous = _cameraReleased;
+    final lease = Completer<void>();
+    _cameraLease = lease;
+    _cameraReleased = lease.future;
+    if (previous != null) await previous;
+  }
+
+  void _releaseCamera() {
+    final lease = _cameraLease;
+    if (lease == null) return;
+    if (identical(_cameraReleased, lease.future)) _cameraReleased = null;
+    lease.complete();
+    _cameraLease = null;
+  }
+
   /// Cấu hình đang dùng; UI xem `config.mode` để hiển thị số lần hay thời gian.
   final CvConfig config;
   final RepCounter _counter;
@@ -108,6 +139,7 @@ class CameraRepSession {
   CameraController? get cameraController => _camera.controller;
 
   Future<void> start() {
+    _debug('start requested status=$_status');
     final generation = _generation;
     return _enqueue(() => _start(generation));
   }
@@ -117,6 +149,9 @@ class CameraRepSession {
     if (generation != _generation) return;
     if (_status == CameraRepSessionStatus.running) return;
     try {
+      await _acquireCamera();
+      if (_stopping || generation != _generation) return;
+      _debug('start initialize');
       await _camera.initialize();
       if (_stopping || generation != _generation) return;
       _clock.start();
@@ -134,10 +169,15 @@ class CameraRepSession {
         _publish();
       });
       _publish();
+      _debug('start running');
     } catch (error) {
       _suspendFrames();
       await _processing;
-      await _camera.dispose();
+      try {
+        await _camera.dispose();
+      } finally {
+        _releaseCamera();
+      }
       _status = CameraRepSessionStatus.paused;
       _error = error.toString();
       _publish();
@@ -150,28 +190,33 @@ class CameraRepSession {
     return _enqueue(() async {
       if (_stopping || _status == CameraRepSessionStatus.stopped) return;
       try {
-        await _camera.stopImages();
+        if (_cameraLease != null) await _camera.stopImages();
       } finally {
-        await _processing;
-        await _camera.dispose();
-        _counter.discardIncompleteRep();
-        _status = CameraRepSessionStatus.paused;
-        _publish();
+        try {
+          await _processing;
+          if (_cameraLease != null) await _camera.dispose();
+          _counter.discardIncompleteRep();
+          _status = CameraRepSessionStatus.paused;
+          _publish();
+        } finally {
+          _releaseCamera();
+        }
       }
     });
   }
 
   Future<void> stop() {
     if (_stopFuture != null) return _stopFuture!;
+    _debug('stop requested status=$_status processing=${_processing != null}');
     _stopping = true;
     _suspendFrames();
     _stopFuture = _enqueue(() async {
       try {
-        await _camera.stopImages();
+        if (_cameraLease != null) await _camera.stopImages();
       } finally {
         await _processing;
         try {
-          await _camera.dispose();
+          if (_cameraLease != null) await _camera.dispose();
         } finally {
           try {
             await _detector.close();
@@ -180,7 +225,12 @@ class CameraRepSession {
             _counter.discardIncompleteRep();
             _status = CameraRepSessionStatus.stopped;
             _publish();
-            await _results.close();
+            try {
+              await _results.close();
+            } finally {
+              _releaseCamera();
+              _debug('stop complete reps=${_latest.repCount}');
+            }
           }
         }
       }
@@ -215,6 +265,13 @@ class CameraRepSession {
   }
 
   void _onImage(mlkit.InputImage image, int generation) {
+    if (_loggedFrameGeneration != generation) {
+      _loggedFrameGeneration = generation;
+      _debug(
+        'first frame callbackGeneration=$generation '
+        'accept=$_acceptFrames processing=${_processing != null}',
+      );
+    }
     // No queue: drop new buffers until native inference finishes.
     if (!_acceptFrames || generation != _generation || _processing != null) {
       return;
