@@ -48,11 +48,12 @@ Không sửa thư mục do agent khác phụ trách trong cùng lúc. Cần sử
 
 ## Backend (Java)
 - Java 21, Spring Boot, Maven wrapper (`./mvnw`). Package gốc `vn.levelup`.
-- Chia package theo module: `auth`, `users`, `onboarding`, `exercises`, `plans`, `workouts`,
-  `checkins`, `coach`, `nutrition`, `motivation`, `notifications`, `jobs`, `demo`.
-- Mỗi module: `*Controller`, `*Service`, `*Repository`, DTO dùng `record`.
+- Chia package theo **nhóm dịch vụ**: `identity`, `training`, `coach`, `nutrition`, `engagement`, `shared`, `demo`.
+  Trong mỗi nhóm chia **tầng**: `controller/`, `service/`, `rules/` (logic thuần, không Spring/DB),
+  `model/`, `repository/`, `dto/` (dùng `record`). Sơ đồ và bảng nhóm/tầng: `backend/README.md`.
+  `ArchitectureTest` kiểm tra cấu trúc này, thêm lớp mới phải đặt đúng nhóm và tầng.
 - Xác thực: Firebase ID token ở header `Authorization: Bearer`.
-- Gọi AI chỉ từ backend, qua interface `coach/AiClient` (không tạo client riêng ở module khác).
+- Gọi AI chỉ từ backend, qua interface `coach/ai/AiClient` (không tạo client riêng ở module khác).
   Chọn nhà cung cấp bằng `LEVELUP_AI_PROVIDER` = `claude` | `gemini` | `auto`; key trong
   `ANTHROPIC_API_KEY` hoặc `GEMINI_API_KEY`. Gemini gói miễn phí chỉ dùng với dữ liệu thử.
 - API mô tả bằng OpenAPI (springdoc), app Flutter sinh client từ đó.

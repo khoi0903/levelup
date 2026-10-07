@@ -52,8 +52,9 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import vn.levelup.coach.ai.AiClient;
+import vn.levelup.nutrition.service.MealRecognitionService;
 
-import vn.levelup.coach.AiClient;
 
 /**
  * Chạy trên MongoDB dev (localhost:27018, cần docker compose up và seed món ăn, huy hiệu).

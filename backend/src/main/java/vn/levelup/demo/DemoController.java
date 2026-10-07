@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import vn.levelup.identity.model.User;
+import vn.levelup.identity.service.CurrentUserService;
 
-import vn.levelup.auth.CurrentUserService;
-import vn.levelup.users.User;
 
 /**
  * POST /demo/{action}: skip-two | close-week | review | seed | checkin | push-test.
