@@ -232,16 +232,13 @@ class WorkoutSessionState {
   );
 }
 
-/// Buổi lên lịch [scheduledDate] ("YYYY-MM-DD") được tính vào lịch khi tập lúc [startedAt]:
-/// cùng tuần (tuần bắt đầu Thứ Hai) và không ở tương lai. Khớp quy tắc ở backend.
+/// Buổi lên lịch [scheduledDate] ("YYYY-MM-DD") chỉ được tính vào lịch khi tập đúng ngày đó ([startedAt]).
+/// Lịch dùng để nhắc; tập ngày khác là "tập thêm", vẫn cộng vào chỉ tiêu tuần. Khớp quy tắc ở backend.
 bool canLinkToPlan(String scheduledDate, DateTime startedAt) {
   final scheduled = DateTime.tryParse(scheduledDate);
   if (scheduled == null) return false;
   final local = startedAt.toLocal();
-  final today = DateTime(local.year, local.month, local.day);
-  final weekStart = today.subtract(
-    Duration(days: today.weekday - DateTime.monday),
-  );
-  final day = DateTime(scheduled.year, scheduled.month, scheduled.day);
-  return !day.isBefore(weekStart) && !day.isAfter(today);
+  return scheduled.year == local.year &&
+      scheduled.month == local.month &&
+      scheduled.day == local.day;
 }

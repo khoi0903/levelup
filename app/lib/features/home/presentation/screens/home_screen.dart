@@ -85,14 +85,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final dateText = me?.localDate ?? _currentDateString();
 
     final plan = planAsync.valueOrNull;
-    final todayStr = localDateString(DateTime.now());
+    // Hôm nay theo máy chủ (/me.localDate), không theo giờ điện thoại: chỉnh giờ máy không mở được buổi khác.
+    // Chưa tải /me thì tạm dùng đồng hồ của app.
+    final todayStr =
+        me?.localDate ?? localDateString(ref.watch(workoutClockProvider)());
     final todaySession = plan == null ? null : pickNextSession(plan, todayStr);
-    // Đã tập xong, buổi đã đóng (bỏ/nghỉ), buổi không có bài, hoặc ở ngày sau: tập lúc này là "Tập thêm"
+    // Đã tập xong, buổi đã đóng (bỏ/nghỉ), không có bài, hoặc không phải buổi của hôm nay: tập lúc này là
+    // "Tập thêm" (vẫn cộng chỉ tiêu tuần)
     final todayDone =
         todaySession == null ||
         !isSessionOpen(todaySession) ||
         todaySession.items.isEmpty ||
-        !canLinkToPlan(todaySession.scheduledDate, DateTime.now());
+        todaySession.scheduledDate != todayStr;
 
     final totalTarget =
         streakAsync.valueOrNull?.thisWeek?.targetSessions ??
@@ -260,6 +264,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                         const SizedBox(height: 12),
                         _buildWeekDaysRow(plan, me?.weekStart),
+                        const SizedBox(height: 10),
+                        // Lịch chỉ để nhắc: tập ngày nào (≥ 5 phút) cũng cộng vào chỉ tiêu tuần
+                        const Text(
+                          'Tập thêm từ 5 phút vào ngày khác cũng được tính',
+                          key: ValueKey('home-week-hint'),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -461,17 +475,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final activeDraft = ref.watch(activeWorkoutDraftProvider).valueOrNull;
     final now = ref.watch(workoutClockProvider)();
 
-    final hasIncompleteWorkout = todaySession != null &&
-        (
-          (activeWorkout != null &&
-              activeWorkout.endedAt == null &&
-              isSameWorkoutSession(activeWorkout.session.id, todaySession.id)) ||
-          (activeDraft != null &&
-              activeDraft.isActive &&
-              !activeDraft.isExpired(now) &&
-              isSameWorkoutSession(activeDraft.sessionId, todaySession.id) &&
-              activeDraft.hasUnfinishedSets)
-        );
+    final hasIncompleteWorkout =
+        todaySession != null &&
+        ((activeWorkout != null &&
+                activeWorkout.endedAt == null &&
+                isSameWorkoutSession(
+                  activeWorkout.session.id,
+                  todaySession.id,
+                )) ||
+            (activeDraft != null &&
+                activeDraft.isActive &&
+                !activeDraft.isExpired(now) &&
+                isSameWorkoutSession(activeDraft.sessionId, todaySession.id) &&
+                activeDraft.hasUnfinishedSets));
 
     return GlassCard(
       padding: const EdgeInsets.all(16),
@@ -569,8 +585,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   label: todayDone
                       ? 'Tập thêm'
                       : (hasIncompleteWorkout
-                          ? 'Tiếp tục buổi tập'
-                          : AppStrings.btnStart),
+                            ? 'Tiếp tục buổi tập'
+                            : AppStrings.btnStart),
                   height: 48,
                   onPressed: todayDone
                       ? () => context.push('/workout/extra')

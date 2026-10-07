@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -31,7 +32,9 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(skipReportControllerProvider(widget.sessionId));
-    final notifier = ref.read(skipReportControllerProvider(widget.sessionId).notifier);
+    final notifier = ref.read(
+      skipReportControllerProvider(widget.sessionId).notifier,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -79,49 +82,23 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
         const SizedBox(height: 6),
         const Text(
           'Hãy cho coach biết lý do, coach sẽ điều chỉnh kế hoạch để bạn duy trì streak mà không bị quá tải.',
-          style: TextStyle(
-            fontSize: 13,
-            color: AppColors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 18),
 
-        // Quick action cards
+        // Lịch chỉ để nhắc nên không dời buổi; chỉ cho nghỉ hôm nay
         if (widget.sessionId != null) ...[
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionTile(
-                  icon: Icons.calendar_today_rounded,
-                  title: 'Dời sang ngày mai',
-                  onTap: () async {
-                    final tomorrow = DateTime.now().add(const Duration(days: 1));
-                    final dateStr =
-                        '${tomorrow.year}-${tomorrow.month.toString().padLeft(2, '0')}-${tomorrow.day.toString().padLeft(2, '0')}';
-                    final res = await notifier.rescheduleSession(
-                      sessionId: widget.sessionId!,
-                      scheduledDate: dateStr,
-                    );
-                    if (res != null) {
-                      ref.invalidate(homePlanProvider);
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildActionTile(
-                  icon: Icons.hotel_rounded,
-                  title: 'Nghỉ hôm nay',
-                  onTap: () async {
-                    final res = await notifier.restSession(sessionId: widget.sessionId!);
-                    if (res != null) {
-                      ref.invalidate(homePlanProvider);
-                    }
-                  },
-                ),
-              ),
-            ],
+          _buildActionTile(
+            icon: Icons.hotel_rounded,
+            title: 'Nghỉ hôm nay',
+            onTap: () async {
+              final res = await notifier.restSession(
+                sessionId: widget.sessionId!,
+              );
+              if (res != null) {
+                ref.invalidate(homePlanProvider);
+              }
+            },
           ),
           const SizedBox(height: 18),
         ],
@@ -206,7 +183,12 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              _buildAreaChip('Lưng dưới', 'lower_back', state.bodyArea, notifier),
+              _buildAreaChip(
+                'Lưng dưới',
+                'lower_back',
+                state.bodyArea,
+                notifier,
+              ),
               _buildAreaChip('Khớp gối', 'knee', state.bodyArea, notifier),
               _buildAreaChip('Khớp vai', 'shoulder', state.bodyArea, notifier),
               _buildAreaChip('Cổ', 'neck', state.bodyArea, notifier),
@@ -231,10 +213,14 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
         TextField(
           controller: _noteController,
           maxLines: 2,
-          onChanged: (text) => notifier.setNote(text.trim().isEmpty ? null : text.trim()),
+          onChanged: (text) =>
+              notifier.setNote(text.trim().isEmpty ? null : text.trim()),
           decoration: InputDecoration(
             hintText: 'Nhập ghi chú hoặc cảm nhận của bạn...',
-            hintStyle: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+            hintStyle: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
             filled: true,
             fillColor: AppColors.surface,
             border: OutlineInputBorder(
@@ -247,7 +233,10 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+              borderSide: const BorderSide(
+                color: AppColors.primary,
+                width: 1.5,
+              ),
             ),
             contentPadding: const EdgeInsets.all(12),
           ),
@@ -265,7 +254,11 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626), size: 20),
+                const Icon(
+                  Icons.error_outline_rounded,
+                  color: Color(0xFFDC2626),
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -285,7 +278,9 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
         ],
 
         PrimaryButton(
-          label: state.isSubmitting ? 'Đang gửi...' : 'Gửi cho Coach & Điều chỉnh kế hoạch',
+          label: state.isSubmitting
+              ? 'Đang gửi...'
+              : 'Gửi cho Coach & Điều chỉnh kế hoạch',
           onPressed: (state.isSubmitting || (isPain && state.bodyArea == null))
               ? null
               : () async {
@@ -382,7 +377,9 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
                 shape: BoxShape.circle,
                 color: isSelected ? AppColors.primary : Colors.transparent,
                 border: Border.all(
-                  color: isSelected ? AppColors.primary : AppColors.radioUnselectedBorder,
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.radioUnselectedBorder,
                   width: 2,
                 ),
               ),
@@ -430,7 +427,8 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
 
   Widget _buildResultView(BuildContext context, SkipReportState state) {
     final response = state.response;
-    final message = response?.message ??
+    final message =
+        response?.message ??
         (state.patchedPlan != null
             ? 'Kế hoạch buổi tập đã được cập nhật thành công!'
             : 'Đã ghi nhận yêu cầu của bạn.');
@@ -470,7 +468,11 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
             children: [
               const Row(
                 children: [
-                  Icon(Icons.chat_bubble_outline_rounded, size: 18, color: AppColors.primary),
+                  Icon(
+                    Icons.chat_bubble_outline_rounded,
+                    size: 18,
+                    color: AppColors.primary,
+                  ),
                   SizedBox(width: 8),
                   Text(
                     'Lời nhắn từ Coach',

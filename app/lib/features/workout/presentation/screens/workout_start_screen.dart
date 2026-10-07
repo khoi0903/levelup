@@ -8,6 +8,7 @@ import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../onboarding/domain/models/plan_models.dart';
+import '../../../users/presentation/controllers/user_controller.dart';
 import '../../domain/models/workout_session_state.dart';
 import '../controllers/workout_controller.dart';
 import '../widgets/swap_exercise_sheet.dart';
@@ -67,7 +68,8 @@ class _WorkoutStartScreenState extends ConsumerState<WorkoutStartScreen> {
 
       final totalSets = draftState.totalSets;
       final completedSets = draftState.completedSets;
-      final hasUnfinished = completedSets < totalSets &&
+      final hasUnfinished =
+          completedSets < totalSets &&
           !draftState.allExercisesDone &&
           draftState.endedAt == null;
 
@@ -177,8 +179,11 @@ class _Overview extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final session = setup.session;
     final isExtra = session.id.startsWith('extra-');
-    final isFuture =
-        !isExtra && !canLinkToPlan(session.scheduledDate, DateTime.now());
+    // Hôm nay theo máy chủ (/me.localDate), không theo giờ điện thoại; buổi của ngày khác là tập thêm
+    final today =
+        ref.watch(userStatusFutureProvider).valueOrNull?.localDate ??
+        localDateString(ref.read(workoutClockProvider)());
+    final isFuture = !isExtra && session.scheduledDate != today;
     final done = !isExtra && session.status == 'completed';
     // Buổi đã qua bị chốt bỏ (skipped) hoặc nghỉ: không ghi vào lịch được nữa
     final closed = !isExtra && !done && !isSessionOpen(session);
@@ -226,7 +231,7 @@ class _Overview extends ConsumerWidget {
                 const TipBox(
                   icon: Icons.calendar_today_rounded,
                   child: Text(
-                    'Buổi này được lên lịch cho ngày khác. Hãy chọn tập thêm hôm nay.',
+                    'Buổi này có lịch vào ngày khác. Hôm nay bạn chọn Tập thêm, từ 5 phút vẫn được tính vào chỉ tiêu tuần.',
                   ),
                 ),
                 const SizedBox(height: 12),

@@ -155,16 +155,22 @@ ApiClient clientWith(RecordingAdapter adapter) {
 }
 
 void main() {
-  test('canLinkToPlan: chỉ buổi hôm nay hoặc buổi bù trong tuần, không gắn buổi ngày sau', () {
-    final sunday = DateTime(2026, 10, 4, 20); // Chủ nhật
-    expect(canLinkToPlan('2026-10-04', sunday), isTrue); // đúng ngày
-    expect(canLinkToPlan('2026-09-30', sunday), isTrue); // tập bù Thứ Tư cùng tuần
-    expect(canLinkToPlan('2026-10-05', sunday), isFalse); // Thứ Hai tuần sau
-    expect(canLinkToPlan('2026-09-27', sunday), isFalse); // tuần trước
-    final monday = DateTime(2026, 10, 5, 7);
-    expect(canLinkToPlan('2026-10-07', monday), isFalse); // Thứ Tư, chưa tới
-    expect(canLinkToPlan('', monday), isFalse);
-  });
+  test(
+    'canLinkToPlan: chỉ buổi đúng ngày, không tập bù, không gắn buổi ngày sau',
+    () {
+      final sunday = DateTime(2026, 10, 4, 20); // Chủ nhật
+      expect(canLinkToPlan('2026-10-04', sunday), isTrue); // đúng ngày
+      expect(
+        canLinkToPlan('2026-09-30', sunday),
+        isFalse,
+      ); // Thứ Tư đã qua: là tập thêm
+      expect(canLinkToPlan('2026-10-05', sunday), isFalse); // Thứ Hai tuần sau
+      expect(canLinkToPlan('2026-09-27', sunday), isFalse); // tuần trước
+      final monday = DateTime(2026, 10, 5, 7);
+      expect(canLinkToPlan('2026-10-07', monday), isFalse); // Thứ Tư, chưa tới
+      expect(canLinkToPlan('', monday), isFalse);
+    },
+  );
 
   group('WorkoutRequest.toJson khớp WorkoutRequest.java', () {
     test('chỉ dùng tên trường backend, đủ mọi trường đã điền', () {
@@ -537,8 +543,18 @@ void main() {
       clientId: 'AbCdEfGh12345678',
       startedAt: DateTime.utc(2026),
       sets: const [
-        SetLog(exerciseId: squatId, setIndex: 1, reps: 12, repSource: RepSource.manual),
-        SetLog(exerciseId: plankId, setIndex: 1, durationSec: 30, repSource: RepSource.manual),
+        SetLog(
+          exerciseId: squatId,
+          setIndex: 1,
+          reps: 12,
+          repSource: RepSource.manual,
+        ),
+        SetLog(
+          exerciseId: plankId,
+          setIndex: 1,
+          durationSec: 30,
+          repSource: RepSource.manual,
+        ),
       ],
     );
     expect(s.lastRepsFor(squatId), 12);
@@ -547,11 +563,17 @@ void main() {
   });
 
   test('lỗi camera hiện câu tiếng Việt, không lộ chuỗi kỹ thuật', () {
-    expect(cameraErrorMessage('CameraException(CameraAccessDenied, denied)'),
-        contains('Chưa có quyền camera'));
-    expect(cameraErrorMessage('StateError: No front camera available'),
-        contains('camera trước'));
-    final generic = cameraErrorMessage('PlatformException(error, Something broke, null, null)');
+    expect(
+      cameraErrorMessage('CameraException(CameraAccessDenied, denied)'),
+      contains('Chưa có quyền camera'),
+    );
+    expect(
+      cameraErrorMessage('StateError: No front camera available'),
+      contains('camera trước'),
+    );
+    final generic = cameraErrorMessage(
+      'PlatformException(error, Something broke, null, null)',
+    );
     expect(generic, contains('Camera đang gặp sự cố'));
     expect(generic.contains('PlatformException'), isFalse);
   });
