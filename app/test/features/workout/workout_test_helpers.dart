@@ -11,6 +11,7 @@ import 'package:fitness_app/features/onboarding/data/repositories/fake_plan_repo
 import 'package:fitness_app/features/onboarding/domain/models/plan_models.dart';
 import 'package:fitness_app/features/onboarding/presentation/controllers/onboarding_controller.dart';
 import 'package:fitness_app/features/users/data/repositories/fake_user_repository.dart';
+import 'package:fitness_app/features/users/domain/models/me_response.dart';
 import 'package:fitness_app/features/users/presentation/controllers/user_controller.dart';
 import 'package:fitness_app/features/workout/data/camera/camera_permission.dart';
 import 'package:fitness_app/features/workout/data/camera/rep_counting_session.dart';
@@ -241,7 +242,16 @@ class WorkoutHarness {
         // Giọng đọc giả: test không có engine TTS thật (không chờ "nói xong", không gọi plugin)
         voiceCoachProvider.overrideWithValue(voice),
         workoutClockProvider.overrideWithValue(clock.call),
-        userRepositoryProvider.overrideWithValue(FakeUserRepository()),
+        // /me.localDate (ngày theo máy chủ) khớp đồng hồ giả
+        userRepositoryProvider.overrideWithValue(
+          FakeUserRepository(
+            meResponse: MeResponse(
+              id: 'u-test',
+              displayName: 'Test',
+              localDate: localDateString(clock.now),
+            ),
+          ),
+        ),
         coachRepositoryProvider.overrideWithValue(
           FakeCoachRepository(initialMessages: const []),
         ),
