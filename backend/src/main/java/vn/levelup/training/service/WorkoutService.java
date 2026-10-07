@@ -133,11 +133,11 @@ public class WorkoutService {
         TrainingPlan plan = null;
         if (r.plannedSessionId() != null) {
             ObjectId sessionId = new ObjectId(r.plannedSessionId());
-            // Chỉ buổi cùng tuần với buổi tập và không ở tương lai (tập đúng ngày hoặc tập bù).
-            // Tập trước buổi của ngày sau / tuần sau là "tập thêm": lưu log nhưng không đánh dấu lịch.
+            // Lịch dùng để nhắc: chỉ tập đúng ngày của buổi mới tính buổi đó. Tập ngày khác (sớm hơn lịch hay
+            // sau khi lỡ) là "tập thêm", tính riêng: lưu log nhưng không đánh dấu lịch, không có tập bù.
             Query session = Query.query(Criteria.where("userId").is(userId).and("status").is("active")
                 .and("sessions").elemMatch(Criteria.where("_id").is(sessionId).and("status").is("planned")
-                    .and("scheduledDate").gte(weekStart).lte(localDate.toString())));
+                    .and("scheduledDate").is(localDate.toString())));
             plan = mongo.findOne(session, TrainingPlan.class);
             if (plan != null) {
                 log.append("plannedSessionId", sessionId);
