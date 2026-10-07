@@ -58,6 +58,12 @@ public class SettingsService {
         if (r.sessionMinutes() != null) {
             u.set("profile.sessionMinutes", r.sessionMinutes());
         }
+        if (r.location() != null) {
+            u.set("profile.location", r.location());
+        }
+        if (r.equipment() != null) {
+            u.set("profile.equipment", r.equipment().stream().distinct().sorted().toList());
+        }
         User.Profile p = user.profile();
         if (r.goal() != null) {
             u.set("profile.goal", r.goal());
