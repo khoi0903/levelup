@@ -188,6 +188,138 @@
           "minimal": ["Duỗi tay lên"]
         }
       }
+    },
+    "arm-circles": {
+      "startTip": [
+        "Xoay vòng nhỏ, giữ vai xa tai"
+      ],
+      "issues": {}
+    },
+    "prone-y-t-raise": {
+      "startTip": [
+        "Nâng tay thấp, giữ ngực trên thảm và cổ thẳng"
+      ],
+      "issues": {}
+    },
+    "wall-slide": {
+      "startTip": [
+        "Trượt tay chậm, giữ bụng nhẹ và vai thả lỏng"
+      ],
+      "issues": {}
+    },
+    "close-grip-wall-push-up": {
+      "startTip": [
+        "Giữ khuỷu sát thân, đưa ngực gần tường chậm"
+      ],
+      "issues": {
+        "pushup_not_deep_enough": {
+          "cue": [
+            "Gập khuỷu trong tầm thoải mái",
+            "Đưa ngực gần tường thật chậm"
+          ],
+          "minimal": [
+            "Gập khuỷu chậm"
+          ]
+        },
+        "body_not_straight": {
+          "cue": [
+            "Chỉnh vai, hông, cổ chân thẳng hàng",
+            "Giữ bụng nhẹ, thân thẳng theo chân"
+          ],
+          "minimal": [
+            "Giữ thân thẳng"
+          ]
+        }
+      }
+    },
+    "wall-triceps-extension": {
+      "startTip": [
+        "Gập khuỷu chậm, giữ thân thẳng và đầu cách tường"
+      ],
+      "issues": {
+        "triceps_not_bent_enough": {
+          "cue": [
+            "Gập khuỷu chậm trong tầm thoải mái",
+            "Đưa cẳng tay về gần tường chậm"
+          ],
+          "minimal": [
+            "Gập khuỷu chậm"
+          ]
+        },
+        "body_not_straight": {
+          "cue": [
+            "Chỉnh vai, hông, cổ chân thẳng hàng",
+            "Giữ bụng nhẹ, thân thẳng theo chân"
+          ],
+          "minimal": [
+            "Giữ thân thẳng"
+          ]
+        }
+      }
+    },
+    "self-resisted-biceps-curl": {
+      "startTip": [
+        "Dùng lực cản nhẹ, giữ cổ tay thẳng"
+      ],
+      "issues": {}
+    },
+    "low-superman": {
+      "startTip": [
+        "Nâng thân thấp, giữ cổ theo đường lưng"
+      ],
+      "issues": {}
+    },
+    "prone-snow-angel": {
+      "startTip": [
+        "Quét tay chậm, giữ ngực trên thảm"
+      ],
+      "issues": {}
+    },
+    "prone-row": {
+      "startTip": [
+        "Kéo khuỷu về sườn, giữ vai xa tai"
+      ],
+      "issues": {}
+    },
+    "supine-heel-slide": {
+      "startTip": [
+        "Trượt gót chậm, giữ lưng dưới ổn định"
+      ],
+      "issues": {}
+    },
+    "slow-mountain-climber": {
+      "startTip": [
+        "Kéo gối chậm, giữ hông ổn định"
+      ],
+      "issues": {}
+    },
+    "quadruped-glute-kickback": {
+      "startTip": [
+        "Giữ gối gập, nâng đùi trong tầm thoải mái"
+      ],
+      "issues": {}
+    },
+    "standing-hamstring-curl": {
+      "startTip": [
+        "Gập gối chậm, chạm tay vào tường giữ thăng bằng"
+      ],
+      "issues": {
+        "hamstring_not_curled_enough": {
+          "cue": [
+            "Gập gối trong tầm thoải mái",
+            "Đưa gót về sau có kiểm soát"
+          ],
+          "minimal": [
+            "Gập gối chậm"
+          ]
+        }
+      }
+    },
+    "side-step-touch": {
+      "startTip": [
+        "Bước ngắn, đặt chân nhẹ và thở đều"
+      ],
+      "issues": {}
     }
   }
 }

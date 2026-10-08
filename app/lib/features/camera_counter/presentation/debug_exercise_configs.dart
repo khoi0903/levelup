@@ -68,6 +68,9 @@ const debugExerciseNamesVi = <String, String>{
   'seated-resistance-band-row': 'Ngồi kéo dây kháng lực',
   'dumbbell-biceps-curl': 'Cuốn tay trước với tạ đơn',
   'dumbbell-floor-press': 'Đẩy ngực tạ đơn trên sàn',
+  'close-grip-wall-push-up': 'Hít đất tường tay hẹp',
+  'wall-triceps-extension': 'Duỗi tay sau vào tường',
+  'standing-hamstring-curl': 'Gập gối đứng không tạ',
 };
 
 /// Nội dung y nguyên của mongo/cv-configs.json.
@@ -629,6 +632,66 @@ const debugCvConfigsJson = r'''
         }
       }
     ]
+  },
+  "close-grip-wall-push-up": {
+    "activeVersion": 1,
+    "configs": [{
+      "version": 1,
+      "cameraPosition": "side",
+      "config": {
+        "joints": ["shoulder", "elbow", "wrist"],
+        "downBelow": 115,
+        "upAbove": 150,
+        "minConfidence": 0.6,
+        "minRepMs": 700,
+        "formRules": [
+          { "type": "min_depth", "code": "pushup_not_deep_enough", "angle": 100, "severity": [105, 110] },
+          { "type": "band", "code": "body_not_straight", "joints": ["shoulder", "hip", "ankle"], "min": 160, "max": 180, "severity": [10, 20] }
+        ],
+        "placement": "table_side",
+        "setupTipVi": "Đặt điện thoại dựng đứng ngang hông, cách 2–3 m, nhìn nghiêng người và tường. Giữ vai, khuỷu, cổ tay và bàn chân trong khung; hai tay tập cùng lúc. Đứng gần tường để giảm tải, không cố hạ sâu chỉ để được đếm."
+      }
+    }]
+  },
+  "wall-triceps-extension": {
+    "activeVersion": 1,
+    "configs": [{
+      "version": 1,
+      "cameraPosition": "side",
+      "config": {
+        "joints": ["shoulder", "elbow", "wrist"],
+        "downBelow": 115,
+        "upAbove": 150,
+        "minConfidence": 0.6,
+        "minRepMs": 800,
+        "formRules": [
+          { "type": "min_depth", "code": "triceps_not_bent_enough", "angle": 100, "severity": [105, 110] },
+          { "type": "band", "code": "body_not_straight", "joints": ["shoulder", "hip", "ankle"], "min": 160, "max": 180, "severity": [10, 20] }
+        ],
+        "placement": "table_side",
+        "setupTipVi": "Đặt điện thoại dựng đứng ngang hông, cách 2–3 m, nhìn nghiêng. Camera cần thấy vai, khuỷu, cổ tay và bàn chân; tay đặt ngang trán, đầu cách tường. Hai tay gập và duỗi cùng lúc, chỉ dùng tầm không đau."
+      }
+    }]
+  },
+  "standing-hamstring-curl": {
+    "activeVersion": 1,
+    "configs": [{
+      "version": 1,
+      "cameraPosition": "side",
+      "config": {
+        "joints": ["hip", "knee", "ankle"],
+        "side": "min",
+        "downBelow": 115,
+        "upAbove": 155,
+        "minConfidence": 0.6,
+        "minRepMs": 700,
+        "formRules": [
+          { "type": "min_depth", "code": "hamstring_not_curled_enough", "angle": 100, "severity": [105, 110] }
+        ],
+        "placement": "table_side",
+        "setupTipVi": "Đặt điện thoại dựng đứng ngang hông, cách 2–3 m, nhìn nghiêng, đủ thấy hông, cả hai gối và bàn chân. Tập chân gần camera hết một bên rồi quay người để đổi chân gần camera. Chạm tay vào tường giữ thăng bằng; không cố gập qua tầm thoải mái."
+      }
+    }]
   }
 }
 ''';

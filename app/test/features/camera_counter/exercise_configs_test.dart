@@ -35,30 +35,33 @@ void main() {
       }
     });
 
-    test('all 20 seeded exercise slugs have a camera config', () {
-      final exercises = (jsonDecode(
-        File('../mongo/seed/exercises.json').readAsStringSync(),
-      ) as List).cast<Map<String, dynamic>>();
-      final supported = {
-        for (final exercise in exercises)
-          if ((exercise['cv'] as Map<String, dynamic>?)?['supported'] == true)
-            exercise['slug'] as String,
-      };
-      final slugs = exercises.map((e) => e['slug'] as String).toSet();
-      expect(exercises, hasLength(20));
-      expect(slugs, hasLength(20));
-      expect(all.keys.toSet(), slugs);
-      // Seed metadata is maintained separately; every advertised exercise
-      // must have a config, including while its old false flags are updated.
-      expect(all.keys.toSet().containsAll(supported), isTrue);
-      for (final exercise in exercises) {
-        expect(
-          exercise['cv'],
-          isA<Map<String, dynamic>>(),
-          reason: '${exercise['slug']} must declare cv.supported',
-        );
-      }
-    });
+    test(
+      'camera configs belong to seed and cover every supported exercise',
+      () {
+        final exercises = (jsonDecode(
+          File('../mongo/seed/exercises.json').readAsStringSync(),
+        ) as List).cast<Map<String, dynamic>>();
+        final supported = {
+          for (final exercise in exercises)
+            if ((exercise['cv'] as Map<String, dynamic>?)?['supported'] == true)
+              exercise['slug'] as String,
+        };
+        final slugs = exercises.map((e) => e['slug'] as String).toSet();
+        expect(exercises, hasLength(34));
+        expect(slugs, hasLength(exercises.length));
+        expect(slugs.containsAll(all.keys), isTrue);
+        // Legacy configs can exist behind false seed flags; newly unsupported
+        // exercises intentionally have no camera config.
+        expect(all.keys.toSet().containsAll(supported), isTrue);
+        for (final exercise in exercises) {
+          expect(
+            exercise['cv'],
+            isA<Map<String, dynamic>>(),
+            reason: '${exercise['slug']} must declare cv.supported',
+          );
+        }
+      },
+    );
 
     test('new configs carry a Vietnamese setup tip and placement', () {
       for (final slug in all.keys.where((slug) => slug != 'bodyweight-squat')) {

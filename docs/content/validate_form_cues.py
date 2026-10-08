@@ -11,8 +11,8 @@ ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_JSON = ROOT / "app/assets/content/form-cues.json"
 EXERCISES_JSON = ROOT / "mongo/seed/exercises.json"
 CV_CONFIGS_JSON = ROOT / "mongo/cv-configs.json"
-EXPECTED_EXERCISES = 20
-EXPECTED_PAIRS = 22
+EXPECTED_EXERCISES = 34
+EXPECTED_PAIRS = 27
 LINE_LIMITS = {"startTip": (1, 2, 12), "cue": (2, 3, 8), "minimal": (1, 1, 4)}
 
 
