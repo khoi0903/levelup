@@ -74,6 +74,8 @@ class SettingsRequest {
   final List<UserAvailabilitySlot>? availability;
   final NotificationsUpdate? notifications;
   final SharingUpdate? sharing;
+  final String? location;
+  final List<String>? equipment;
 
   const SettingsRequest({
     this.displayName,
@@ -84,6 +86,8 @@ class SettingsRequest {
     this.availability,
     this.notifications,
     this.sharing,
+    this.location,
+    this.equipment,
   });
 
   Map<String, dynamic> toJson() => {
@@ -97,5 +101,7 @@ class SettingsRequest {
     if (notifications != null && !notifications!.isEmpty)
       'notifications': notifications!.toJson(),
     if (sharing != null && !sharing!.isEmpty) 'sharing': sharing!.toJson(),
+    if (location != null) 'location': location,
+    if (equipment != null) 'equipment': equipment,
   };
 }

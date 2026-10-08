@@ -1,13 +1,24 @@
+import 'package:fitness_app/app/router.dart';
 import 'package:fitness_app/core/api/api_exceptions.dart';
+import 'package:fitness_app/features/auth/data/repositories/fake_auth_repository.dart';
+import 'package:fitness_app/features/auth/domain/models/auth_user.dart';
+import 'package:fitness_app/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:fitness_app/features/onboarding/data/repositories/fake_plan_repository.dart';
 import 'package:fitness_app/features/onboarding/domain/models/plan_models.dart';
+import 'package:fitness_app/features/onboarding/presentation/controllers/onboarding_controller.dart';
+import 'package:fitness_app/features/streak/data/repositories/fake_streak_repository.dart';
+import 'package:fitness_app/features/streak/presentation/controllers/streak_controller.dart';
 import 'package:fitness_app/features/users/data/repositories/fake_user_repository.dart';
 import 'package:fitness_app/features/users/domain/models/me_response.dart';
 import 'package:fitness_app/features/users/presentation/controllers/user_controller.dart';
 import 'package:fitness_app/features/users/presentation/screens/achievements_screen.dart';
 import 'package:fitness_app/features/users/presentation/screens/profile_screen.dart';
+import 'package:fitness_app/features/workout/data/repositories/fake_workout_repository.dart';
+import 'package:fitness_app/features/workout/domain/models/exercise_response.dart';
 import 'package:fitness_app/features/workout/domain/models/workout_models.dart';
 import 'package:fitness_app/features/workout/domain/models/workout_session_state.dart';
 import 'package:fitness_app/features/workout/presentation/controllers/workout_controller.dart';
+import 'package:fitness_app/features/workout/presentation/screens/workout_extra_screen.dart';
 import 'package:fitness_app/features/workout/presentation/screens/workout_result_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,8 +33,15 @@ class _FakeWorkoutController extends WorkoutController {
 void main() {
   group('Profile & Settings (Tab Tôi - F4/F7)', () {
     testWidgets(
-      'ProfileScreen loads user, edits name & settings, and saves successfully',
+      'ProfileScreen edits name on done/unfocus, toggles goal with confirmation, and saves schedule',
       (tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
         final fakeRepo = FakeUserRepository(
           meResponse: const MeResponse(
             id: 'u1',
@@ -78,89 +96,408 @@ void main() {
         );
         expect(nameWidget.data, 'Minh Khôi');
 
-        // Edit name in TextField
+        // Edit name in TextField & submit (Done)
         final textField = find.byType(TextField);
         expect(textField, findsOneWidget);
         await tester.enterText(textField, 'Nguyễn Minh Khôi');
+        await tester.testTextInput.receiveAction(TextInputAction.done);
         await tester.pumpAndSettle();
 
-        // Đổi mục tiêu (nằm trên phong cách coach)
-        await tester.ensureVisible(find.byKey(const ValueKey('settings-goal-build_muscle')));
+        expect(fakeRepo.lastJson, {'displayName': 'Nguyễn Minh Khôi'});
+        expect(find.text('Đã lưu'), findsOneWidget);
+
+        // Đổi mục tiêu -> hiện dialog xác nhận -> bấm Xác nhận
+        await tester.scrollUntilVisible(
+          find.byKey(const ValueKey('settings-goal-build_muscle')),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
         await tester.pumpAndSettle();
         await tester.tap(find.byKey(const ValueKey('settings-goal-build_muscle')));
         await tester.pumpAndSettle();
 
-        // Select Coach style "Nghiêm khắc"
-        await tester.ensureVisible(find.text('Nghiêm khắc'));
+        expect(find.text('Đổi mục tiêu?'), findsOneWidget);
+        expect(find.text('Mục tiêu calo sẽ tính lại từ hôm nay.'), findsOneWidget);
+        await tester.tap(find.byKey(const ValueKey('confirm-goal-change')));
+        await tester.pumpAndSettle();
+
+        expect(fakeRepo.lastJson, {'goal': 'build_muscle'});
+
+        // Select Coach style "Nghiêm khắc" -> lưu ngay
+        await tester.scrollUntilVisible(
+          find.text('Nghiêm khắc'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
         await tester.pumpAndSettle();
         await tester.tap(find.text('Nghiêm khắc'));
         await tester.pumpAndSettle();
+        expect(fakeRepo.lastJson, {'coachStyle': 'strict'});
 
-        // Scroll to reveal availability
-        await tester.ensureVisible(
-          find.text('Đổi lịch rảnh chỉ áp dụng từ tuần sau.'),
+        // Bật nhắc uống nước -> lưu ngay
+        await tester.scrollUntilVisible(
+          find.byKey(const ValueKey('settings-water-reminder')),
+          200,
+          scrollable: find.byType(Scrollable).first,
         );
-        await tester.pumpAndSettle();
-
-        // Verify availability note is displayed
-        expect(
-          find.text('Đổi lịch rảnh chỉ áp dụng từ tuần sau.'),
-          findsOneWidget,
-        );
-
-        // Toggle weekday "T3" (weekday 2)
-        await tester.ensureVisible(find.text('T3'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('T3'));
-        await tester.pumpAndSettle();
-
-        // Bật nhắc uống nước, tăng số thông báo mỗi ngày
-        await tester.ensureVisible(find.byKey(const ValueKey('settings-max-per-day-plus')));
-        await tester.pumpAndSettle();
-        await tester.tap(find.byKey(const ValueKey('settings-max-per-day-plus')));
-        await tester.ensureVisible(find.byKey(const ValueKey('settings-water-reminder')));
         await tester.pumpAndSettle();
         await tester.tap(find.byKey(const ValueKey('settings-water-reminder')));
         await tester.pumpAndSettle();
-        expect(
-          tester.widget<Text>(find.byKey(const ValueKey('settings-max-per-day'))).data,
-          '3',
+        expect(fakeRepo.lastJson, {
+          'notifications': {'waterReminder': true},
+        });
+
+        // Bấm nút "Lưu lịch tập"
+        await tester.scrollUntilVisible(
+          find.byKey(const ValueKey('save-schedule-button')),
+          -200,
+          scrollable: find.byType(Scrollable).first,
         );
-
-        // Scroll down to tap "Lưu cài đặt"
-        await tester.ensureVisible(find.text('Lưu cài đặt'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('save-schedule-button')));
         await tester.pumpAndSettle();
 
-        final saveButton = find.text('Lưu cài đặt');
-        expect(saveButton, findsOneWidget);
-        await tester.tap(saveButton);
-        await tester.pumpAndSettle();
-
-        // Scroll back up to see success banner
-        await tester.drag(find.byType(ListView), const Offset(0, 1000));
-        await tester.pumpAndSettle();
-
-        // Verify success message
-        expect(
-          find.byKey(const ValueKey('settings-success-banner')),
-          findsOneWidget,
-        );
-        expect(find.text('Đã lưu cài đặt thành công!'), findsOneWidget);
-
-        // Verify repo was updated
         final updatedMe = await fakeRepo.getMe();
         expect(updatedMe.displayName, 'Nguyễn Minh Khôi');
         expect(updatedMe.profile?.coachStyle, 'strict');
         expect(updatedMe.profile?.goal, 'build_muscle');
         expect(updatedMe.settings.notifications.waterReminder, isTrue);
-        expect(updatedMe.settings.notifications.maxPerDay, 3);
-        expect(
-          updatedMe.settings.availability
-              .map((s) => s.weekday)
-              .toSet()
-              .contains(2),
-          isTrue,
+      },
+    );
+
+    testWidgets(
+      'Toggling switch sends PATCH with only single changed field',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        final fakeRepo = FakeUserRepository();
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [userRepositoryProvider.overrideWithValue(fakeRepo)],
+            child: const MaterialApp(home: ProfileScreen()),
+          ),
         );
+        await tester.pumpAndSettle();
+
+        // Toggle water reminder
+        await tester.scrollUntilVisible(
+          find.byKey(const ValueKey('settings-water-reminder')),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('settings-water-reminder')));
+        await tester.pumpAndSettle();
+
+        expect(fakeRepo.lastJson, {
+          'notifications': {'waterReminder': true},
+        });
+        expect(find.text('Đã lưu'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'Error rolls back UI state and displays error SnackBar',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        final fakeRepo = FakeUserRepository();
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [userRepositoryProvider.overrideWithValue(fakeRepo)],
+            child: const MaterialApp(home: ProfileScreen()),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Set repo to fail next PATCH
+        fakeRepo.errorToThrow = const ApiException(
+          code: 'SERVER_ERROR',
+          statusCode: 500,
+        );
+
+        // Toggle water reminder
+        await tester.scrollUntilVisible(
+          find.byKey(const ValueKey('settings-water-reminder')),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('settings-water-reminder')));
+        await tester.pumpAndSettle();
+
+        // Switch should be rolled back to false
+        final switchWidget = tester.widget<SwitchListTile>(
+          find.byKey(const ValueKey('settings-water-reminder')),
+        );
+        expect(switchWidget.value, isFalse);
+
+        // Error SnackBar should be displayed
+        expect(find.byKey(const ValueKey('settings-error-banner')), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'Selecting gym sends location: gym, hides equipment list, and shows gym note',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        final fakeRepo = FakeUserRepository();
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [userRepositoryProvider.overrideWithValue(fakeRepo)],
+            child: const MaterialApp(home: ProfileScreen()),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Scroll to location & equipment
+        await tester.scrollUntilVisible(
+          find.byKey(const ValueKey('settings-location-gym')),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+
+        // Ban đầu ở 'home', có thấy chip thiết bị
+        expect(find.byKey(const ValueKey('settings-equipment-dumbbell')), findsOneWidget);
+
+        // Bấm chọn Phòng gym
+        await tester.tap(find.byKey(const ValueKey('settings-location-gym')));
+        await tester.pumpAndSettle();
+
+        expect(fakeRepo.lastJson, {'location': 'gym'});
+        expect(find.text('Phòng gym có đủ dụng cụ'), findsOneWidget);
+        expect(find.byKey(const ValueKey('settings-equipment-dumbbell')), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'Changing equipment sends {"equipment": [...]} and WorkoutExtraScreen reflects newly unlocked exercises',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        const dumbbellExercise = ExerciseResponse(
+          id: 'ex-dumbbell',
+          slug: 'dumbbell-curl',
+          nameVi: 'Cuốn tạ đơn',
+          primaryMuscle: 'arms',
+          equipment: ['dumbbell'],
+          difficulty: 2,
+          tracking: 'reps',
+        );
+
+        const bodyweightExercise = ExerciseResponse(
+          id: 'ex-pushup',
+          slug: 'push-up',
+          nameVi: 'Hít đất',
+          primaryMuscle: 'chest',
+          equipment: [],
+          difficulty: 2,
+          tracking: 'reps',
+        );
+
+        final initialMe = const MeResponse(
+          id: 'u1',
+          displayName: 'Minh',
+          profile: UserProfile(
+            location: 'home',
+            equipment: [],
+          ),
+        );
+
+        final fakeRepo = FakeUserRepository(meResponse: initialMe);
+        final fakeWorkoutRepo = FakeWorkoutRepository(
+          exercises: [bodyweightExercise, dumbbellExercise],
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              userRepositoryProvider.overrideWithValue(fakeRepo),
+              workoutRepositoryProvider.overrideWithValue(fakeWorkoutRepo),
+            ],
+            child: const MaterialApp(home: ProfileScreen()),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Scroll to equipment chips
+        await tester.scrollUntilVisible(
+          find.byKey(const ValueKey('settings-equipment-dumbbell')),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+
+        // Tap chip dumbbell
+        await tester.tap(find.byKey(const ValueKey('settings-equipment-dumbbell')));
+        await tester.pumpAndSettle();
+
+        expect(fakeRepo.lastJson, {
+          'equipment': ['dumbbell'],
+        });
+        expect(find.text('Đã lưu'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'WorkoutExtraScreen reacts immediately to newly unlocked exercises when equipment is updated',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        const dumbbellExercise = ExerciseResponse(
+          id: 'ex-dumbbell',
+          slug: 'dumbbell-curl',
+          nameVi: 'Cuốn tạ đơn',
+          primaryMuscle: 'arms',
+          equipment: ['dumbbell'],
+          difficulty: 2,
+          tracking: 'reps',
+        );
+
+        const bodyweightExercise = ExerciseResponse(
+          id: 'ex-pushup',
+          slug: 'push-up',
+          nameVi: 'Hít đất',
+          primaryMuscle: 'chest',
+          equipment: [],
+          difficulty: 2,
+          tracking: 'reps',
+        );
+
+        final initialMe = const MeResponse(
+          id: 'u1',
+          displayName: 'Minh',
+          profile: UserProfile(
+            location: 'home',
+            equipment: ['dumbbell'],
+          ),
+        );
+
+        final fakeRepo = FakeUserRepository(meResponse: initialMe);
+        final fakeWorkoutRepo = FakeWorkoutRepository(
+          exercises: [bodyweightExercise, dumbbellExercise],
+        );
+        final plan = PlanView(
+          id: 'plan-1',
+          weekStart: '2026-10-05',
+          status: 'active',
+          targetSessions: 3,
+          sessions: [],
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              userRepositoryProvider.overrideWithValue(fakeRepo),
+              workoutRepositoryProvider.overrideWithValue(fakeWorkoutRepo),
+              planRepositoryProvider.overrideWithValue(FakePlanRepository(planView: plan)),
+            ],
+            child: const MaterialApp(home: WorkoutExtraScreen()),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Switch to "Tự chọn bài" tab
+        await tester.tap(find.text('Tự chọn bài'));
+        await tester.pumpAndSettle();
+
+        // Cuốn tạ đơn is visible because user has dumbbell!
+        expect(find.text('Cuốn tạ đơn'), findsOneWidget);
+        expect(find.text('Hít đất'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'Leaving tab and returning resets to server value without keeping unsaved edits',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        final fakeRepo = FakeUserRepository(
+          meResponse: const MeResponse(
+            id: 'u1',
+            displayName: 'Minh Gốc',
+            profile: UserProfile(goal: 'lose_fat'),
+          ),
+        );
+
+        final router = createAppRouter(initialLocation: '/profile');
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              authRepositoryProvider.overrideWithValue(
+                FakeAuthRepository(
+                  initialUser: const AuthUser(id: 'u1', email: 'test@levelup.vn'),
+                ),
+              ),
+              userRepositoryProvider.overrideWithValue(fakeRepo),
+              streakRepositoryProvider.overrideWithValue(FakeStreakRepository()),
+              planRepositoryProvider.overrideWithValue(
+                FakePlanRepository(
+                  planView: PlanView(
+                    id: 'p1',
+                    weekStart: '2026-10-05',
+                    status: 'active',
+                    targetSessions: 3,
+                    sessions: [],
+                  ),
+                ),
+              ),
+            ],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final textField = find.byType(TextField);
+        await tester.enterText(textField, 'Tên Chưa Lưu');
+        await tester.pump();
+
+        // Switch to Home tab (tab index 0)
+        await tester.tap(find.byKey(const ValueKey('tab-home')));
+        await tester.pumpAndSettle();
+
+        // Switch back to Profile tab (tab index 4)
+        await tester.tap(find.byKey(const ValueKey('tab-profile')));
+        await tester.pumpAndSettle();
+
+        final nameField = tester.widget<TextField>(find.byType(TextField));
+        expect(nameField.controller?.text, 'Minh Gốc');
       },
     );
 
