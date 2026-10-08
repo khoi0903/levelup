@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +10,7 @@ import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
+import '../../../../core/widgets/selection_chip.dart';
 
 import 'package:fitness_app/features/notifications/presentation/controllers/notifications_controller.dart';
 
@@ -17,6 +20,7 @@ import '../../../workout/data/camera/auto_camera_setting.dart';
 import '../controllers/user_controller.dart';
 import '../../domain/models/me_response.dart';
 import '../../domain/models/settings_request.dart';
+import '../../../shell/presentation/controllers/shell_controller.dart';
 
 /// Màn hình Hồ sơ & Cài đặt (Tab Tôi).
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -28,9 +32,15 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _nameController = TextEditingController();
+  final _nameFocusNode = FocusNode();
+  String _lastSavedName = '';
+
   String _selectedCoachStyle = 'supportive';
   String _goal = 'get_healthier';
   int _sessionMinutes = 15;
+  String _location = 'home';
+  final Set<String> _equipment = {};
+
   bool _notificationsEnabled = true;
   bool _quietHoursEnabled = true;
   int _maxPerDay = 2;
@@ -41,15 +51,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _shareMeals = false;
   final Set<int> _activeWeekdays = {};
   String _slot = 'evening';
-  bool _isInitialized = false;
+
+  Timer? _scheduleDebounceTimer;
+  bool _isSavingSchedule = false;
+
+  MeResponse? _lastServerMe;
+  bool _isSwitchingTab = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameFocusNode.addListener(() {
+      if (!_nameFocusNode.hasFocus && !_isSwitchingTab) {
+        _saveName(_nameController.text);
+      }
+    });
+  }
 
   void _initFields(MeResponse me) {
-    if (_isInitialized) return;
+    _lastServerMe = me;
     _nameController.text = me.displayName;
+    _lastSavedName = me.displayName;
     _selectedCoachStyle = me.profile?.coachStyle ?? 'supportive';
     _goal = me.profile?.goal ?? 'get_healthier';
     final minutes = me.profile?.sessionMinutes ?? 15;
-    _sessionMinutes = minutes <= 15 ? 15 : minutes; // bản cũ lưu 10
+    _sessionMinutes = minutes <= 15 ? 15 : minutes;
+
+    _location = me.profile?.location ?? 'home';
+    _equipment.clear();
+    _equipment.addAll(me.profile?.equipment ?? const []);
 
     final notif = me.settings.notifications;
     _notificationsEnabled = notif.pushEnabled;
@@ -72,16 +102,124 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       _slot = me.settings.availability.first.slot;
     }
     if (_activeWeekdays.isEmpty) {
-      _activeWeekdays.addAll([1, 3, 5]); // Mặc định T2, T4, T6
+      _activeWeekdays.addAll([1, 3, 5]);
     }
-
-    _isInitialized = true;
   }
 
   @override
   void dispose() {
+    _scheduleDebounceTimer?.cancel();
+    _nameFocusNode.dispose();
     _nameController.dispose();
     super.dispose();
+  }
+
+  Future<void> _saveName(String text) async {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) {
+      _nameController.text = _lastSavedName;
+      return;
+    }
+    if (trimmed == _lastSavedName) return;
+
+    final previousName = _lastSavedName;
+    _lastSavedName = trimmed;
+    final success = await ref
+        .read(settingsControllerProvider.notifier)
+        .patchSettings(SettingsRequest(displayName: trimmed));
+    if (!success && mounted) {
+      _nameController.text = previousName;
+      _lastSavedName = previousName;
+    }
+  }
+
+  Future<void> _patch({
+    required SettingsRequest request,
+    required VoidCallback onRollback,
+  }) async {
+    final success = await ref
+        .read(settingsControllerProvider.notifier)
+        .patchSettings(request);
+    if (!success && mounted) {
+      setState(onRollback);
+    }
+  }
+
+  Future<void> _selectGoal(String newGoal) async {
+    if (_goal == newGoal) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text(
+          'Đổi mục tiêu?',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
+        content: const Text(
+          'Mục tiêu calo sẽ tính lại từ hôm nay.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            key: const ValueKey('confirm-goal-change'),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text(
+              'Xác nhận',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      final old = _goal;
+      setState(() => _goal = newGoal);
+      _patch(
+        request: SettingsRequest(goal: newGoal),
+        onRollback: () => _goal = old,
+      );
+    }
+  }
+
+  void _triggerScheduleAutosave() {
+    _scheduleDebounceTimer?.cancel();
+    _scheduleDebounceTimer = Timer(const Duration(seconds: 1), () {
+      if (mounted) {
+        _saveSchedule();
+      }
+    });
+  }
+
+  Future<void> _saveSchedule() async {
+    _scheduleDebounceTimer?.cancel();
+    if (_activeWeekdays.isEmpty) return;
+    setState(() => _isSavingSchedule = true);
+    final availabilityList = _activeWeekdays.map((w) {
+      return UserAvailabilitySlot(weekday: w, slot: _slot);
+    }).toList()..sort((a, b) => a.weekday.compareTo(b.weekday));
+
+    final oldWeekdays = Set<int>.from(_activeWeekdays);
+    final oldSlot = _slot;
+
+    final success = await ref
+        .read(settingsControllerProvider.notifier)
+        .patchSettings(SettingsRequest(availability: availabilityList));
+    if (mounted) {
+      setState(() => _isSavingSchedule = false);
+      if (!success) {
+        setState(() {
+          _activeWeekdays.clear();
+          _activeWeekdays.addAll(oldWeekdays);
+          _slot = oldSlot;
+        });
+      }
+    }
   }
 
   @override
@@ -89,9 +227,41 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final userAsync = ref.watch(userStatusFutureProvider);
     final settingsState = ref.watch(settingsControllerProvider);
     final settingsNotifier = ref.read(settingsControllerProvider.notifier);
+    ref.watch(appShellCurrentBranchProvider);
 
-    // Báo lưu thành công bằng SnackBar (tự ẩn), không để banner nằm lại khi đổi tab rồi quay về
+    ref.listen<int>(appShellCurrentBranchProvider, (previous, next) {
+      if (previous == 4 && next != 4) {
+        // Rời tab profile -> hủy bỏ các thay đổi tên chưa lưu & hoàn tác về giá trị đã lưu
+        _isSwitchingTab = true;
+        if (_nameFocusNode.hasFocus) {
+          _nameFocusNode.unfocus();
+        }
+        _nameController.text = _lastSavedName;
+        _isSwitchingTab = false;
+        _lastServerMe = null;
+      } else if (next == 4) {
+        // Quay lại tab profile -> hoàn tác text field và fetch lại dữ liệu đúng từ server
+        _nameController.text = _lastSavedName;
+        _lastServerMe = null;
+        ref.invalidate(userStatusFutureProvider);
+      }
+    });
+
     ref.listen<SettingsState>(settingsControllerProvider, (prev, next) {
+      if (next.error != null && next.error != prev?.error) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(
+                mapErrorMessage(next.error),
+                key: const ValueKey('settings-error-banner'),
+              ),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+      }
       final message = next.successMessage;
       if (message == null || message == prev?.successMessage) return;
       ScaffoldMessenger.of(context)
@@ -127,7 +297,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         child: SafeArea(
           child: userAsync.when(
             data: (me) {
-              _initFields(me);
+              if (_lastServerMe == null || _lastServerMe != me) {
+                _initFields(me);
+              }
               return _buildSettingsList(
                 context,
                 me,
@@ -277,6 +449,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         const SizedBox(height: 8),
         TextField(
           controller: _nameController,
+          focusNode: _nameFocusNode,
+          textInputAction: TextInputAction.done,
+          onSubmitted: (val) => _saveName(val),
           decoration: InputDecoration(
             hintText: 'Nhập tên của bạn...',
             filled: true,
@@ -331,7 +506,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ? AppColors.primary
                         : AppColors.textPrimary,
                   ),
-                  onSelected: (_) => setState(() => _goal = g),
+                  onSelected: (_) => _selectGoal(g),
                 );
               })
               .toList(),
@@ -365,6 +540,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           desc: 'Vui vẻ, hóm hỉnh, tạo cảm giác thoải mái khi tập',
           value: 'funny',
         ),
+        const SizedBox(height: 20),
+
+        // Mục mới: Nơi tập & dụng cụ
+        _buildLocationAndEquipmentSection(),
         const SizedBox(height: 20),
 
         // 3. Thời lượng mỗi buổi tập
@@ -417,7 +596,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Đổi lịch rảnh chỉ áp dụng từ tuần sau.',
+                  'Áp dụng từ tuần sau. Đổi lịch rảnh chỉ áp dụng từ tuần sau.',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -441,6 +620,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         const SizedBox(height: 8),
         _buildSlotSelector(),
+        const SizedBox(height: 12),
+        PrimaryButton(
+          key: const ValueKey('save-schedule-button'),
+          label: _isSavingSchedule ? 'Đang lưu...' : 'Lưu lịch tập',
+          onPressed: _isSavingSchedule ? null : _saveSchedule,
+        ),
         const SizedBox(height: 20),
 
         // 5. Cài đặt thông báo
@@ -493,10 +678,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         return;
                       }
                     }
-                    setState(() => _notificationsEnabled = true);
-                  } else {
-                    setState(() => _notificationsEnabled = false);
                   }
+                  final old = _notificationsEnabled;
+                  setState(() => _notificationsEnabled = val);
+                  _patch(
+                    request: SettingsRequest(
+                      notifications: NotificationsUpdate(pushEnabled: val),
+                    ),
+                    onRollback: () => _notificationsEnabled = old,
+                  );
                 },
               ),
               const Divider(color: AppColors.border, height: 1),
@@ -515,7 +705,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 value: _quietHoursEnabled,
                 activeThumbColor: AppColors.primary,
                 contentPadding: EdgeInsets.zero,
-                onChanged: (val) => setState(() => _quietHoursEnabled = val),
+                onChanged: (val) {
+                  final old = _quietHoursEnabled;
+                  setState(() => _quietHoursEnabled = val);
+                  _patch(
+                    request: SettingsRequest(
+                      notifications: NotificationsUpdate(
+                        quietStart: val ? '22:00' : '00:00',
+                        quietEnd: val ? '07:00' : '00:00',
+                      ),
+                    ),
+                    onRollback: () => _quietHoursEnabled = old,
+                  );
+                },
               ),
               const Divider(color: AppColors.border, height: 1),
               Padding(
@@ -549,7 +751,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       icon: const Icon(Icons.remove_circle_outline_rounded),
                       color: AppColors.primary,
                       onPressed: _maxPerDay > 1
-                          ? () => setState(() => _maxPerDay--)
+                          ? () => _updateMaxPerDay(_maxPerDay - 1)
                           : null,
                     ),
                     Text(
@@ -565,7 +767,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       icon: const Icon(Icons.add_circle_outline_rounded),
                       color: AppColors.primary,
                       onPressed: _maxPerDay < 5
-                          ? () => setState(() => _maxPerDay++)
+                          ? () => _updateMaxPerDay(_maxPerDay + 1)
                           : null,
                     ),
                   ],
@@ -588,7 +790,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 value: _waterReminder,
                 activeThumbColor: AppColors.primary,
                 contentPadding: EdgeInsets.zero,
-                onChanged: (val) => setState(() => _waterReminder = val),
+                onChanged: (val) {
+                  final old = _waterReminder;
+                  setState(() => _waterReminder = val);
+                  _patch(
+                    request: SettingsRequest(
+                      notifications: NotificationsUpdate(waterReminder: val),
+                    ),
+                    onRollback: () => _waterReminder = old,
+                  );
+                },
               ),
             ],
           ),
@@ -617,7 +828,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 value: _shareWeight,
                 activeThumbColor: AppColors.primary,
                 contentPadding: EdgeInsets.zero,
-                onChanged: (val) => setState(() => _shareWeight = val),
+                onChanged: (val) {
+                  final old = _shareWeight;
+                  setState(() => _shareWeight = val);
+                  _patch(
+                    request: SettingsRequest(
+                      sharing: SharingUpdate(weight: val),
+                    ),
+                    onRollback: () => _shareWeight = old,
+                  );
+                },
               ),
               const Divider(color: AppColors.border, height: 1),
               SwitchListTile(
@@ -628,7 +848,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 value: _shareMeasurements,
                 activeThumbColor: AppColors.primary,
                 contentPadding: EdgeInsets.zero,
-                onChanged: (val) => setState(() => _shareMeasurements = val),
+                onChanged: (val) {
+                  final old = _shareMeasurements;
+                  setState(() => _shareMeasurements = val);
+                  _patch(
+                    request: SettingsRequest(
+                      sharing: SharingUpdate(measurements: val),
+                    ),
+                    onRollback: () => _shareMeasurements = old,
+                  );
+                },
               ),
               const Divider(color: AppColors.border, height: 1),
               SwitchListTile(
@@ -639,7 +868,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 value: _sharePhotos,
                 activeThumbColor: AppColors.primary,
                 contentPadding: EdgeInsets.zero,
-                onChanged: (val) => setState(() => _sharePhotos = val),
+                onChanged: (val) {
+                  final old = _sharePhotos;
+                  setState(() => _sharePhotos = val);
+                  _patch(
+                    request: SettingsRequest(
+                      sharing: SharingUpdate(photos: val),
+                    ),
+                    onRollback: () => _sharePhotos = old,
+                  );
+                },
               ),
               const Divider(color: AppColors.border, height: 1),
               SwitchListTile(
@@ -650,47 +888,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 value: _shareMeals,
                 activeThumbColor: AppColors.primary,
                 contentPadding: EdgeInsets.zero,
-                onChanged: (val) => setState(() => _shareMeals = val),
+                onChanged: (val) {
+                  final old = _shareMeals;
+                  setState(() => _shareMeals = val);
+                  _patch(
+                    request: SettingsRequest(
+                      sharing: SharingUpdate(meals: val),
+                    ),
+                    onRollback: () => _shareMeals = old,
+                  );
+                },
               ),
             ],
           ),
         ),
-        // Nút Lưu cài đặt (PATCH /me)
-        PrimaryButton(
-          label: state.isSaving ? 'Đang lưu...' : 'Lưu cài đặt',
-          onPressed: state.isSaving
-              ? null
-              : () {
-                  final newName = _nameController.text.trim();
-                  final availabilityList = _activeWeekdays.map((w) {
-                    return UserAvailabilitySlot(weekday: w, slot: _slot);
-                  }).toList()..sort((a, b) => a.weekday.compareTo(b.weekday));
-
-                  notifier.saveSettings(
-                    displayName: newName.isNotEmpty ? newName : null,
-                    coachStyle: _selectedCoachStyle,
-                    goal: _goal,
-                    sessionMinutes: _sessionMinutes,
-                    availability: availabilityList.isNotEmpty
-                        ? availabilityList
-                        : null,
-                    notifications: NotificationsUpdate(
-                      pushEnabled: _notificationsEnabled,
-                      quietStart: _quietHoursEnabled ? '22:00' : '00:00',
-                      quietEnd: _quietHoursEnabled ? '07:00' : '00:00',
-                      maxPerDay: _maxPerDay,
-                      waterReminder: _waterReminder,
-                    ),
-                    sharing: SharingUpdate(
-                      weight: _shareWeight,
-                      measurements: _shareMeasurements,
-                      photos: _sharePhotos,
-                      meals: _shareMeals,
-                    ),
-                  );
-                },
-        ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 12),
 
         // 7. Giọng đọc khi tập (lưu SharedPreferences cục bộ)
         _buildVoiceSettingsSection(context),
@@ -724,6 +936,193 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  void _updateMaxPerDay(int newVal) {
+    final old = _maxPerDay;
+    setState(() => _maxPerDay = newVal);
+    _patch(
+      request: SettingsRequest(
+        notifications: NotificationsUpdate(maxPerDay: newVal),
+      ),
+      onRollback: () => _maxPerDay = old,
+    );
+  }
+
+  void _selectCoachStyle(String value) {
+    if (_selectedCoachStyle == value) return;
+    final old = _selectedCoachStyle;
+    setState(() => _selectedCoachStyle = value);
+    _patch(
+      request: SettingsRequest(coachStyle: value),
+      onRollback: () => _selectedCoachStyle = old,
+    );
+  }
+
+  void _selectSessionMinutes(int minutes) {
+    if (_sessionMinutes == minutes) return;
+    final old = _sessionMinutes;
+    setState(() => _sessionMinutes = minutes);
+    _patch(
+      request: SettingsRequest(sessionMinutes: minutes),
+      onRollback: () => _sessionMinutes = old,
+    );
+  }
+
+  Widget _buildLocationAndEquipmentSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Nơi tập & dụng cụ',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'Lịch tuần này giữ nguyên, tuần sau xếp theo dụng cụ mới.',
+          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 10),
+        const Text(
+          'Nơi tập',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            ('home', AppStrings.locationHome),
+            ('gym', AppStrings.locationGym),
+            ('outdoor', AppStrings.locationOutdoor),
+          ].map((item) {
+            final (val, label) = item;
+            final isSelected = _location == val;
+            return SelectionChip(
+              key: ValueKey('settings-location-$val'),
+              label: label,
+              isSelected: isSelected,
+              onTap: () {
+                if (_location == val) return;
+                final old = _location;
+                setState(() => _location = val);
+                _patch(
+                  request: SettingsRequest(location: val),
+                  onRollback: () => _location = old,
+                );
+              },
+            );
+          }).toList(),
+        ),
+        if (_location == 'gym') ...[
+          const SizedBox(height: 12),
+          Container(
+            key: const ValueKey('gym-equipment-note'),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.primaryLight,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: const Row(
+              children: [
+                Icon(
+                  Icons.fitness_center_rounded,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Phòng gym có đủ dụng cụ',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ] else ...[
+          const SizedBox(height: 14),
+          RichText(
+            text: const TextSpan(
+              style: TextStyle(fontSize: 14, color: AppColors.textPrimary),
+              children: [
+                TextSpan(
+                  text: AppStrings.equipmentLabel,
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                TextSpan(
+                  text: AppStrings.equipmentMultipleHint,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              (null, AppStrings.equipmentNone),
+              ('dumbbell', AppStrings.equipmentDumbbell),
+              ('mat', AppStrings.equipmentMat),
+              ('resistance_band', AppStrings.equipmentBand),
+              ('pullup_bar', AppStrings.equipmentPullupBar),
+            ].map((item) {
+              final (key, label) = item;
+              final isNone = key == null;
+              final isSelected =
+                  isNone ? _equipment.isEmpty : _equipment.contains(key);
+              return SelectionChip(
+                key: ValueKey(
+                  isNone
+                      ? 'settings-equipment-none'
+                      : 'settings-equipment-$key',
+                ),
+                label: label,
+                isSelected: isSelected,
+                onTap: () {
+                  final old = Set<String>.from(_equipment);
+                  setState(() {
+                    if (isNone) {
+                      _equipment.clear();
+                    } else {
+                      if (_equipment.contains(key)) {
+                        _equipment.remove(key);
+                      } else {
+                        _equipment.add(key);
+                      }
+                    }
+                  });
+                  _patch(
+                    request: SettingsRequest(equipment: _equipment.toList()),
+                    onRollback: () {
+                      _equipment.clear();
+                      _equipment.addAll(old);
+                    },
+                  );
+                },
+              );
+            }).toList(),
+          ),
+        ],
+      ],
+    );
+  }
+
   Widget _buildWeekdaySelector() {
     final days = [
       (1, 'T2'),
@@ -753,6 +1152,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     _activeWeekdays.add(weekday);
                   }
                 });
+                _triggerScheduleAutosave();
               },
               borderRadius: BorderRadius.circular(10),
               child: Container(
@@ -817,7 +1217,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             fontWeight: FontWeight.w700,
             color: isSelected ? AppColors.primary : AppColors.textPrimary,
           ),
-          onSelected: (_) => setState(() => _slot = value),
+          onSelected: (_) {
+            setState(() => _slot = value);
+            _triggerScheduleAutosave();
+          },
         );
       }).toList(),
     );
@@ -863,7 +1266,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }) {
     final isSelected = _selectedCoachStyle == value;
     return InkWell(
-      onTap: () => setState(() => _selectedCoachStyle = value),
+      onTap: () => _selectCoachStyle(value),
       borderRadius: BorderRadius.circular(AppColors.radiusCard),
       child: GlassCard(
         isSelected: isSelected,
@@ -912,7 +1315,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _buildMinutesChip(int minutes, String label) {
     final isSelected = _sessionMinutes == minutes;
     return InkWell(
-      onTap: () => setState(() => _sessionMinutes = minutes),
+      onTap: () => _selectSessionMinutes(minutes),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),

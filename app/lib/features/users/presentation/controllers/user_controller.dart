@@ -9,6 +9,7 @@ import '../../../notifications/presentation/controllers/notifications_controller
 import '../../domain/models/me_response.dart';
 import '../../domain/models/settings_request.dart';
 import '../../domain/repositories/user_repository.dart';
+import '../../../workout/presentation/controllers/workout_controller.dart';
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
   final client = ref.watch(apiClientProvider);
@@ -62,6 +63,7 @@ class SettingsState {
 class SettingsNotifier extends StateNotifier<SettingsState> {
   final UserRepository _repository;
   final Ref _ref;
+  Future<void>? _runningFuture;
 
   SettingsNotifier(this._repository, this._ref) : super(const SettingsState());
 
@@ -75,14 +77,11 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     List<UserAvailabilitySlot>? availability,
     NotificationsUpdate? notifications,
     SharingUpdate? sharing,
+    String? location,
+    List<String>? equipment,
   }) async {
-    state = state.copyWith(
-      isSaving: true,
-      clearSuccess: true,
-      clearError: true,
-    );
-    try {
-      final request = SettingsRequest(
+    return patchSettings(
+      SettingsRequest(
         displayName: displayName,
         timezone: timezone,
         coachStyle: coachStyle,
@@ -91,18 +90,48 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
         availability: availability,
         notifications: notifications,
         sharing: sharing,
-      );
+        location: location,
+        equipment: equipment,
+      ),
+    );
+  }
+
+  /// Gửi PATCH /me tuần tự (không gửi chồng, giá trị cuối cùng thắng).
+  Future<bool> patchSettings(SettingsRequest request) async {
+    final prev = _runningFuture;
+    final completer = Completer<void>();
+    _runningFuture = completer.future;
+
+    if (prev != null) {
+      try {
+        await prev;
+      } catch (_) {}
+    }
+
+    state = state.copyWith(
+      isSaving: true,
+      clearSuccess: true,
+      clearError: true,
+    );
+
+    try {
       final updated = await _repository.updateSettings(request);
       _ref.read(currentUserProvider.notifier).state = updated;
       _ref.invalidate(userStatusFutureProvider);
+      if (request.location != null || request.equipment != null) {
+        _ref.invalidate(exercisesFutureProvider);
+      }
       state = state.copyWith(
         isSaving: false,
-        successMessage: 'Đã lưu cài đặt thành công!',
+        successMessage: 'Đã lưu',
+        clearError: true,
       );
       return true;
     } catch (e) {
       state = state.copyWith(isSaving: false, error: e);
       return false;
+    } finally {
+      completer.complete();
     }
   }
 

@@ -48,6 +48,14 @@ final workoutRepositoryProvider = Provider<WorkoutRepository>((ref) {
   return ApiWorkoutRepository(ref.watch(apiClientProvider));
 });
 
+final exercisesFutureProvider =
+    FutureProvider.autoDispose<List<ExerciseResponse>>((ref) async {
+  final repo = ref.watch(workoutRepositoryProvider);
+  return repo.getExercises();
+});
+
+final exercisesProvider = exercisesFutureProvider;
+
 final repSessionFactoryProvider = Provider<RepSessionFactory>((ref) {
   return const CameraRepSessionFactory();
 });

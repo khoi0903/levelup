@@ -66,74 +66,95 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
 
   @override
   Widget build(BuildContext context) {
-    final workoutRepo = ref.watch(workoutRepositoryProvider);
+    final exercisesAsync = ref.watch(exercisesFutureProvider);
     final userAsync = ref.watch(userStatusFutureProvider);
     final planRepo = ref.watch(planRepositoryProvider);
 
     return Scaffold(
       body: GradientBackground(
         child: SafeArea(
-          child: FutureBuilder<(List<ExerciseResponse>, PlanView)>(
-            future: Future.wait([
-              workoutRepo.getExercises(),
-              planRepo.getCurrentPlan(),
-            ]).then((values) => (
-                  values[0] as List<ExerciseResponse>,
-                  values[1] as PlanView,
-                )),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              if (snapshot.hasError) {
-                return Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: WorkoutIconButton(
-                          icon: Icons.close_rounded,
-                          onTap: _close,
-                        ),
-                      ),
-                      const Spacer(),
-                      const ErrorBanner(
-                        message: 'Không tải được danh sách bài tập. Thử lại sau.',
-                      ),
-                      const SizedBox(height: 16),
-                      PrimaryButton(
-                        label: 'Thử lại',
-                        onPressed: () => setState(() {}),
-                      ),
-                      const Spacer(),
-                    ],
+          child: exercisesAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, _) => Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: WorkoutIconButton(
+                      icon: Icons.close_rounded,
+                      onTap: _close,
+                    ),
                   ),
-                );
-              }
+                  const Spacer(),
+                  const ErrorBanner(
+                    message: 'Không tải được danh sách bài tập. Thử lại sau.',
+                  ),
+                  const SizedBox(height: 16),
+                  PrimaryButton(
+                    label: 'Thử lại',
+                    onPressed: () => ref.invalidate(exercisesFutureProvider),
+                  ),
+                  const Spacer(),
+                ],
+              ),
+            ),
+            data: (allExercises) {
+              return FutureBuilder<PlanView>(
+                future: planRepo.getCurrentPlan(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-              final (allExercises, plan) = snapshot.data!;
-              final user = userAsync.valueOrNull;
-              final location = user?.profile?.location;
-              final equipment = user?.profile?.equipment ?? const [];
-              final todayStr = localDateString(DateTime.now());
+                  if (snapshot.hasError) {
+                    return Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: WorkoutIconButton(
+                              icon: Icons.close_rounded,
+                              onTap: _close,
+                            ),
+                          ),
+                          const Spacer(),
+                          const ErrorBanner(
+                            message: 'Không tải được danh sách bài tập. Thử lại sau.',
+                          ),
+                          const SizedBox(height: 16),
+                          PrimaryButton(
+                            label: 'Thử lại',
+                            onPressed: () => setState(() {}),
+                          ),
+                          const Spacer(),
+                        ],
+                      ),
+                    );
+                  }
 
-              // Tìm buổi hôm nay đã hoàn thành nếu có
-              final todayDoneSession = plan.sessions.cast<SessionView?>().firstWhere(
-                    (s) =>
-                        s != null &&
-                        s.scheduledDate == todayStr &&
-                        s.status == 'completed',
-                    orElse: () => null,
+                  final plan = snapshot.data!;
+                  final user = userAsync.valueOrNull;
+                  final location = user?.profile?.location;
+                  final equipment = user?.profile?.equipment ?? const [];
+                  final todayStr = localDateString(DateTime.now());
+
+                  // Tìm buổi hôm nay đã hoàn thành nếu có
+                  final todayDoneSession = plan.sessions.cast<SessionView?>().firstWhere(
+                        (s) =>
+                            s != null &&
+                            s.scheduledDate == todayStr &&
+                            s.status == 'completed',
+                        orElse: () => null,
+                      );
+
+                  // Lọc bài tập an toàn theo nơi tập, dụng cụ
+                  final safeExercises = filterExercisesForUser(
+                    exercises: allExercises,
+                    location: location,
+                    userEquipment: equipment,
                   );
-
-              // Lọc bài tập an toàn theo nơi tập, dụng cụ
-              final safeExercises = filterExercisesForUser(
-                exercises: allExercises,
-                location: location,
-                userEquipment: equipment,
-              );
 
               return Column(
                 children: [
@@ -230,11 +251,13 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                 ],
               );
             },
-          ),
-        ),
+          );
+        },
       ),
-    );
-  }
+    ),
+  ),
+);
+}
 
   // ---------------------------------------------------------------------------
   // TAB 1: Buổi gợi ý & Tập lại hôm nay

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../controllers/shell_controller.dart';
 
 /// Khung ứng dụng với thanh điều hướng dưới 5 tab dùng StatefulShellRoute:
 /// Trang chủ, Tập, Coach, Dinh dưỡng, Tôi.
-class AppShellScreen extends StatelessWidget {
+class AppShellScreen extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
 
   const AppShellScreen({
@@ -12,19 +14,46 @@ class AppShellScreen extends StatelessWidget {
     required this.navigationShell,
   });
 
+  @override
+  ConsumerState<AppShellScreen> createState() => _AppShellScreenState();
+}
+
+class _AppShellScreenState extends ConsumerState<AppShellScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(appShellCurrentBranchProvider.notifier).state =
+            widget.navigationShell.currentIndex;
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(AppShellScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.navigationShell.currentIndex !=
+        widget.navigationShell.currentIndex) {
+      ref.read(appShellCurrentBranchProvider.notifier).state =
+          widget.navigationShell.currentIndex;
+    }
+  }
+
   void _onItemTapped(int index) {
-    navigationShell.goBranch(
+    ref.read(appShellCurrentBranchProvider.notifier).state = index;
+    widget.navigationShell.goBranch(
       index,
-      initialLocation: index == navigationShell.currentIndex,
+      initialLocation: index == widget.navigationShell.currentIndex,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentIndex = navigationShell.currentIndex;
+    final currentIndex = widget.navigationShell.currentIndex;
 
     return Scaffold(
-      body: navigationShell,
+      body: widget.navigationShell,
       bottomNavigationBar: SafeArea(
         top: false,
         child: Container(

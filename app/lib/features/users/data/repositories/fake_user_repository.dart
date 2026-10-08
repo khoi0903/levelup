@@ -5,7 +5,9 @@ import '../../domain/repositories/user_repository.dart';
 
 class FakeUserRepository implements UserRepository {
   MeResponse? _meResponse;
-  final Exception? errorToThrow;
+  Exception? errorToThrow;
+  SettingsRequest? lastRequest;
+  Map<String, dynamic>? lastJson;
 
   FakeUserRepository({MeResponse? meResponse, this.errorToThrow}) {
     _meResponse = meResponse;
@@ -54,11 +56,14 @@ class FakeUserRepository implements UserRepository {
 
   @override
   Future<MeResponse> updateSettings(SettingsRequest request) async {
+    lastRequest = request;
+    final json = request.toJson();
+    lastJson = json;
+
     if (errorToThrow != null) {
       throw errorToThrow!;
     }
 
-    final json = request.toJson();
     if (json.isEmpty) {
       throw const ApiException(
         code: 'NOTHING_TO_UPDATE',
@@ -88,12 +93,12 @@ class FakeUserRepository implements UserRepository {
       startWeightKg: current.profile?.startWeightKg,
       goalWeightKg: current.profile?.goalWeightKg,
       experience: current.profile?.experience,
-      location: current.profile?.location,
+      location: request.location ?? current.profile?.location,
       sessionMinutes: request.sessionMinutes ?? current.profile?.sessionMinutes,
       coachStyle: request.coachStyle ?? current.profile?.coachStyle,
       motivationReasons: current.profile?.motivationReasons ?? const [],
       motivationText: current.profile?.motivationText,
-      equipment: current.profile?.equipment ?? const [],
+      equipment: request.equipment ?? current.profile?.equipment ?? const [],
       onboardingCompletedAt: current.profile?.onboardingCompletedAt,
     );
 
