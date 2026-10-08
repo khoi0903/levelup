@@ -116,4 +116,23 @@ class SettingsFlowTest extends FlowTestBase {
         assertEquals("sessions_1", me.read("$.achievements[0].code"));
         assertTrue(me.<String>read("$.achievements[0].earnedAt").startsWith("20"));
     }
+
+    @Test
+    void changing_equipment_unlocks_exercises() throws Exception {
+        onboard();                                  // ở nhà, không dụng cụ
+        int before = call(get("/exercises").header("Authorization", token), 200).<Integer>read("$.length()");
+
+        DocumentContext after = patchMe("""
+            {"equipment":["dumbbell","resistance_band","dumbbell"]}""", 200);
+        assertEquals("home", after.read("$.profile.location"), "không gửi location thì giữ");
+        assertEquals(List.of("dumbbell", "resistance_band"), after.read("$.profile.equipment"));
+        int withGear = call(get("/exercises").header("Authorization", token), 200).<Integer>read("$.length()");
+        assertTrue(withGear > before, "có tạ đơn + dây kháng lực thì thêm bài: " + before + " -> " + withGear);
+
+        assertEquals("gym", patchMe("{\"location\":\"gym\"}", 200).read("$.profile.location"));
+        assertEquals(List.of(), patchMe("{\"equipment\":[]}", 200).read("$.profile.equipment"));
+
+        assertEquals("VALIDATION_ERROR", patchMe("{\"equipment\":[\"barbell\"]}", 400).read("$.code"));
+        assertEquals("VALIDATION_ERROR", patchMe("{\"location\":\"moon\"}", 400).read("$.code"));
+    }
 }

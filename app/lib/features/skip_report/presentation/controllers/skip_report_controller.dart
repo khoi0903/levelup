@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/api/api_client.dart';
 import '../../../onboarding/domain/models/plan_models.dart';
 import '../../data/repositories/api_skip_report_repository.dart';
@@ -59,7 +60,7 @@ class SkipReportNotifier extends StateNotifier<SkipReportState> {
   final SkipReportRepository _repository;
 
   SkipReportNotifier(this._repository, {String? sessionId})
-      : super(SkipReportState(plannedSessionId: sessionId));
+    : super(SkipReportState(plannedSessionId: sessionId));
 
   void setReason(String reason) {
     state = state.copyWith(reason: reason, clearError: true);
@@ -91,27 +92,6 @@ class SkipReportNotifier extends StateNotifier<SkipReportState> {
     }
   }
 
-  Future<PlanView?> rescheduleSession({
-    required String sessionId,
-    required String scheduledDate,
-    String? scheduledTime,
-  }) async {
-    state = state.copyWith(isSubmitting: true, clearError: true);
-    try {
-      final req = PatchSessionRequest(
-        action: 'reschedule',
-        scheduledDate: scheduledDate,
-        scheduledTime: scheduledTime,
-      );
-      final res = await _repository.patchSession(sessionId, req);
-      state = state.copyWith(isSubmitting: false, patchedPlan: res);
-      return res;
-    } catch (e) {
-      state = state.copyWith(isSubmitting: false, error: e);
-      return null;
-    }
-  }
-
   Future<PlanView?> restSession({required String sessionId}) async {
     state = state.copyWith(isSubmitting: true, clearError: true);
     try {
@@ -128,6 +108,6 @@ class SkipReportNotifier extends StateNotifier<SkipReportState> {
 
 final skipReportControllerProvider = StateNotifierProvider.autoDispose
     .family<SkipReportNotifier, SkipReportState, String?>((ref, sessionId) {
-  final repo = ref.watch(skipReportRepositoryProvider);
-  return SkipReportNotifier(repo, sessionId: sessionId);
-});
+      final repo = ref.watch(skipReportRepositoryProvider);
+      return SkipReportNotifier(repo, sessionId: sessionId);
+    });

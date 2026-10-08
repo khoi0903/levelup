@@ -467,7 +467,8 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
                       ),
                     ),
                   ),
-                  if (s.setsDoneFor(item.exerciseId) == 0) ...[
+                  if (s.setsDoneFor(item.exerciseId) == 0 &&
+                      (s.isExtra || s.session.status == 'planned')) ...[
                     const SizedBox(width: 8),
                     TextButton.icon(
                       key: const ValueKey('swap-exercise-active-btn'),

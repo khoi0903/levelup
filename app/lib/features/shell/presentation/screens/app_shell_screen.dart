@@ -35,8 +35,13 @@ class _AppShellScreenState extends ConsumerState<AppShellScreen> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.navigationShell.currentIndex !=
         widget.navigationShell.currentIndex) {
-      ref.read(appShellCurrentBranchProvider.notifier).state =
-          widget.navigationShell.currentIndex;
+      // didUpdateWidget chạy trong lúc build: không được sửa provider ngay, đợi hết khung hình
+      final index = widget.navigationShell.currentIndex;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ref.read(appShellCurrentBranchProvider.notifier).state = index;
+        }
+      });
     }
   }
 

@@ -68,7 +68,11 @@ abstract class RepSessionFactory {
 
 /// Bản thật: bọc CameraRepSession của module camera_counter.
 class CameraRepSessionFactory implements RepSessionFactory {
-  const CameraRepSessionFactory();
+  const CameraRepSessionFactory({this.sessionBuilder});
+
+  /// Inject hardware boundaries while exercising the real snapshot adapter.
+  @visibleForTesting
+  final CameraRepSession Function(CvConfig config)? sessionBuilder;
 
   bool get _platformSupported =>
       !kIsWeb &&
@@ -90,7 +94,8 @@ class CameraRepSessionFactory implements RepSessionFactory {
 
   @override
   RepCountingSession create(ExerciseCamera camera) => _CameraRepCountingSession(
-    CameraRepSession(config: CvConfig.fromJson(camera.config!)),
+    sessionBuilder?.call(CvConfig.fromJson(camera.config!)) ??
+        CameraRepSession(config: CvConfig.fromJson(camera.config!)),
   );
 }
 

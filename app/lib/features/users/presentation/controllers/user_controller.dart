@@ -9,7 +9,6 @@ import '../../../notifications/presentation/controllers/notifications_controller
 import '../../domain/models/me_response.dart';
 import '../../domain/models/settings_request.dart';
 import '../../domain/repositories/user_repository.dart';
-import '../../../workout/presentation/controllers/workout_controller.dart';
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
   final client = ref.watch(apiClientProvider);
@@ -118,9 +117,6 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
       final updated = await _repository.updateSettings(request);
       _ref.read(currentUserProvider.notifier).state = updated;
       _ref.invalidate(userStatusFutureProvider);
-      if (request.location != null || request.equipment != null) {
-        _ref.invalidate(exercisesFutureProvider);
-      }
       state = state.copyWith(
         isSaving: false,
         successMessage: 'Đã lưu',

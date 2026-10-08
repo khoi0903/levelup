@@ -8,6 +8,7 @@ import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../onboarding/domain/models/plan_models.dart';
+import '../../../users/presentation/controllers/user_controller.dart';
 import '../../domain/models/workout_session_state.dart';
 import '../controllers/workout_controller.dart';
 import '../widgets/swap_exercise_sheet.dart';
@@ -15,11 +16,18 @@ import '../widgets/workout_widgets.dart';
 
 /// Tổng quan buổi tập: danh sách bài với số hiệp/lần, nút "Bắt đầu".
 /// [sessionId] null thì lấy buổi kế tiếp trong kế hoạch.
-class WorkoutStartScreen extends ConsumerWidget {
+class WorkoutStartScreen extends ConsumerStatefulWidget {
   const WorkoutStartScreen({super.key, this.sessionId, this.quick5 = false});
 
   final String? sessionId;
   final bool quick5;
+
+  @override
+  ConsumerState<WorkoutStartScreen> createState() => _WorkoutStartScreenState();
+}
+
+class _WorkoutStartScreenState extends ConsumerState<WorkoutStartScreen> {
+  bool _hasCheckedResume = false;
 
   void _close(BuildContext context) {
     if (context.canPop()) {
@@ -29,9 +37,83 @@ class WorkoutStartScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _checkResume(WorkoutSetup setup) async {
+    if (!mounted) return;
+
+    // 1. Nếu activeWorkoutProvider đang giữ buổi chưa xong của CÙNG session.id -> vào thẳng màn đang tập
+    final active = ref.read(activeWorkoutProvider);
+    if (active != null &&
+        active.endedAt == null &&
+        isSameWorkoutSession(active.session.id, setup.session.id)) {
+      context.pushReplacement('/workout/active');
+      return;
+    }
+
+    // 2. Đọc getActiveDraft()
+    final repo = ref.read(workoutDraftRepositoryProvider);
+    final now = ref.read(workoutClockProvider)();
+    final draft = await repo.getActiveDraft();
+    if (!mounted || draft == null || !draft.isActive || draft.isExpired(now)) {
+      return;
+    }
+
+    // Nếu nháp của cùng session.id và còn hiệp chưa xong
+    if (isSameWorkoutSession(draft.sessionId, setup.session.id)) {
+      WorkoutSessionState draftState;
+      try {
+        draftState = draft.sessionState;
+      } catch (_) {
+        return;
+      }
+
+      final totalSets = draftState.totalSets;
+      final completedSets = draftState.completedSets;
+      final hasUnfinished =
+          completedSets < totalSets &&
+          !draftState.allExercisesDone &&
+          draftState.endedAt == null;
+
+      if (!hasUnfinished) return;
+
+      final resume = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Buổi tập đang dở'),
+          content: Text(
+            'Bạn đang tập dở buổi này (đã xong $completedSets/$totalSets hiệp). Tiếp tục?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Tập lại từ đầu'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Tiếp tục'),
+            ),
+          ],
+        ),
+      );
+
+      if (!mounted) return;
+
+      if (resume == true) {
+        ref.read(activeWorkoutProvider.notifier).restore(draftState);
+        context.pushReplacement('/workout/active');
+      } else if (resume == false) {
+        await repo.deleteDraft(draft.clientId);
+        if (!mounted) return;
+        ref.read(activeWorkoutProvider.notifier).discard(draft.clientId);
+        ref.read(activeWorkoutProvider.notifier).start(setup);
+        context.pushReplacement('/workout/active');
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final args = (sessionId: sessionId, quick5: quick5);
+  Widget build(BuildContext context) {
+    final args = (sessionId: widget.sessionId, quick5: widget.quick5);
     final setupAsync = ref.watch(workoutSetupProvider(args));
 
     return Scaffold(
@@ -44,15 +126,35 @@ class WorkoutStartScreen extends ConsumerWidget {
               onRetry: () => ref.invalidate(workoutSetupProvider(args)),
               onClose: () => _close(context),
             ),
-            data: (setup) => _Overview(
-              setup: setup,
-              args: args,
-              onClose: () => _close(context),
-              onStart: () {
-                ref.read(activeWorkoutProvider.notifier).start(setup);
-                context.pushReplacement('/workout/active');
-              },
-            ),
+            data: (setup) {
+              if (!_hasCheckedResume) {
+                _hasCheckedResume = true;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _checkResume(setup);
+                });
+              }
+              return _Overview(
+                setup: setup,
+                args: args,
+                onClose: () => _close(context),
+                onStart: () async {
+                  final repo = ref.read(workoutDraftRepositoryProvider);
+                  final activeDraft = await repo.getActiveDraft();
+                  if (activeDraft != null && activeDraft.isActive) {
+                    if (!isSameWorkoutSession(
+                      activeDraft.sessionId,
+                      setup.session.id,
+                    )) {
+                      await repo.deleteDraft(activeDraft.clientId);
+                    }
+                  }
+                  ref.read(activeWorkoutProvider.notifier).start(setup);
+                  if (context.mounted) {
+                    context.pushReplacement('/workout/active');
+                  }
+                },
+              );
+            },
           ),
         ),
       ),
@@ -77,10 +179,17 @@ class _Overview extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final session = setup.session;
     final isExtra = session.id.startsWith('extra-');
-    final isFuture =
-        !isExtra && !canLinkToPlan(session.scheduledDate, DateTime.now());
+    // Hôm nay theo máy chủ (/me.localDate), không theo giờ điện thoại; buổi của ngày khác là tập thêm
+    final today =
+        ref.watch(userStatusFutureProvider).valueOrNull?.localDate ??
+        localDateString(ref.read(workoutClockProvider)());
+    final isFuture = !isExtra && session.scheduledDate != today;
     final done = !isExtra && session.status == 'completed';
-    final shouldOpenExtra = done || isFuture;
+    // Buổi đã qua bị chốt bỏ (skipped) hoặc nghỉ: không ghi vào lịch được nữa
+    final closed = !isExtra && !done && !isSessionOpen(session);
+    final shouldOpenExtra = done || isFuture || closed;
+    // Backend chỉ đổi bài cho buổi còn planned; buổi tập thêm đổi ngay trên máy
+    final canSwap = isExtra || session.status == 'planned';
 
     final meta = [
       if (session.durationMin > 0) '${session.durationMin} phút',
@@ -110,11 +219,19 @@ class _Overview extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
+              ] else if (closed) ...[
+                const TipBox(
+                  icon: Icons.event_busy_rounded,
+                  child: Text(
+                    'Buổi này đã qua và được tính là bỏ. Bạn có thể chọn tập thêm.',
+                  ),
+                ),
+                const SizedBox(height: 12),
               ] else if (isFuture) ...[
                 const TipBox(
                   icon: Icons.calendar_today_rounded,
                   child: Text(
-                    'Buổi này được lên lịch cho ngày khác. Hãy chọn tập thêm hôm nay.',
+                    'Buổi này có lịch vào ngày khác. Hôm nay bạn chọn Tập thêm, từ 5 phút vẫn được tính vào chỉ tiêu tuần.',
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -123,61 +240,70 @@ class _Overview extends ConsumerWidget {
                 _ExerciseRow(
                   index: i + 1,
                   item: setup.items[i],
-                  onSwap: () {
-                    showSwapExerciseSheet(
-                      context: context,
-                      sessionId: session.id,
-                      item: setup.items[i],
-                      currentItems: setup.items,
-                      isExtra: isExtra,
-                      onSwap: (newItem, alt) {
-                        if (isExtra) {
-                          final currentExtra = ref.read(
-                            extraWorkoutSetupProvider,
+                  onSwap: !canSwap
+                      ? null
+                      : () {
+                          showSwapExerciseSheet(
+                            context: context,
+                            sessionId: session.id,
+                            item: setup.items[i],
+                            currentItems: setup.items,
+                            isExtra: isExtra,
+                            onSwap: (newItem, alt) {
+                              if (isExtra) {
+                                final currentExtra = ref.read(
+                                  extraWorkoutSetupProvider,
+                                );
+                                if (currentExtra != null) {
+                                  final newItems = currentExtra.items.map((it) {
+                                    return it.exerciseId ==
+                                            setup.items[i].exerciseId
+                                        ? newItem
+                                        : it;
+                                  }).toList();
+                                  final newSessionItems = currentExtra
+                                      .session
+                                      .items
+                                      .map((it) {
+                                        return it.exerciseId ==
+                                                setup.items[i].exerciseId
+                                            ? ItemView(
+                                                exerciseId: newItem.exerciseId,
+                                                nameVi: newItem.nameVi,
+                                                sets: newItem.sets,
+                                                reps: newItem.reps,
+                                                durationSec:
+                                                    newItem.durationSec,
+                                                restSec: newItem.restSec,
+                                              )
+                                            : it;
+                                      })
+                                      .toList();
+                                  final newSession = SessionView(
+                                    id: currentExtra.session.id,
+                                    scheduledDate:
+                                        currentExtra.session.scheduledDate,
+                                    scheduledTime:
+                                        currentExtra.session.scheduledTime,
+                                    title: currentExtra.session.title,
+                                    durationMin:
+                                        currentExtra.session.durationMin,
+                                    variant: currentExtra.session.variant,
+                                    status: currentExtra.session.status,
+                                    items: newSessionItems,
+                                  );
+                                  ref
+                                      .read(extraWorkoutSetupProvider.notifier)
+                                      .state = WorkoutSetup(
+                                    session: newSession,
+                                    items: newItems,
+                                  );
+                                }
+                              }
+                              ref.invalidate(workoutSetupProvider(args));
+                            },
                           );
-                          if (currentExtra != null) {
-                            final newItems = currentExtra.items.map((it) {
-                              return it.exerciseId == setup.items[i].exerciseId
-                                  ? newItem
-                                  : it;
-                            }).toList();
-                            final newSessionItems = currentExtra.session.items
-                                .map((it) {
-                                  return it.exerciseId ==
-                                          setup.items[i].exerciseId
-                                      ? ItemView(
-                                          exerciseId: newItem.exerciseId,
-                                          nameVi: newItem.nameVi,
-                                          sets: newItem.sets,
-                                          reps: newItem.reps,
-                                          durationSec: newItem.durationSec,
-                                          restSec: newItem.restSec,
-                                        )
-                                      : it;
-                                })
-                                .toList();
-                            final newSession = SessionView(
-                              id: currentExtra.session.id,
-                              scheduledDate: currentExtra.session.scheduledDate,
-                              scheduledTime: currentExtra.session.scheduledTime,
-                              title: currentExtra.session.title,
-                              durationMin: currentExtra.session.durationMin,
-                              variant: currentExtra.session.variant,
-                              status: currentExtra.session.status,
-                              items: newSessionItems,
-                            );
-                            ref
-                                .read(extraWorkoutSetupProvider.notifier)
-                                .state = WorkoutSetup(
-                              session: newSession,
-                              items: newItems,
-                            );
-                          }
-                        }
-                        ref.invalidate(workoutSetupProvider(args));
-                      },
-                    );
-                  },
+                        },
                 ),
                 const SizedBox(height: 10),
               ],
@@ -224,7 +350,9 @@ class _ExerciseRow extends StatelessWidget {
 
   final int index;
   final WorkoutPlanItem item;
-  final VoidCallback onSwap;
+
+  /// null: buổi không đổi bài được nữa, ẩn nút "Đổi".
+  final VoidCallback? onSwap;
 
   @override
   Widget build(BuildContext context) {
@@ -309,28 +437,29 @@ class _ExerciseRow extends StatelessWidget {
             ),
             const SizedBox(width: 6),
           ],
-          TextButton.icon(
-            key: ValueKey('swap-btn-${item.exerciseId}'),
-            onPressed: onSwap,
-            icon: const Icon(
-              Icons.swap_horiz_rounded,
-              size: 16,
-              color: AppColors.primary,
-            ),
-            label: const Text(
-              'Đổi',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
+          if (onSwap != null)
+            TextButton.icon(
+              key: ValueKey('swap-btn-${item.exerciseId}'),
+              onPressed: onSwap,
+              icon: const Icon(
+                Icons.swap_horiz_rounded,
+                size: 16,
                 color: AppColors.primary,
               ),
+              label: const Text(
+                'Đổi',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
             ),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-          ),
         ],
       ),
     );

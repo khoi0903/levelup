@@ -85,13 +85,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final dateText = me?.localDate ?? _currentDateString();
 
     final plan = planAsync.valueOrNull;
-    final todayStr = localDateString(DateTime.now());
+    // Hôm nay theo máy chủ (/me.localDate), không theo giờ điện thoại: chỉnh giờ máy không mở được buổi khác.
+    // Chưa tải /me thì tạm dùng đồng hồ của app.
+    final todayStr =
+        me?.localDate ?? localDateString(ref.watch(workoutClockProvider)());
     final todaySession = plan == null ? null : pickNextSession(plan, todayStr);
-    // Đã tập xong, không có buổi hôm nay, hoặc buổi kế tiếp ở ngày sau: tập lúc này là "Tập thêm"
+    // Đã tập xong, buổi đã đóng (bỏ/nghỉ), không có bài, hoặc không phải buổi của hôm nay: tập lúc này là
+    // "Tập thêm" (vẫn cộng chỉ tiêu tuần)
     final todayDone =
         todaySession == null ||
-        todaySession.status == 'completed' ||
-        !canLinkToPlan(todaySession.scheduledDate, DateTime.now());
+        !isSessionOpen(todaySession) ||
+        todaySession.items.isEmpty ||
+        todaySession.scheduledDate != todayStr;
 
     final totalTarget =
         streakAsync.valueOrNull?.thisWeek?.targetSessions ??
@@ -259,6 +264,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                         const SizedBox(height: 12),
                         _buildWeekDaysRow(plan, me?.weekStart),
+                        const SizedBox(height: 10),
+                        // Lịch chỉ để nhắc: tập ngày nào (≥ 5 phút) cũng cộng vào chỉ tiêu tuần
+                        const Text(
+                          'Tập thêm từ 5 phút vào ngày khác cũng được tính',
+                          key: ValueKey('home-week-hint'),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -267,6 +282,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   // Card Buổi tập chính hôm nay
                   _buildTodayWorkoutCard(
                     context,
+                    ref,
                     todaySession,
                     todayDone,
                     todayStr,
@@ -450,10 +466,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildTodayWorkoutCard(
     BuildContext context,
+    WidgetRef ref,
     SessionView? todaySession,
     bool todayDone,
     String todayStr,
   ) {
+    final activeWorkout = ref.watch(activeWorkoutProvider);
+    final activeDraft = ref.watch(activeWorkoutDraftProvider).valueOrNull;
+    final now = ref.watch(workoutClockProvider)();
+
+    final hasIncompleteWorkout =
+        todaySession != null &&
+        ((activeWorkout != null &&
+                activeWorkout.endedAt == null &&
+                isSameWorkoutSession(
+                  activeWorkout.session.id,
+                  todaySession.id,
+                )) ||
+            (activeDraft != null &&
+                activeDraft.isActive &&
+                !activeDraft.isExpired(now) &&
+                isSameWorkoutSession(activeDraft.sessionId, todaySession.id) &&
+                activeDraft.hasUnfinishedSets));
+
     return GlassCard(
       padding: const EdgeInsets.all(16),
       borderRadius: AppColors.radiusCard,
@@ -547,11 +582,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               Expanded(
                 child: PrimaryButton(
-                  label: todayDone ? 'Tập thêm' : AppStrings.btnStart,
+                  label: todayDone
+                      ? 'Tập thêm'
+                      : (hasIncompleteWorkout
+                            ? 'Tiếp tục buổi tập'
+                            : AppStrings.btnStart),
                   height: 48,
                   onPressed: todayDone
                       ? () => context.push('/workout/extra')
-                      : () => context.push('/workout/${todaySession!.id}'),
+                      : () => _handleStartWorkout(
+                          context,
+                          ref,
+                          todaySession!,
+                          quick5: false,
+                        ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -560,10 +604,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 height: 48,
                 onPressed: todayDone
                     ? null
-                    : () => context.push(
-                        todaySession == null
-                            ? '/workout?quick5=true'
-                            : '/workout/${todaySession.id}?quick5=true',
+                    : () => _handleStartWorkout(
+                        context,
+                        ref,
+                        todaySession,
+                        quick5: true,
                       ),
               ),
             ],
@@ -574,9 +619,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 10),
             Center(
               child: TextButton(
-                onPressed: () => context.push(
-                  '/skip-report?sessionId=${todaySession.id}',
-                ),
+                onPressed: () =>
+                    context.push('/skip-report?sessionId=${todaySession.id}'),
                 child: const Text(
                   'Không tập được hôm nay?',
                   key: ValueKey('home-skip-report-button'),
@@ -593,6 +637,115 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _handleStartWorkout(
+    BuildContext context,
+    WidgetRef ref,
+    SessionView? session, {
+    bool quick5 = false,
+  }) async {
+    final targetId = session?.id ?? '';
+
+    // 1. Nếu activeWorkoutProvider đang giữ buổi chưa xong của CÙNG session.id -> vào thẳng màn đang tập
+    final active = ref.read(activeWorkoutProvider);
+    if (active != null &&
+        active.endedAt == null &&
+        targetId.isNotEmpty &&
+        isSameWorkoutSession(active.session.id, targetId)) {
+      context.push('/workout/active');
+      return;
+    }
+
+    // 2. Đọc getActiveDraft(): còn hạn, cùng session.id và còn hiệp chưa xong
+    final repo = ref.read(workoutDraftRepositoryProvider);
+    final now = ref.read(workoutClockProvider)();
+    final draft = await repo.getActiveDraft();
+    if (!context.mounted) return;
+
+    if (draft != null &&
+        draft.isActive &&
+        !draft.isExpired(now) &&
+        targetId.isNotEmpty &&
+        isSameWorkoutSession(draft.sessionId, targetId) &&
+        draft.hasUnfinishedSets) {
+      WorkoutSessionState draftState;
+      try {
+        draftState = draft.sessionState;
+      } catch (_) {
+        if (!context.mounted) return;
+        _navigateToStart(context, session, quick5);
+        return;
+      }
+
+      final totalSets = draftState.totalSets;
+      final completedSets = draftState.completedSets;
+
+      if (!context.mounted) return;
+      final resume = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Buổi tập đang dở'),
+          content: Text(
+            'Bạn đang tập dở buổi này (đã xong $completedSets/$totalSets hiệp). Tiếp tục?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Tập lại từ đầu'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Tiếp tục'),
+            ),
+          ],
+        ),
+      );
+
+      if (!context.mounted) return;
+
+      if (resume == true) {
+        ref.read(activeWorkoutProvider.notifier).restore(draftState);
+        context.push('/workout/active');
+        return;
+      } else if (resume == false) {
+        await repo.deleteDraft(draft.clientId);
+        if (!context.mounted) return;
+        ref.read(activeWorkoutProvider.notifier).discard(draft.clientId);
+        ref.invalidate(activeWorkoutDraftProvider);
+        _navigateToStart(context, session, quick5);
+        return;
+      } else {
+        return;
+      }
+    } else if (draft != null && draft.isActive) {
+      // Nháp của buổi KHÁC: không hỏi, xoá nháp cũ khi bắt đầu buổi mới
+      if (targetId.isNotEmpty &&
+          !isSameWorkoutSession(draft.sessionId, targetId)) {
+        await repo.deleteDraft(draft.clientId);
+        ref.invalidate(activeWorkoutDraftProvider);
+      }
+    }
+
+    if (!context.mounted) return;
+    _navigateToStart(context, session, quick5);
+  }
+
+  void _navigateToStart(
+    BuildContext context,
+    SessionView? session,
+    bool quick5,
+  ) {
+    if (session == null) {
+      context.push(quick5 ? '/workout?quick5=true' : '/workout');
+    } else {
+      context.push(
+        quick5
+            ? '/workout/${session.id}?quick5=true'
+            : '/workout/${session.id}',
+      );
+    }
   }
 
   Widget _buildBuddyCard(
@@ -903,7 +1056,8 @@ String _sessionDayLabel(String scheduledDate) {
     d.month,
     d.day,
   ).difference(DateTime(now.year, now.month, now.day)).inDays;
-  if (diff <= 0) return 'Hôm nay';
+  if (diff == 0) return 'Hôm nay';
+  if (diff == -1) return 'Hôm qua';
   if (diff == 1) return 'Ngày mai';
   const names = [
     'Thứ Hai',

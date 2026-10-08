@@ -11,6 +11,8 @@ import jakarta.validation.constraints.Size;
 /**
  * PATCH /me: chỉ đổi những trường được gửi (null = giữ nguyên). Giá trị enum khớp validator users.
  * Đổi mục tiêu thì tính lại calo từ hôm nay. Đổi lịch rảnh, thời lượng buổi hoặc mục tiêu chỉ áp dụng cho kế hoạch các tuần sau, không sửa tuần đang tập.
+ * Đổi nơi tập / dụng cụ: bài gợi ý (tập thêm, đổi bài) dùng ngay; lịch tuần đang tập giữ nguyên, tuần sau xếp theo dụng cụ mới.
+ * equipment = [] nghĩa là không có dụng cụ (khác null = giữ nguyên).
  */
 public record SettingsRequest(
     @Size(min = 1, max = 60) @Pattern(regexp = ".*\\S.*") String displayName,
@@ -18,6 +20,8 @@ public record SettingsRequest(
     @Pattern(regexp = "strict|supportive|funny") String coachStyle,
     @Pattern(regexp = "lose_fat|build_muscle|get_healthier|maintain") String goal,
     @Min(5) @Max(180) Integer sessionMinutes,
+    @Pattern(regexp = "home|gym|outdoor") String location,
+    @Size(max = 10) List<@Pattern(regexp = "dumbbell|mat|resistance_band|pullup_bar") String> equipment,
     @Size(min = 1, max = 7) List<OnboardingRequest.@Valid Slot> availability,
     @Valid Notifications notifications,
     Sharing sharing

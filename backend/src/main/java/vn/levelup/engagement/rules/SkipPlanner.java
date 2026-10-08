@@ -49,7 +49,7 @@ public final class SkipPlanner {
             .sorted(BY_TIME)
             .toList();
         return switch (reason) {
-            case "busy" -> busy(sessions, remaining, weekStart, plannedSessionId);
+            case "busy" -> busy(remaining, plannedSessionId);
             case "tired" -> changed("reduced_intensity", remaining.stream().map(SkipPlanner::lighter).toList());
             case "pain" -> swapped(remaining.stream()
                 .map(s -> withoutArea(s, bodyArea, catalog, safe)).toList(), remaining);
@@ -60,9 +60,8 @@ public final class SkipPlanner {
         };
     }
 
-    /** Rút buổi tối nay (hoặc buổi kế tiếp) còn 10 phút, dời buổi sau đó sang ngày trống tiếp theo trong tuần. */
-    static Outcome busy(List<TrainingPlan.Session> all, List<TrainingPlan.Session> remaining, LocalDate weekStart,
-                        ObjectId plannedSessionId) {
+    /** Rút buổi tối nay (hoặc buổi kế tiếp) còn 10 phút. Không dời lịch: lịch chỉ để nhắc. */
+    static Outcome busy(List<TrainingPlan.Session> remaining, ObjectId plannedSessionId) {
         if (remaining.isEmpty()) {
             return new Outcome("none", List.of(), null);
         }
@@ -71,24 +70,8 @@ public final class SkipPlanner {
         List<TrainingPlan.Item> items = SessionRules.fit(target.items() == null ? List.of() : target.items(),
             BUSY_MINUTES * 60, null);
         int minutes = target.durationMin() == null ? BUSY_MINUTES : Math.min(target.durationMin(), BUSY_MINUTES);
-        List<TrainingPlan.Session> changed = new ArrayList<>();
-        changed.add(copy(target, target.scheduledDate(), minutes, target.variant(), target.status(), items,
-            "skip_busy"));
-
-        remaining.stream().filter(s -> s != target && BY_TIME.compare(s, target) >= 0).findFirst()
-            .ifPresent(next -> {
-                Set<String> taken = all.stream().map(TrainingPlan.Session::scheduledDate).collect(Collectors.toSet());
-                LocalDate weekEnd = weekStart.plusDays(6);
-                for (LocalDate d = LocalDate.parse(next.scheduledDate()).plusDays(1); !d.isAfter(weekEnd);
-                     d = d.plusDays(1)) {
-                    if (!taken.contains(d.toString())) {
-                        changed.add(copy(next, d.toString(), next.durationMin(), next.variant(), next.status(),
-                            next.items(), "skip_busy"));
-                        break;
-                    }
-                }
-            });
-        return new Outcome("shortened", changed, null);
+        return new Outcome("shortened", List.of(copy(target, target.scheduledDate(), minutes, target.variant(),
+            target.status(), items, "skip_busy")), null);
     }
 
     /** Bản nhẹ: bớt 1 hiệp mỗi bài (tối thiểu 1). */

@@ -48,14 +48,6 @@ final workoutRepositoryProvider = Provider<WorkoutRepository>((ref) {
   return ApiWorkoutRepository(ref.watch(apiClientProvider));
 });
 
-final exercisesFutureProvider =
-    FutureProvider.autoDispose<List<ExerciseResponse>>((ref) async {
-  final repo = ref.watch(workoutRepositoryProvider);
-  return repo.getExercises();
-});
-
-final exercisesProvider = exercisesFutureProvider;
-
 final repSessionFactoryProvider = Provider<RepSessionFactory>((ref) {
   return const CameraRepSessionFactory();
 });
@@ -95,8 +87,17 @@ String localDateString(DateTime now) =>
     '${now.month.toString().padLeft(2, '0')}-'
     '${now.day.toString().padLeft(2, '0')}';
 
+/// Buổi còn tập được. Backend chỉ dùng planned/completed/skipped/rest; skipped là buổi đã qua bị chốt bỏ.
 bool isSessionOpen(SessionView s) =>
-    s.status != 'completed' && s.status != 'rest' && s.status != 'missed';
+    s.status != 'completed' &&
+    s.status != 'rest' &&
+    s.status != 'skipped' &&
+    s.status != 'missed';
+
+/// Hai id là cùng một buổi. Buổi tập thêm mỗi lần tạo có id riêng (`extra-<thời điểm>-<số ngẫu nhiên>`),
+/// nên tạo buổi tập thêm mới không bị coi là buổi tập thêm đang dở.
+bool isSameWorkoutSession(String? a, String? b) =>
+    a != null && b != null && a == b;
 
 /// Buổi nên tập tiếp: buổi còn mở sớm nhất từ hôm nay trở đi, nếu không có
 /// thì buổi còn mở đầu tiên, cuối cùng là buổi đầu tiên.
@@ -197,12 +198,38 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
   }
 
   void start(WorkoutSetup setup) {
+    final oldState = state;
+    if (oldState != null &&
+        !isSameWorkoutSession(oldState.session.id, setup.session.id)) {
+      try {
+        _ref
+            .read(workoutDraftRepositoryProvider)
+            .deleteDraft(oldState.clientId);
+      } catch (_) {}
+    }
+    _cleanupOtherActiveDrafts(setup.session.id);
     state = WorkoutSessionState(
       session: setup.session,
       items: setup.items,
       clientId: _ref.read(clientIdGeneratorProvider)(),
       startedAt: _now(),
     );
+  }
+
+  void _cleanupOtherActiveDrafts(String currentSessionId) {
+    try {
+      final repo = _ref.read(workoutDraftRepositoryProvider);
+      repo
+          .getActiveDraft()
+          .then((active) {
+            if (active != null && active.isActive) {
+              if (!isSameWorkoutSession(active.sessionId, currentSessionId)) {
+                repo.deleteDraft(active.clientId);
+              }
+            }
+          })
+          .catchError((_) {});
+    } catch (_) {}
   }
 
   /// Ghi hiệp vừa xong của bài hiện tại rồi chuyển hiệp/bài.
@@ -364,11 +391,24 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
     state = restored;
   }
 
-  void discard() {
+  void discard([String? clientId]) {
     final s = state;
-    if (s != null) {
+    final idToDelete = clientId ?? s?.clientId;
+    if (idToDelete != null) {
       try {
-        _ref.read(workoutDraftRepositoryProvider).deleteDraft(s.clientId);
+        _ref.read(workoutDraftRepositoryProvider).deleteDraft(idToDelete);
+      } catch (_) {}
+    } else {
+      try {
+        final repo = _ref.read(workoutDraftRepositoryProvider);
+        repo
+            .getActiveDraft()
+            .then((active) {
+              if (active != null && active.isActive) {
+                repo.deleteDraft(active.clientId);
+              }
+            })
+            .catchError((_) {});
       } catch (_) {}
     }
     clear();

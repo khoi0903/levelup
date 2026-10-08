@@ -11,12 +11,15 @@ import 'package:fitness_app/features/onboarding/data/repositories/fake_plan_repo
 import 'package:fitness_app/features/onboarding/domain/models/plan_models.dart';
 import 'package:fitness_app/features/onboarding/presentation/controllers/onboarding_controller.dart';
 import 'package:fitness_app/features/users/data/repositories/fake_user_repository.dart';
+import 'package:fitness_app/features/users/domain/models/me_response.dart';
 import 'package:fitness_app/features/users/presentation/controllers/user_controller.dart';
 import 'package:fitness_app/features/workout/data/camera/camera_permission.dart';
 import 'package:fitness_app/features/workout/data/camera/rep_counting_session.dart';
 import 'package:fitness_app/features/workout/data/repositories/fake_workout_repository.dart';
 import 'package:fitness_app/features/coach/data/repositories/fake_coach_repository.dart';
 import 'package:fitness_app/features/coach/presentation/controllers/coach_controller.dart';
+import 'package:fitness_app/features/workout/data/repositories/memory_workout_draft_repository.dart';
+import 'package:fitness_app/features/workout/domain/repositories/workout_draft_repository.dart';
 import 'package:fitness_app/features/workout/domain/models/exercise_response.dart';
 import 'package:fitness_app/features/workout/presentation/controllers/workout_controller.dart';
 import 'package:flutter/material.dart';
@@ -65,7 +68,11 @@ const testExercises = [
   ),
 ];
 
-PlanView planWith(List<ItemView> items, {String? variant}) => PlanView(
+PlanView planWith(
+  List<ItemView> items, {
+  String? variant,
+  String status = 'planned',
+}) => PlanView(
   id: 'plan',
   weekStart: '2026-10-05',
   status: 'active',
@@ -77,7 +84,7 @@ PlanView planWith(List<ItemView> items, {String? variant}) => PlanView(
       scheduledTime: '18:00',
       title: 'Toàn thân',
       durationMin: 12,
-      status: 'planned',
+      status: status,
       variant: variant ?? 'normal',
       items: items,
     ),
@@ -186,12 +193,14 @@ class WorkoutHarness {
   WorkoutHarness({
     required PlanView plan,
     FakeWorkoutRepository? repo,
+    WorkoutDraftRepository? draftRepo,
     RepSessionFactory? factory,
     FakePermissionGate? permission,
     CameraSetupSkip? setupSkip,
     this.autoCamera = false,
   }) : planRepo = FakePlanRepository(planView: plan),
        repo = repo ?? FakeWorkoutRepository(exercises: testExercises),
+       draftRepo = draftRepo ?? MemoryWorkoutDraftRepository(),
        factory = factory ?? NoCameraFactory(),
        permission = permission ?? FakePermissionGate(),
        setupSkip = setupSkip ?? MemoryCameraSetupSkip() {
@@ -201,6 +210,7 @@ class WorkoutHarness {
 
   final FakePlanRepository planRepo;
   final FakeWorkoutRepository repo;
+  final WorkoutDraftRepository draftRepo;
   final RepSessionFactory factory;
   final FakePermissionGate permission;
   final CameraSetupSkip setupSkip;
@@ -224,6 +234,7 @@ class WorkoutHarness {
       overrides: [
         planRepositoryProvider.overrideWithValue(planRepo),
         workoutRepositoryProvider.overrideWithValue(repo),
+        workoutDraftRepositoryProvider.overrideWithValue(draftRepo),
         repSessionFactoryProvider.overrideWithValue(factory),
         cameraPermissionProvider.overrideWithValue(permission),
         cameraSetupSkipProvider.overrideWithValue(setupSkip),
@@ -231,7 +242,16 @@ class WorkoutHarness {
         // Giọng đọc giả: test không có engine TTS thật (không chờ "nói xong", không gọi plugin)
         voiceCoachProvider.overrideWithValue(voice),
         workoutClockProvider.overrideWithValue(clock.call),
-        userRepositoryProvider.overrideWithValue(FakeUserRepository()),
+        // /me.localDate (ngày theo máy chủ) khớp đồng hồ giả
+        userRepositoryProvider.overrideWithValue(
+          FakeUserRepository(
+            meResponse: MeResponse(
+              id: 'u-test',
+              displayName: 'Test',
+              localDate: localDateString(clock.now),
+            ),
+          ),
+        ),
         coachRepositoryProvider.overrideWithValue(
           FakeCoachRepository(initialMessages: const []),
         ),

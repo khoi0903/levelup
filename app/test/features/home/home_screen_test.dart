@@ -205,7 +205,9 @@ void main() {
               planRepositoryProvider.overrideWithValue(
                 FakePlanRepository(planView: fakePlan),
               ),
-              streakRepositoryProvider.overrideWithValue(FakeStreakRepository()),
+              streakRepositoryProvider.overrideWithValue(
+                FakeStreakRepository(),
+              ),
             ],
             child: MaterialApp.router(routerConfig: router),
           ),
@@ -214,7 +216,10 @@ void main() {
         await tester.pumpAndSettle();
 
         // Nút "Không tập được hôm nay?" phải bị ẩn
-        expect(find.byKey(const ValueKey('home-skip-report-button')), findsNothing);
+        expect(
+          find.byKey(const ValueKey('home-skip-report-button')),
+          findsNothing,
+        );
         expect(find.text('Không tập được hôm nay?'), findsNothing);
         // Nút chính chuyển thành "Tập thêm"
         expect(find.text('Tập thêm'), findsOneWidget);
@@ -264,7 +269,9 @@ void main() {
               planRepositoryProvider.overrideWithValue(
                 FakePlanRepository(planView: fakePlan),
               ),
-              streakRepositoryProvider.overrideWithValue(FakeStreakRepository()),
+              streakRepositoryProvider.overrideWithValue(
+                FakeStreakRepository(),
+              ),
             ],
             child: MaterialApp.router(routerConfig: router),
           ),
@@ -273,7 +280,10 @@ void main() {
         await tester.pumpAndSettle();
 
         // Buổi ở ngày sau -> ẩn nút Không tập được hôm nay
-        expect(find.byKey(const ValueKey('home-skip-report-button')), findsNothing);
+        expect(
+          find.byKey(const ValueKey('home-skip-report-button')),
+          findsNothing,
+        );
       },
     );
 
@@ -325,11 +335,17 @@ void main() {
               authRepositoryProvider.overrideWithValue(signedInAuth()),
               userRepositoryProvider.overrideWithValue(
                 FakeUserRepository(
-                  meResponse: MeResponse(id: 'u-1', displayName: 'Khoi', localDate: todayStr),
+                  meResponse: MeResponse(
+                    id: 'u-1',
+                    displayName: 'Khoi',
+                    localDate: todayStr,
+                  ),
                 ),
               ),
               planRepositoryProvider.overrideWithValue(FakePlanRepository()),
-              streakRepositoryProvider.overrideWithValue(FakeStreakRepository()),
+              streakRepositoryProvider.overrideWithValue(
+                FakeStreakRepository(),
+              ),
               workoutDraftRepositoryProvider.overrideWithValue(draftRepo),
             ],
             child: MaterialApp.router(routerConfig: router),
@@ -339,17 +355,90 @@ void main() {
         await tester.pumpAndSettle();
 
         // Thẻ đang tập dở hiện lên
-        expect(find.byKey(const ValueKey('home-active-draft-card')), findsOneWidget);
-        expect(find.textContaining('Bạn đang tập dở Cardio Buổi Sáng'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('home-active-draft-card')),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('Bạn đang tập dở Cardio Buổi Sáng'),
+          findsOneWidget,
+        );
         expect(find.text('Tiếp tục'), findsOneWidget);
         expect(find.text('Bỏ'), findsOneWidget);
 
         // Bấm Bỏ -> draft bị xóa khỏi repo và thẻ biến mất
-        await tester.tap(find.byKey(const ValueKey('home-active-draft-discard-button')));
+        await tester.tap(
+          find.byKey(const ValueKey('home-active-draft-discard-button')),
+        );
         await tester.pumpAndSettle();
 
-        expect(find.byKey(const ValueKey('home-active-draft-card')), findsNothing);
+        expect(
+          find.byKey(const ValueKey('home-active-draft-card')),
+          findsNothing,
+        );
         expect(await draftRepo.getActiveDraft(), isNull);
+      },
+    );
+    testWidgets(
+      'Chỉ còn buổi đã bị chốt bỏ: nút là "Tập thêm", không "Bắt đầu"',
+      (tester) async {
+        final now = DateTime.now();
+        final todayStr = localDateString(now);
+        final yesterdayStr = localDateString(
+          now.subtract(const Duration(days: 1)),
+        );
+        final fakePlan = PlanView(
+          id: 'plan-skipped',
+          weekStart: '2026-09-28',
+          status: 'active',
+          targetSessions: 2,
+          sessions: [
+            SessionView(
+              id: 'sess-skipped',
+              scheduledDate: yesterdayStr,
+              scheduledTime: '06:00',
+              title: 'Toàn thân cơ bản',
+              status: 'skipped',
+              durationMin: 15,
+              items: const [
+                ItemView(
+                  exerciseId: 'ex-1',
+                  nameVi: 'Squat',
+                  sets: 2,
+                  reps: 10,
+                ),
+              ],
+            ),
+          ],
+        );
+        final router = createAppRouter(initialLocation: '/home');
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              authRepositoryProvider.overrideWithValue(signedInAuth()),
+              userRepositoryProvider.overrideWithValue(
+                FakeUserRepository(
+                  meResponse: MeResponse(
+                    id: 'u-1',
+                    displayName: 'Khoi',
+                    localDate: todayStr,
+                  ),
+                ),
+              ),
+              planRepositoryProvider.overrideWithValue(
+                FakePlanRepository(planView: fakePlan),
+              ),
+              streakRepositoryProvider.overrideWithValue(
+                FakeStreakRepository(),
+              ),
+            ],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Tập thêm'), findsWidgets);
+        expect(find.text('Bắt đầu'), findsNothing);
       },
     );
   });
