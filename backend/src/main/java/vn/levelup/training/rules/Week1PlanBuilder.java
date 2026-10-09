@@ -87,6 +87,16 @@ public final class Week1PlanBuilder {
         return pickItems(easyFirst, focus, count);
     }
 
+    /** Giờ tập theo khung giờ rảnh (early_morning, noon, evening, late_evening); khung lạ thì buổi tối. */
+    public static String timeFor(String slot) {
+        return SLOT_TIME.getOrDefault(slot, SLOT_TIME.get("evening"));
+    }
+
+    /** Tên buổi chuẩn theo thứ tự trong tuần (xoay vòng). */
+    public static String titleFor(int index) {
+        return TITLES[Math.floorMod(index, TITLES.length)];
+    }
+
     /** Tối đa 3 ngày rảnh từ hôm nay trở đi, trải đều trong tuần (đầu, giữa, cuối). */
     static List<LocalDate> pickDates(LocalDate weekStart, LocalDate today, Map<Integer, String> days) {
         List<LocalDate> candidates = days.keySet().stream()

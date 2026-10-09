@@ -10,7 +10,8 @@ import jakarta.validation.constraints.Size;
 
 /**
  * PATCH /me: chỉ đổi những trường được gửi (null = giữ nguyên). Giá trị enum khớp validator users.
- * Đổi mục tiêu thì tính lại calo từ hôm nay. Đổi lịch rảnh, thời lượng buổi hoặc mục tiêu chỉ áp dụng cho kế hoạch các tuần sau, không sửa tuần đang tập.
+ * Đổi mục tiêu thì tính lại calo từ hôm nay. Đổi thời lượng buổi hoặc mục tiêu chỉ áp dụng cho kế hoạch các tuần sau.
+ * Đổi lịch rảnh: áp dụng ngay cho các ngày còn lại của tuần này (thêm buổi ngày mới, bỏ buổi chưa tập ở ngày bị bỏ).
  * Đổi nơi tập / dụng cụ: bài gợi ý (tập thêm, đổi bài) dùng ngay; lịch tuần đang tập giữ nguyên, tuần sau xếp theo dụng cụ mới.
  * equipment = [] nghĩa là không có dụng cụ (khác null = giữ nguyên).
  */

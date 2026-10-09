@@ -8,6 +8,8 @@ import '../../data/repositories/api_user_repository.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../notifications/presentation/controllers/notifications_controller.dart';
 import '../../domain/models/me_response.dart';
+import '../../../streak/presentation/controllers/streak_controller.dart';
+import '../../../home/presentation/controllers/home_controller.dart';
 import '../../domain/models/settings_request.dart';
 import '../../domain/repositories/user_repository.dart';
 
@@ -118,6 +120,11 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
       final updated = await _repository.updateSettings(request);
       _ref.read(currentUserProvider.notifier).state = updated;
       _ref.invalidate(userStatusFutureProvider);
+      if (request.availability != null) {
+        // Lịch rảnh áp dụng ngay cho tuần này: tải lại kế hoạch và vòng tròn tuần
+        _ref.invalidate(homePlanProvider);
+        _ref.invalidate(streakWeekDetailProvider);
+      }
       state = state.copyWith(
         isSaving: false,
         successMessage: 'Đã lưu',

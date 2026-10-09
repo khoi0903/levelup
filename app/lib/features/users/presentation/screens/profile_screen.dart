@@ -483,7 +483,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         const SizedBox(height: 4),
         const Text(
-          'Đổi mục tiêu thì mục tiêu calo tính lại từ hôm nay, lịch tập đổi từ tuần sau.',
+          'Đổi mục tiêu thì mục tiêu calo tính lại từ hôm nay, kế hoạch tập theo mục tiêu mới từ tuần sau.',
           style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 8),
@@ -600,7 +600,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Áp dụng từ tuần sau. Đổi lịch rảnh chỉ áp dụng từ tuần sau.',
+                  'Áp dụng ngay cho các ngày còn lại của tuần này.',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
