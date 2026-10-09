@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:fitness_app/features/coach/data/sse/coach_sse_parser.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -68,6 +69,21 @@ void main() {
       expect(events, hasLength(1));
       expect(events[0], isA<CoachDeltaEvent>());
       expect((events[0] as CoachDeltaEvent).text, 'Chào Khôi, tiếp tục nhé!');
+    });
+
+    test('luồng Stream<Uint8List> như Dio trả về (không lỗi kiểu Utf8Decoder)', () async {
+      final bytes = Uint8List.fromList(
+        utf8.encode('event: delta\ndata: {"text":"Chào Khôi"}\n\n'),
+      );
+      final Stream<Uint8List> dioStream = Stream.fromIterable([
+        bytes.sublist(0, 10),
+        bytes.sublist(10),
+      ]);
+
+      final events = await parseCoachSseByteStream(dioStream).toList();
+
+      expect(events, hasLength(1));
+      expect((events[0] as CoachDeltaEvent).text, 'Chào Khôi');
     });
 
     test('parse event error', () async {
