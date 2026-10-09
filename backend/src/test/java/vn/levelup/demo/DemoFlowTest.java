@@ -36,9 +36,9 @@ class DemoFlowTest extends FlowTestBase {
     @Test
     void non_demo_account_gets_404() throws Exception {
         call(post("/demo/seed").header("Authorization", "Bearer dev-it-not-demo"), 404);
-        assertTrue(DemoController.allowed(List.of("demo*"), "demo-abc"));
-        assertTrue(DemoController.allowed(List.of("x", "lan"), "lan"));
-        assertTrue(!DemoController.allowed(List.of("demo*"), "it-demo"));
+        assertTrue(DemoAccess.allowed(List.of("demo*"), "demo-abc"));
+        assertTrue(DemoAccess.allowed(List.of("x", "lan"), "lan"));
+        assertTrue(!DemoAccess.allowed(List.of("demo*"), "it-demo"));
     }
 
     @Test
@@ -81,5 +81,11 @@ class DemoFlowTest extends FlowTestBase {
         assertEquals(false, demo("close-week", 200).<Boolean>read("$.result.closed"));
         demo("review", 200);
         demo("fly", 404);
+    }
+
+    @Test
+    void me_flags_demo_account() throws Exception {
+        onboard();
+        assertTrue(call(get("/me").header("Authorization", token), 200).<Boolean>read("$.demoEnabled"));
     }
 }

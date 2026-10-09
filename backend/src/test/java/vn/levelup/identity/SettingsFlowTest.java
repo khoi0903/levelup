@@ -145,5 +145,6 @@ class SettingsFlowTest extends FlowTestBase {
         DocumentContext me = call(get("/me").header("Authorization", token), 200);
         assertEquals("tired", me.read("$.todayCheckin.energy"));
         assertEquals("lt6", me.read("$.todayCheckin.sleep"));
+        assertFalse(me.<Boolean>read("$.demoEnabled"), "tài khoản thường không mở được màn Demo");
     }
 }

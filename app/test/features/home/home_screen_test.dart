@@ -443,6 +443,43 @@ void main() {
     );
   });
 
+  for (final demo in [false, true]) {
+    testWidgets('Bấm 5 lần vào lời chào: demoEnabled=$demo', (tester) async {
+      final router = createAppRouter(initialLocation: '/home');
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authRepositoryProvider.overrideWithValue(signedInAuth()),
+            userRepositoryProvider.overrideWithValue(
+              FakeUserRepository(
+                meResponse: MeResponse(
+                  id: 'u-1',
+                  displayName: 'Khoi',
+                  localDate: localDateString(DateTime.now()),
+                  demoEnabled: demo,
+                ),
+              ),
+            ),
+            planRepositoryProvider.overrideWithValue(FakePlanRepository()),
+            streakRepositoryProvider.overrideWithValue(FakeStreakRepository()),
+          ],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+      await tester.pumpAndSettle();
+      for (var i = 0; i < 5; i++) {
+        await tester.tap(find.byKey(const ValueKey('home-header-title-tap')));
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Giả lập Demo'),
+        demo ? findsOneWidget : findsNothing,
+        reason: 'chỉ tài khoản được máy chủ cho phép mới mở màn Demo',
+      );
+    });
+  }
+
   testWidgets('Vòng tròn tuần tích ngày có buổi tập thêm từ 5 phút', (
     tester,
   ) async {
