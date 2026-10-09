@@ -353,7 +353,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Chào buổi chiều, Trần Văn B'), findsOneWidget);
+      expect(find.textContaining(', Trần Văn B'), findsOneWidget);
     });
 
     testWidgets('Backend 401 Unauthorized -> Đăng xuất và điều hướng về /login', (tester) async {

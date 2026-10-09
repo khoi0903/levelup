@@ -442,6 +442,14 @@ void main() {
       },
     );
   });
+
+  test('Lời chào theo giờ', () {
+    expect(greetingFor(DateTime(2026, 10, 9, 9, 11)), 'Chào buổi sáng');
+    expect(greetingFor(DateTime(2026, 10, 9, 12, 0)), 'Chào buổi trưa');
+    expect(greetingFor(DateTime(2026, 10, 9, 15, 0)), 'Chào buổi chiều');
+    expect(greetingFor(DateTime(2026, 10, 9, 19, 30)), 'Chào buổi tối');
+    expect(greetingFor(DateTime(2026, 10, 9, 23, 30)), 'Khuya rồi');
+  });
 }
 
 FakeAuthRepository signedInAuth() => FakeAuthRepository(
