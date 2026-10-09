@@ -3,17 +3,25 @@ package vn.levelup.identity.controller;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import org.bson.types.ObjectId;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 import vn.levelup.identity.dto.SettingsRequest;
 import vn.levelup.identity.model.User;
+import vn.levelup.identity.service.AccountDeletionService;
 import vn.levelup.identity.service.CurrentUserService;
 import vn.levelup.identity.service.SettingsService;
 import vn.levelup.shared.util.LocalDates;
@@ -23,17 +31,21 @@ import vn.levelup.training.service.CheckinService;
 @RestController
 public class MeController {
 
+    private static final Logger log = LoggerFactory.getLogger(MeController.class);
+
     private final CurrentUserService currentUser;
     private final SettingsService settings;
     private final Clock clock;
     private final CheckinService checkins;
+    private final AccountDeletionService deletion;
 
     public MeController(CurrentUserService currentUser, SettingsService settings, Clock clock,
-                        CheckinService checkins) {
+                        CheckinService checkins, AccountDeletionService deletion) {
         this.currentUser = currentUser;
         this.settings = settings;
         this.clock = clock;
         this.checkins = checkins;
+        this.deletion = deletion;
     }
 
     /**
@@ -52,6 +64,22 @@ public class MeController {
         settings.update(user, request);
         return view(currentUser.require());
     }
+
+    /**
+     * Xoá vĩnh viễn tài khoản và toàn bộ dữ liệu (Google Play bắt buộc). Body {"confirm": true} để tránh gọi nhầm.
+     * Xong trả 204; app đăng xuất. Không hoàn tác được.
+     */
+    @DeleteMapping("/me")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@Valid @RequestBody DeleteAccountRequest request) {
+        User user = currentUser.require();
+        Map<String, Long> deleted = deletion.deleteData(user);
+        deleted.put("events", deletion.deleteEvents(user));
+        deletion.deleteLogin(user.authUid());
+        log.info("[delete-account] user={} đã xoá {}", user.id(), deleted);
+    }
+
+    public record DeleteAccountRequest(@AssertTrue boolean confirm) {}
 
     private MeResponse view(User user) {
         LocalDate today = LocalDates.today(user.timezone(), clock);
