@@ -36,6 +36,8 @@ public class SecurityConfig {
                 // Cloud Scheduler / cron-job.org không có Firebase token: JobsController tự kiểm tra
                 // header X-Job-Secret (so sánh hằng thời gian; JOB_SECRET trống thì luôn 403)
                 .requestMatchers(HttpMethod.POST, "/jobs/tick").permitAll()
+                // Trang tĩnh cho Google Play: chính sách quyền riêng tư, hướng dẫn xoá tài khoản
+                .requestMatchers(HttpMethod.GET, "/privacy.html", "/delete-account.html").permitAll()
                 .anyRequest().authenticated())
             .oauth2ResourceServer(o -> o.jwt(Customizer.withDefaults()));
         return http.build();
