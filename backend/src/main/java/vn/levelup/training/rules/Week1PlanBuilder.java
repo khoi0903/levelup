@@ -72,6 +72,21 @@ public final class Week1PlanBuilder {
         return new Draft(weekStart, sessions);
     }
 
+    /**
+     * Bài cho một buổi đã có tên/thời lượng (dùng khi sửa buổi bị rỗng): nhóm cơ theo tên buổi chuẩn,
+     * số bài theo thời lượng như khi lập tuần đầu. Không còn bài an toàn thì trả rỗng.
+     */
+    public static List<TrainingPlan.Item> itemsFor(String title, Integer durationMin, List<Exercise> safeExercises) {
+        int index = java.util.Arrays.asList(TITLES).indexOf(title);
+        Set<String> focus = FOCUS.get(index < 0 ? 0 : index);
+        int minutes = Math.max(10, Math.min(15, durationMin == null ? 15 : durationMin));
+        int count = Math.max(4, Math.min(6, minutes / 2 - 1));
+        List<Exercise> easyFirst = safeExercises.stream()
+            .sorted(Comparator.comparingInt(Exercise::difficultyOrDefault))
+            .toList();
+        return pickItems(easyFirst, focus, count);
+    }
+
     /** Tối đa 3 ngày rảnh từ hôm nay trở đi, trải đều trong tuần (đầu, giữa, cuối). */
     static List<LocalDate> pickDates(LocalDate weekStart, LocalDate today, Map<Integer, String> days) {
         List<LocalDate> candidates = days.keySet().stream()
