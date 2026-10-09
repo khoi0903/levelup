@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -31,12 +33,24 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final List<DateTime> _tapTimestamps = [];
 
+  /// Vẽ lại mỗi phút để lời chào đổi theo giờ khi app mở qua mốc (11h, 13h, 18h...).
+  Timer? _clockTimer;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       triggerSyncPendingWorkoutDrafts(ref);
     });
+    _clockTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _clockTimer?.cancel();
+    super.dispose();
   }
 
   void _handleHeaderTap() {
@@ -155,7 +169,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Chào buổi chiều, $displayName',
+                                '${greetingFor(DateTime.now())}, $displayName',
                                 key: const ValueKey('home-greeting-text'),
                                 style: const TextStyle(
                                   fontSize: 22,
@@ -556,7 +570,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               overflow: TextOverflow.ellipsis,
             ),
           ],
-          if (todaySession?.adjustedReason != null) ...[
+          // Lời coach (check-in, bỏ buổi...) chỉ đúng cho buổi của hôm nay; buổi ngày khác không hiện
+          if (todaySession?.adjustedReason != null &&
+              todaySession?.scheduledDate == todayStr) ...[
             const SizedBox(height: 10),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -1069,4 +1085,14 @@ String _sessionDayLabel(String scheduledDate) {
     'Chủ nhật',
   ];
   return names[d.weekday - 1];
+}
+
+/// Lời chào theo giờ trên máy (chỉ để hiển thị, không dùng cho nghiệp vụ).
+String greetingFor(DateTime now) {
+  final h = now.hour;
+  if (h >= 4 && h < 11) return 'Chào buổi sáng';
+  if (h >= 11 && h < 13) return 'Chào buổi trưa';
+  if (h >= 13 && h < 18) return 'Chào buổi chiều';
+  if (h >= 18 && h < 22) return 'Chào buổi tối';
+  return 'Khuya rồi';
 }
