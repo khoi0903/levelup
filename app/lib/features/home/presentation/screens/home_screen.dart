@@ -53,7 +53,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.dispose();
   }
 
+  /// Bấm 5 lần vào lời chào mở màn Demo, chỉ với tài khoản máy chủ cho phép (/me.demoEnabled).
   void _handleHeaderTap() {
+    final me = ref.read(userStatusFutureProvider).valueOrNull;
+    if (me == null || !me.demoEnabled) return;
     final now = DateTime.now();
     _tapTimestamps.removeWhere((t) => now.difference(t).inMilliseconds > 3000);
     _tapTimestamps.add(now);

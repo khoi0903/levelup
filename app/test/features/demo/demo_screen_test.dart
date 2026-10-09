@@ -27,6 +27,7 @@ void main() {
           id: 'u-1',
           displayName: 'Demo User',
           localDate: '2026-10-05',
+          demoEnabled: true,
         ),
       );
 

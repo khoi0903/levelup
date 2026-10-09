@@ -1,10 +1,7 @@
 package vn.levelup.demo;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,23 +21,19 @@ public class DemoController {
 
     private final DemoService demo;
     private final CurrentUserService currentUser;
-    private final boolean enabled;
-    private final List<String> uids;
+    private final DemoAccess access;
 
-    public DemoController(DemoService demo, CurrentUserService currentUser,
-                          @Value("${levelup.demo.enabled:false}") boolean enabled,
-                          @Value("${levelup.demo.uids:}") String uids) {
+    public DemoController(DemoService demo, CurrentUserService currentUser, DemoAccess access) {
         this.demo = demo;
         this.currentUser = currentUser;
-        this.enabled = enabled;
-        this.uids = Arrays.stream(uids.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList();
+        this.access = access;
     }
 
     public record DemoResult(String action, Map<String, Object> result) {}
 
     @PostMapping("/demo/{action}")
     public DemoResult run(@PathVariable String action) {
-        if (!enabled || !allowed(uids, currentUser.uid())) {
+        if (!access.allowedFor(currentUser.uid())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "NOT_FOUND");
         }
         User user = currentUser.require();
@@ -54,11 +47,5 @@ public class DemoController {
             default -> throw new ResponseStatusException(HttpStatus.NOT_FOUND, "UNKNOWN_ACTION");
         };
         return new DemoResult(action, result);
-    }
-
-    /** "abc" khớp đúng uid, "demo*" khớp mọi uid bắt đầu bằng "demo". */
-    static boolean allowed(List<String> patterns, String uid) {
-        return patterns.stream().anyMatch(p -> p.endsWith("*") ? uid.startsWith(p.substring(0, p.length() - 1))
-            : uid.equals(p));
     }
 }
