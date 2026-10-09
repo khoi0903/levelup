@@ -4,10 +4,10 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../home/presentation/controllers/home_controller.dart';
 import '../../../../core/api/api_client.dart';
 import '../../../../core/api/api_exceptions.dart';
 import '../../../onboarding/domain/models/plan_models.dart';
-import '../../../onboarding/presentation/controllers/onboarding_controller.dart';
 import '../../data/camera/camera_permission.dart';
 import '../../data/camera/camera_setup_skip.dart';
 import '../../data/camera/rep_counting_session.dart';
@@ -133,17 +133,21 @@ final workoutSetupProvider = FutureProvider.autoDispose
       }
 
       final workoutRepo = ref.watch(workoutRepositoryProvider);
-      final planRepo = ref.watch(planRepositoryProvider);
       final now = ref.watch(workoutClockProvider)();
-      final user = ref.watch(currentUserProvider) ??
+      final user =
+          ref.watch(currentUserProvider) ??
           ref.watch(userStatusFutureProvider).valueOrNull;
       final today = user?.localDate ?? localDateString(now);
 
       final exercisesFuture = workoutRepo.getExercises();
-      var plan = await planRepo.getCurrentPlan();
+      // Cùng nguồn với màn chính: coach áp dụng thay đổi, đổi bài, check-in... làm mới homePlanProvider
+      // thì tab Tập (giữ trạng thái khi đổi tab) cũng dựng lại buổi theo kế hoạch mới.
+      var plan = await ref.watch(homePlanProvider.future);
       SessionView? session;
       if (args.sessionId != null) {
-        session = plan.sessions.where((s) => s.id == args.sessionId).firstOrNull;
+        session = plan.sessions
+            .where((s) => s.id == args.sessionId)
+            .firstOrNull;
       } else {
         session = plan.sessions.cast<SessionView?>().firstWhere(
           (s) =>
