@@ -22,6 +22,7 @@ import vn.levelup.training.dto.PlanView;
 import vn.levelup.training.model.Exercise;
 import vn.levelup.training.model.TrainingPlan;
 import vn.levelup.training.repository.ExerciseRepository;
+import vn.levelup.training.service.EmptySessionRepair;
 
 
 @RestController
@@ -31,13 +32,15 @@ public class PlansController {
     private final ExerciseRepository exercises;
     private final CurrentUserService currentUser;
     private final Clock clock;
+    private final EmptySessionRepair repair;
 
     public PlansController(MongoTemplate mongo, ExerciseRepository exercises,
-                           CurrentUserService currentUser, Clock clock) {
+                           CurrentUserService currentUser, Clock clock, EmptySessionRepair repair) {
         this.mongo = mongo;
         this.exercises = exercises;
         this.currentUser = currentUser;
         this.clock = clock;
+        this.repair = repair;
     }
 
     /**
@@ -62,6 +65,7 @@ public class PlansController {
         if (plan == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "NO_ACTIVE_PLAN");
         }
+        plan = repair.repair(user, plan);
 
         var ids = plan.sessions().stream()
             .flatMap(s -> s.items() == null ? java.util.stream.Stream.empty() : s.items().stream())
