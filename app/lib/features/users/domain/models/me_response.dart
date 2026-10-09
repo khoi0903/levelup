@@ -236,6 +236,61 @@ class UserSettings {
       };
 }
 
+class TodayCheckin {
+  final String energy; // tired | normal | energized
+  final String? sleep; // lt6 | h6_7 | h7_8 | gt8
+
+  const TodayCheckin({
+    required this.energy,
+    this.sleep,
+  });
+
+  bool get isLow => energy == 'tired' || sleep == 'lt6';
+  bool get isEnergized => energy == 'energized';
+
+  factory TodayCheckin.fromJson(Map<String, dynamic> json) {
+    return TodayCheckin(
+      energy: json['energy']?.toString() ?? 'normal',
+      sleep: json['sleep'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'energy': energy,
+        if (sleep != null) 'sleep': sleep,
+      };
+}
+
+class UserInjury {
+  final String bodyArea;
+  final String? note;
+  final bool active;
+  final String? reportedAt;
+
+  const UserInjury({
+    required this.bodyArea,
+    this.note,
+    this.active = true,
+    this.reportedAt,
+  });
+
+  factory UserInjury.fromJson(Map<String, dynamic> json) {
+    return UserInjury(
+      bodyArea: json['bodyArea']?.toString() ?? '',
+      note: json['note'] as String?,
+      active: json['active'] as bool? ?? true,
+      reportedAt: json['reportedAt'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'bodyArea': bodyArea,
+        if (note != null) 'note': note,
+        'active': active,
+        if (reportedAt != null) 'reportedAt': reportedAt,
+      };
+}
+
 class MeResponse {
   final String id;
   final String displayName;
@@ -246,6 +301,8 @@ class MeResponse {
   final UserStreak? streak;
   final UserSettings settings;
   final List<Achievement> achievements;
+  final TodayCheckin? todayCheckin;
+  final List<UserInjury> injuries;
 
   const MeResponse({
     required this.id,
@@ -257,7 +314,12 @@ class MeResponse {
     this.streak,
     this.settings = const UserSettings(),
     this.achievements = const [],
+    this.todayCheckin,
+    this.injuries = const [],
   });
+
+  List<String> get activeInjuries =>
+      injuries.where((i) => i.active).map((i) => i.bodyArea).toList();
 
   factory MeResponse.fromJson(Map<String, dynamic> json) {
     return MeResponse(
@@ -279,6 +341,18 @@ class MeResponse {
               ?.map((e) => Achievement.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
+      todayCheckin: json['todayCheckin'] != null
+          ? TodayCheckin.fromJson(json['todayCheckin'] as Map<String, dynamic>)
+          : null,
+      injuries: (json['injuries'] as List<dynamic>?)
+              ?.map((e) {
+                if (e is Map<String, dynamic>) {
+                  return UserInjury.fromJson(e);
+                }
+                return UserInjury(bodyArea: e.toString(), active: true);
+              })
+              .toList() ??
+          const [],
     );
   }
 
@@ -292,5 +366,7 @@ class MeResponse {
         if (streak != null) 'streak': streak!.toJson(),
         'settings': settings.toJson(),
         'achievements': achievements.map((a) => a.toJson()).toList(),
+        if (todayCheckin != null) 'todayCheckin': todayCheckin!.toJson(),
+        'injuries': injuries.map((a) => a.toJson()).toList(),
       };
 }

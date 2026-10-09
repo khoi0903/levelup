@@ -8,6 +8,7 @@ import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../onboarding/domain/models/plan_models.dart';
 import '../../../onboarding/presentation/controllers/onboarding_controller.dart';
+import '../../../users/domain/models/me_response.dart';
 import '../../../users/presentation/controllers/user_controller.dart';
 import '../../domain/models/exercise_response.dart';
 import '../../domain/models/extra_workout_builder.dart';
@@ -33,6 +34,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
 
   String _searchQuery = '';
   String _selectedMuscleFilter = 'all';
+  int? _selectedDuration;
 
   // Lưu cấu hình bài tập tự chọn: exerciseId -> {sets, reps, durationSec}
   final Map<String, ({int sets, int? reps, int? durationSec})>
@@ -123,7 +125,9 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
               final user = userAsync.valueOrNull;
               final location = user?.profile?.location;
               final equipment = user?.profile?.equipment ?? const [];
-              final todayStr = localDateString(DateTime.now());
+              final activeInjuries = user?.activeInjuries ?? const [];
+              final todayCheckin = user?.todayCheckin;
+              final todayStr = user?.localDate ?? localDateString(DateTime.now());
 
               // Tìm buổi hôm nay đã hoàn thành nếu có
               final todayDoneSession = plan.sessions
@@ -136,11 +140,12 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                     orElse: () => null,
                   );
 
-              // Lọc bài tập an toàn theo nơi tập, dụng cụ
+              // Lọc bài tập an toàn theo nơi tập, dụng cụ, chấn thương
               final safeExercises = filterExercisesForUser(
                 exercises: allExercises,
                 location: location,
                 userEquipment: equipment,
+                activeInjuries: activeInjuries,
               );
 
               return Column(
@@ -229,10 +234,17 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                           allExercises: allExercises,
                           location: location,
                           equipment: equipment,
+                          activeInjuries: activeInjuries,
+                          todayCheckin: todayCheckin,
                         ),
 
                         // Tab 2: Tự chọn bài
-                        _buildCustomTab(safeExercises: safeExercises),
+                        _buildCustomTab(
+                          allExercises: allExercises,
+                          location: location,
+                          equipment: equipment,
+                          activeInjuries: activeInjuries,
+                        ),
                       ],
                     ),
                   ),
@@ -246,6 +258,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
   }
 
   // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // TAB 1: Buổi gợi ý & Tập lại hôm nay
   // ---------------------------------------------------------------------------
   Widget _buildSuggestedTab({
@@ -254,10 +267,61 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
     required List<ExerciseResponse> allExercises,
     required String? location,
     required List<String> equipment,
+    required List<String> activeInjuries,
+    required TodayCheckin? todayCheckin,
   }) {
+    final isLow = todayCheckin?.isLow == true;
+    final isEnergized = todayCheckin?.isEnergized == true;
+    final effectiveDuration = _selectedDuration ?? (isLow ? 5 : 15);
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
       children: [
+        // Dòng gợi ý check-in trên đầu
+        if (todayCheckin != null && isLow) ...[
+          const TipBox(
+            icon: Icons.info_outline_rounded,
+            child: Text('Sáng nay bạn thấy mệt nên buổi gợi ý nhẹ hơn'),
+          ),
+          const SizedBox(height: 14),
+        ] else if (todayCheckin != null && isEnergized) ...[
+          const TipBox(
+            icon: Icons.bolt_rounded,
+            child: Text('Bạn đang sung sức, thử buổi đầy đủ nhé'),
+          ),
+          const SizedBox(height: 14),
+        ] else if (todayCheckin == null) ...[
+          TipBox(
+            icon: Icons.wb_sunny_outlined,
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Text('Check-in để buổi tập hợp thể trạng'),
+                ),
+                TextButton(
+                  key: const ValueKey('extra-checkin-btn'),
+                  onPressed: () => context.push('/checkin'),
+                  style: TextButton.styleFrom(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: const Text(
+                    'Check-in',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
+
         // 1c: "Tập lại buổi hôm nay"
         if (todayDoneSession != null) ...[
           _buildRedoCard(todayDoneSession, allExercises),
@@ -280,6 +344,21 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
         ),
         const SizedBox(height: 12),
 
+        // Mức thời lượng
+        SizedBox(
+          height: 38,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              _buildDurationChip(5, '5 phút', enabled: true, selected: effectiveDuration == 5),
+              _buildDurationChip(10, '10 phút', enabled: true, selected: effectiveDuration == 10),
+              _buildDurationChip(15, '15 phút', enabled: true, selected: effectiveDuration == 15),
+              _buildDurationChip(20, '20 phút', enabled: !isLow, selected: effectiveDuration == 20),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+
         // 5 thẻ gợi ý
         _buildSuggestedCard(
           type: SuggestedWorkoutType.quick5,
@@ -290,52 +369,102 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
           safeExercises: safeExercises,
           location: location,
           equipment: equipment,
+          activeInjuries: activeInjuries,
+          isLowCheckin: isLow,
+          durationMin: 5,
         ),
         const SizedBox(height: 10),
         _buildSuggestedCard(
           type: SuggestedWorkoutType.fullBody,
-          subtitle: '4 bài tập · 15 phút · Cân bằng toàn bộ cơ thể',
+          subtitle: '4 bài tập · $effectiveDuration phút · Cân bằng toàn bộ cơ thể',
           icon: Icons.accessibility_new_rounded,
           iconColor: AppColors.primary,
           bgColor: AppColors.primaryLight,
           safeExercises: safeExercises,
           location: location,
           equipment: equipment,
+          activeInjuries: activeInjuries,
+          isLowCheckin: isLow,
+          durationMin: effectiveDuration,
         ),
         const SizedBox(height: 10),
         _buildSuggestedCard(
           type: SuggestedWorkoutType.legsGlutes,
-          subtitle: '4 bài tập · 15 phút · Đùi, bắp chân và mông săn chắc',
+          subtitle: '4 bài tập · $effectiveDuration phút · Đùi, bắp chân và mông săn chắc',
           icon: Icons.directions_run_rounded,
           iconColor: const Color(0xFF059669),
           bgColor: const Color(0xFFD1FAE5),
           safeExercises: safeExercises,
           location: location,
           equipment: equipment,
+          activeInjuries: activeInjuries,
+          isLowCheckin: isLow,
+          durationMin: effectiveDuration,
         ),
         const SizedBox(height: 10),
         _buildSuggestedCard(
           type: SuggestedWorkoutType.armsShoulders,
-          subtitle: '4 bài tập · 15 phút · Tay trước, tay sau và vai',
+          subtitle: '4 bài tập · $effectiveDuration phút · Tay trước, tay sau và vai',
           icon: Icons.fitness_center_rounded,
           iconColor: const Color(0xFF7C3AED),
           bgColor: const Color(0xFFEDE9FE),
           safeExercises: safeExercises,
           location: location,
           equipment: equipment,
+          activeInjuries: activeInjuries,
+          isLowCheckin: isLow,
+          durationMin: effectiveDuration,
         ),
         const SizedBox(height: 10),
         _buildSuggestedCard(
           type: SuggestedWorkoutType.coreAbs,
-          subtitle: '4 bài tập · 10 phút · Cơ trọng tâm và múi bụng',
+          subtitle: '4 bài tập · ${effectiveDuration == 5 ? 5 : 10} phút · Cơ trọng tâm và múi bụng',
           icon: Icons.shield_rounded,
           iconColor: const Color(0xFFEA580C),
           bgColor: const Color(0xFFFFEDD5),
           safeExercises: safeExercises,
           location: location,
           equipment: equipment,
+          activeInjuries: activeInjuries,
+          isLowCheckin: isLow,
+          durationMin: effectiveDuration == 5 ? 5 : 10,
         ),
       ],
+    );
+  }
+
+  Widget _buildDurationChip(
+    int minutes,
+    String label, {
+    required bool enabled,
+    required bool selected,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: selected && enabled,
+        onSelected: enabled
+            ? (_) => setState(() => _selectedDuration = minutes)
+            : null,
+        selectedColor: AppColors.primaryLight,
+        backgroundColor: AppColors.surface,
+        disabledColor: AppColors.placeholder.withValues(alpha: 0.3),
+        labelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: selected && enabled ? FontWeight.w700 : FontWeight.w500,
+          color: !enabled
+              ? AppColors.textSecondary.withValues(alpha: 0.4)
+              : (selected ? AppColors.primary : AppColors.textSecondary),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: BorderSide(
+            color: selected && enabled ? AppColors.primary : AppColors.border,
+            width: 1.0,
+          ),
+        ),
+      ),
     );
   }
 
@@ -420,6 +549,9 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
     required List<ExerciseResponse> safeExercises,
     required String? location,
     required List<String> equipment,
+    required List<String> activeInjuries,
+    required bool isLowCheckin,
+    required int durationMin,
   }) {
     return AppCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -430,6 +562,9 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
             type: type,
             location: location,
             userEquipment: equipment,
+            activeInjuries: activeInjuries,
+            isLowCheckin: isLowCheckin,
+            durationMin: durationMin,
           );
           _startSetup(setup);
         },
@@ -482,12 +617,21 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
   }
 
   // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // TAB 2: Tự chọn bài
   // ---------------------------------------------------------------------------
-  Widget _buildCustomTab({required List<ExerciseResponse> safeExercises}) {
+  Widget _buildCustomTab({
+    required List<ExerciseResponse> allExercises,
+    required String? location,
+    required List<String> equipment,
+    required List<String> activeInjuries,
+  }) {
+    // 4. Tab "Tự chọn bài": liệt kê ĐỦ bài isActive
+    final activeExercises = allExercises.where((e) => e.isActive).toList();
+
     // Lọc theo tìm kiếm không dấu
     final queryNorm = removeVietnameseDiacritics(_searchQuery);
-    var filtered = safeExercises.where((e) {
+    var filtered = activeExercises.where((e) {
       if (queryNorm.isNotEmpty) {
         final nameNorm = removeVietnameseDiacritics(e.nameVi);
         if (!nameNorm.contains(queryNorm)) return false;
@@ -511,6 +655,26 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
       }
       return true;
     }).toList();
+
+    final isGym = location == 'gym';
+    final injurySet = activeInjuries.toSet();
+    final equipSet = equipment.toSet();
+
+    // Sắp xếp: bài phù hợp trước, bài cần dụng cụ sau, bài chống chỉ định cuối
+    int rankOf(ExerciseResponse e) {
+      final isContra = e.contraindications.any(injurySet.contains);
+      if (isContra) return 2; // chống chỉ định cuối
+
+      if (!isGym) {
+        final missing =
+            e.equipment.where((eq) => eq != 'mat' && !equipSet.contains(eq));
+        if (missing.isNotEmpty) return 1; // cần dụng cụ sau
+      }
+
+      return 0; // phù hợp trước
+    }
+
+    filtered.sort((a, b) => rankOf(a).compareTo(rankOf(b)));
 
     final selectedCount = _customSelections.length;
 
@@ -603,7 +767,32 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                     final isSelected = _customSelections.containsKey(
                       exercise.id,
                     );
-                    return _buildExerciseSelectableTile(exercise, isSelected);
+                    final matchingInjuries = exercise.contraindications
+                        .where(injurySet.contains)
+                        .toList();
+                    final isContraindicated = matchingInjuries.isNotEmpty;
+                    final missingEquipment = isGym
+                        ? <String>[]
+                        : exercise.equipment
+                            .where(
+                              (eq) => eq != 'mat' && !equipSet.contains(eq),
+                            )
+                            .toList();
+                    final isMissingEquipment =
+                        !isContraindicated && missingEquipment.isNotEmpty;
+
+                    return _buildExerciseSelectableTile(
+                      exercise,
+                      isSelected,
+                      isContraindicated: isContraindicated,
+                      contraindicatedArea: matchingInjuries.isNotEmpty
+                          ? _formatBodyAreaVi(matchingInjuries.first)
+                          : null,
+                      isMissingEquipment: isMissingEquipment,
+                      missingEquipmentLabel: isMissingEquipment
+                          ? _formatMissingEquipmentVi(missingEquipment)
+                          : null,
+                    );
                   },
                 ),
         ),
@@ -631,7 +820,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                 : () {
                     final items = <WorkoutPlanItem>[];
                     for (final entry in _customSelections.entries) {
-                      final ex = safeExercises.firstWhere(
+                      final ex = allExercises.firstWhere(
                         (e) => e.id == entry.key,
                       );
                       final cfg = entry.value;
@@ -686,8 +875,12 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
 
   Widget _buildExerciseSelectableTile(
     ExerciseResponse exercise,
-    bool isSelected,
-  ) {
+    bool isSelected, {
+    required bool isContraindicated,
+    required String? contraindicatedArea,
+    required bool isMissingEquipment,
+    required String? missingEquipmentLabel,
+  }) {
     final isDuration = exercise.tracking == 'duration';
     final hasCamera = exercise.camera != null;
 
@@ -696,36 +889,42 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
     final reps = config?.reps ?? (isDuration ? null : 12);
     final durationSec = config?.durationSec ?? (isDuration ? 30 : null);
 
-    return Padding(
+    final card = Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: AppCard(
-        isSelected: isSelected,
+        isSelected: isSelected && !isContraindicated,
         padding: const EdgeInsets.all(12),
         child: Column(
           children: [
             InkWell(
-              onTap: () {
-                setState(() {
-                  if (isSelected) {
-                    _customSelections.remove(exercise.id);
-                  } else {
-                    _customSelections[exercise.id] = (
-                      sets: 3,
-                      reps: isDuration ? null : 12,
-                      durationSec: isDuration ? 30 : null,
-                    );
-                  }
-                });
-              },
+              onTap: isContraindicated
+                  ? null
+                  : () {
+                      setState(() {
+                        if (isSelected) {
+                          _customSelections.remove(exercise.id);
+                        } else {
+                          _customSelections[exercise.id] = (
+                            sets: 3,
+                            reps: isDuration ? null : 12,
+                            durationSec: isDuration ? 30 : null,
+                          );
+                        }
+                      });
+                    },
               child: Row(
                 children: [
                   Icon(
-                    isSelected
-                        ? Icons.check_box_rounded
-                        : Icons.check_box_outline_blank_rounded,
-                    color: isSelected
-                        ? AppColors.primary
-                        : AppColors.textSecondary,
+                    isContraindicated
+                        ? Icons.block_rounded
+                        : (isSelected
+                            ? Icons.check_box_rounded
+                            : Icons.check_box_outline_blank_rounded),
+                    color: isContraindicated
+                        ? AppColors.textSecondary.withValues(alpha: 0.35)
+                        : (isSelected
+                            ? AppColors.primary
+                            : AppColors.textSecondary),
                     size: 24,
                   ),
                   const SizedBox(width: 10),
@@ -773,6 +972,48 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                             ],
                           ],
                         ),
+                        if (isContraindicated && contraindicatedArea != null) ...[
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEE2E2),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              'Không hợp với chấn thương $contraindicatedArea',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFFDC2626),
+                              ),
+                            ),
+                          ),
+                        ] else if (isMissingEquipment && missingEquipmentLabel != null) ...[
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryLight,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Text(
+                              missingEquipmentLabel,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -781,7 +1022,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
             ),
 
             // Controls chỉnh hiệp và lần/giây khi đã tích chọn
-            if (isSelected) ...[
+            if (isSelected && !isContraindicated) ...[
               const Divider(height: 16, color: AppColors.border),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -922,6 +1163,8 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
         ),
       ),
     );
+
+    return isContraindicated ? Opacity(opacity: 0.45, child: card) : card;
   }
 
   Widget _stepperButton({required IconData icon, required VoidCallback onTap}) {
@@ -940,4 +1183,43 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
       ),
     );
   }
+}
+
+String _formatBodyAreaVi(String area) {
+  switch (area.toLowerCase()) {
+    case 'lower_back':
+      return 'lưng dưới';
+    case 'knee':
+      return 'gối';
+    case 'shoulder':
+      return 'vai';
+    case 'neck':
+      return 'cổ';
+    case 'wrist':
+      return 'cổ tay';
+    case 'ankle':
+      return 'cổ chân';
+    case 'hip':
+      return 'hông';
+    case 'other':
+      return 'khác';
+    default:
+      return area;
+  }
+}
+
+String _formatMissingEquipmentVi(List<String> missing) {
+  final names = missing.map((eq) {
+    switch (eq) {
+      case 'dumbbell':
+        return 'tạ đơn';
+      case 'resistance_band':
+        return 'dây kháng lực';
+      case 'pullup_bar':
+        return 'xà đơn';
+      default:
+        return eq;
+    }
+  }).toList();
+  return 'Cần ${names.join(', ')}';
 }

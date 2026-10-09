@@ -427,7 +427,7 @@ void main() {
       fakeCoach.speakLine(VoiceLineKey.rep, params: {'n': '7'});
       fakeCoach.speakLine(VoiceLineKey.almostDone, params: {'left': '3'});
 
-      await Future<void>.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 200));
 
       expect(fakeCoach.spokenTexts.length, 2);
       expect(fakeCoach.spokenTexts[0], contains('7'));
@@ -442,7 +442,7 @@ void main() {
       fakeCoach.speakLine(VoiceLineKey.setDone, params: {'set': '1', 'sets': '3'});
       fakeCoach.speakLine(VoiceLineKey.restStart, params: {'sec': '60'});
 
-      await Future<void>.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 200));
 
       expect(fakeCoach.spokenTexts.length, 2);
       expect(fakeCoach.spokenKeys, [VoiceLineKey.setDone, VoiceLineKey.restStart]);

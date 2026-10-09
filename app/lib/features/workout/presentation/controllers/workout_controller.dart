@@ -22,6 +22,13 @@ import '../../domain/models/workout_models.dart';
 import '../../domain/models/workout_session_state.dart';
 import '../../domain/repositories/workout_draft_repository.dart';
 import '../../domain/repositories/workout_repository.dart';
+import '../../../users/presentation/controllers/user_controller.dart';
+
+class NoOpenSessionTodayException implements Exception {
+  const NoOpenSessionTodayException();
+  @override
+  String toString() => 'Không có buổi tập mở hôm nay';
+}
 
 final workoutDatabaseProvider = Provider<WorkoutDatabase>((ref) {
   final db = WorkoutDatabase();
@@ -128,12 +135,28 @@ final workoutSetupProvider = FutureProvider.autoDispose
       final workoutRepo = ref.watch(workoutRepositoryProvider);
       final planRepo = ref.watch(planRepositoryProvider);
       final now = ref.watch(workoutClockProvider)();
+      final user = ref.watch(currentUserProvider) ??
+          ref.watch(userStatusFutureProvider).valueOrNull;
+      final today = user?.localDate ?? localDateString(now);
 
       final exercisesFuture = workoutRepo.getExercises();
       var plan = await planRepo.getCurrentPlan();
-      SessionView? session = args.sessionId == null
-          ? pickNextSession(plan, localDateString(now))
-          : plan.sessions.where((s) => s.id == args.sessionId).firstOrNull;
+      SessionView? session;
+      if (args.sessionId != null) {
+        session = plan.sessions.where((s) => s.id == args.sessionId).firstOrNull;
+      } else {
+        session = plan.sessions.cast<SessionView?>().firstWhere(
+          (s) =>
+              s != null &&
+              isSessionOpen(s) &&
+              s.scheduledDate == today &&
+              s.items.isNotEmpty,
+          orElse: () => null,
+        );
+        if (session == null) {
+          throw const NoOpenSessionTodayException();
+        }
+      }
       if (session == null) {
         throw const ApiException(code: 'SESSION_NOT_FOUND', statusCode: 404);
       }

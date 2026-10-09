@@ -121,11 +121,21 @@ class _WorkoutStartScreenState extends ConsumerState<WorkoutStartScreen> {
         child: SafeArea(
           child: setupAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, _) => _ErrorView(
-              error: error,
-              onRetry: () => ref.invalidate(workoutSetupProvider(args)),
-              onClose: () => _close(context),
-            ),
+            error: (error, _) {
+              if (error is NoOpenSessionTodayException) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) {
+                    context.pushReplacement('/workout/extra');
+                  }
+                });
+                return const Center(child: CircularProgressIndicator());
+              }
+              return _ErrorView(
+                error: error,
+                onRetry: () => ref.invalidate(workoutSetupProvider(args)),
+                onClose: () => _close(context),
+              );
+            },
             data: (setup) {
               if (!_hasCheckedResume) {
                 _hasCheckedResume = true;
