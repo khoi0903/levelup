@@ -39,6 +39,10 @@ Không sửa thư mục do agent khác phụ trách trong cùng lúc. Cần sử
 - **Ngày của người dùng**: luôn lưu `localDate` dạng `"YYYY-MM-DD"` tính theo `users.timezone`
   (mặc định `Asia/Ho_Chi_Minh`). Tuần bắt đầu Thứ Hai (`weekStart`).
 - Buổi tập **từ 5 phút** (`durationSec >= 300`) mới tính streak (`countsForStreak`).
+- **Lịch chỉ để nhắc**: chỉ tiêu tuần = số ngày chọn lúc onboarding; mọi buổi từ 5 phút, tập ngày nào cũng cộng.
+  Buổi trong lịch chỉ đánh dấu xong khi tập đúng ngày của buổi (không tập bù); ngày khác là "tập thêm".
+- **Không tin giờ điện thoại**: ngày "hôm nay" lấy theo máy chủ (`/me.localDate`); backend chỉ cộng chỉ tiêu cho
+  buổi bắt đầu trong 24 giờ trước giờ máy chủ.
 - Thông báo: tối đa `maxPerDay` (mặc định 2) mỗi ngày, không gửi trong giờ yên lặng
   (22:00–07:00), mọi thông báo đi qua một cổng gửi duy nhất, có `dedupeKey`.
 - Mục tiêu calo không dưới 1200 kcal (nam: 1500).
