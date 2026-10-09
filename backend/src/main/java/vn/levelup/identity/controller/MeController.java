@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
+import vn.levelup.demo.DemoAccess;
 import vn.levelup.identity.dto.SettingsRequest;
 import vn.levelup.identity.model.User;
 import vn.levelup.identity.service.AccountDeletionService;
@@ -38,14 +39,16 @@ public class MeController {
     private final Clock clock;
     private final CheckinService checkins;
     private final AccountDeletionService deletion;
+    private final DemoAccess demo;
 
     public MeController(CurrentUserService currentUser, SettingsService settings, Clock clock,
-                        CheckinService checkins, AccountDeletionService deletion) {
+                        CheckinService checkins, AccountDeletionService deletion, DemoAccess demo) {
         this.currentUser = currentUser;
         this.settings = settings;
         this.clock = clock;
         this.checkins = checkins;
         this.deletion = deletion;
+        this.demo = demo;
     }
 
     /**
@@ -93,7 +96,8 @@ public class MeController {
             user.streak(),
             settings.read(user.id()),
             settings.achievements(user.id()),
-            checkins.today(new ObjectId(user.id()), today.toString()));
+            checkins.today(new ObjectId(user.id()), today.toString()),
+            demo.allowedFor(user.authUid()));
     }
 
     public record MeResponse(
@@ -106,6 +110,7 @@ public class MeController {
         User.Streak streak,
         SettingsService.Settings settings,
         List<SettingsService.Achievement> achievements,
-        TodayCheckin todayCheckin              // null: hôm nay chưa check-in
+        TodayCheckin todayCheckin,             // null: hôm nay chưa check-in
+        boolean demoEnabled                    // được dùng nút giả lập (app mới mở màn Demo)
     ) {}
 }

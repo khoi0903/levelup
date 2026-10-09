@@ -45,12 +45,14 @@ class UserProfile {
       location: json['location'] as String?,
       sessionMinutes: (json['sessionMinutes'] as num?)?.toInt(),
       coachStyle: json['coachStyle'] as String?,
-      motivationReasons: (json['motivationReasons'] as List<dynamic>?)
+      motivationReasons:
+          (json['motivationReasons'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           const [],
       motivationText: json['motivationText'] as String?,
-      equipment: (json['equipment'] as List<dynamic>?)
+      equipment:
+          (json['equipment'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           const [],
@@ -59,22 +61,22 @@ class UserProfile {
   }
 
   Map<String, dynamic> toJson() => {
-        if (goal != null) 'goal': goal,
-        if (gender != null) 'gender': gender,
-        if (birthYear != null) 'birthYear': birthYear,
-        if (heightCm != null) 'heightCm': heightCm,
-        if (startWeightKg != null) 'startWeightKg': startWeightKg,
-        if (goalWeightKg != null) 'goalWeightKg': goalWeightKg,
-        if (experience != null) 'experience': experience,
-        if (location != null) 'location': location,
-        if (sessionMinutes != null) 'sessionMinutes': sessionMinutes,
-        if (coachStyle != null) 'coachStyle': coachStyle,
-        'motivationReasons': motivationReasons,
-        if (motivationText != null) 'motivationText': motivationText,
-        'equipment': equipment,
-        if (onboardingCompletedAt != null)
-          'onboardingCompletedAt': onboardingCompletedAt,
-      };
+    if (goal != null) 'goal': goal,
+    if (gender != null) 'gender': gender,
+    if (birthYear != null) 'birthYear': birthYear,
+    if (heightCm != null) 'heightCm': heightCm,
+    if (startWeightKg != null) 'startWeightKg': startWeightKg,
+    if (goalWeightKg != null) 'goalWeightKg': goalWeightKg,
+    if (experience != null) 'experience': experience,
+    if (location != null) 'location': location,
+    if (sessionMinutes != null) 'sessionMinutes': sessionMinutes,
+    if (coachStyle != null) 'coachStyle': coachStyle,
+    'motivationReasons': motivationReasons,
+    if (motivationText != null) 'motivationText': motivationText,
+    'equipment': equipment,
+    if (onboardingCompletedAt != null)
+      'onboardingCompletedAt': onboardingCompletedAt,
+  };
 }
 
 class UserStreak {
@@ -100,11 +102,11 @@ class UserStreak {
   }
 
   Map<String, dynamic> toJson() => {
-        'currentWeeks': currentWeeks,
-        'bestWeeks': bestWeeks,
-        'freezesAvailable': freezesAvailable,
-        if (lastClosedWeek != null) 'lastClosedWeek': lastClosedWeek,
-      };
+    'currentWeeks': currentWeeks,
+    'bestWeeks': bestWeeks,
+    'freezesAvailable': freezesAvailable,
+    if (lastClosedWeek != null) 'lastClosedWeek': lastClosedWeek,
+  };
 }
 
 class UserNotificationsSettings {
@@ -141,14 +143,14 @@ class UserNotificationsSettings {
   }
 
   Map<String, dynamic> toJson() => {
-        'pushEnabled': pushEnabled,
-        if (checkinTime != null) 'checkinTime': checkinTime,
-        if (preWorkoutMinutes != null) 'preWorkoutMinutes': preWorkoutMinutes,
-        'quietStart': quietStart,
-        'quietEnd': quietEnd,
-        'maxPerDay': maxPerDay,
-        'waterReminder': waterReminder,
-      };
+    'pushEnabled': pushEnabled,
+    if (checkinTime != null) 'checkinTime': checkinTime,
+    if (preWorkoutMinutes != null) 'preWorkoutMinutes': preWorkoutMinutes,
+    'quietStart': quietStart,
+    'quietEnd': quietEnd,
+    'maxPerDay': maxPerDay,
+    'waterReminder': waterReminder,
+  };
 }
 
 class UserSharingSettings {
@@ -174,21 +176,19 @@ class UserSharingSettings {
   }
 
   Map<String, dynamic> toJson() => {
-        'weight': weight,
-        'measurements': measurements,
-        'photos': photos,
-        'meals': meals,
-      };
+    'weight': weight,
+    'measurements': measurements,
+    'photos': photos,
+    'meals': meals,
+  };
 }
 
 class UserAvailabilitySlot {
   final int weekday; // 1-7
-  final String slot; // early_morning | morning | noon | afternoon | evening | late_evening
+  final String
+  slot; // early_morning | morning | noon | afternoon | evening | late_evening
 
-  const UserAvailabilitySlot({
-    required this.weekday,
-    required this.slot,
-  });
+  const UserAvailabilitySlot({required this.weekday, required this.slot});
 
   factory UserAvailabilitySlot.fromJson(Map<String, dynamic> json) {
     return UserAvailabilitySlot(
@@ -197,10 +197,7 @@ class UserAvailabilitySlot {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-        'weekday': weekday,
-        'slot': slot,
-      };
+  Map<String, dynamic> toJson() => {'weekday': weekday, 'slot': slot};
 }
 
 class UserSettings {
@@ -217,33 +214,37 @@ class UserSettings {
   factory UserSettings.fromJson(Map<String, dynamic> json) {
     return UserSettings(
       notifications: json['notifications'] != null
-          ? UserNotificationsSettings.fromJson(json['notifications'] as Map<String, dynamic>)
+          ? UserNotificationsSettings.fromJson(
+              json['notifications'] as Map<String, dynamic>,
+            )
           : const UserNotificationsSettings(),
       sharing: json['sharing'] != null
-          ? UserSharingSettings.fromJson(json['sharing'] as Map<String, dynamic>)
+          ? UserSharingSettings.fromJson(
+              json['sharing'] as Map<String, dynamic>,
+            )
           : const UserSharingSettings(),
-      availability: (json['availability'] as List<dynamic>?)
-              ?.map((e) => UserAvailabilitySlot.fromJson(e as Map<String, dynamic>))
+      availability:
+          (json['availability'] as List<dynamic>?)
+              ?.map(
+                (e) => UserAvailabilitySlot.fromJson(e as Map<String, dynamic>),
+              )
               .toList() ??
           const [],
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'notifications': notifications.toJson(),
-        'sharing': sharing.toJson(),
-        'availability': availability.map((a) => a.toJson()).toList(),
-      };
+    'notifications': notifications.toJson(),
+    'sharing': sharing.toJson(),
+    'availability': availability.map((a) => a.toJson()).toList(),
+  };
 }
 
 class TodayCheckin {
   final String energy; // tired | normal | energized
   final String? sleep; // lt6 | h6_7 | h7_8 | gt8
 
-  const TodayCheckin({
-    required this.energy,
-    this.sleep,
-  });
+  const TodayCheckin({required this.energy, this.sleep});
 
   bool get isLow => energy == 'tired' || sleep == 'lt6';
   bool get isEnergized => energy == 'energized';
@@ -256,9 +257,9 @@ class TodayCheckin {
   }
 
   Map<String, dynamic> toJson() => {
-        'energy': energy,
-        if (sleep != null) 'sleep': sleep,
-      };
+    'energy': energy,
+    if (sleep != null) 'sleep': sleep,
+  };
 }
 
 class UserInjury {
@@ -284,11 +285,11 @@ class UserInjury {
   }
 
   Map<String, dynamic> toJson() => {
-        'bodyArea': bodyArea,
-        if (note != null) 'note': note,
-        'active': active,
-        if (reportedAt != null) 'reportedAt': reportedAt,
-      };
+    'bodyArea': bodyArea,
+    if (note != null) 'note': note,
+    'active': active,
+    if (reportedAt != null) 'reportedAt': reportedAt,
+  };
 }
 
 class MeResponse {
@@ -304,6 +305,9 @@ class MeResponse {
   final TodayCheckin? todayCheckin;
   final List<UserInjury> injuries;
 
+  /// Máy chủ cho tài khoản này dùng nút giả lập (DEMO_MODE + DEMO_UIDS); chỉ khi đó mới mở màn Demo.
+  final bool demoEnabled;
+
   const MeResponse({
     required this.id,
     required this.displayName,
@@ -316,6 +320,7 @@ class MeResponse {
     this.achievements = const [],
     this.todayCheckin,
     this.injuries = const [],
+    this.demoEnabled = false,
   });
 
   List<String> get activeInjuries =>
@@ -337,36 +342,38 @@ class MeResponse {
       settings: json['settings'] != null
           ? UserSettings.fromJson(json['settings'] as Map<String, dynamic>)
           : const UserSettings(),
-      achievements: (json['achievements'] as List<dynamic>?)
+      achievements:
+          (json['achievements'] as List<dynamic>?)
               ?.map((e) => Achievement.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
       todayCheckin: json['todayCheckin'] != null
           ? TodayCheckin.fromJson(json['todayCheckin'] as Map<String, dynamic>)
           : null,
-      injuries: (json['injuries'] as List<dynamic>?)
-              ?.map((e) {
-                if (e is Map<String, dynamic>) {
-                  return UserInjury.fromJson(e);
-                }
-                return UserInjury(bodyArea: e.toString(), active: true);
-              })
-              .toList() ??
+      injuries:
+          (json['injuries'] as List<dynamic>?)?.map((e) {
+            if (e is Map<String, dynamic>) {
+              return UserInjury.fromJson(e);
+            }
+            return UserInjury(bodyArea: e.toString(), active: true);
+          }).toList() ??
           const [],
+      demoEnabled: json['demoEnabled'] == true,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'displayName': displayName,
-        if (timezone != null) 'timezone': timezone,
-        if (localDate != null) 'localDate': localDate,
-        if (weekStart != null) 'weekStart': weekStart,
-        if (profile != null) 'profile': profile!.toJson(),
-        if (streak != null) 'streak': streak!.toJson(),
-        'settings': settings.toJson(),
-        'achievements': achievements.map((a) => a.toJson()).toList(),
-        if (todayCheckin != null) 'todayCheckin': todayCheckin!.toJson(),
-        'injuries': injuries.map((a) => a.toJson()).toList(),
-      };
+    'id': id,
+    'displayName': displayName,
+    if (timezone != null) 'timezone': timezone,
+    if (localDate != null) 'localDate': localDate,
+    if (weekStart != null) 'weekStart': weekStart,
+    if (profile != null) 'profile': profile!.toJson(),
+    if (streak != null) 'streak': streak!.toJson(),
+    'settings': settings.toJson(),
+    'achievements': achievements.map((a) => a.toJson()).toList(),
+    if (todayCheckin != null) 'todayCheckin': todayCheckin!.toJson(),
+    'injuries': injuries.map((a) => a.toJson()).toList(),
+    if (demoEnabled) 'demoEnabled': true,
+  };
 }
