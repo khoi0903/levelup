@@ -46,7 +46,9 @@ import vn.levelup.shared.util.LocalDates;
 import vn.levelup.training.dto.PlanView;
 import vn.levelup.training.model.Exercise;
 import vn.levelup.training.model.TrainingPlan;
+import vn.levelup.training.dto.TodayCheckin;
 import vn.levelup.training.repository.ExerciseRepository;
+import vn.levelup.training.service.CheckinService;
 import vn.levelup.coach.rules.CoachRules.Action;
 import vn.levelup.coach.rules.CoachRules.Fact;
 import vn.levelup.coach.rules.CoachRules.Injury;
@@ -116,7 +118,9 @@ public class CoachService {
         String source = "rules";
         if (ai.available()) {
             List<Exercise> safe = SafeSessions.safeList(active, ctx.location(), ctx.equipment(), ctx.injuries());
-            String system = CoachPrompts.chatSystem(ctx.style(), userData(user, ctx, memory, plan, byId, safe, today));
+            TodayCheckin checkin = CheckinService.today(mongo, userId, today.toString());
+            String system = CoachPrompts.chatSystem(ctx.style(),
+                userData(user, ctx, memory, plan, byId, safe, today, checkin));
             Optional<Proposal> fromAi = askAi(system, conversation(recentMessages(userId), message), onReplyText);
             if (fromAi.isPresent()) {
                 p = fromAi.get();
@@ -314,8 +318,36 @@ public class CoachService {
     }
 
     /** Dữ liệu người dùng cho system prompt: hồ sơ, chấn thương, trí nhớ, kế hoạch tuần, bài an toàn để đổi. */
+    /** Check-in hôm nay cho coach; mệt hoặc ngủ ít thì nhắc ưu tiên buổi nhẹ, ngắn. */
+    static String checkinText(TodayCheckin c) {
+        if (c == null) {
+            return "chưa check-in";
+        }
+        String energy = switch (c.energy() == null ? "" : c.energy()) {
+            case "tired" -> "mệt";
+            case "energized" -> "sung sức";
+            default -> "bình thường";
+        };
+        String sleep = switch (c.sleep() == null ? "" : c.sleep()) {
+            case "lt6" -> "ngủ dưới 6 tiếng";
+            case "h6_7" -> "ngủ 6-7 tiếng";
+            case "h7_8" -> "ngủ 7-8 tiếng";
+            case "gt8" -> "ngủ trên 8 tiếng";
+            default -> null;
+        };
+        String text = sleep == null ? energy : energy + ", " + sleep;
+        if (c.low()) {
+            return text + " (ưu tiên gợi ý tập nhẹ, ngắn hoặc giãn cơ; không đề xuất tăng khối lượng)";
+        }
+        if ("energized".equals(c.energy())) {
+            return text + " (có thể gợi ý buổi đầy đủ)";
+        }
+        return text;
+    }
+
     private static String userData(User user, UserCtx ctx, List<Fact> memory, TrainingPlan plan,
-                                   Map<String, Exercise> byId, List<Exercise> safe, LocalDate today) {
+                                   Map<String, Exercise> byId, List<Exercise> safe, LocalDate today,
+                                   TodayCheckin checkin) {
         StringBuilder b = new StringBuilder();
         User.Profile p = user.profile();
         b.append("Tên: ").append(ctx.name()).append('\n');
@@ -332,6 +364,7 @@ public class CoachService {
         }
         b.append("Vùng đang đau: ").append(ctx.injuries().isEmpty() ? "không có" : String.join(", ", ctx.injuries()))
             .append('\n');
+        b.append("Check-in sáng nay: ").append(checkinText(checkin)).append('\n');
         if (!memory.isEmpty()) {
             b.append("Điều coach đã biết về người dùng:\n");
             memory.forEach(f -> b.append("- ").append(f.value()).append('\n'));

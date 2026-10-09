@@ -4,6 +4,8 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.bson.types.ObjectId;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +17,8 @@ import vn.levelup.identity.model.User;
 import vn.levelup.identity.service.CurrentUserService;
 import vn.levelup.identity.service.SettingsService;
 import vn.levelup.shared.util.LocalDates;
+import vn.levelup.training.dto.TodayCheckin;
+import vn.levelup.training.service.CheckinService;
 
 @RestController
 public class MeController {
@@ -22,11 +26,14 @@ public class MeController {
     private final CurrentUserService currentUser;
     private final SettingsService settings;
     private final Clock clock;
+    private final CheckinService checkins;
 
-    public MeController(CurrentUserService currentUser, SettingsService settings, Clock clock) {
+    public MeController(CurrentUserService currentUser, SettingsService settings, Clock clock,
+                        CheckinService checkins) {
         this.currentUser = currentUser;
         this.settings = settings;
         this.clock = clock;
+        this.checkins = checkins;
     }
 
     /**
@@ -57,7 +64,8 @@ public class MeController {
             user.profile(),
             user.streak(),
             settings.read(user.id()),
-            settings.achievements(user.id()));
+            settings.achievements(user.id()),
+            checkins.today(new ObjectId(user.id()), today.toString()));
     }
 
     public record MeResponse(
@@ -69,6 +77,7 @@ public class MeController {
         User.Profile profile,
         User.Streak streak,
         SettingsService.Settings settings,
-        List<SettingsService.Achievement> achievements
+        List<SettingsService.Achievement> achievements,
+        TodayCheckin todayCheckin              // null: hôm nay chưa check-in
     ) {}
 }
