@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import vn.levelup.identity.model.User;
 import vn.levelup.shared.util.LocalDates;
+import vn.levelup.training.dto.TodayCheckin;
 import vn.levelup.training.dto.CheckinRequest;
 import vn.levelup.training.dto.PlanView;
 import vn.levelup.training.model.Exercise;
@@ -39,6 +40,20 @@ public class CheckinService {
         this.mongo = mongo;
         this.exercises = exercises;
         this.clock = clock;
+    }
+
+    /** Check-in của ngày này (theo localDate người dùng), chưa check-in thì null. Dùng cho /me và coach. */
+    public static TodayCheckin today(MongoTemplate mongo, ObjectId userId, String localDate) {
+        Document day = mongo.findOne(Query.query(Criteria.where("userId").is(userId).and("localDate").is(localDate)
+            .and("checkin").exists(true)), Document.class, "daily_stats");
+        if (day == null || !(day.get("checkin") instanceof Document c)) {
+            return null;
+        }
+        return new TodayCheckin(c.getString("energy"), c.getString("sleep"));
+    }
+
+    public TodayCheckin today(ObjectId userId, String localDate) {
+        return today(mongo, userId, localDate);
     }
 
     /** Check-in và điều chỉnh buổi tập cùng transaction, không ghi đè dữ liệu của ngày hay plan. */
