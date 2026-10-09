@@ -162,22 +162,25 @@ flowchart TD
 </section>
 
 <section id="modules">
-  <h2>Chia module (package Java)</h2>
+  <h2>Chia nhóm dịch vụ (package Java)</h2>
+  <p>Một ứng dụng Spring Boot, chia 6 nhóm như các microservice; mỗi nhóm chia tầng
+  <code>controller/ service/ rules/ model/ repository/ dto/</code>. Chi tiết và sơ đồ: <code>backend/README.md</code>.</p>
   <div class="mods">
-    <div class="mod"><b>auth</b><span>Kiểm tra token Firebase (Spring Security), đổi uid sang userId</span></div>
-    <div class="mod"><b>users</b><span>Hồ sơ, cài đặt thông báo, chia sẻ, thiết bị</span></div>
-    <div class="mod"><b>onboarding</b><span>Lưu khảo sát, tạo kế hoạch tuần 1</span></div>
-    <div class="mod"><b>exercises</b><span>Thư viện bài, lọc theo dụng cụ và chấn thương, cấu hình camera</span></div>
-    <div class="mod"><b>plans</b><span>Kế hoạch tuần, đổi buổi, dời lịch</span></div>
-    <div class="mod"><b>workouts</b><span>Lưu buổi tập, kỷ lục, chỉnh buổi kế tiếp</span></div>
-    <div class="mod"><b>checkins</b><span>Check-in sáng, đổi biến thể buổi tập</span></div>
-    <div class="mod"><b>coach</b><span>Chat, công cụ cho AI, trí nhớ dài hạn</span></div>
-    <div class="mod"><b>nutrition</b><span>Nhận diện món, bữa ăn, nước, mục tiêu</span></div>
-    <div class="mod"><b>motivation</b><span>Streak, bỏ buổi, buddy, huy hiệu, tổng kết tuần</span></div>
-    <div class="mod"><b>notifications</b><span>Cổng gửi, giới hạn, giờ yên lặng, FCM</span></div>
-    <div class="mod"><b>jobs</b><span>/jobs/tick: check-in, nhắc, chốt ngày, chốt tuần</span></div>
+    <div class="mod"><b>identity</b><span>Kiểm tra token Firebase, hồ sơ, cài đặt (cả nơi tập, dụng cụ), thiết bị, onboarding</span></div>
+    <div class="mod"><b>training</b><span>Thư viện bài, kế hoạch tuần, đổi bài, bản 5 phút, buổi tập, kỷ lục, check-in, số đo</span></div>
+    <div class="mod"><b>coach</b><span>Chat, công cụ cho AI (AI không ghi thẳng database), AiClient Claude/Gemini</span></div>
+    <div class="mod"><b>nutrition</b><span>Nhận diện món, bữa ăn, nước, mục tiêu calo</span></div>
+    <div class="mod"><b>engagement</b><span>Streak, bỏ buổi, buddy, huy hiệu, tổng kết tuần, cổng gửi thông báo, /jobs/tick</span></div>
+    <div class="mod"><b>shared</b><span>Bảo mật, CORS, trả lỗi API, ngày theo múi giờ người dùng</span></div>
     <div class="mod"><b>demo</b><span>Nút giả lập, chỉ bật khi DEMO_MODE=true</span></div>
   </div>
+  <h3>Lịch tập và chỉ tiêu tuần</h3>
+  <ul>
+    <li>Ngày chọn lúc onboarding dùng để <b>nhắc</b>. Chỉ tiêu tuần = số ngày đã chọn; mọi buổi từ 5 phút, tập ngày nào cũng cộng.</li>
+    <li>Buổi trong lịch chỉ được đánh dấu xong khi tập <b>đúng ngày</b> của buổi; ngày khác là "tập thêm", không tập bù.</li>
+    <li>Không tin giờ điện thoại: so ngày theo giờ máy chủ; chỉ cộng chỉ tiêu cho buổi bắt đầu trong 24 giờ.</li>
+    <li>Qua ngày mà chưa tập thì job chốt ngày đánh dấu buổi <code>skipped</code> (dùng cho nhắc, không mất streak tuần).</li>
+  </ul>
 </section>
 
 <section id="endpoints">
@@ -189,7 +192,9 @@ flowchart TD
     <tr><td class="ep"><span class="m post">POST</span>/devices</td><td>F1</td><td>Lưu FCM token sau khi người dùng bật thông báo</td></tr>
     <tr><td class="ep"><span class="m get">GET</span>/exercises</td><td>F2</td><td>Thư viện bài đã lọc theo người dùng, kèm cấu hình camera</td></tr>
     <tr><td class="ep"><span class="m get">GET</span>/plans/current</td><td>F2</td><td>Kế hoạch tuần này</td></tr>
-    <tr><td class="ep"><span class="m patch">PATCH</span>/plans/sessions/:id</td><td>F2, F3</td><td>Dời lịch, đổi sang bản 5 phút, đánh dấu nghỉ</td></tr>
+    <tr><td class="ep"><span class="m patch">PATCH</span>/plans/sessions/:id</td><td>F2, F3</td><td>Đổi sang bản 5 phút, đánh dấu nghỉ (dời lịch: API còn, app không dùng)</td></tr>
+    <tr><td class="ep"><span class="m get">GET</span>/plans/sessions/:id/alternatives</td><td>F2</td><td>Bài thay thế an toàn cho một bài trong buổi</td></tr>
+    <tr><td class="ep"><span class="m post">POST</span>/plans/sessions/:id/swap</td><td>F2</td><td>Đổi bài trong buổi, tuỳ chọn "không gợi ý bài này nữa"</td></tr>
     <tr><td class="ep"><span class="m post">POST</span>/checkins</td><td>F2</td><td>Check-in sáng, trả về buổi tập đã điều chỉnh</td></tr>
     <tr><td class="ep"><span class="m post">POST</span>/workouts</td><td>F2, F2b</td><td>Lưu buổi tập, trả về kỷ lục, tiến độ tuần, huy hiệu mới</td></tr>
     <tr><td class="ep"><span class="m post">POST</span>/coach/messages</td><td>Coach</td><td>Gửi tin, nhận câu trả lời dạng stream</td></tr>

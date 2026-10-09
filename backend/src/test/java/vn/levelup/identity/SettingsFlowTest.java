@@ -135,4 +135,15 @@ class SettingsFlowTest extends FlowTestBase {
         assertEquals("VALIDATION_ERROR", patchMe("{\"equipment\":[\"barbell\"]}", 400).read("$.code"));
         assertEquals("VALIDATION_ERROR", patchMe("{\"location\":\"moon\"}", 400).read("$.code"));
     }
+
+    @Test
+    void me_returns_today_checkin() throws Exception {
+        onboard();
+        assertEquals(null, call(get("/me").header("Authorization", token), 200).<Object>read("$.todayCheckin"));
+        call(post("/checkins").header("Authorization", token).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"energy\":\"tired\",\"sleep\":\"lt6\"}"), 200);
+        DocumentContext me = call(get("/me").header("Authorization", token), 200);
+        assertEquals("tired", me.read("$.todayCheckin.energy"));
+        assertEquals("lt6", me.read("$.todayCheckin.sleep"));
+    }
 }

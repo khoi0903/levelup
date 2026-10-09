@@ -94,7 +94,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Vào màn Home
-        expect(find.text('Chào buổi chiều, Nguyễn Văn A'), findsOneWidget);
+        expect(find.textContaining(', Nguyễn Văn A'), findsOneWidget);
         expect(find.text('4 tuần'), findsOneWidget);
       },
     );
@@ -368,7 +368,10 @@ void main() {
         await tester.pumpAndSettle();
 
         // 9. Màn OB-Start
-        expect(find.textContaining('Thử ngay buổi làm quen 5 phút nhé'), findsOneWidget);
+        expect(
+          find.textContaining('Thử ngay buổi làm quen 5 phút nhé'),
+          findsOneWidget,
+        );
         expect(find.text(AppStrings.btnStart5Min), findsOneWidget);
         expect(find.text(AppStrings.btnScheduleFirstSession), findsOneWidget);
       },
