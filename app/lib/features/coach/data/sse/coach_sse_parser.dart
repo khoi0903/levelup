@@ -68,9 +68,9 @@ class CoachErrorEvent extends CoachStreamEvent {
 /// Chuyển đổi luồng byte SSE thành các [CoachStreamEvent].
 /// Xử lý việc UTF-8 bị cắt byte giữa các chunk và event bị cắt giữa các dòng.
 Stream<CoachStreamEvent> parseCoachSseByteStream(Stream<List<int>> byteStream) {
-  return parseCoachSseStringChunks(
-    byteStream.transform(utf8.decoder),
-  );
+  // bind thay vì transform: Dio trả Stream<Uint8List>, transform(utf8.decoder) lỗi kiểu lúc chạy
+  // ("Utf8Decoder is not a subtype of StreamTransformer<Uint8List, String>").
+  return parseCoachSseStringChunks(utf8.decoder.bind(byteStream));
 }
 
 /// Chuyển đổi luồng chuỗi SSE thành các [CoachStreamEvent].
