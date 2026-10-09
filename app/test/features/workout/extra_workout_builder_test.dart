@@ -207,6 +207,35 @@ void main() {
       }
     });
 
+    test('isLowCheckin == true: bớt 1 hiệp mỗi bài (tối thiểu 1) và ưu tiên bài difficulty thấp', () {
+      final itemsNormal = buildSuggestedExercises(
+        exercises: mockLibrary,
+        type: SuggestedWorkoutType.quick5,
+        isLowCheckin: false,
+      );
+      for (final item in itemsNormal) {
+        expect(item.sets, 2);
+      }
+
+      final itemsLow = buildSuggestedExercises(
+        exercises: mockLibrary,
+        type: SuggestedWorkoutType.quick5,
+        isLowCheckin: true,
+      );
+      for (final item in itemsLow) {
+        expect(item.sets, 1);
+      }
+
+      final fullBodyLow = buildSuggestedExercises(
+        exercises: mockLibrary,
+        type: SuggestedWorkoutType.fullBody,
+        isLowCheckin: true,
+      );
+      for (final item in fullBodyLow) {
+        expect(item.sets, inInclusiveRange(1, 2));
+      }
+    });
+
     test('legsGlutes tạo 3-5 bài chỉ thuộc legs hoặc glutes', () {
       final items = buildSuggestedExercises(
         exercises: mockLibrary,

@@ -18,6 +18,8 @@ import 'package:fitness_app/features/users/presentation/controllers/user_control
 import 'package:fitness_app/features/workout/data/repositories/fake_workout_repository.dart';
 import 'package:fitness_app/features/workout/domain/models/exercise_response.dart';
 import 'package:fitness_app/features/workout/presentation/controllers/workout_controller.dart';
+import 'package:fitness_app/features/workout/presentation/screens/workout_extra_screen.dart';
+import 'package:fitness_app/features/workout/presentation/screens/workout_start_screen.dart';
 import 'package:fitness_app/core/widgets/primary_button.dart';
 import 'package:fitness_app/core/widgets/secondary_button.dart';
 import 'package:flutter/material.dart';
@@ -453,6 +455,283 @@ void main() {
 
         // Ẩn khi burnedKcal == 0
         expect(find.byKey(const ValueKey('nutrition-burned-kcal')), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'todayCheckin thấp → buổi gợi ý ít hiệp hơn + dòng gợi ý',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        final userRepo = FakeUserRepository(
+          meResponse: const MeResponse(
+            id: 'u-low',
+            displayName: 'Khoi',
+            localDate: '2026-10-09',
+            todayCheckin: TodayCheckin(energy: 'tired', sleep: 'lt6'),
+          ),
+        );
+
+        final plan = PlanView(
+          id: 'plan-1',
+          weekStart: '2026-10-05',
+          status: 'active',
+          targetSessions: 3,
+          sessions: const [],
+        );
+
+        final workoutRepo = FakeWorkoutRepository(exercises: testLibrary);
+        final router = createAppRouter(initialLocation: '/workout/extra');
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              authRepositoryProvider.overrideWithValue(signedInAuth()),
+              userRepositoryProvider.overrideWithValue(userRepo),
+              planRepositoryProvider.overrideWithValue(
+                FakePlanRepository(planView: plan),
+              ),
+              workoutRepositoryProvider.overrideWithValue(workoutRepo),
+              streakRepositoryProvider.overrideWithValue(FakeStreakRepository()),
+            ],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // 1. Dòng gợi ý trên đầu: "Sáng nay bạn thấy mệt nên buổi gợi ý nhẹ hơn"
+        expect(
+          find.text('Sáng nay bạn thấy mệt nên buổi gợi ý nhẹ hơn'),
+          findsOneWidget,
+        );
+
+        // 2. Mức 5 phút được chọn sẵn mặc định (ngắn nhất)
+        final chip5 = tester.widget<ChoiceChip>(
+          find.widgetWithText(ChoiceChip, '5 phút'),
+        );
+        expect(chip5.selected, isTrue);
+
+        // Mức 20 phút không cho phép (disabled) khi check-in thấp
+        final chip20 = tester.widget<ChoiceChip>(
+          find.widgetWithText(ChoiceChip, '20 phút'),
+        );
+        expect(chip20.onSelected, isNull);
+
+        // 3. Buổi gợi ý ít hiệp hơn: bấm vào '5 phút nhanh'
+        await tester.tap(find.text('5 phút nhanh'));
+        await tester.pumpAndSettle();
+
+        // Buổi tập mở ra với 1 hiệp mỗi bài (thay vì 2 hiệp khi bình thường)
+        expect(find.byType(WorkoutStartScreen), findsOneWidget);
+        expect(find.textContaining('1 hiệp'), findsWidgets);
+      },
+    );
+
+    testWidgets(
+      'tab Tập không có buổi hôm nay → vào màn Tập thêm',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        const todayStr = '2026-10-09';
+        const tomorrowStr = '2026-10-10';
+
+        // Kế hoạch tuần này chỉ có buổi hôm nay đã bỏ (skipped) và buổi ngày mai
+        final plan = PlanView(
+          id: 'plan-1',
+          weekStart: '2026-10-05',
+          status: 'active',
+          targetSessions: 3,
+          sessions: const [
+            SessionView(
+              id: 'sess-today-skipped',
+              scheduledDate: todayStr,
+              scheduledTime: '07:00',
+              title: 'Buổi hôm nay đã bỏ',
+              status: 'skipped', // đã bỏ, không tính là mở
+              durationMin: 20,
+              items: [
+                ItemView(exerciseId: '64b000000000000000000001', sets: 2, reps: 10),
+              ],
+            ),
+            SessionView(
+              id: 'sess-tomorrow',
+              scheduledDate: tomorrowStr,
+              scheduledTime: '07:00',
+              title: 'Buổi ngày mai',
+              status: 'planned',
+              durationMin: 25,
+              items: [
+                ItemView(exerciseId: '64b000000000000000000002', sets: 3, reps: 12),
+              ],
+            ),
+          ],
+        );
+
+        final userRepo = FakeUserRepository(
+          meResponse: const MeResponse(
+            id: 'u-1',
+            displayName: 'Khoi',
+            localDate: todayStr,
+          ),
+        );
+
+        final workoutRepo = FakeWorkoutRepository(exercises: testLibrary);
+        final router = createAppRouter(initialLocation: '/workout');
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              authRepositoryProvider.overrideWithValue(signedInAuth()),
+              userRepositoryProvider.overrideWithValue(userRepo),
+              planRepositoryProvider.overrideWithValue(
+                FakePlanRepository(planView: plan),
+              ),
+              workoutRepositoryProvider.overrideWithValue(workoutRepo),
+              streakRepositoryProvider.overrideWithValue(FakeStreakRepository()),
+            ],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Mở thẳng màn Tập thêm
+        expect(find.byType(WorkoutExtraScreen), findsOneWidget);
+        expect(find.text('Tập thêm'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'Tự chọn bài: hiện bài cần tạ với nhãn và chọn được, bài chống chỉ định mờ và không chọn được',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        // 3 bài tập:
+        // 1. Hít đất (phù hợp)
+        // 2. Lunge với tạ (cần tạ đơn)
+        // 3. Squat (chống chỉ định chấn thương gối)
+        const exPush = ExerciseResponse(
+          id: 'ex-push',
+          slug: 'push-up',
+          nameVi: 'Hít đất',
+          primaryMuscle: 'chest',
+          difficulty: 3,
+          tracking: 'reps',
+          equipment: [],
+          contraindications: [],
+          isActive: true,
+        );
+
+        const exDumbbellLunge = ExerciseResponse(
+          id: 'ex-lunge',
+          slug: 'lunge',
+          nameVi: 'Lunge với tạ',
+          primaryMuscle: 'legs',
+          difficulty: 3,
+          tracking: 'reps',
+          equipment: ['dumbbell'],
+          contraindications: [],
+          isActive: true,
+        );
+
+        const exKneeSquat = ExerciseResponse(
+          id: 'ex-squat',
+          slug: 'squat',
+          nameVi: 'Squat',
+          primaryMuscle: 'legs',
+          difficulty: 3,
+          tracking: 'reps',
+          equipment: [],
+          contraindications: ['knee'],
+          isActive: true,
+        );
+
+        // User tập ở nhà, không có tạ đơn, đang bị đau gối
+        final userRepo = FakeUserRepository(
+          meResponse: const MeResponse(
+            id: 'u-injury',
+            displayName: 'Khoi',
+            localDate: '2026-10-09',
+            profile: UserProfile(
+              location: 'home',
+              equipment: [],
+            ),
+            injuries: [
+              UserInjury(bodyArea: 'knee', active: true),
+            ],
+          ),
+        );
+
+        final plan = PlanView(
+          id: 'plan-1',
+          weekStart: '2026-10-05',
+          status: 'active',
+          targetSessions: 3,
+          sessions: const [],
+        );
+
+        final workoutRepo = FakeWorkoutRepository(
+          exercises: [exPush, exDumbbellLunge, exKneeSquat],
+        );
+
+        final router = createAppRouter(initialLocation: '/workout/extra');
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              authRepositoryProvider.overrideWithValue(signedInAuth()),
+              userRepositoryProvider.overrideWithValue(userRepo),
+              planRepositoryProvider.overrideWithValue(
+                FakePlanRepository(planView: plan),
+              ),
+              workoutRepositoryProvider.overrideWithValue(workoutRepo),
+              streakRepositoryProvider.overrideWithValue(FakeStreakRepository()),
+            ],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Chuyển sang Tab 2: "Tự chọn bài"
+        await tester.tap(find.text('Tự chọn bài'));
+        await tester.pumpAndSettle();
+
+        // 1. Bài cần tạ: hiện nhãn "Cần tạ đơn" và VẪN CHỌN ĐƯỢC
+        expect(find.text('Lunge với tạ'), findsOneWidget);
+        expect(find.text('Cần tạ đơn'), findsOneWidget);
+
+        await tester.tap(find.text('Lunge với tạ'));
+        await tester.pumpAndSettle();
+
+        // Đã chọn được bài -> nút Bắt đầu đổi thành "Bắt đầu (1 bài)"
+        expect(find.text('Bắt đầu (1 bài)'), findsOneWidget);
+
+        // 2. Bài chống chỉ định: hiện mờ, nhãn "Không hợp với chấn thương gối", KHÔNG CHỌN ĐƯỢC
+        expect(find.text('Squat'), findsOneWidget);
+        expect(find.text('Không hợp với chấn thương gối'), findsOneWidget);
+
+        await tester.tap(find.text('Squat'));
+        await tester.pumpAndSettle();
+
+        // Số bài chọn vẫn là 1 (không chọn được Squat)
+        expect(find.text('Bắt đầu (1 bài)'), findsOneWidget);
       },
     );
   });

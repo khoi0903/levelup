@@ -58,14 +58,17 @@ List<ExerciseResponse> filterExercisesForUser({
 
 /// Ghép 3–5 bài tập từ danh sách bài đã lọc theo nhóm cơ của loại buổi gợi ý.
 /// Mặc định 2–3 hiệp, số lần hoặc thời gian theo difficulty.
+/// Nếu [isLowCheckin] == true: bớt 1 hiệp mỗi bài (tối thiểu 1) và ưu tiên bài difficulty thấp.
 List<WorkoutPlanItem> buildSuggestedExercises({
   required List<ExerciseResponse> exercises,
   required SuggestedWorkoutType type,
   String? location,
   List<String> userEquipment = const [],
   List<String> activeInjuries = const [],
+  bool isLowCheckin = false,
+  int? durationMin,
 }) {
-  final available = filterExercisesForUser(
+  var available = filterExercisesForUser(
     exercises: exercises,
     location: location,
     userEquipment: userEquipment,
@@ -73,6 +76,11 @@ List<WorkoutPlanItem> buildSuggestedExercises({
   );
 
   if (available.isEmpty) return const [];
+
+  if (isLowCheckin) {
+    available = List<ExerciseResponse>.from(available)
+      ..sort((a, b) => (a.difficulty ?? 3).compareTo(b.difficulty ?? 3));
+  }
 
   final List<ExerciseResponse> selected = [];
 
@@ -166,12 +174,14 @@ List<WorkoutPlanItem> buildSuggestedExercises({
     final int restSec;
 
     if (type == SuggestedWorkoutType.quick5) {
-      sets = 2;
+      const baseSets = 2;
+      sets = isLowCheckin ? 1 : baseSets;
       reps = isDuration ? null : (6 + diff * 2);
       durationSec = isDuration ? (20 + diff * 5) : null;
       restSec = 20;
     } else {
-      sets = diff >= 3 ? 3 : 2;
+      final baseSets = diff >= 3 ? 3 : 2;
+      sets = isLowCheckin ? max(1, baseSets - 1) : baseSets;
       reps = isDuration ? null : (6 + diff * 2);
       durationSec = isDuration ? (20 + diff * 5) : null;
       restSec = diff >= 4 ? 45 : 30;
@@ -204,6 +214,8 @@ WorkoutSetup buildSuggestedWorkoutSetup({
   String? location,
   List<String> userEquipment = const [],
   List<String> activeInjuries = const [],
+  bool isLowCheckin = false,
+  int? durationMin,
   String? id,
   DateTime? now,
 }) {
@@ -213,18 +225,21 @@ WorkoutSetup buildSuggestedWorkoutSetup({
     location: location,
     userEquipment: userEquipment,
     activeInjuries: activeInjuries,
+    isLowCheckin: isLowCheckin,
+    durationMin: durationMin,
   );
 
   final sessionId = id ?? generateExtraWorkoutId();
   final today = _localDateString(now ?? DateTime.now());
+  final effectiveDuration = durationMin ?? type.durationMin;
 
   final session = SessionView(
     id: sessionId,
     title: type.title,
     scheduledDate: today,
     scheduledTime: '',
-    durationMin: type.durationMin,
-    variant: type.variant,
+    durationMin: effectiveDuration,
+    variant: isLowCheckin ? 'light' : type.variant,
     status: 'planned',
     items: items
         .map(
