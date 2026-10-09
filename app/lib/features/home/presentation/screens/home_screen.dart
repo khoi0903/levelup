@@ -280,7 +280,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ],
                         ),
                         const SizedBox(height: 12),
-                        _buildWeekDaysRow(plan, me?.weekStart),
+                        _buildWeekDaysRow(
+                          plan,
+                          me?.weekStart,
+                          _trainedDates(ref, me?.weekStart),
+                        ),
                         const SizedBox(height: 10),
                         // Lịch chỉ để nhắc: tập ngày nào (≥ 5 phút) cũng cộng vào chỉ tiêu tuần
                         const Text(
@@ -918,7 +922,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildWeekDaysRow(PlanView? plan, String? weekStart) {
+  /// Ngày trong tuần có buổi tập tính chỉ tiêu (từ 5 phút, kể cả tập thêm), theo GET /streak/weeks.
+  Set<String> _trainedDates(WidgetRef ref, String? weekStart) {
+    if (weekStart == null) return const {};
+    final detail = ref.watch(streakWeekDetailProvider(weekStart)).valueOrNull;
+    if (detail == null) return const {};
+    return {
+      for (final d in detail.days)
+        if (d.workouts.any((w) => w.countsForStreak)) d.date,
+    };
+  }
+
+  Widget _buildWeekDaysRow(
+    PlanView? plan,
+    String? weekStart,
+    Set<String> trainedDates,
+  ) {
+    final monday = weekStart == null ? null : DateTime.tryParse(weekStart);
     final now = DateTime.now();
     final todayWeekday = now.weekday; // 1 = Mon .. 7 = Sun
     final labels = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
@@ -944,7 +964,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         );
 
-        final isCompleted = session?.status == 'completed';
+        // Tích khi buổi trong lịch đã xong hoặc hôm đó có tập (tập thêm cũng tính)
+        final date = monday == null
+            ? null
+            : localDateString(monday.add(Duration(days: i)));
+        final isCompleted =
+            session?.status == 'completed' ||
+            (date != null && trainedDates.contains(date));
 
         _DayStatus status;
         if (isCompleted) {

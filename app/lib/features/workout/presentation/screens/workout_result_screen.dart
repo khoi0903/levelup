@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +12,7 @@ import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/secondary_button.dart';
 import '../../../home/presentation/controllers/home_controller.dart';
+import '../../../streak/presentation/controllers/streak_controller.dart';
 import '../../../users/presentation/controllers/user_controller.dart';
 import '../../domain/models/workout_models.dart';
 import '../controllers/workout_controller.dart';
@@ -71,6 +73,7 @@ class _WorkoutResultScreenState extends ConsumerState<WorkoutResultScreen> {
     // Làm mới Home để buổi vừa tập hiện là đã xong.
     ref.invalidate(homePlanProvider);
     ref.invalidate(userStatusFutureProvider);
+    ref.invalidate(streakWeekDetailProvider);
     ref.read(activeWorkoutProvider.notifier).clear();
     context.go('/home');
   }
@@ -92,7 +95,8 @@ class _WorkoutResultScreenState extends ConsumerState<WorkoutResultScreen> {
       );
     }
     final week = result.week;
-    final isExtra = activeSession?.isExtra == true ||
+    final isExtra =
+        activeSession?.isExtra == true ||
         activeSession?.session.id.startsWith('extra-') == true;
 
     return PopScope(
@@ -198,8 +202,8 @@ class _WorkoutResultScreenState extends ConsumerState<WorkoutResultScreen> {
                           result.countsForStreak
                               ? 'Buổi này được tính vào streak tuần.'
                               : (result.durationSec >= 300
-                                  ? 'Buổi tập đã lưu nhưng không tính vào chỉ tiêu tuần vì gửi lên quá 24 giờ sau khi tập'
-                                  : 'Buổi dưới 5 phút không tính streak. Lần sau cố thêm chút nữa nhé!'),
+                                    ? 'Buổi tập đã lưu nhưng không tính vào chỉ tiêu tuần vì gửi lên quá 24 giờ sau khi tập'
+                                    : 'Buổi dưới 5 phút không tính streak. Lần sau cố thêm chút nữa nhé!'),
                           key: const ValueKey('streak-note'),
                         ),
                       ),

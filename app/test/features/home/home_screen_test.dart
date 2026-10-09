@@ -480,6 +480,85 @@ void main() {
     });
   }
 
+  testWidgets('Vòng tròn tuần tích ngày có buổi tập thêm từ 5 phút', (
+    tester,
+  ) async {
+    final now = DateTime.now();
+    final today = localDateString(now);
+    final monday = localDateString(
+      DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(Duration(days: now.weekday - 1)),
+    );
+    Future<int> checks(bool trained) async {
+      final router = createAppRouter(initialLocation: '/home');
+      await tester.pumpWidget(
+        ProviderScope(
+          key: UniqueKey(),
+          overrides: [
+            authRepositoryProvider.overrideWithValue(signedInAuth()),
+            userRepositoryProvider.overrideWithValue(
+              FakeUserRepository(
+                meResponse: MeResponse(
+                  id: 'u-1',
+                  displayName: 'Khoi',
+                  localDate: today,
+                  weekStart: monday,
+                ),
+              ),
+            ),
+            planRepositoryProvider.overrideWithValue(
+              FakePlanRepository(
+                planView: PlanView(
+                  id: 'p',
+                  weekStart: monday,
+                  status: 'active',
+                  targetSessions: 2,
+                  sessions: const [],
+                ),
+              ),
+            ),
+            streakRepositoryProvider.overrideWithValue(
+              FakeStreakRepository(
+                initialWeekDetails: {
+                  monday: StreakWeekDetail(
+                    weekStart: monday,
+                    status: 'in_progress',
+                    targetSessions: 2,
+                    completedSessions: trained ? 1 : 0,
+                    days: [
+                      StreakDayDetail(
+                        date: today,
+                        weekday: now.weekday,
+                        workouts: [
+                          if (trained)
+                            const StreakWorkoutItem(
+                              id: 'w1',
+                              startedAt: '2026-10-09T10:00:00Z',
+                              durationMin: 15,
+                              countsForStreak: true,
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                },
+              ),
+            ),
+          ],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+      await tester.pumpAndSettle();
+      return find.byIcon(Icons.check).evaluate().length;
+    }
+
+    expect(await checks(false), 0);
+    expect(await checks(true), 1, reason: 'hôm nay có tập thêm 15 phút');
+  });
+
   test('Lời chào theo giờ', () {
     expect(greetingFor(DateTime(2026, 10, 9, 9, 11)), 'Chào buổi sáng');
     expect(greetingFor(DateTime(2026, 10, 9, 12, 0)), 'Chào buổi trưa');

@@ -28,6 +28,7 @@ import vn.levelup.identity.dto.SettingsRequest;
 import vn.levelup.identity.model.User;
 import vn.levelup.nutrition.rules.NutritionCalculator;
 import vn.levelup.shared.util.LocalDates;
+import vn.levelup.training.service.ThisWeekScheduleSync;
 
 
 /** Đọc và sửa cài đặt người dùng. Ghi bằng $set từng đường dẫn, không ghi đè cả document users. */
@@ -35,9 +36,11 @@ import vn.levelup.shared.util.LocalDates;
 public class SettingsService {
 
     private final MongoTemplate mongo;
+    private final ThisWeekScheduleSync scheduleSync;
 
-    public SettingsService(MongoTemplate mongo) {
+    public SettingsService(MongoTemplate mongo, ThisWeekScheduleSync scheduleSync) {
         this.mongo = mongo;
+        this.scheduleSync = scheduleSync;
     }
 
     public void update(User user, SettingsRequest r) {
@@ -109,6 +112,10 @@ public class SettingsService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "NOTHING_TO_UPDATE");
         }
         mongo.updateFirst(Query.query(Criteria.where("_id").is(new ObjectId(user.id()))), u, "users");
+        if (r.availability() != null) {
+            // Lịch rảnh mới áp dụng ngay cho các ngày còn lại của tuần này (tuần sau lập theo lịch mới như cũ)
+            scheduleSync.apply(user, r.availability());
+        }
     }
 
     /** Cài đặt hiện tại kèm giá trị mặc định, để app hiển thị ngay không cần tự đoán. */
