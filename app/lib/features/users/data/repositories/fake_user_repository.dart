@@ -6,10 +6,16 @@ import '../../domain/repositories/user_repository.dart';
 class FakeUserRepository implements UserRepository {
   MeResponse? _meResponse;
   Exception? errorToThrow;
+  Exception? deleteErrorToThrow;
+  bool deleteAccountCalled = false;
   SettingsRequest? lastRequest;
   Map<String, dynamic>? lastJson;
 
-  FakeUserRepository({MeResponse? meResponse, this.errorToThrow}) {
+  FakeUserRepository({
+    MeResponse? meResponse,
+    this.errorToThrow,
+    this.deleteErrorToThrow,
+  }) {
     _meResponse = meResponse;
   }
 
@@ -144,5 +150,17 @@ class FakeUserRepository implements UserRepository {
     );
 
     return _meResponse!;
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    deleteAccountCalled = true;
+    if (deleteErrorToThrow != null) {
+      throw deleteErrorToThrow!;
+    }
+    if (errorToThrow != null) {
+      throw errorToThrow!;
+    }
+    _meResponse = null;
   }
 }

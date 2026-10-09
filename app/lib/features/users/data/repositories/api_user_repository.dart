@@ -19,4 +19,9 @@ class ApiUserRepository implements UserRepository {
     final response = await client.patch('/me', data: request.toJson());
     return MeResponse.fromJson(response.data as Map<String, dynamic>);
   }
+
+  @override
+  Future<void> deleteAccount() async {
+    await client.delete('/me', data: {'confirm': true});
+  }
 }

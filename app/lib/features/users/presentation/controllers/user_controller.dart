@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/api/api_client.dart';
 import '../../data/repositories/api_user_repository.dart';
@@ -134,6 +135,17 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   void clearSuccess() => state = state.copyWith(clearSuccess: true);
 
   Future<void> logout() async {
+    await appSignOutRef(_ref);
+  }
+
+  /// DELETE /me {"confirm": true}: xoá tài khoản và dữ liệu máy chủ,
+  /// sau đó xoá dữ liệu trên máy và đăng xuất.
+  Future<void> deleteAccount() async {
+    await _repository.deleteAccount();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+    } catch (_) {}
     await appSignOutRef(_ref);
   }
 }

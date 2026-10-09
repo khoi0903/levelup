@@ -6,4 +6,7 @@ abstract class UserRepository {
 
   /// PATCH /me: chỉ gửi các trường cần cập nhật, nhận lại MeResponse đầy đủ.
   Future<MeResponse> updateSettings(SettingsRequest request);
+
+  /// DELETE /me {"confirm": true}: xoá vĩnh viễn tài khoản và toàn bộ dữ liệu.
+  Future<void> deleteAccount();
 }

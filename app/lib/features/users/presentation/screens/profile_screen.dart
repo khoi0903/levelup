@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../../core/api/api_client.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
@@ -932,6 +936,48 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             },
           ),
         ),
+        const SizedBox(height: 12),
+        const Divider(color: AppColors.border, height: 1),
+        const SizedBox(height: 12),
+
+        // Xoá tài khoản (tách khỏi các cài đặt khác)
+        Center(
+          child: TextButton.icon(
+            key: const ValueKey('delete-account-button'),
+            icon: const Icon(
+              Icons.delete_forever,
+              color: Color(0xFFDC2626),
+              size: 20,
+            ),
+            label: const Text(
+              'Xoá tài khoản',
+              style: TextStyle(
+                color: Color(0xFFDC2626),
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
+            ),
+            onPressed: () => _showDeleteAccountDialogs(context),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Link nhỏ "Chính sách quyền riêng tư"
+        Center(
+          child: TextButton(
+            key: const ValueKey('privacy-policy-link'),
+            onPressed: () => _openPrivacyPolicy(context),
+            child: const Text(
+              'Chính sách quyền riêng tư',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
       ],
     );
   }
@@ -1652,6 +1698,254 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openPrivacyPolicy(BuildContext context) async {
+    final baseUrl = ref.read(apiBaseUrlProvider);
+    final url = '$baseUrl/privacy.html';
+    bool opened = false;
+    try {
+      if (!kIsWeb) {
+        if (Platform.isWindows) {
+          final res = await Process.run('cmd', ['/c', 'start', '', url]);
+          opened = res.exitCode == 0;
+        } else if (Platform.isMacOS) {
+          final res = await Process.run('open', [url]);
+          opened = res.exitCode == 0;
+        } else if (Platform.isLinux) {
+          final res = await Process.run('xdg-open', [url]);
+          opened = res.exitCode == 0;
+        }
+      }
+    } catch (_) {}
+
+    if (!opened && context.mounted) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Chính sách quyền riêng tư'),
+          content: SelectableText(url),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Đóng'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Future<void> _showDeleteAccountDialogs(BuildContext context) async {
+    final shouldProceed = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text(
+          'Xoá tài khoản?',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Khi xoá tài khoản, toàn bộ dữ liệu sau sẽ bị xoá vĩnh viễn:\n'
+              '• Hồ sơ\n'
+              '• Lịch sử tập\n'
+              '• Bữa ăn\n'
+              '• Tin nhắn coach\n'
+              '• Streak\n'
+              '• Bạn tập\n\n'
+              'Không thể hoàn tác.',
+              style: TextStyle(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            key: const ValueKey('delete-dialog1-cancel'),
+            onPressed: () => Navigator.of(dialogCtx).pop(false),
+            child: const Text('Huỷ'),
+          ),
+          FilledButton(
+            key: const ValueKey('delete-dialog1-continue'),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+            ),
+            onPressed: () => Navigator.of(dialogCtx).pop(true),
+            child: const Text('Tiếp tục'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldProceed != true || !context.mounted) return;
+
+    final deleted = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const _DeleteAccountConfirmDialog(),
+    );
+
+    if (deleted == true && context.mounted) {
+      final messenger = ScaffoldMessenger.of(context);
+      context.go('/login');
+      messenger.showSnackBar(
+        const SnackBar(
+          key: ValueKey('delete-account-success-snackbar'),
+          content: Text('Đã xoá tài khoản'),
+        ),
+      );
+    }
+  }
+}
+
+class _DeleteAccountConfirmDialog extends ConsumerStatefulWidget {
+  const _DeleteAccountConfirmDialog();
+
+  @override
+  ConsumerState<_DeleteAccountConfirmDialog> createState() =>
+      _DeleteAccountConfirmDialogState();
+}
+
+class _DeleteAccountConfirmDialogState
+    extends ConsumerState<_DeleteAccountConfirmDialog> {
+  final _controller = TextEditingController();
+  bool _isDeleting = false;
+  bool _canDelete = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_checkInput);
+  }
+
+  void _checkInput() {
+    final text = _controller.text.trim().toUpperCase();
+    final valid = text == 'XOÁ' || text == 'XÓA' || text == 'XOA';
+    if (valid != _canDelete) {
+      setState(() => _canDelete = valid);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onDeletePressed() async {
+    if (!_canDelete || _isDeleting) return;
+
+    setState(() => _isDeleting = true);
+
+    try {
+      await ref.read(settingsControllerProvider.notifier).deleteAccount();
+      if (!mounted) return;
+      setState(() => _isDeleting = false);
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isDeleting = false);
+      Navigator.of(context).pop(false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(mapErrorMessage(e)),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: !_isDeleting,
+      child: AlertDialog(
+        title: const Text(
+          'Xác nhận xoá vĩnh viễn',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Để xác nhận, vui lòng gõ chữ XOÁ vào ô bên dưới:',
+              style: TextStyle(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              key: const ValueKey('delete-account-input'),
+              controller: _controller,
+              enabled: !_isDeleting,
+              autofocus: true,
+              decoration: const InputDecoration(
+                hintText: 'Nhập XOÁ hoặc XOA',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            if (_isDeleting) ...[
+              const SizedBox(height: 16),
+              const Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        key: ValueKey('delete-account-loading-indicator'),
+                        strokeWidth: 2,
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Text(
+                      'Đang xoá tài khoản...',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            key: const ValueKey('delete-dialog2-cancel'),
+            onPressed: _isDeleting ? null : () => Navigator.of(context).pop(),
+            child: const Text('Huỷ'),
+          ),
+          FilledButton(
+            key: const ValueKey('delete-account-confirm-btn'),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              disabledBackgroundColor:
+                  const Color(0xFFDC2626).withValues(alpha: 0.3),
+            ),
+            onPressed: (_canDelete && !_isDeleting) ? _onDeletePressed : null,
+            child: const Text('Xoá vĩnh viễn'),
+          ),
         ],
       ),
     );

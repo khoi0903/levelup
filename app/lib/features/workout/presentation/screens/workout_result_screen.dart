@@ -197,7 +197,9 @@ class _WorkoutResultScreenState extends ConsumerState<WorkoutResultScreen> {
                         child: Text(
                           result.countsForStreak
                               ? 'Buổi này được tính vào streak tuần.'
-                              : 'Buổi dưới 5 phút không tính streak. Lần sau cố thêm chút nữa nhé!',
+                              : (result.durationSec >= 300
+                                  ? 'Buổi tập đã lưu nhưng không tính vào chỉ tiêu tuần vì gửi lên quá 24 giờ sau khi tập'
+                                  : 'Buổi dưới 5 phút không tính streak. Lần sau cố thêm chút nữa nhé!'),
                           key: const ValueKey('streak-note'),
                         ),
                       ),
