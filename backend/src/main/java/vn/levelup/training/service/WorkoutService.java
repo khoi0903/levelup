@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import vn.levelup.identity.model.User;
+import vn.levelup.engagement.service.ReferralService;
 import vn.levelup.shared.util.LocalDates;
 import vn.levelup.training.dto.WorkoutRequest;
 import vn.levelup.training.dto.WorkoutResponse;
@@ -57,12 +58,14 @@ public class WorkoutService {
     private final ExerciseRepository exercises;
     private final Clock clock;
     private final RpeAdjuster rpeAdjuster;
+    private final ReferralService referrals;
 
-    public WorkoutService(MongoTemplate mongo, ExerciseRepository exercises, Clock clock, RpeAdjuster rpeAdjuster) {
+    public WorkoutService(MongoTemplate mongo, ExerciseRepository exercises, Clock clock, RpeAdjuster rpeAdjuster, ReferralService referrals) {
         this.mongo = mongo;
         this.exercises = exercises;
         this.clock = clock;
         this.rpeAdjuster = rpeAdjuster;
+        this.referrals = referrals;
     }
 
     /**
@@ -206,6 +209,8 @@ public class WorkoutService {
         // 6. Buổi kế tiếp theo RPE và vùng đau (không chạy khi app gửi lại, vì đã return ở trên)
         rpeAdjuster.adjustNext(userId, localDate,
             r.plannedSessionId() == null ? null : new ObjectId(r.plannedSessionId()), r.rpe(), r.painAreas());
+
+        if (counts) referrals.completeFirstWorkout(userId);
 
         return new WorkoutResponse(logId.toHexString(), localDate.toString(), durationSec, counts, false, week,
             recordViews(newRecords, names), achievementViews(earned), kcalBurned);

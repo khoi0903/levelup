@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="vi">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LevelUp – Mời bạn cùng tập</title>
+<style>
+  body { margin:0; background:#F4F6FF; color:#171F45; font:16px/1.6 system-ui,sans-serif; }
+  main { max-width:440px; margin:64px auto; padding:28px; background:#fff; border:1px solid #DDE3F7; border-radius:24px; }
+  h1 { font-size:26px; margin:0 0 12px; }
+  #code { display:block; font-size:32px; letter-spacing:4px; font-weight:800; margin:20px 0; }
+  button { border:0; border-radius:16px; padding:14px 20px; background:#4B63E8; color:#fff; font:inherit; cursor:pointer; }
+</style>
+<main>
+  <h1>Mời bạn cùng tập với LevelUp</h1>
+  <p>Mở ứng dụng LevelUp và nhập mã ở bước cuối onboarding hoặc trong tab Tôi.
+    Mã chỉ áp dụng trong 7 ngày đầu tạo tài khoản khi chương trình giới thiệu đang mở.</p>
+  <span id="code"></span>
+  <button id="copy" hidden>Sao chép mã</button>
+  <p id="status" role="status"></p>
+</main>
+<script>
+  const code = (new URLSearchParams(location.search).get('code') || '').toUpperCase();
+  const output = document.getElementById('code');
+  const button = document.getElementById('copy');
+  if (/^[A-Z2-9]{6,8}$/.test(code)) {
+    output.textContent = code;
+    button.hidden = false;
+    button.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(code);
+        document.getElementById('status').textContent = 'Đã sao chép mã. Mở LevelUp để nhập mã.';
+      } catch (_) {
+        const range = document.createRange(); range.selectNodeContents(output);
+        const selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(range);
+        document.getElementById('status').textContent = 'Nhấn giữ mã đã chọn để sao chép.';
+      }
+    };
+  } else { document.getElementById('status').textContent = 'Link chưa có mã giới thiệu hợp lệ.'; }
+</script>
+</html>

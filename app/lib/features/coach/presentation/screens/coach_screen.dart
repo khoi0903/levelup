@@ -1,3 +1,5 @@
+import '../../../product/presentation/widgets/product_widgets.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -111,6 +113,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
           child: Column(
             children: [
               if (state.error != null) ...[
+                ProLimitAction(error: state.error),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(

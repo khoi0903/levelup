@@ -23,7 +23,11 @@ public class DemoAccess {
     }
 
     public boolean allowedFor(String uid) {
-        return enabled && uid != null && allowed(uids, uid);
+        return enabled && isAdmin(uid);
+    }
+
+    public boolean isAdmin(String uid) {
+        return uid != null && allowed(uids, uid);
     }
 
     /** "abc" khớp đúng uid, "demo*" khớp mọi uid bắt đầu bằng "demo". */

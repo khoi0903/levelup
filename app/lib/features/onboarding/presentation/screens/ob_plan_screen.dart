@@ -1,3 +1,6 @@
+import '../../../product/presentation/widgets/product_widgets.dart';
+import '../../../product/presentation/controllers/product_controller.dart';
+import '../../../users/presentation/controllers/user_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -15,6 +18,7 @@ class ObPlanScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(userStatusFutureProvider);
     final planAsync = ref.watch(weeklyPlanFutureProvider);
     final state = ref.watch(onboardingControllerProvider);
     final controller = ref.read(onboardingControllerProvider.notifier);
@@ -52,6 +56,7 @@ class ObPlanScreen extends ConsumerWidget {
                     physics: const BouncingScrollPhysics(),
                     child: Column(
                       children: [
+                        if (canRedeemReferral(ref)) const ReferralCodeInput(),
                         // Kế hoạch tuần 1 card
                         planAsync.when(
                           data: (plan) => GlassCard(

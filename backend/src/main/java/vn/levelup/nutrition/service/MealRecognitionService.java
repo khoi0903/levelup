@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import vn.levelup.coach.ai.AiClient;
 import vn.levelup.identity.model.User;
+import vn.levelup.identity.service.PlanAccess;
 import vn.levelup.nutrition.dto.RecognitionDtos;
 import vn.levelup.nutrition.model.Food;
 import vn.levelup.nutrition.rules.FoodMatcher;
@@ -64,17 +65,17 @@ public class MealRecognitionService {
     private final AiClient ai;
     private final FoodCatalog foods;
     private final Clock clock;
-    private final int dailyLimit;
+    private final PlanAccess plans;
     private final String model;
 
     public MealRecognitionService(MongoTemplate mongo, AiClient ai, FoodCatalog foods, Clock clock,
-                                  @Value("${levelup.nutrition.daily-photo-limit:10}") int dailyLimit,
+                                  PlanAccess plans,
                                   @Value("${levelup.ai.model:claude-opus-5-5}") String model) {
         this.mongo = mongo;
         this.ai = ai;
         this.foods = foods;
         this.clock = clock;
-        this.dailyLimit = dailyLimit;
+        this.plans = plans;
         this.model = model;
     }
 
@@ -108,7 +109,7 @@ public class MealRecognitionService {
 
         // 3. Giữ một lượt trong ngày, gọi AI lỗi thì trả lại lượt
         String localDate = LocalDates.today(user.timezone(), clock).toString();
-        if (!reserveScan(userId, localDate)) {
+        if (!reserveScan(userId, localDate, plans.photoLimit(user))) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "PHOTO_LIMIT_REACHED");
         }
         long started = System.nanoTime();
@@ -153,7 +154,8 @@ public class MealRecognitionService {
     }
 
     /** Tăng photoScans nếu còn lượt, trong một lệnh. Hết lượt thì upsert đụng index unique → false. */
-    boolean reserveScan(ObjectId userId, String localDate) {
+    boolean reserveScan(ObjectId userId, String localDate, int dailyLimit) {
+        if (dailyLimit <= 0) return false;
         Query q = Query.query(Criteria.where("userId").is(userId).and("localDate").is(localDate)
             .orOperator(Criteria.where("usage.photoScans").lt(dailyLimit),
                 Criteria.where("usage.photoScans").exists(false)));

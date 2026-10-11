@@ -16,6 +16,8 @@ spring:
       max-request-size: 3MB
 
 server:
+  # Render kết thúc HTTPS ở proxy; link giới thiệu dùng đúng origin công khai.
+  forward-headers-strategy: framework
   port: ${PORT:8080}
   servlet:
     encoding:

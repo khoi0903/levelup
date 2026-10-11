@@ -1,3 +1,4 @@
+import '../../../product/presentation/widgets/product_widgets.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -342,6 +343,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 32),
       children: [
+        const ProductProfileCards(),
         if (state.error != null) ...[
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),

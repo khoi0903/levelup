@@ -9,6 +9,20 @@ String mapErrorMessage(dynamic error, {String? defaultMessage}) {
 
     final code = error.code.toUpperCase();
     switch (code) {
+      case 'REFERRAL_DISABLED':
+        return 'Chương trình giới thiệu hiện chưa mở.';
+      case 'INVALID_CODE':
+        return 'Mã giới thiệu không hợp lệ.';
+      case 'OWN_CODE':
+        return 'Bạn không thể nhập mã giới thiệu của chính mình.';
+      case 'ALREADY_REDEEMED':
+        return 'Bạn đã nhập mã giới thiệu rồi.';
+      case 'TOO_LATE':
+        return 'Chỉ có thể nhập mã trong 7 ngày đầu tạo tài khoản.';
+      case 'CONFIG_CHANGED':
+        return 'Cấu hình đã thay đổi. Hãy tải lại trang trước khi lưu.';
+      case 'USER_NOT_FOUND':
+        return 'Không tìm thấy tài khoản với email này.';
       case 'ONBOARDING_REQUIRED':
         return 'Bạn cần hoàn thành bảng khảo sát ban đầu trước khi tiếp tục.';
       case 'EXERCISE_CATALOG_EMPTY':

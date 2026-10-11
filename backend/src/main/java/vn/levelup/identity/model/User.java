@@ -26,8 +26,19 @@ public record User(
     List<NutritionTarget> nutritionTargets,
     Streak streak,
     Instant createdAt,
-    Instant lastActiveAt
+    Instant lastActiveAt,
+    Plan plan,
+    String referralCode
 ) {
+    public record Plan(String tier, String source, Instant expiresAt, Instant updatedAt) {}
+
+    public User(String id, String authUid, String email, String displayName, String timezone, String locale,
+                Profile profile, List<Injury> injuries, List<Availability> availability,
+                List<NutritionTarget> nutritionTargets, Streak streak, Instant createdAt, Instant lastActiveAt) {
+        this(id, authUid, email, displayName, timezone, locale, profile, injuries, availability,
+            nutritionTargets, streak, createdAt, lastActiveAt, null, null);
+    }
+
     public record Profile(
         String goal,             // lose_fat | build_muscle | get_healthier | maintain
         String gender,           // male | female | other

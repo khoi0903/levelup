@@ -102,3 +102,28 @@ cd backend && ./mvnw spring-boot:run       # http://localhost:8080, tài liệu 
 ```
 
 Biến môi trường, deploy Render: xem `docs/deploy.md`. Quy tắc nghiệp vụ không được làm sai: `AGENTS.md`.
+
+## LevelUp Pro (tắt mặc định)
+
+`identity/service/ProductConfigService` đọc document `_id: "product"` trong `app_config`; cache 5 giây
+(vô hiệu hoá ngay sau khi Admin lưu thành công; instance khác thấy thay đổi trong tối đa 5 giây). `PlanAccess` quyết định gói theo giờ máy chủ;
+khi `proEnabled=false` vẫn dùng giới hạn từ YAML cho tất cả người dùng. `/me` trả subscription, isAdmin,
+productConfig, createdAt và referralRedeemEligible để app dùng cấu hình và cửa sổ nhập mã chính xác từ máy chủ.
+
+`identity/controller/BillingController`: `POST /billing/revenuecat/webhook`, Authorization phải khớp chính xác
+`REVENUECAT_WEBHOOK_SECRET` (có thể đặt giá trị bao gồm `Bearer ` theo dashboard RevenueCat).
+Secret trống từ chối mọi request. Chỉ lưu id/type/userId/thời gian trong `billing_events`, không lưu payload thẻ.
+Idempotency và cập nhật plan cùng transaction; timestamp cũ không ghi đè sự kiện mới.
+
+Giới thiệu thuộc `engagement/service/ReferralService`: `/referrals/me`, `/referrals/redeem`.
+WorkoutService gọi completeFirstWorkout trong cùng transaction khi countsForStreak=true.
+`referrals` unique inviteeId; `referral_rewards` unique (referrerId, friends); mã 8 ký tự có partial unique index.
+Thông báo qua NotificationGateway với dedupeKey theo referral id. Link chia sẻ mở `/referral.html` công khai trên chính backend (origin từ request, hỗ trợ proxy Render);
+người nhận sao chép mã nhập ở onboarding/tab Tôi. Chưa cấu hình universal/app links.
+Có thể đổi đường dẫn qua property `levelup.referral.link-base` nếu sau này có website riêng.
+
+Admin dùng DEMO_UIDS qua DemoAccess.isAdmin, độc lập DEMO_MODE. `/admin/config` GET/PUT có version chống
+lưu đè; `/admin/grant-pro` cấp theo email; thay đổi ghi `admin_audit` trong cùng transaction.
+`/demo/*` vẫn cần DEMO_MODE. ProductIndexes tự tạo collection/index cho DB đang chạy, không cần reset DB.
+Collection mới: app_config, billing_events, referrals, referral_rewards, admin_audit.
+Biến môi trường mới bắt buộc cho webhook: REVENUECAT_WEBHOOK_SECRET. Không thêm biến bật Pro.

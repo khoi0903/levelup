@@ -1,3 +1,7 @@
+import '../features/product/presentation/screens/pro_screen.dart';
+import '../features/product/presentation/screens/referral_screen.dart';
+import '../features/product/presentation/screens/admin_screen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -69,6 +73,9 @@ GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
     ),
   ),
   routes: [
+    GoRoute(path: '/pro', builder: (_, _) => const ProScreen()),
+    GoRoute(path: '/referrals', builder: (_, _) => const ReferralScreen()),
+    GoRoute(path: '/admin', builder: (_, _) => const AdminScreen()),
     // Màn khởi động kiểm tra phiên đăng nhập
     GoRoute(
       path: '/nutrition/photo',
