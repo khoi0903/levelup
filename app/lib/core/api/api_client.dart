@@ -221,6 +221,31 @@ class ApiClient {
     }
   }
 
+  Future<Response<T>> put<T>(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
+    try {
+      return await dio.put<T>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+      );
+    } on DioException catch (e) {
+      if (e.error is ApiException) {
+        throw e.error as ApiException;
+      }
+      throw ApiException(
+        code: 'NETWORK_ERROR',
+        fields: const {},
+        statusCode: e.response?.statusCode,
+      );
+    }
+  }
+
   Future<Response<T>> patch<T>(
     String path, {
     dynamic data,

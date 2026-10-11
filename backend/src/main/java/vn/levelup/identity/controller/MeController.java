@@ -25,6 +25,12 @@ import vn.levelup.identity.model.User;
 import vn.levelup.identity.service.AccountDeletionService;
 import vn.levelup.identity.service.CurrentUserService;
 import vn.levelup.identity.service.SettingsService;
+import vn.levelup.identity.service.PlanAccess;
+import vn.levelup.identity.service.ProductConfigService;
+import vn.levelup.identity.dto.SubscriptionView;
+import vn.levelup.identity.dto.ProductConfig;
+import java.time.Instant;
+import vn.levelup.engagement.service.ReferralService;
 import vn.levelup.shared.util.LocalDates;
 import vn.levelup.training.dto.TodayCheckin;
 import vn.levelup.training.service.CheckinService;
@@ -40,15 +46,21 @@ public class MeController {
     private final CheckinService checkins;
     private final AccountDeletionService deletion;
     private final DemoAccess demo;
+    private final PlanAccess plans;
+    private final ProductConfigService configs;
+    private final ReferralService referrals;
 
     public MeController(CurrentUserService currentUser, SettingsService settings, Clock clock,
-                        CheckinService checkins, AccountDeletionService deletion, DemoAccess demo) {
+                        CheckinService checkins, AccountDeletionService deletion, DemoAccess demo, PlanAccess plans, ProductConfigService configs, ReferralService referrals) {
         this.currentUser = currentUser;
         this.settings = settings;
         this.clock = clock;
         this.checkins = checkins;
         this.deletion = deletion;
         this.demo = demo;
+        this.plans = plans;
+        this.configs = configs;
+        this.referrals = referrals;
     }
 
     /**
@@ -97,7 +109,8 @@ public class MeController {
             settings.read(user.id()),
             settings.achievements(user.id()),
             checkins.today(new ObjectId(user.id()), today.toString()),
-            demo.allowedFor(user.authUid()));
+            demo.allowedFor(user.authUid()), demo.isAdmin(user.authUid()), plans.subscription(user),
+            configs.get(), user.createdAt(), referrals.canRedeem(user));
     }
 
     public record MeResponse(
@@ -111,6 +124,11 @@ public class MeController {
         SettingsService.Settings settings,
         List<SettingsService.Achievement> achievements,
         TodayCheckin todayCheckin,             // null: hôm nay chưa check-in
-        boolean demoEnabled                    // được dùng nút giả lập (app mới mở màn Demo)
+        boolean demoEnabled,
+        boolean isAdmin,
+        SubscriptionView subscription,
+        ProductConfig productConfig,
+        Instant createdAt,
+        boolean referralRedeemEligible
     ) {}
 }

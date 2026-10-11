@@ -53,17 +53,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.dispose();
   }
 
-  /// Bấm 5 lần vào lời chào mở màn Demo, chỉ với tài khoản máy chủ cho phép (/me.demoEnabled).
+  /// Bấm 5 lần vào lời chào mở Admin (/me.isAdmin), hoặc Demo khi /me.demoEnabled.
   void _handleHeaderTap() {
     final me = ref.read(userStatusFutureProvider).valueOrNull;
-    if (me == null || !me.demoEnabled) return;
+    if (me == null || (!me.isAdmin && !me.demoEnabled)) return;
     final now = DateTime.now();
     _tapTimestamps.removeWhere((t) => now.difference(t).inMilliseconds > 3000);
     _tapTimestamps.add(now);
 
     if (_tapTimestamps.length >= 5) {
       _tapTimestamps.clear();
-      context.push('/demo');
+      context.push(me.isAdmin ? '/admin' : '/demo');
     }
   }
 

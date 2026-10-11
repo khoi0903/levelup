@@ -23,6 +23,16 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     @Bean
+    @org.springframework.core.annotation.Order(0)
+    SecurityFilterChain billingSecurity(HttpSecurity http) throws Exception {
+        // RevenueCat's Authorization is its configured secret, not a Firebase JWT.
+        return http.securityMatcher("/billing/revenuecat/webhook")
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(a -> a.anyRequest().permitAll()).build();
+    }
+
+    @Bean
     SecurityFilterChain apiSecurity(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
@@ -37,7 +47,7 @@ public class SecurityConfig {
                 // header X-Job-Secret (so sánh hằng thời gian; JOB_SECRET trống thì luôn 403)
                 .requestMatchers(HttpMethod.POST, "/jobs/tick").permitAll()
                 // Trang tĩnh cho Google Play: chính sách quyền riêng tư, hướng dẫn xoá tài khoản
-                .requestMatchers(HttpMethod.GET, "/privacy.html", "/delete-account.html").permitAll()
+                .requestMatchers(HttpMethod.GET, "/privacy.html", "/delete-account.html", "/referral.html").permitAll()
                 .anyRequest().authenticated())
             .oauth2ResourceServer(o -> o.jwt(Customizer.withDefaults()));
         return http.build();

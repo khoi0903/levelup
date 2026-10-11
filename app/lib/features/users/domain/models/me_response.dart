@@ -1,3 +1,4 @@
+import '../../../product/domain/models/product_models.dart';
 import '../../../workout/domain/models/workout_models.dart';
 
 class UserProfile {
@@ -307,6 +308,11 @@ class MeResponse {
 
   /// Máy chủ cho tài khoản này dùng nút giả lập (DEMO_MODE + DEMO_UIDS); chỉ khi đó mới mở màn Demo.
   final bool demoEnabled;
+  final bool isAdmin;
+  final Subscription subscription;
+  final ProductConfig productConfig;
+  final DateTime? createdAt;
+  final bool referralRedeemEligible;
 
   const MeResponse({
     required this.id,
@@ -321,6 +327,11 @@ class MeResponse {
     this.todayCheckin,
     this.injuries = const [],
     this.demoEnabled = false,
+    this.isAdmin = false,
+    this.subscription = const Subscription(),
+    this.productConfig = const ProductConfig(),
+    this.createdAt,
+    this.referralRedeemEligible = false,
   });
 
   List<String> get activeInjuries =>
@@ -359,6 +370,15 @@ class MeResponse {
           }).toList() ??
           const [],
       demoEnabled: json['demoEnabled'] == true,
+      isAdmin: json['isAdmin'] == true,
+      referralRedeemEligible: json['referralRedeemEligible'] == true,
+      subscription: Subscription.fromJson(
+        json['subscription'] as Map<String, dynamic>? ?? {},
+      ),
+      productConfig: ProductConfig.fromJson(
+        json['productConfig'] as Map<String, dynamic>? ?? {},
+      ),
+      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
     );
   }
 
@@ -375,5 +395,10 @@ class MeResponse {
     if (todayCheckin != null) 'todayCheckin': todayCheckin!.toJson(),
     'injuries': injuries.map((a) => a.toJson()).toList(),
     if (demoEnabled) 'demoEnabled': true,
+    'isAdmin': isAdmin,
+    'referralRedeemEligible': referralRedeemEligible,
+    'subscription': subscription.toJson(),
+    'productConfig': productConfig.toJson(),
+    'createdAt': createdAt?.toUtc().toIso8601String(),
   };
 }

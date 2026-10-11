@@ -42,6 +42,7 @@ import vn.levelup.coach.rules.CoachRules;
 import vn.levelup.coach.rules.ReplyExtractor;
 import vn.levelup.coach.rules.SafeSessions;
 import vn.levelup.identity.model.User;
+import vn.levelup.identity.service.PlanAccess;
 import vn.levelup.shared.util.LocalDates;
 import vn.levelup.training.dto.PlanView;
 import vn.levelup.training.model.Exercise;
@@ -73,17 +74,17 @@ public class CoachService {
     private final ExerciseRepository exercises;
     private final AiClient ai;
     private final Clock clock;
-    private final int dailyLimit;
+    private final PlanAccess plans;
     private final String model;
 
     public CoachService(MongoTemplate mongo, ExerciseRepository exercises, AiClient ai, Clock clock,
-                        @Value("${levelup.coach.daily-limit:30}") int dailyLimit,
+                        PlanAccess plans,
                         @Value("${levelup.ai.model:claude}") String model) {
         this.mongo = mongo;
         this.exercises = exercises;
         this.ai = ai;
         this.clock = clock;
-        this.dailyLimit = dailyLimit;
+        this.plans = plans;
         this.model = model;
     }
 
@@ -102,7 +103,8 @@ public class CoachService {
     public CoachViews.SendResponse send(User user, String text, Consumer<String> onReplyText) {
         ObjectId userId = new ObjectId(user.id());
         LocalDate today = LocalDates.today(user.timezone(), clock);
-        int used = consumeQuota(userId, today.toString());
+        int dailyLimit = plans.coachLimit(user);
+        int used = consumeQuota(userId, today.toString(), dailyLimit);
         Instant now = clock.instant();
         String message = text.trim();
 
@@ -223,10 +225,10 @@ public class CoachService {
         Document day = mongo.findOne(Query.query(Criteria.where("userId").is(new ObjectId(user.id()))
             .and("localDate").is(today)), Document.class, "daily_stats");
         Object used = day == null ? null : day.get("usage", new Document()).get("coachMessages");
-        return Math.max(0, dailyLimit - (used instanceof Number n ? n.intValue() : 0));
+        return Math.max(0, plans.coachLimit(user) - (used instanceof Number n ? n.intValue() : 0));
     }
 
-    private int consumeQuota(ObjectId userId, String localDate) {
+    private int consumeQuota(ObjectId userId, String localDate, int dailyLimit) {
         if (dailyLimit <= 0) {
             throw limitReached();
         }

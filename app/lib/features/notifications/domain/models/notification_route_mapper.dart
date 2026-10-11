@@ -63,6 +63,8 @@ String mapNotificationRoute(String? route) {
     return '/workout';
   }
 
+  if (trimmed == '/referrals') return '/referrals';
+
   if (trimmed == '/home') {
     return '/home';
   }
