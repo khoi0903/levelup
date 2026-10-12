@@ -147,4 +147,16 @@ class SettingsFlowTest extends FlowTestBase {
         assertEquals("lt6", me.read("$.todayCheckin.sleep"));
         assertFalse(me.<Boolean>read("$.demoEnabled"), "tài khoản thường không mở được màn Demo");
     }
+
+    @Test
+    void email_from_token_is_stored_and_backfilled() throws Exception {
+        onboard();
+        assertEquals((uid + "@dev.levelup").toLowerCase(), user().getString("email"), "onboarding lưu email");
+
+        mongo.updateFirst(org.springframework.data.mongodb.core.query.Query.query(
+                org.springframework.data.mongodb.core.query.Criteria.where("authUid").is(uid)),
+            new org.springframework.data.mongodb.core.query.Update().unset("email"), "users");
+        call(get("/me").header("Authorization", token), 200);
+        assertEquals((uid + "@dev.levelup").toLowerCase(), user().getString("email"), "tài khoản cũ được điền email");
+    }
 }

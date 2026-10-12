@@ -50,7 +50,7 @@ public class OnboardingService {
     }
 
     @Transactional
-    public OnboardingResponse complete(String uid, OnboardingRequest r) {
+    public OnboardingResponse complete(String uid, String email, OnboardingRequest r) {
         ZoneId zone = LocalDates.zone(r.timezone());
         LocalDate today = LocalDates.today(zone.getId(), clock);
         Instant now = clock.instant();
@@ -84,6 +84,9 @@ public class OnboardingService {
             .setOnInsert("locale", "vi")
             .setOnInsert("createdAt", now)
             .setOnInsert("streak", new User.Streak(0, 0, 0, null));
+        if (email != null) {
+            userUpdate.set("email", email);              // để tặng Pro theo email, liên hệ khi cần xoá tài khoản
+        }
         mongo.upsert(byUid, userUpdate, User.class);
         User user = mongo.findOne(byUid, User.class);
         ObjectId userId = new ObjectId(user.id());

@@ -72,6 +72,7 @@ public class FirebaseJwtConfig {
                 .header("alg", "none")
                 .subject(uid)
                 .claim("user_id", uid)
+                .claim("email", uid + "@dev.levelup")
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(3600))
                 .build();
