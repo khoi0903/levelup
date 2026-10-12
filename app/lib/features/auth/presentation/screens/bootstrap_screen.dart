@@ -4,18 +4,73 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/api/api_exceptions.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/fast_cache.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
+import '../../../buddies/presentation/controllers/buddy_controller.dart';
+import '../../../home/presentation/controllers/home_controller.dart';
 import '../../../notifications/presentation/controllers/notifications_controller.dart';
+import '../../../streak/presentation/controllers/streak_controller.dart';
 import '../../../users/presentation/controllers/user_controller.dart';
 import '../controllers/auth_controller.dart';
 
-class BootstrapScreen extends ConsumerWidget {
+class BootstrapScreen extends ConsumerStatefulWidget {
   const BootstrapScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BootstrapScreen> createState() => _BootstrapScreenState();
+}
+
+class _BootstrapScreenState extends ConsumerState<BootstrapScreen> {
+  bool _navigated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkFastCacheAndPrefetch();
+    });
+  }
+
+  Future<void> _checkFastCacheAndPrefetch() async {
+    try {
+      final authUser = ref.read(authRepositoryProvider).currentUser;
+      if (authUser == null) return;
+
+      // Tải song song những API không phụ thuộc nhau (/plans/current, /streak, /buddies/today)
+      ref.read(homePlanProvider);
+      ref.read(streakFutureProvider);
+      ref.read(buddyTodayFutureProvider);
+
+      if (ref.read(userStatusFutureProvider).hasError) return;
+
+      // Kiểm tra bản cache đã lưu của /me và /plans/current
+      final cachedMe = await FastCache.getMe(authUser.id);
+      final cachedPlan = await FastCache.getPlan(authUser.id);
+
+      if (ref.read(userStatusFutureProvider).hasError) return;
+
+      if (cachedMe != null && mounted && !_navigated) {
+        _navigated = true;
+        ref.read(currentUserProvider.notifier).state = cachedMe;
+        if (cachedPlan != null) {
+          ref.read(currentPlanProvider.notifier).state = cachedPlan;
+        }
+
+        final pendingRoute = ref.read(pendingNotificationRouteProvider);
+        if (pendingRoute != null) {
+          ref.read(pendingNotificationRouteProvider.notifier).state = null;
+          context.go(pendingRoute);
+        } else {
+          context.go('/home');
+        }
+      }
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authRepo = ref.watch(authRepositoryProvider);
 
     // Luồng mở app: chưa đăng nhập → chuyển về màn đăng nhập
@@ -38,20 +93,23 @@ class BootstrapScreen extends ConsumerWidget {
         child: SafeArea(
           child: statusAsync.when(
             data: (me) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (context.mounted) {
-                  final pendingRoute = ref.read(
-                    pendingNotificationRouteProvider,
-                  );
-                  if (pendingRoute != null) {
-                    ref.read(pendingNotificationRouteProvider.notifier).state =
-                        null;
-                    context.go(pendingRoute);
-                  } else {
-                    context.go('/home');
+              if (!_navigated) {
+                _navigated = true;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (context.mounted) {
+                    final pendingRoute = ref.read(
+                      pendingNotificationRouteProvider,
+                    );
+                    if (pendingRoute != null) {
+                      ref.read(pendingNotificationRouteProvider.notifier).state =
+                          null;
+                      context.go(pendingRoute);
+                    } else {
+                      context.go('/home');
+                    }
                   }
-                }
-              });
+                });
+              }
               return _buildLoadingWidget();
             },
             loading: () => _buildLoadingWidget(),

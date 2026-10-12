@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/api/api_client.dart';
+import '../../../../core/utils/cache_for_extension.dart';
 import '../../data/repositories/api_onboarding_repository.dart';
 import '../../data/repositories/api_plan_repository.dart';
 import '../../domain/models/onboarding_models.dart';
@@ -158,7 +159,9 @@ final onboardingControllerProvider =
   return OnboardingController();
 });
 
-final weeklyPlanFutureProvider = FutureProvider<PlanView>((ref) async {
+final weeklyPlanFutureProvider =
+    FutureProvider.autoDispose<PlanView>((ref) async {
+  ref.cacheFor(const Duration(minutes: 5));
   final response = ref.watch(onboardingResponseProvider);
   if (response?.plan != null) {
     return response!.plan!;

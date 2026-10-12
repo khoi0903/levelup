@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/error_messages.dart';
+import '../../../../core/widgets/app_skeleton.dart';
 import '../../../../core/widgets/error_view.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
@@ -17,6 +18,22 @@ class StreakScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final streakAsync = ref.watch(streakFutureProvider);
+    final streak = streakAsync.valueOrNull;
+
+    ref.listen<AsyncValue<StreakView>>(streakFutureProvider, (prev, next) {
+      if (next.hasError && streak != null && next.error != prev?.error) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(mapErrorMessage(next.error)),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+      }
+    });
+
+    final isReloading = streakAsync.isLoading && streak != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -34,18 +51,27 @@ class StreakScreen extends ConsumerWidget {
       ),
       body: GradientBackground(
         child: SafeArea(
-          child: streakAsync.when(
-            data: (streak) => _buildContent(context, ref, streak),
-            loading: () => const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-              ),
-            ),
-            error: (err, _) => ErrorView(
-              message: mapErrorMessage(err),
-              onRetry: () => ref.invalidate(streakFutureProvider),
-            ),
-          ),
+          child: streak == null
+              ? (streakAsync.hasError
+                  ? ErrorView(
+                      message: mapErrorMessage(streakAsync.error),
+                      onRetry: () => ref.invalidate(streakFutureProvider),
+                    )
+                  : const StreakScreenSkeleton())
+              : Column(
+                  children: [
+                    ReloadingIndicator(isReloading: isReloading),
+                    Expanded(
+                      child: RefreshIndicator(
+                        color: AppColors.primary,
+                        onRefresh: () async {
+                          ref.invalidate(streakFutureProvider);
+                        },
+                        child: _buildContent(context, ref, streak),
+                      ),
+                    ),
+                  ],
+                ),
         ),
       ),
     );
@@ -57,7 +83,9 @@ class StreakScreen extends ConsumerWidget {
       ..sort((a, b) => b.weekStart.compareTo(a.weekStart));
 
     return ListView(
-      physics: const BouncingScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(
+        parent: BouncingScrollPhysics(),
+      ),
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       children: [
         // Main streak counter card

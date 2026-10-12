@@ -5,12 +5,15 @@ import '../../data/repositories/api_review_repository.dart';
 import '../../domain/models/review_models.dart';
 import '../../domain/repositories/review_repository.dart';
 
+import '../../../../core/utils/cache_for_extension.dart';
+
 final reviewRepositoryProvider = Provider<ReviewRepository>((ref) {
   final client = ref.watch(apiClientProvider);
   return ApiReviewRepository(client: client);
 });
 
 final latestReviewFutureProvider = FutureProvider.autoDispose<WeeklyReviewView>((ref) async {
+  ref.cacheFor(const Duration(minutes: 5));
   final repo = ref.watch(reviewRepositoryProvider);
   return repo.getLatestReview();
 });

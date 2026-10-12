@@ -12,6 +12,7 @@ import '../../../../core/api/api_client.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/error_messages.dart';
+import '../../../../core/widgets/app_skeleton.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
@@ -245,10 +246,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         _isSwitchingTab = false;
         _lastServerMe = null;
       } else if (next == 4) {
-        // Quay lại tab profile -> hoàn tác text field và fetch lại dữ liệu đúng từ server
+        // Quay lại tab profile -> hoàn tác text field về giá trị đã lưu
         _nameController.text = _lastSavedName;
         _lastServerMe = null;
-        ref.invalidate(userStatusFutureProvider);
+      }
+    });
+
+    final me = userAsync.valueOrNull ?? ref.watch(currentUserProvider);
+
+    ref.listen<AsyncValue<MeResponse>>(userStatusFutureProvider, (prev, next) {
+      if (next.hasError && me != null && next.error != prev?.error) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(mapErrorMessage(next.error)),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
       }
     });
 
@@ -300,34 +315,46 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       body: GradientBackground(
         child: SafeArea(
-          child: userAsync.when(
-            data: (me) {
-              if (_lastServerMe == null || _lastServerMe != me) {
-                _initFields(me);
-              }
-              return _buildSettingsList(
-                context,
-                me,
-                settingsState,
-                settingsNotifier,
-              );
-            },
-            loading: () => const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-              ),
-            ),
-            error: (err, _) => Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(
-                  mapErrorMessage(err),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppColors.textSecondary),
+          child: me == null
+              ? (userAsync.hasError
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          mapErrorMessage(userAsync.error),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: AppColors.textSecondary),
+                        ),
+                      ),
+                    )
+                  : const ProfileScreenSkeleton())
+              : Builder(
+                  builder: (context) {
+                    if (_lastServerMe == null || _lastServerMe != me) {
+                      _initFields(me);
+                    }
+                    final isReloading = userAsync.isLoading;
+                    return Column(
+                      children: [
+                        ReloadingIndicator(isReloading: isReloading),
+                        Expanded(
+                          child: RefreshIndicator(
+                            color: AppColors.primary,
+                            onRefresh: () async {
+                              ref.invalidate(userStatusFutureProvider);
+                            },
+                            child: _buildSettingsList(
+                              context,
+                              me,
+                              settingsState,
+                              settingsNotifier,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
-              ),
-            ),
-          ),
         ),
       ),
     );

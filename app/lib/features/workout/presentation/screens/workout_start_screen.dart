@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/api/api_exceptions.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/error_messages.dart';
+import '../../../../core/widgets/app_skeleton.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
@@ -115,56 +117,94 @@ class _WorkoutStartScreenState extends ConsumerState<WorkoutStartScreen> {
   Widget build(BuildContext context) {
     final args = (sessionId: widget.sessionId, quick5: widget.quick5);
     final setupAsync = ref.watch(workoutSetupProvider(args));
+    final setup = setupAsync.valueOrNull;
+
+    ref.listen<AsyncValue<WorkoutSetup>>(workoutSetupProvider(args), (prev, next) {
+      if (next.hasError && setup != null && next.error != prev?.error) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(mapErrorMessage(next.error)),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+      }
+    });
+
+    if (setup == null) {
+      if (setupAsync.hasError) {
+        final error = setupAsync.error;
+        if (error is NoOpenSessionTodayException) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              context.pushReplacement('/workout/extra');
+            }
+          });
+          return const Scaffold(
+            body: GradientBackground(
+              child: SafeArea(child: WorkoutScreenSkeleton()),
+            ),
+          );
+        }
+        return Scaffold(
+          body: GradientBackground(
+            child: SafeArea(
+              child: _ErrorView(
+                error: error!,
+                onRetry: () => ref.invalidate(workoutSetupProvider(args)),
+                onClose: () => _close(context),
+              ),
+            ),
+          ),
+        );
+      }
+      return const Scaffold(
+        body: GradientBackground(
+          child: SafeArea(child: WorkoutScreenSkeleton()),
+        ),
+      );
+    }
+
+    if (!_hasCheckedResume) {
+      _hasCheckedResume = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkResume(setup);
+      });
+    }
+
+    final isReloading = setupAsync.isLoading;
 
     return Scaffold(
       body: GradientBackground(
         child: SafeArea(
-          child: setupAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, _) {
-              if (error is NoOpenSessionTodayException) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (mounted) {
-                    context.pushReplacement('/workout/extra');
-                  }
-                });
-                return const Center(child: CircularProgressIndicator());
-              }
-              return _ErrorView(
-                error: error,
-                onRetry: () => ref.invalidate(workoutSetupProvider(args)),
-                onClose: () => _close(context),
-              );
-            },
-            data: (setup) {
-              if (!_hasCheckedResume) {
-                _hasCheckedResume = true;
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _checkResume(setup);
-                });
-              }
-              return _Overview(
-                setup: setup,
-                args: args,
-                onClose: () => _close(context),
-                onStart: () async {
-                  final repo = ref.read(workoutDraftRepositoryProvider);
-                  final activeDraft = await repo.getActiveDraft();
-                  if (activeDraft != null && activeDraft.isActive) {
-                    if (!isSameWorkoutSession(
-                      activeDraft.sessionId,
-                      setup.session.id,
-                    )) {
-                      await repo.deleteDraft(activeDraft.clientId);
+          child: Column(
+            children: [
+              ReloadingIndicator(isReloading: isReloading),
+              Expanded(
+                child: _Overview(
+                  setup: setup,
+                  args: args,
+                  onClose: () => _close(context),
+                  onStart: () async {
+                    final repo = ref.read(workoutDraftRepositoryProvider);
+                    final activeDraft = await repo.getActiveDraft();
+                    if (activeDraft != null && activeDraft.isActive) {
+                      if (!isSameWorkoutSession(
+                        activeDraft.sessionId,
+                        setup.session.id,
+                      )) {
+                        await repo.deleteDraft(activeDraft.clientId);
+                      }
                     }
-                  }
-                  ref.read(activeWorkoutProvider.notifier).start(setup);
-                  if (context.mounted) {
-                    context.pushReplacement('/workout/active');
-                  }
-                },
-              );
-            },
+                    ref.read(activeWorkoutProvider.notifier).start(setup);
+                    if (context.mounted) {
+                      context.pushReplacement('/workout/active');
+                    }
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),

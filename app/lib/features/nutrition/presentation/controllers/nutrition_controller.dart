@@ -6,6 +6,8 @@ import '../../data/repositories/api_nutrition_repository.dart';
 import '../../domain/models/nutrition_models.dart';
 import '../../domain/repositories/nutrition_repository.dart';
 
+import '../../../../core/utils/cache_for_extension.dart';
+
 final nutritionRepositoryProvider = Provider<NutritionRepository>(
   (ref) => ApiNutritionRepository(ref.watch(apiClientProvider)),
 );
@@ -13,7 +15,10 @@ final mealPhotoPickerProvider = Provider<MealPhotoPicker>(
   (ref) => PlatformMealPhotoPicker(),
 );
 final nutritionTodayProvider = FutureProvider.autoDispose<NutritionToday>(
-  (ref) => ref.watch(nutritionRepositoryProvider).today(),
+  (ref) {
+    ref.cacheFor(const Duration(minutes: 5));
+    return ref.watch(nutritionRepositoryProvider).today();
+  },
 );
 final foodSearchProvider = FutureProvider.autoDispose
     .family<List<Food>, String>(

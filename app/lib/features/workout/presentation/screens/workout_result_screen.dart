@@ -73,6 +73,7 @@ class _WorkoutResultScreenState extends ConsumerState<WorkoutResultScreen> {
     // Làm mới Home để buổi vừa tập hiện là đã xong.
     ref.invalidate(homePlanProvider);
     ref.invalidate(userStatusFutureProvider);
+    ref.invalidate(streakFutureProvider);
     ref.invalidate(streakWeekDetailProvider);
     ref.read(activeWorkoutProvider.notifier).clear();
     context.go('/home');
@@ -287,6 +288,7 @@ class _WorkoutResultScreenState extends ConsumerState<WorkoutResultScreen> {
                         onPressed: () {
                           ref.invalidate(homePlanProvider);
                           ref.invalidate(userStatusFutureProvider);
+                          ref.invalidate(streakFutureProvider);
                           ref.read(activeWorkoutProvider.notifier).clear();
                           context.push('/workout/extra');
                         },

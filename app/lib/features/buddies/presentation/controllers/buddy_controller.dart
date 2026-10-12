@@ -4,12 +4,15 @@ import '../../data/repositories/api_buddy_repository.dart';
 import '../../domain/models/buddy_models.dart';
 import '../../domain/repositories/buddy_repository.dart';
 
+import '../../../../core/utils/cache_for_extension.dart';
+
 final buddyRepositoryProvider = Provider<BuddyRepository>((ref) {
   final client = ref.watch(apiClientProvider);
   return ApiBuddyRepository(client: client);
 });
 
 final buddyTodayFutureProvider = FutureProvider.autoDispose<BuddyTodayResponse?>((ref) async {
+  ref.cacheFor(const Duration(minutes: 5));
   final repo = ref.watch(buddyRepositoryProvider);
   try {
     return await repo.getToday();

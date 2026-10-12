@@ -1,6 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'dart:async';
+import '../../../../core/utils/cache_for_extension.dart';
+import '../../../../core/utils/fast_cache.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../onboarding/domain/models/plan_models.dart';
 import '../../../onboarding/presentation/controllers/onboarding_controller.dart';
 import '../../../users/presentation/controllers/user_controller.dart';
@@ -9,9 +13,26 @@ import '../../../workout/domain/repositories/workout_draft_repository.dart';
 import '../../../workout/domain/repositories/workout_repository.dart';
 import '../../../workout/presentation/controllers/workout_controller.dart';
 
+final currentPlanProvider = StateProvider<PlanView?>((ref) => null);
+
 final homePlanProvider = FutureProvider.autoDispose<PlanView>((ref) async {
+  ref.cacheFor(const Duration(minutes: 5));
   final repo = ref.watch(planRepositoryProvider);
-  return repo.getCurrentPlan();
+  final plan = await repo.getCurrentPlan();
+  ref.read(currentPlanProvider.notifier).state = plan;
+  try {
+    final authUser = ref.read(authRepositoryProvider).currentUser;
+    final uid = authUser?.id ?? ref.read(currentUserProvider)?.id;
+    if (uid != null) {
+      unawaited(FastCache.savePlan(uid, plan));
+    }
+  } catch (_) {
+    final uid = ref.read(currentUserProvider)?.id;
+    if (uid != null) {
+      unawaited(FastCache.savePlan(uid, plan));
+    }
+  }
+  return plan;
 });
 
 final activeWorkoutDraftProvider =
