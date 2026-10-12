@@ -47,7 +47,7 @@ public class SecurityConfig {
                 // header X-Job-Secret (so sánh hằng thời gian; JOB_SECRET trống thì luôn 403)
                 .requestMatchers(HttpMethod.POST, "/jobs/tick").permitAll()
                 // Trang tĩnh cho Google Play: chính sách quyền riêng tư, hướng dẫn xoá tài khoản
-                .requestMatchers(HttpMethod.GET, "/privacy.html", "/delete-account.html", "/referral.html").permitAll()
+                .requestMatchers(HttpMethod.GET, "/privacy.html", "/delete-account.html", "/auth-action.html", "/referral.html", "/logo.png").permitAll()
                 .anyRequest().authenticated())
             .oauth2ResourceServer(o -> o.jwt(Customizer.withDefaults()));
         return http.build();
