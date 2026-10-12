@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>LevelUp – Đặt lại mật khẩu</title>
+<style>
+  :root { --bg:#f5f7fd; --card:#fff; --text:#1b1f33; --muted:#5b6178; --primary:#4b63e8; --primary-ink:#fff;
+          --line:#e1e5f2; --error:#d93a3a; --ok:#1f9d55; --field:#f7f8fc; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#12141c; --card:#1b1e29; --text:#e9ebf5; --muted:#a3a8c0;
+          --line:#2c3142; --field:#151824; } }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg);
+         color:var(--text); font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; padding:24px 16px; }
+  .card { width:100%; max-width:420px; background:var(--card); border:1px solid var(--line); border-radius:20px;
+          padding:28px 22px; box-shadow:0 10px 30px rgba(40,50,110,.08); }
+  .brand { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+  .brand img { width:40px; height:40px; border-radius:10px; background:#fff; }
+  .brand b { font-size:20px; letter-spacing:.2px; }
+  h1 { font-size:22px; margin:0 0 6px; }
+  p.sub { color:var(--muted); margin:0 0 20px; font-size:15px; }
+  label { display:block; font-weight:600; font-size:14px; margin:14px 0 6px; }
+  .field { position:relative; }
+  input { width:100%; padding:13px 46px 13px 14px; border:1.5px solid var(--line); border-radius:12px; background:var(--field);
+          color:var(--text); font-size:16px; outline:none; }
+  input:focus { border-color:var(--primary); }
+  input.bad { border-color:var(--error); }
+  .eye { position:absolute; right:8px; top:50%; transform:translateY(-50%); border:0; background:none; color:var(--muted);
+         font-size:13px; font-weight:600; padding:6px; cursor:pointer; }
+  ul.rules { list-style:none; padding:0; margin:10px 0 0; font-size:13px; color:var(--muted); }
+  ul.rules li::before { content:"○ "; } ul.rules li.ok { color:var(--ok); } ul.rules li.ok::before { content:"✓ "; }
+  .msg { font-size:13px; margin-top:6px; min-height:18px; color:var(--error); }
+  button.main { width:100%; margin-top:20px; padding:14px; border:0; border-radius:14px; background:var(--primary);
+                color:var(--primary-ink); font-size:16px; font-weight:700; cursor:pointer; }
+  button.main:disabled { opacity:.45; cursor:not-allowed; }
+  .state { text-align:center; padding:8px 0; }
+  .state .icon { font-size:44px; line-height:1; margin-bottom:10px; }
+  .hidden { display:none; }
+  .foot { color:var(--muted); font-size:12px; margin-top:18px; text-align:center; }
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="brand"><img src="/logo.png" alt=""><b>LevelUp</b></div>
+
+  <section id="loading" class="state"><p class="sub">Đang kiểm tra liên kết…</p></section>
+
+  <form id="form" class="hidden" novalidate>
+    <h1>Đặt lại mật khẩu</h1>
+    <p class="sub">Tạo mật khẩu mới cho <b id="email"></b></p>
+
+    <label for="pw">Mật khẩu mới</label>
+    <div class="field">
+      <input id="pw" type="password" autocomplete="new-password" required>
+      <button type="button" class="eye" data-for="pw">Hiện</button>
+    </div>
+    <ul class="rules">
+      <li id="r-len">Ít nhất 8 ký tự</li>
+      <li id="r-mix">Có cả chữ và số</li>
+    </ul>
+
+    <label for="pw2">Xác nhận mật khẩu mới</label>
+    <div class="field">
+      <input id="pw2" type="password" autocomplete="new-password" required>
+      <button type="button" class="eye" data-for="pw2">Hiện</button>
+    </div>
+    <div class="msg" id="match"></div>
+
+    <button class="main" id="submit" type="submit" disabled>Đổi mật khẩu</button>
+    <div class="msg" id="error"></div>
+  </form>
+
+  <section id="done" class="state hidden">
+    <div class="icon">✅</div>
+    <h1>Đã đổi mật khẩu</h1>
+    <p class="sub">Mở ứng dụng LevelUp và đăng nhập bằng mật khẩu mới.</p>
+  </section>
+
+  <section id="verified" class="state hidden">
+    <div class="icon">✅</div>
+    <h1>Đã xác minh email</h1>
+    <p class="sub">Bạn có thể quay lại ứng dụng LevelUp.</p>
+  </section>
+
+  <section id="fail" class="state hidden">
+    <div class="icon">⚠️</div>
+    <h1>Liên kết không dùng được</h1>
+    <p class="sub" id="fail-text">Liên kết đã hết hạn hoặc đã được dùng. Mở ứng dụng LevelUp, chọn "Quên mật khẩu" để nhận liên kết mới.</p>
+  </section>
+
+  <p class="foot">LevelUp · <a href="/privacy.html" style="color:inherit">Quyền riêng tư</a></p>
+</main>
+
+<script>
+(function () {
+  // Firebase gắn mode, oobCode, apiKey vào link trong email. Gọi thẳng Identity Toolkit REST, không cần SDK.
+  var q = new URLSearchParams(location.search);
+  var mode = q.get('mode'), code = q.get('oobCode'), key = q.get('apiKey');
+  var $ = function (id) { return document.getElementById(id); };
+  function show(id) {
+    ['loading', 'form', 'done', 'verified', 'fail'].forEach(function (s) { $(s).classList.toggle('hidden', s !== id); });
+  }
+  function fail(text) { if (text) $('fail-text').textContent = text; show('fail'); }
+  function call(path, body) {
+    return fetch('https://identitytoolkit.googleapis.com/v1/' + path + '?key=' + encodeURIComponent(key), {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    }).then(function (r) {
+      return r.json().then(function (j) { if (!r.ok) throw new Error((j.error && j.error.message) || 'ERROR'); return j; });
+    });
+  }
+  var errors = {
+    EXPIRED_OOB_CODE: 'Liên kết đã hết hạn. Hãy yêu cầu "Quên mật khẩu" lại trong ứng dụng.',
+    INVALID_OOB_CODE: 'Liên kết không hợp lệ hoặc đã được dùng. Hãy yêu cầu liên kết mới trong ứng dụng.',
+    USER_DISABLED: 'Tài khoản này đã bị khoá.',
+    WEAK_PASSWORD: 'Mật khẩu quá yếu, hãy chọn mật khẩu khác.'
+  };
+  function message(e) { var k = String(e.message).split(' ')[0]; return errors[k] || 'Có lỗi xảy ra, vui lòng thử lại.'; }
+
+  if (!code || !key) { fail(); return; }
+
+  if (mode === 'verifyEmail') {
+    call('accounts:update', { oobCode: code }).then(function () { show('verified'); })
+      .catch(function (e) { fail(message(e)); });
+    return;
+  }
+  if (mode !== 'resetPassword') { fail(); return; }
+
+  call('accounts:resetPassword', { oobCode: code }).then(function (j) {
+    $('email').textContent = j.email || 'tài khoản của bạn';
+    show('form');
+    $('pw').focus();
+  }).catch(function (e) { fail(message(e)); });
+
+  function check() {
+    var pw = $('pw').value, pw2 = $('pw2').value;
+    var len = pw.length >= 8, mix = /[A-Za-z]/.test(pw) && /\d/.test(pw);
+    $('r-len').classList.toggle('ok', len);
+    $('r-mix').classList.toggle('ok', mix);
+    var mismatch = pw2.length > 0 && pw !== pw2;
+    $('pw2').classList.toggle('bad', mismatch);
+    $('match').textContent = mismatch ? 'Hai mật khẩu chưa khớp' : '';
+    $('submit').disabled = !(len && mix && pw2.length > 0 && pw === pw2);
+  }
+  $('pw').addEventListener('input', check);
+  $('pw2').addEventListener('input', check);
+  document.querySelectorAll('.eye').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var i = $(b.dataset.for), show = i.type === 'password';
+      i.type = show ? 'text' : 'password'; b.textContent = show ? 'Ẩn' : 'Hiện';
+    });
+  });
+  $('form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if ($('submit').disabled) return;
+    $('submit').disabled = true; $('submit').textContent = 'Đang đổi…'; $('error').textContent = '';
+    call('accounts:resetPassword', { oobCode: code, newPassword: $('pw').value })
+      .then(function () { show('done'); })
+      .catch(function (e) {
+        $('error').textContent = message(e);
+        $('submit').textContent = 'Đổi mật khẩu'; check();
+      });
+  });
+})();
+</script>
+</body>
+</html>

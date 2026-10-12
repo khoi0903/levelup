@@ -134,6 +134,8 @@ class FirebaseAuthRepository implements AuthRepository {
   @override
   Future<void> sendPasswordResetEmail(String email) async {
     try {
+      // Email tiếng Việt; link mở trang đặt lại mật khẩu của LevelUp (cấu hình action URL trong Firebase Console)
+      await _firebaseAuth.setLanguageCode('vi');
       await _firebaseAuth.sendPasswordResetEmail(email: email.trim());
     } on fb.FirebaseAuthException catch (e) {
       throw Exception(mapFirebaseAuthError(e));

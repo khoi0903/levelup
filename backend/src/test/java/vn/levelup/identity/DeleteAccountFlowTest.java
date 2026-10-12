@@ -70,7 +70,8 @@ class DeleteAccountFlowTest extends FlowTestBase {
 
     @Test
     void privacy_and_delete_pages_are_public() throws Exception {
-        for (String page : List.of("/privacy.html", "/delete-account.html")) {
+        mvc.perform(get("/logo.png")).andExpect(r -> assertEquals(200, r.getResponse().getStatus(), "logo"));
+        for (String page : List.of("/privacy.html", "/delete-account.html", "/auth-action.html")) {
             mvc.perform(get(page)).andExpect(r -> {
                 assertEquals(200, r.getResponse().getStatus(), page);
                 assertTrue(r.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8)
