@@ -7,15 +7,18 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/error_messages.dart';
+import '../../../../core/utils/fast_cache.dart';
 import '../../../../core/widgets/app_skeleton.dart';
 import '../../../../core/widgets/error_view.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/secondary_button.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../buddies/presentation/controllers/buddy_controller.dart';
 import '../../../onboarding/domain/models/plan_models.dart';
 import '../../../streak/presentation/controllers/streak_controller.dart';
+import '../../../users/domain/models/me_response.dart';
 import '../../../users/presentation/controllers/user_controller.dart';
 import '../../../workout/domain/models/workout_draft.dart';
 import '../../../workout/presentation/controllers/workout_controller.dart';
@@ -41,10 +44,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       triggerSyncPendingWorkoutDrafts(ref);
+      _loadFastCacheIfNeeded();
     });
     _clockTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       if (mounted) setState(() {});
     });
+  }
+
+  Future<void> _loadFastCacheIfNeeded() async {
+    try {
+      final authUser = ref.read(authRepositoryProvider).currentUser;
+      if (authUser == null) return;
+      if (ref.read(currentUserProvider) == null) {
+        final cachedMe = await FastCache.getMe(authUser.id);
+        if (cachedMe != null && mounted && ref.read(currentUserProvider) == null) {
+          ref.read(currentUserProvider.notifier).state = cachedMe;
+        }
+      }
+      if (ref.read(currentPlanProvider) == null) {
+        final cachedPlan = await FastCache.getPlan(authUser.id);
+        if (cachedPlan != null && mounted && ref.read(currentPlanProvider) == null) {
+          ref.read(currentPlanProvider.notifier).state = cachedPlan;
+        }
+      }
+    } catch (_) {}
   }
 
   @override
@@ -55,7 +78,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   /// Bấm 5 lần vào lời chào mở Admin (/me.isAdmin), hoặc Demo khi /me.demoEnabled.
   void _handleHeaderTap() {
-    final me = ref.read(userStatusFutureProvider).valueOrNull;
+    final me = ref.read(userStatusFutureProvider).valueOrNull ??
+        ref.read(currentUserProvider);
     if (me == null || (!me.isAdmin && !me.demoEnabled)) return;
     final now = DateTime.now();
     _tapTimestamps.removeWhere((t) => now.difference(t).inMilliseconds > 3000);
@@ -75,14 +99,47 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final buddyAsync = ref.watch(buddyTodayFutureProvider);
     final activeDraftAsync = ref.watch(activeWorkoutDraftProvider);
 
-    // Khi đang tải dữ liệu ban đầu, hiển thị Skeleton
-    if (userAsync.isLoading || planAsync.isLoading) {
+    final cachedMe = ref.watch(currentUserProvider);
+    final cachedPlan = ref.watch(currentPlanProvider);
+    final me = userAsync.valueOrNull ?? cachedMe;
+    final plan = planAsync.valueOrNull ?? cachedPlan;
+
+    // Lắng nghe lỗi khi đang tải lại mà đã có dữ liệu cũ để báo SnackBar không che màn hình
+    ref.listen<AsyncValue<MeResponse>>(userStatusFutureProvider, (prev, next) {
+      if (next.hasError && me != null && next.error != prev?.error) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(mapErrorMessage(next.error)),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+      }
+    });
+
+    ref.listen<AsyncValue<PlanView>>(homePlanProvider, (prev, next) {
+      if (next.hasError && plan != null && next.error != prev?.error) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(mapErrorMessage(next.error)),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+      }
+    });
+
+    // Khi đang tải dữ liệu ban đầu và chưa có dữ liệu nào (kể cả cache), hiển thị Skeleton
+    if ((userAsync.isLoading && me == null) ||
+        (planAsync.isLoading && plan == null)) {
       return const Scaffold(
         body: GradientBackground(child: SafeArea(child: HomeScreenSkeleton())),
       );
     }
 
-    if (userAsync.hasError && userAsync.valueOrNull == null) {
+    if (userAsync.hasError && me == null) {
       return Scaffold(
         body: GradientBackground(
           child: SafeArea(
@@ -95,13 +152,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
     }
 
-    final me = userAsync.valueOrNull;
+    final isReloading = (userAsync.isLoading && me != null) ||
+        (planAsync.isLoading && plan != null) ||
+        (streakAsync.isLoading && streakAsync.hasValue);
+
     final displayName = me?.displayName ?? '';
     final streakWeeks =
         streakAsync.valueOrNull?.currentWeeks ?? me?.streak?.currentWeeks ?? 0;
     final dateText = me?.localDate ?? _currentDateString();
 
-    final plan = planAsync.valueOrNull;
     // Hôm nay theo máy chủ (/me.localDate), không theo giờ điện thoại: chỉnh giờ máy không mở được buổi khác.
     // Chưa tải /me thì tạm dùng đồng hồ của app.
     final todayStr =
@@ -131,16 +190,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: GradientBackground(
         child: SafeArea(
           bottom: false,
-          child: RefreshIndicator(
-            color: AppColors.primary,
-            onRefresh: () async {
-              await triggerSyncPendingWorkoutDrafts(ref);
-              ref.invalidate(userStatusFutureProvider);
-              ref.invalidate(homePlanProvider);
-              ref.invalidate(streakFutureProvider);
-              ref.invalidate(buddyTodayFutureProvider);
-              ref.invalidate(activeWorkoutDraftProvider);
-            },
+          child: Column(
+            children: [
+              ReloadingIndicator(isReloading: isReloading),
+              Expanded(
+                child: RefreshIndicator(
+                  color: AppColors.primary,
+                  onRefresh: () async {
+                    await triggerSyncPendingWorkoutDrafts(ref);
+                    ref.invalidate(userStatusFutureProvider);
+                    ref.invalidate(homePlanProvider);
+                    ref.invalidate(streakFutureProvider);
+                    ref.invalidate(buddyTodayFutureProvider);
+                    ref.invalidate(activeWorkoutDraftProvider);
+                  },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(
                 parent: BouncingScrollPhysics(),
@@ -317,8 +380,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
         ),
-      ),
-    );
+      ],
+    ),
+  ),
+),
+);
   }
 
   Widget _buildActiveDraftCard(BuildContext context, WorkoutDraft draft) {

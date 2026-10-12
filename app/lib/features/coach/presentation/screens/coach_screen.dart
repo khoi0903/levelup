@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/error_messages.dart';
+import '../../../../core/widgets/app_skeleton.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
@@ -149,15 +150,12 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                   ),
                 ),
               ],
+              ReloadingIndicator(
+                isReloading: state.isLoading && state.messages.isNotEmpty,
+              ),
               Expanded(
-                child: state.isLoading
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.primary,
-                          ),
-                        ),
-                      )
+                child: (state.isLoading && state.messages.isEmpty)
+                    ? const CoachScreenSkeleton()
                     : Builder(
                         builder: (context) {
                           final showTyping =

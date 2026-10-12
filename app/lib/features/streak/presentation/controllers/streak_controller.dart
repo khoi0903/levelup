@@ -5,6 +5,7 @@ import '../../data/repositories/api_streak_repository.dart';
 import '../../domain/models/streak_models.dart';
 import '../../domain/repositories/streak_repository.dart';
 
+import '../../../../core/utils/cache_for_extension.dart';
 import '../../../users/presentation/controllers/user_controller.dart';
 
 final streakRepositoryProvider = Provider<StreakRepository>((ref) {
@@ -15,6 +16,7 @@ final streakRepositoryProvider = Provider<StreakRepository>((ref) {
 final streakFutureProvider = FutureProvider.autoDispose<StreakView>((
   ref,
 ) async {
+  ref.cacheFor(const Duration(minutes: 5));
   try {
     final repo = ref.watch(streakRepositoryProvider);
     return await repo.getStreak();
@@ -31,6 +33,7 @@ final streakFutureProvider = FutureProvider.autoDispose<StreakView>((
 
 final streakWeekDetailProvider = FutureProvider.autoDispose
     .family<StreakWeekDetail, String>((ref, weekStart) async {
+      ref.cacheFor(const Duration(minutes: 5));
       final repo = ref.watch(streakRepositoryProvider);
       return await repo.getWeekDetail(weekStart);
     });

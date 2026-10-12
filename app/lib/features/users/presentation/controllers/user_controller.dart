@@ -13,6 +13,9 @@ import '../../../home/presentation/controllers/home_controller.dart';
 import '../../domain/models/settings_request.dart';
 import '../../domain/repositories/user_repository.dart';
 
+import '../../../../core/utils/cache_for_extension.dart';
+import '../../../../core/utils/fast_cache.dart';
+
 final userRepositoryProvider = Provider<UserRepository>((ref) {
   final client = ref.watch(apiClientProvider);
   return ApiUserRepository(client);
@@ -23,9 +26,18 @@ final currentUserProvider = StateProvider<MeResponse?>((ref) => null);
 final userStatusFutureProvider = FutureProvider.autoDispose<MeResponse>((
   ref,
 ) async {
+  ref.cacheFor(const Duration(minutes: 5));
   final repo = ref.watch(userRepositoryProvider);
   final me = await repo.getMe();
   ref.read(currentUserProvider.notifier).state = me;
+
+  try {
+    final authUser = ref.read(authRepositoryProvider).currentUser;
+    final uid = authUser?.id ?? me.id;
+    unawaited(FastCache.saveMe(uid, me));
+  } catch (_) {
+    unawaited(FastCache.saveMe(me.id, me));
+  }
 
   // Bật push và đã có quyền thì đăng ký token. Không chờ: lấy token FCM có thể chậm hoặc treo
   // (máy chặn dịch vụ Google), không được giữ người dùng ở màn chờ. Lỗi chỉ ghi log.
@@ -153,6 +165,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
     } catch (_) {}
+    await FastCache.clearAll();
     await appSignOutRef(_ref);
   }
 }

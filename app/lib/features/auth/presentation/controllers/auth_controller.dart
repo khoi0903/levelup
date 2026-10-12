@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/auth_constants.dart';
+import '../../../../core/utils/fast_cache.dart';
 import '../../../home/presentation/controllers/home_controller.dart';
 import '../../../notifications/domain/services/push_service.dart';
 import '../../../notifications/presentation/controllers/notifications_controller.dart';
@@ -278,6 +279,13 @@ Future<void> _performSignOutCore({
   invalidate(activeWorkoutDraftProvider);
   try {
     read(currentUserProvider.notifier).state = null;
+  } catch (_) {}
+  try {
+    read(currentPlanProvider.notifier).state = null;
+  } catch (_) {}
+
+  try {
+    await FastCache.clearAll();
   } catch (_) {}
 
   await read(authRepositoryProvider).signOut();

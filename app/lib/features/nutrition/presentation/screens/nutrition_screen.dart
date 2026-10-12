@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/error_messages.dart';
+import '../../../../core/widgets/app_skeleton.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../domain/models/nutrition_models.dart';
@@ -36,29 +38,53 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => FeatureScaffold(
-    title: 'Dinh dưỡng',
-    actions: [
-      IconButton(
-        tooltip: 'Tiến độ',
-        onPressed: () => context.push('/progress'),
-        icon: const Icon(Icons.insights),
-      ),
-    ],
-    child: ref
-        .watch(nutritionTodayProvider)
-        .when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => FeatureError(
-            error: e,
-            retry: () => ref.invalidate(nutritionTodayProvider),
-          ),
-          data: (today) => RefreshIndicator(
-            onRefresh: () => ref.refresh(nutritionTodayProvider.future),
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              physics: const AlwaysScrollableScrollPhysics(),
+  Widget build(BuildContext context) {
+    final nutritionAsync = ref.watch(nutritionTodayProvider);
+    final today = nutritionAsync.valueOrNull;
+
+    ref.listen<AsyncValue<NutritionToday>>(nutritionTodayProvider, (prev, next) {
+      if (next.hasError && today != null && next.error != prev?.error) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(mapErrorMessage(next.error)),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+      }
+    });
+
+    final isReloading = nutritionAsync.isLoading && today != null;
+
+    return FeatureScaffold(
+      title: 'Dinh dưỡng',
+      actions: [
+        IconButton(
+          tooltip: 'Tiến độ',
+          onPressed: () => context.push('/progress'),
+          icon: const Icon(Icons.insights),
+        ),
+      ],
+      child: today == null
+          ? (nutritionAsync.hasError
+              ? FeatureError(
+                  error: nutritionAsync.error!,
+                  retry: () => ref.invalidate(nutritionTodayProvider),
+                )
+              : const NutritionScreenSkeleton())
+          : Column(
               children: [
+                ReloadingIndicator(isReloading: isReloading),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      ref.invalidate(nutritionTodayProvider);
+                    },
+                    child: ListView(
+                      padding: const EdgeInsets.all(16),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
                 Text(
                   'Hôm nay • ${today.localDate}',
                   style: const TextStyle(color: AppColors.textSecondary),
@@ -173,7 +199,10 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
             ),
           ),
         ),
+      ],
+    ),
   );
+  }
 }
 
 class _Summary extends StatelessWidget {

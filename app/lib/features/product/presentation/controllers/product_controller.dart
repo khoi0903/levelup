@@ -7,6 +7,8 @@ import '../../domain/services/billing_service.dart';
 import '../../domain/models/product_models.dart';
 import '../../../users/presentation/controllers/user_controller.dart';
 
+import '../../../../core/utils/cache_for_extension.dart';
+
 final productRepositoryProvider = Provider<ProductRepository>(
   (ref) => ApiProductRepository(ref.watch(apiClientProvider)),
 );
@@ -14,7 +16,10 @@ final billingServiceProvider = Provider<BillingService>(
   (ref) => FakeBillingService(),
 );
 final referralViewProvider = FutureProvider.autoDispose<ReferralView>(
-  (ref) => ref.watch(productRepositoryProvider).getReferral(),
+  (ref) {
+    ref.cacheFor(const Duration(minutes: 5));
+    return ref.watch(productRepositoryProvider).getReferral();
+  },
 );
 final adminConfigProvider = FutureProvider.autoDispose<ProductConfig>(
   (ref) => ref.watch(productRepositoryProvider).getConfig(),
