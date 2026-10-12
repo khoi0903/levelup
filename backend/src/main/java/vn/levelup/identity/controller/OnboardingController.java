@@ -23,6 +23,6 @@ public class OnboardingController {
     /** Màn cuối onboarding gửi toàn bộ câu trả lời; trả về mục tiêu calo và kế hoạch tuần 1. */
     @PostMapping("/onboarding")
     public OnboardingService.OnboardingResponse complete(@Valid @RequestBody OnboardingRequest request) {
-        return onboarding.complete(currentUser.uid(), request);
+        return onboarding.complete(currentUser.uid(), currentUser.email(), request);
     }
 }
