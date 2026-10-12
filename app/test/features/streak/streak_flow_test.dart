@@ -99,7 +99,9 @@ void main() {
         expect(find.text('Thẻ đóng băng: 2 thẻ'), findsOneWidget);
         expect(find.text('Tuần này'), findsOneWidget);
         expect(find.text('3/4 buổi'), findsOneWidget);
-        expect(find.text('Lịch sử 8 tuần gần nhất'), findsOneWidget);
+        // Tiêu đề theo số tuần thật (chỉ từ khi bắt đầu dùng)
+        expect(find.byKey(const ValueKey('streak-history-title')), findsOneWidget);
+        expect(find.textContaining('tuần gần nhất'), findsOneWidget);
         expect(
           find.text('Còn 1 buổi để giữ vững streak tuần.'),
           findsOneWidget,

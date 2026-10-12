@@ -2,6 +2,7 @@ package vn.levelup.training.controller;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -23,6 +24,7 @@ import vn.levelup.training.model.Exercise;
 import vn.levelup.training.model.TrainingPlan;
 import vn.levelup.training.repository.ExerciseRepository;
 import vn.levelup.training.service.EmptySessionRepair;
+import vn.levelup.training.service.ThisWeekPlanEnsurer;
 
 
 @RestController
@@ -33,14 +35,17 @@ public class PlansController {
     private final CurrentUserService currentUser;
     private final Clock clock;
     private final EmptySessionRepair repair;
+    private final ThisWeekPlanEnsurer ensurer;
 
     public PlansController(MongoTemplate mongo, ExerciseRepository exercises,
-                           CurrentUserService currentUser, Clock clock, EmptySessionRepair repair) {
+                           CurrentUserService currentUser, Clock clock, EmptySessionRepair repair,
+                           ThisWeekPlanEnsurer ensurer) {
         this.mongo = mongo;
         this.exercises = exercises;
         this.currentUser = currentUser;
         this.clock = clock;
         this.repair = repair;
+        this.ensurer = ensurer;
     }
 
     /**
@@ -54,16 +59,17 @@ public class PlansController {
         LocalDate today = LocalDates.today(user.timezone(), clock);
         String thisWeek = LocalDates.weekStart(today).toString();
 
-        Criteria active = Criteria.where("userId").is(userId).and("status").is("active");
-        TrainingPlan plan = mongo.findOne(
-            Query.query(new Criteria().andOperator(active, Criteria.where("weekStart").is(thisWeek))),
-            TrainingPlan.class);
+        // Tuần mới chưa chốt tổng kết: kích hoạt bản nháp hoặc lập từ lịch rảnh (không trả kế hoạch tuần trước)
+        TrainingPlan plan = ensurer.ensure(user);
         if (plan == null) {
-            plan = mongo.findOne(Query.query(active).with(Sort.by(Sort.Direction.DESC, "weekStart")),
-                TrainingPlan.class);
+            // Chỉ kế hoạch từ tuần này trở đi (ví dụ onboarding Chủ nhật tối thì kế hoạch bắt đầu tuần sau)
+            plan = mongo.findOne(Query.query(Criteria.where("userId").is(userId).and("status").is("active")
+                .and("weekStart").gte(thisWeek)).with(Sort.by(Sort.Direction.ASC, "weekStart")), TrainingPlan.class);
         }
         if (plan == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "NO_ACTIVE_PLAN");
+            // Không còn ngày rảnh nào trong tuần này: kế hoạch rỗng của tuần này, tập thêm vẫn tính chỉ tiêu
+            int target = user.availability() == null ? 0 : user.availability().size();
+            return new PlanView(null, thisWeek, "active", target, List.of());
         }
         plan = repair.repair(user, plan);
 
