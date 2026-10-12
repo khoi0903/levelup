@@ -54,6 +54,9 @@ levelup:
   coach:
     # Số tin chat với coach mỗi ngày (theo ngày của người dùng), hết thì 429 COACH_LIMIT
     daily-limit: 30
+  referral:
+    # Link chia sẻ mã giới thiệu (trang tĩnh trên Firebase Hosting, thư mục web/)
+    link-base: ${REFERRAL_LINK_BASE:https://levelup-pro.web.app/invite}
 
 management:
   endpoints:

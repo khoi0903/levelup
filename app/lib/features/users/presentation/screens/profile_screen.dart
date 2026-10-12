@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/api/api_client.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
@@ -1733,8 +1732,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Future<void> _openPrivacyPolicy(BuildContext context) async {
-    final baseUrl = ref.read(apiBaseUrlProvider);
-    final url = '$baseUrl/privacy.html';
+    const url = 'https://levelup-pro.web.app/privacy';
     bool opened = false;
     try {
       if (!kIsWeb) {
