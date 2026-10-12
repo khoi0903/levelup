@@ -949,25 +949,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         final dayIndex = i + 1; // 1..7
         final isToday = dayIndex == todayWeekday;
 
-        // Tìm session tương ứng với ngày trong tuần
-        final session = plan?.sessions.firstWhere(
-          (s) {
-            final dt = DateTime.tryParse(s.scheduledDate);
-            return dt != null && dt.weekday == dayIndex;
-          },
-          orElse: () => const SessionView(
-            id: '',
-            scheduledDate: '',
-            scheduledTime: '',
-            title: '',
-            durationMin: 0,
-          ),
-        );
-
-        // Tích khi buổi trong lịch đã xong hoặc hôm đó có tập (tập thêm cũng tính)
+        // Ngày cụ thể của ô này trong TUẦN NÀY; chỉ khớp buổi đúng ngày đó (không lấy buổi tuần trước cùng thứ)
         final date = monday == null
             ? null
             : localDateString(monday.add(Duration(days: i)));
+        final session = date == null
+            ? null
+            : plan?.sessions.where((s) => s.scheduledDate == date).firstOrNull;
+
+        // Tích khi buổi trong lịch đã xong hoặc hôm đó có tập (tập thêm cũng tính)
         final isCompleted =
             session?.status == 'completed' ||
             (date != null && trainedDates.contains(date));

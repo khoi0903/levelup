@@ -211,15 +211,18 @@ class StreakScreen extends ConsumerWidget {
           const SizedBox(height: 14),
         ],
 
-        // Lịch sử 8 tuần
+        // Lịch sử: chỉ các tuần từ khi bắt đầu dùng (tối đa 8, máy chủ đã cắt)
         GlassCard(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Lịch sử 8 tuần gần nhất',
-                style: TextStyle(
+              Text(
+                sortedWeeks.length <= 1
+                    ? 'Tuần đầu tiên của bạn'
+                    : 'Lịch sử ${sortedWeeks.length} tuần gần nhất',
+                key: const ValueKey('streak-history-title'),
+                style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
