@@ -10,6 +10,8 @@ class VoiceQueueEntry {
   final double? pitch;
   final bool isFormCue;
   final bool isStartTip;
+  final String? slug;
+  final String? issueCode;
 
   const VoiceQueueEntry({
     required this.text,
@@ -19,6 +21,8 @@ class VoiceQueueEntry {
     this.pitch,
     this.isFormCue = false,
     this.isStartTip = false,
+    this.slug,
+    this.issueCode,
   });
 
   bool get isProtected =>

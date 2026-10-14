@@ -8,6 +8,7 @@ import 'voice_coach.dart';
 import 'voice_models.dart';
 
 const String _prefVoiceEnabled = 'voice_coach_enabled';
+const String _prefVoiceGender = 'voice_coach_gender';
 const String _prefVoiceStyle = 'voice_coach_style';
 const String _prefVoiceSpeed = 'voice_coach_speed';
 const String _prefVoiceStartTip = 'voice_coach_start_tip';
@@ -21,6 +22,8 @@ class VoiceSettingsNotifier extends StateNotifier<VoiceSettings> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final enabled = prefs.getBool(_prefVoiceEnabled) ?? true;
+      final genderStr = prefs.getString(_prefVoiceGender) ?? 'female';
+      final gender = VoiceGender.fromString(genderStr);
       final style = prefs.getString(_prefVoiceStyle) ?? 'coach';
       final speedStr = prefs.getString(_prefVoiceSpeed) ?? 'normal';
       final speed = VoiceSpeed.fromString(speedStr);
@@ -28,6 +31,7 @@ class VoiceSettingsNotifier extends StateNotifier<VoiceSettings> {
 
       state = VoiceSettings(
         enabled: enabled,
+        gender: gender,
         selectedStyleId: style,
         speed: speed,
         mutedTemporarily: false,
@@ -41,6 +45,14 @@ class VoiceSettingsNotifier extends StateNotifier<VoiceSettings> {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_prefVoiceEnabled, enabled);
+    } catch (_) {}
+  }
+
+  Future<void> setGender(VoiceGender gender) async {
+    state = state.copyWith(gender: gender);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_prefVoiceGender, gender.code);
     } catch (_) {}
   }
 

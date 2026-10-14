@@ -23,6 +23,8 @@ import '../../../users/presentation/controllers/user_controller.dart';
 import '../../../workout/domain/models/workout_draft.dart';
 import '../../../workout/presentation/controllers/workout_controller.dart';
 import '../../../workout/domain/models/workout_session_state.dart';
+import '../../../health_connect/presentation/controllers/health_connect_controller.dart';
+import '../../../health_connect/presentation/widgets/health_connect_card.dart';
 import '../controllers/home_controller.dart';
 
 /// Màn hình Trang chủ (Home) - hoàn toàn kết nối API, bỏ dữ liệu giả.
@@ -198,6 +200,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   color: AppColors.primary,
                   onRefresh: () async {
                     await triggerSyncPendingWorkoutDrafts(ref);
+                    ref.read(healthConnectControllerProvider.notifier).refreshTodayData();
                     ref.invalidate(userStatusFutureProvider);
                     ref.invalidate(homePlanProvider);
                     ref.invalidate(streakFutureProvider);
@@ -371,6 +374,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     todayDone,
                     todayStr,
                   ),
+                  const SizedBox(height: 14),
+
+                  // Card Hoạt động hôm nay (Google Health Connect)
+                  const HealthConnectCard(),
                   const SizedBox(height: 14),
 
                   // Card Buddy feed

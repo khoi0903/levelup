@@ -26,6 +26,22 @@ enum VoiceLineKey {
   }
 }
 
+enum VoiceGender {
+  female('female', 'Nữ (Hoài My)'),
+  male('male', 'Nam (Nam Minh)');
+
+  final String code;
+  final String labelVi;
+  const VoiceGender(this.code, this.labelVi);
+
+  static VoiceGender fromString(String? val) {
+    return switch (val) {
+      'male' => VoiceGender.male,
+      _ => VoiceGender.female,
+    };
+  }
+}
+
 enum VoiceSpeed {
   slow(0.85, 'Chậm'),
   normal(1.0, 'Vừa'),
@@ -87,6 +103,9 @@ class VoiceStyle {
 class VoiceSettings {
   final bool enabled;
 
+  /// Giới tính giọng đọc: Nữ (Hoài My) hoặc Nam (Nam Minh)
+  final VoiceGender gender;
+
   /// 'coach' (mặc định) hoặc một trong 7 phong cách:
   /// supportive, strict, funny, calm, hype, genz, minimal
   final String selectedStyleId;
@@ -100,6 +119,7 @@ class VoiceSettings {
 
   const VoiceSettings({
     this.enabled = true,
+    this.gender = VoiceGender.female,
     this.selectedStyleId = 'coach',
     this.speed = VoiceSpeed.normal,
     this.mutedTemporarily = false,
@@ -110,6 +130,7 @@ class VoiceSettings {
 
   VoiceSettings copyWith({
     bool? enabled,
+    VoiceGender? gender,
     String? selectedStyleId,
     VoiceSpeed? speed,
     bool? mutedTemporarily,
@@ -117,6 +138,7 @@ class VoiceSettings {
   }) {
     return VoiceSettings(
       enabled: enabled ?? this.enabled,
+      gender: gender ?? this.gender,
       selectedStyleId: selectedStyleId ?? this.selectedStyleId,
       speed: speed ?? this.speed,
       mutedTemporarily: mutedTemporarily ?? this.mutedTemporarily,

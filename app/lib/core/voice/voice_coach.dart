@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
+import 'audio_clip_player.dart';
 import 'form_cues_defaults.dart';
 import 'voice_lines_defaults.dart';
 import 'voice_models.dart';
@@ -70,8 +71,10 @@ abstract interface class VoiceCoach {
 class FlutterTtsVoiceCoach implements VoiceCoach {
   FlutterTtsVoiceCoach({
     FlutterTts? tts,
+    AudioClipPlayer? audioPlayer,
     this.onVietnameseVoiceMissing,
-  }) : _tts = tts ?? FlutterTts() {
+  })  : _tts = tts ?? FlutterTts(),
+        _audioPlayer = audioPlayer ?? AudioClipPlayer() {
     _queue = VoiceQueue(
       onSpeak: _performSpeak,
       onStopTts: _performStopTts,
@@ -80,6 +83,7 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
   }
 
   final FlutterTts _tts;
+  final AudioClipPlayer _audioPlayer;
   late final VoiceQueue _queue;
   Completer<void>? _speakCompleter;
 
@@ -128,6 +132,7 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
     await _loadVoiceLinesAsset();
     await _loadFormCuesAsset();
     await _setupTts();
+    await _audioPlayer.init();
   }
 
   Future<void> _loadFormCuesAsset() async {
@@ -262,6 +267,28 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
 
   Future<void> _performSpeak(VoiceQueueEntry entry) async {
     try {
+      // 1. Ưu tiên phát file âm thanh người thật (.mp3) nếu có
+      final assetPath = _audioPlayer.resolveAssetPath(
+        entry.key,
+        params: entry.params,
+        slug: entry.slug,
+        issueCode: entry.issueCode,
+        text: entry.text,
+        gender: _settings.gender,
+      );
+
+      if (assetPath != null) {
+        final played = await _audioPlayer.playAsset(assetPath);
+        if (played) {
+          return;
+        }
+      }
+
+      debugPrint(
+        '[VoiceCoach] Không có file MP3 cho câu: "${entry.text}", dùng TTS fallback',
+      );
+
+      // 2. Fallback về TTS nếu chưa có file MP3 cho câu này
       if (entry.rate != null) await _tts.setSpeechRate(entry.rate!);
       if (entry.pitch != null) await _tts.setPitch(entry.pitch!);
 
@@ -288,6 +315,7 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
 
   Future<void> _performStopTts() async {
     try {
+      await _audioPlayer.stop();
       if (_speakCompleter != null && !_speakCompleter!.isCompleted) {
         _speakCompleter!.complete();
       }
@@ -468,6 +496,8 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
         rate: effectiveRate,
         pitch: effectivePitch,
         isFormCue: true,
+        slug: slug,
+        issueCode: issueCode,
       ),
     );
   }
@@ -569,6 +599,7 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
   @override
   void dispose() {
     unawaited(stop());
+    _audioPlayer.dispose();
   }
 }
 
