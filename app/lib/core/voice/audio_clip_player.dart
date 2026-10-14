@@ -25,6 +25,90 @@ class AudioClipPlayer {
     } catch (_) {}
   }
 
+  /// Chuyển đổi số rep (1..100) thành danh sách các file audio Lego ghép âm.
+  /// Tiếng Việt:
+  /// - 1..10: file đơn ('reps/1.mp3' .. 'reps/10.mp3')
+  /// - 20, 30, ..., 90: tròn chục ('reps/20.mp3' .. 'reps/90.mp3')
+  /// - 100: 'reps/100.mp3'
+  /// - 11..19: 'reps/10.mp3' + đơn vị ('reps/4.mp3' cho 14, 'reps/lam.mp3' cho 15, v.v.)
+  /// - 21..99: 'reps/[chục].mp3' + đơn vị ('reps/mot.mp3', 'reps/tu.mp3', 'reps/lam.mp3', hoặc số đơn vị)
+  List<String> resolveRepSubPaths(int n) {
+    if (n < 1 || n > 100) return const [];
+    if (n <= 10) return ['reps/$n.mp3'];
+    if (n == 100) return ['reps/100.mp3'];
+    if (n % 10 == 0) return ['reps/$n.mp3'];
+
+    if (n < 20) {
+      final unit = n - 10;
+      final unitPath = switch (unit) {
+        5 => 'reps/lam.mp3',
+        4 => 'reps/4.mp3', // "Mười bốn"
+        _ => 'reps/$unit.mp3',
+      };
+      return ['reps/10.mp3', unitPath];
+    }
+
+    final ten = (n ~/ 10) * 10;
+    final unit = n % 10;
+    final unitPath = switch (unit) {
+      1 => 'reps/mot.mp3', // "Mốt"
+      4 => 'reps/tu.mp3',  // "Tư"
+      5 => 'reps/lam.mp3', // "Lăm"
+      _ => 'reps/$unit.mp3',
+    };
+    return ['reps/$ten.mp3', unitPath];
+  }
+
+  /// Map VoiceLineKey sang danh sách đường dẫn asset MP3 (hỗ trợ Lego audio cho dãy số 1..100).
+  List<String>? resolveAssetPaths(
+    VoiceLineKey? key, {
+    Map<String, Object?> params = const {},
+    String? slug,
+    String? issueCode,
+    String? text,
+    VoiceGender gender = VoiceGender.female,
+  }) {
+    final prefix = gender == VoiceGender.male ? 'audio/male' : 'audio';
+
+    // 1. Đếm rep 1..100 bằng cơ chế Lego audio ghép âm
+    if (key == VoiceLineKey.rep && params.containsKey('n')) {
+      final n = int.tryParse(params['n'].toString());
+      if (n != null && n >= 1 && n <= 100) {
+        final subPaths = resolveRepSubPaths(n);
+        if (subPaths.isNotEmpty) {
+          return subPaths.map((p) => '$prefix/$p').toList();
+        }
+      }
+    }
+
+    // 2. Nếu text là một số nguyên (ví dụ speakText("45"))
+    if (text != null && text.isNotEmpty) {
+      final clean = text.trim();
+      final n = int.tryParse(clean);
+      if (n != null && n >= 1 && n <= 100) {
+        final subPaths = resolveRepSubPaths(n);
+        if (subPaths.isNotEmpty) {
+          return subPaths.map((p) => '$prefix/$p').toList();
+        }
+      }
+    }
+
+    // 3. Các câu đơn khác (cues, form, countdown, v.v.)
+    final single = resolveAssetPath(
+      key,
+      params: params,
+      slug: slug,
+      issueCode: issueCode,
+      text: text,
+      gender: gender,
+    );
+    if (single != null) {
+      return [single];
+    }
+
+    return null;
+  }
+
   /// Map VoiceLineKey hoặc mã lỗi form sang đường dẫn asset MP3 người thật tương ứng.
   String? resolveAssetPath(
     VoiceLineKey? key, {
@@ -188,11 +272,55 @@ class AudioClipPlayer {
     return null;
   }
 
-  /// Phát file MP3 asset người thật.
+  int _playSessionId = 0;
+
+  /// Phát một chuỗi các file audio MP3 liên tiếp (cho ghép âm Lego).
+  /// Tự động ngắt khi có âm thanh mới hoặc khi bị stop().
+  Future<bool> playAssetSequence(List<String> assetPaths) async {
+    if (assetPaths.isEmpty) return false;
+    if (assetPaths.length == 1) {
+      return playAsset(assetPaths.first);
+    }
+
+    try {
+      await stop();
+      final currentSession = ++_playSessionId;
+
+      for (int i = 0; i < assetPaths.length; i++) {
+        if (_playSessionId != currentSession) return false;
+
+        final path = assetPaths[i];
+        final completer = Completer<void>();
+        _playCompleter = completer;
+
+        debugPrint(
+          '[AudioClipPlayer] >>> Phát Lego clip (${i + 1}/${assetPaths.length}): $path',
+        );
+        await _player.play(AssetSource(path));
+
+        // Chờ clip hiện tại đọc xong (tối đa 3 giây mỗi clip ngắn)
+        await completer.future.timeout(
+          const Duration(seconds: 3),
+          onTimeout: () {},
+        );
+
+        if (_playSessionId != currentSession) return false;
+      }
+      return true;
+    } catch (e) {
+      debugPrint('[AudioClipPlayer] LỖI khi phát audio sequence: $e');
+      return false;
+    } finally {
+      _playCompleter = null;
+    }
+  }
+
+  /// Phát file MP3 asset người thật đơn lẻ.
   /// Trả về true nếu phát thành công; false nếu lỗi để caller fallback sang TTS.
   Future<bool> playAsset(String assetPath) async {
     try {
       await stop();
+      final currentSession = ++_playSessionId;
 
       final completer = Completer<void>();
       _playCompleter = completer;
@@ -205,6 +333,7 @@ class AudioClipPlayer {
         const Duration(seconds: 6),
         onTimeout: () {},
       );
+      if (_playSessionId != currentSession) return false;
       debugPrint('[AudioClipPlayer] <<< Hoàn thành phát audio: $assetPath');
       return true;
     } catch (e) {
@@ -216,6 +345,7 @@ class AudioClipPlayer {
   }
 
   Future<void> stop() async {
+    _playSessionId++;
     try {
       if (_playCompleter != null && !_playCompleter!.isCompleted) {
         _playCompleter!.complete();

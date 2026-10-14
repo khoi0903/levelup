@@ -267,8 +267,8 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
 
   Future<void> _performSpeak(VoiceQueueEntry entry) async {
     try {
-      // 1. Ưu tiên phát file âm thanh người thật (.mp3) nếu có
-      final assetPath = _audioPlayer.resolveAssetPath(
+      // 1. Ưu tiên phát file âm thanh người thật (.mp3) nếu có (hỗ trợ Lego audio 1..100)
+      final assetPaths = _audioPlayer.resolveAssetPaths(
         entry.key,
         params: entry.params,
         slug: entry.slug,
@@ -277,8 +277,8 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
         gender: _settings.gender,
       );
 
-      if (assetPath != null) {
-        final played = await _audioPlayer.playAsset(assetPath);
+      if (assetPaths != null && assetPaths.isNotEmpty) {
+        final played = await _audioPlayer.playAssetSequence(assetPaths);
         if (played) {
           return;
         }

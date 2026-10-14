@@ -6,11 +6,12 @@ import edge_tts
 if sys.platform == 'win32':
     sys.stdout.reconfigure(encoding='utf-8')
 
-VOICE = "vi-VN-HoaiMyNeural"
+VOICE_FEMALE = "vi-VN-HoaiMyNeural"
+VOICE_MALE = "vi-VN-NamMinhNeural"
 RATE = "+10%"
 
-AUDIO_ITEMS = [
-    # Reps 1..30
+REPS_ITEMS = [
+    # 1..10
     ("reps/1.mp3", "Một"),
     ("reps/2.mp3", "Hai"),
     ("reps/3.mp3", "Ba"),
@@ -21,27 +22,26 @@ AUDIO_ITEMS = [
     ("reps/8.mp3", "Tám"),
     ("reps/9.mp3", "Chín"),
     ("reps/10.mp3", "Mười"),
-    ("reps/11.mp3", "Mười một"),
-    ("reps/12.mp3", "Mười hai"),
-    ("reps/13.mp3", "Mười ba"),
-    ("reps/14.mp3", "Mười bốn"),
-    ("reps/15.mp3", "Mười lăm"),
-    ("reps/16.mp3", "Mười sáu"),
-    ("reps/17.mp3", "Mười bảy"),
-    ("reps/18.mp3", "Mười tám"),
-    ("reps/19.mp3", "Mười chín"),
-    ("reps/20.mp3", "Hai mươi"),
-    ("reps/21.mp3", "Hai mươi mốt"),
-    ("reps/22.mp3", "Hai mươi hai"),
-    ("reps/23.mp3", "Hai mươi ba"),
-    ("reps/24.mp3", "Hai mươi bốn"),
-    ("reps/25.mp3", "Hai mươi lăm"),
-    ("reps/26.mp3", "Hai mươi sáu"),
-    ("reps/27.mp3", "Hai mươi bảy"),
-    ("reps/28.mp3", "Hai mươi tám"),
-    ("reps/29.mp3", "Hai mươi chín"),
-    ("reps/30.mp3", "Ba mươi"),
 
+    # Tròn chục & Trăm
+    ("reps/20.mp3", "Hai mươi"),
+    ("reps/30.mp3", "Ba mươi"),
+    ("reps/40.mp3", "Bốn mươi"),
+    ("reps/50.mp3", "Năm mươi"),
+    ("reps/60.mp3", "Sáu mươi"),
+    ("reps/70.mp3", "Bảy mươi"),
+    ("reps/80.mp3", "Tám mươi"),
+    ("reps/90.mp3", "Chín mươi"),
+    ("reps/100.mp3", "Một trăm"),
+
+    # Âm ghép
+    ("reps/mot.mp3", "Mốt"),
+    ("reps/tu.mp3", "Tư"),
+    ("reps/lam.mp3", "Lăm"),
+    ("reps/muoi.mp3", "Mươi"),
+]
+
+COMMON_ITEMS = [
     # Countdown
     ("countdown/3.mp3", "Ba"),
     ("countdown/2.mp3", "Hai"),
@@ -72,19 +72,19 @@ AUDIO_ITEMS = [
 
 sem = asyncio.Semaphore(2)
 
-async def generate_file(rel_path, text, base_dir):
+async def generate_file(rel_path, text, base_dir, voice):
     full_path = os.path.join(base_dir, rel_path)
     if os.path.exists(full_path) and os.path.getsize(full_path) > 500:
-        print(f"Skipping existing: {rel_path}")
+        print(f"Skipping existing: {rel_path} ({os.path.basename(base_dir)})")
         return
 
     os.makedirs(os.path.dirname(full_path), exist_ok=True)
     async with sem:
         for attempt in range(3):
             try:
-                communicate = edge_tts.Communicate(text, VOICE, rate=RATE)
+                communicate = edge_tts.Communicate(text, voice, rate=RATE)
                 await communicate.save(full_path)
-                print(f"Generated: {rel_path} -> {text}")
+                print(f"Generated [{voice}]: {rel_path} -> {text}")
                 await asyncio.sleep(0.3)
                 return
             except Exception as e:
@@ -93,9 +93,20 @@ async def generate_file(rel_path, text, base_dir):
                 await asyncio.sleep(1.0)
 
 async def main():
-    base_dir = os.path.join(os.path.dirname(__file__), "audio")
-    for rel_path, text in AUDIO_ITEMS:
-        await generate_file(rel_path, text, base_dir)
+    root_audio = os.path.join(os.path.dirname(__file__), "audio")
+    female_dir = root_audio
+    male_dir = os.path.join(root_audio, "male")
+
+    all_items = REPS_ITEMS + COMMON_ITEMS
+
+    print("--- Sinh audio Nữ ---")
+    for rel_path, text in all_items:
+        await generate_file(rel_path, text, female_dir, VOICE_FEMALE)
+
+    print("--- Sinh audio Nam ---")
+    for rel_path, text in all_items:
+        await generate_file(rel_path, text, male_dir, VOICE_MALE)
+
     print("All audio files generated successfully!")
 
 if __name__ == "__main__":
