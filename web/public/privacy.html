@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LevelUp – Chính sách quyền riêng tư</title>
+<style>
+  :root { --bg:#f7f8fc; --card:#fff; --text:#1b1f33; --muted:#5b6178; --primary:#4b63e8; --line:#e4e7f2; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#12141c; --card:#1b1e29; --text:#e9ebf5; --muted:#a3a8c0; --line:#2a2e3d; } }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  main { max-width:760px; margin:0 auto; padding:24px 16px 48px; }
+  article { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:24px 20px; }
+  h1 { font-size:26px; margin:0 0 4px; } h2 { font-size:18px; margin:28px 0 8px; color:var(--primary); }
+  p, li { color:var(--text); } .muted { color:var(--muted); font-size:14px; }
+  ul { padding-left:20px; } a { color:var(--primary); }
+</style>
+</head>
+<body>
+<main><article>
+  <h1>Chính sách quyền riêng tư</h1>
+  <p class="muted">Ứng dụng LevelUp (vn.levelup.app) · Cập nhật: 09/10/2026</p>
+
+  <p>LevelUp là ứng dụng tập luyện tại nhà, có AI coach, tính calo món ăn và đếm số lần tập bằng camera.
+  Trang này giải thích chúng tôi thu thập dữ liệu gì, dùng vào việc gì và cách bạn xoá dữ liệu.</p>
+
+  <h2>1. Dữ liệu chúng tôi thu thập</h2>
+  <ul>
+    <li><b>Tài khoản:</b> email và mã định danh đăng nhập do Firebase Authentication (Google) cung cấp.</li>
+    <li><b>Hồ sơ bạn nhập:</b> tên hiển thị, giới tính, năm sinh, chiều cao, cân nặng, mục tiêu, kinh nghiệm,
+      nơi tập, dụng cụ, vùng chấn thương, lịch rảnh, cài đặt thông báo.</li>
+    <li><b>Hoạt động:</b> buổi tập (bài, số hiệp, số lần, thời gian, mức gắng sức), check-in năng lượng và giấc ngủ,
+      số đo cơ thể, bữa ăn và lượng nước, lý do bỏ buổi, tin nhắn với AI coach, ghép cặp bạn tập.</li>
+    <li><b>Thiết bị:</b> mã nhận thông báo đẩy (Firebase Cloud Messaging).</li>
+  </ul>
+
+  <h2>2. Camera và ảnh</h2>
+  <ul>
+    <li><b>Đếm số lần tập bằng camera:</b> hình ảnh được xử lý ngay trên điện thoại (Google ML Kit).
+      Video và hình ảnh <b>không bao giờ</b> được gửi lên máy chủ. Chỉ kết quả (số lần, lỗi tư thế) được lưu.</li>
+    <li><b>Chụp món ăn để tính calo:</b> ảnh được gửi lên máy chủ và chuyển cho dịch vụ AI để nhận diện món.
+      Máy chủ <b>không lưu ảnh</b>, chỉ lưu mã băm của ảnh (để không nhận diện lại cùng một ảnh) và kết quả nhận diện.</li>
+  </ul>
+
+  <h2>3. Dịch vụ AI</h2>
+  <p>Tin nhắn với AI coach (kèm thông tin cần thiết như mục tiêu, kế hoạch tuần, check-in, chấn thương) và ảnh món
+  ăn được gửi tới nhà cung cấp AI (Google Gemini hoặc Anthropic Claude) để tạo câu trả lời. AI chỉ đề xuất;
+  mọi thay đổi kế hoạch đều do máy chủ kiểm tra trước khi lưu.</p>
+
+  <h2>4. Chúng tôi dùng dữ liệu để</h2>
+  <ul>
+    <li>Lập và điều chỉnh kế hoạch tập phù hợp, an toàn với chấn thương của bạn.</li>
+    <li>Tính streak tuần, tổng kết tuần, huy hiệu, mục tiêu calo.</li>
+    <li>Gửi nhắc tập và thông báo (tối đa vài lần mỗi ngày, không gửi trong giờ yên lặng; tắt được trong Cài đặt).</li>
+    <li>Cho bạn tập cùng (buddy) chỉ thấy những gì bạn cho phép chia sẻ.</li>
+  </ul>
+  <p>Chúng tôi <b>không bán</b> dữ liệu, không dùng cho quảng cáo và không chia sẻ cho bên thứ ba ngoài các nhà cung
+  cấp hạ tầng dưới đây.</p>
+
+  <h2>5. Nơi lưu trữ</h2>
+  <ul>
+    <li>Máy chủ ứng dụng: Render (khu vực Singapore).</li>
+    <li>Cơ sở dữ liệu: MongoDB Atlas.</li>
+    <li>Đăng nhập và thông báo: Firebase (Google).</li>
+  </ul>
+  <p>Dữ liệu được truyền qua kết nối mã hoá (HTTPS).</p>
+
+  <h2>6. Thời gian lưu và xoá dữ liệu</h2>
+  <p>Dữ liệu được lưu tới khi bạn xoá tài khoản. Bạn có thể xoá tài khoản bất cứ lúc nào ngay trong ứng dụng:
+  <b>Tôi → Xoá tài khoản</b>. Việc xoá diễn ra ngay, không hoàn tác được, gồm tài khoản đăng nhập và toàn bộ
+  dữ liệu ở mục 1. Xem thêm: <a href="/delete-account">Hướng dẫn xoá tài khoản</a>.</p>
+
+  <h2>7. Trẻ em</h2>
+  <p>LevelUp không dành cho người dưới 16 tuổi.</p>
+
+  <h2>8. Liên hệ</h2>
+  <p>Mọi câu hỏi về quyền riêng tư: <a href="mailto:khoivt0@gmail.com">khoivt0@gmail.com</a>.</p>
+</article></main>
+</body>
+</html>
