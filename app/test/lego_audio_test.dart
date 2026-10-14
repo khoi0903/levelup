@@ -130,5 +130,41 @@ void main() {
         'audio/countdown/3.mp3',
       );
     });
+
+    test('resolveAssetPath for exerciseNext with slug or exercise name', () {
+      // Bằng slug
+      final femaleSlug = player.resolveAssetPath(
+        VoiceLineKey.exerciseNext,
+        params: {'slug': 'plank'},
+        gender: VoiceGender.female,
+      );
+      expect(femaleSlug, 'audio/exercises/plank.mp3');
+
+      // Bằng tên tiếng Việt
+      final maleNameVi = player.resolveAssetPath(
+        VoiceLineKey.exerciseNext,
+        params: {'exercise': 'Squat không tạ'},
+        gender: VoiceGender.male,
+      );
+      expect(maleNameVi, 'audio/male/exercises/bodyweight-squat.mp3');
+    });
+
+    test('resolveAssetPath for startTip', () {
+      final femaleTip = player.resolveAssetPath(
+        null,
+        slug: 'push-up',
+        isStartTip: true,
+        gender: VoiceGender.female,
+      );
+      expect(femaleTip, 'audio/tips/push-up.mp3');
+
+      final maleTip = player.resolveAssetPath(
+        null,
+        slug: 'bodyweight-squat',
+        isStartTip: true,
+        gender: VoiceGender.male,
+      );
+      expect(maleTip, 'audio/male/tips/bodyweight-squat.mp3');
+    });
   });
 }

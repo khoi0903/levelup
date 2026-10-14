@@ -275,6 +275,7 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
         issueCode: entry.issueCode,
         text: entry.text,
         styledLines: _settings.selectedStyleId != 'coach',
+        isStartTip: entry.isStartTip,
         gender: _settings.gender,
       );
       if (assetPath != null && await _audioPlayer.playAsset(assetPath)) {
@@ -519,6 +520,7 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
     await _queue.enqueue(
       VoiceQueueEntry(
         text: tip,
+        slug: slug,
         rate: effectiveRate,
         pitch: effectivePitch,
         isStartTip: true,
@@ -888,6 +890,7 @@ class FakeVoiceCoach implements VoiceCoach {
     await _queue.enqueue(
       VoiceQueueEntry(
         text: tip,
+        slug: slug,
         isStartTip: true,
       ),
     );

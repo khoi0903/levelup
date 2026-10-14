@@ -88,11 +88,15 @@ flutter:
     - assets/audio/cues/
     - assets/audio/countdown/
     - assets/audio/form/
+    - assets/audio/exercises/
+    - assets/audio/tips/
     - assets/audio/male/
     - assets/audio/male/reps/
     - assets/audio/male/cues/
     - assets/audio/male/countdown/
     - assets/audio/male/form/
+    - assets/audio/male/exercises/
+    - assets/audio/male/tips/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
