@@ -60,6 +60,24 @@ void main() {
     });
   });
 
+  test('đếm lùi 3-2-1 cùng một giọng: 2 và 1 (hold_last) cũng là MP3', () {
+    for (final gender in VoiceGender.values) {
+      final prefix = gender == VoiceGender.male ? 'audio/male' : 'audio';
+      expect(
+        player.resolveAssetPath(VoiceLineKey.startCountdown,
+            params: {'n': '3'}, gender: gender),
+        '$prefix/countdown/3.mp3',
+      );
+      for (final sec in ['2', '1']) {
+        expect(
+          player.resolveAssetPath(VoiceLineKey.holdLast,
+              params: {'sec': sec}, gender: gender, styledLines: true),
+          '$prefix/reps/$sec.mp3',
+        );
+      }
+    }
+  });
+
   group('Không đoán file theo nội dung chữ', () {
     test('mẹo đầu bài có chữ "tay", "hông" không phát nhầm câu nhắc tư thế', () {
       for (final text in [

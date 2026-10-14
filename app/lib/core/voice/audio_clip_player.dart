@@ -86,6 +86,10 @@ class AudioClipPlayer {
       case VoiceLineKey.rep:
         final n = intParam('n');
         return n == null ? null : repSubPath(n);
+      case VoiceLineKey.holdLast:
+        // Đếm lùi 2, 1 trước khi vào hiệp và 5 giây cuối khi giữ tư thế: chỉ là con số
+        final sec = intParam('sec');
+        return sec == null ? null : repSubPath(sec);
       case VoiceLineKey.startCountdown:
         final n = intParam('n');
         if (n != null && n >= 1 && n <= 3) return 'countdown/$n.mp3';
