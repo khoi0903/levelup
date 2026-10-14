@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fitness_app/core/voice/audio_clip_player.dart';
 import 'package:fitness_app/core/voice/voice_models.dart';
@@ -25,65 +27,90 @@ void main() {
     player = AudioClipPlayer();
   });
 
-  group('Lego Audio - resolveRepSubPaths', () {
-    test('1 to 10 are single files', () {
-      for (int i = 1; i <= 10; i++) {
-        expect(player.resolveRepSubPaths(i), ['reps/$i.mp3']);
-      }
-    });
-
-    test('11 to 19', () {
-      expect(player.resolveRepSubPaths(11), ['reps/10.mp3', 'reps/1.mp3']);
-      expect(player.resolveRepSubPaths(12), ['reps/10.mp3', 'reps/2.mp3']);
-      expect(player.resolveRepSubPaths(14), ['reps/10.mp3', 'reps/4.mp3']);
-      expect(player.resolveRepSubPaths(15), ['reps/10.mp3', 'reps/lam.mp3']);
-      expect(player.resolveRepSubPaths(19), ['reps/10.mp3', 'reps/9.mp3']);
-    });
-
-    test('Round tens and 100', () {
-      expect(player.resolveRepSubPaths(20), ['reps/20.mp3']);
-      expect(player.resolveRepSubPaths(30), ['reps/30.mp3']);
-      expect(player.resolveRepSubPaths(40), ['reps/40.mp3']);
-      expect(player.resolveRepSubPaths(50), ['reps/50.mp3']);
-      expect(player.resolveRepSubPaths(90), ['reps/90.mp3']);
-      expect(player.resolveRepSubPaths(100), ['reps/100.mp3']);
-    });
-
-    test('21 to 99 composite numbers', () {
-      expect(player.resolveRepSubPaths(21), ['reps/20.mp3', 'reps/mot.mp3']);
-      expect(player.resolveRepSubPaths(24), ['reps/20.mp3', 'reps/tu.mp3']);
-      expect(player.resolveRepSubPaths(25), ['reps/20.mp3', 'reps/lam.mp3']);
-      expect(player.resolveRepSubPaths(37), ['reps/30.mp3', 'reps/7.mp3']);
-      expect(player.resolveRepSubPaths(55), ['reps/50.mp3', 'reps/lam.mp3']);
-      expect(player.resolveRepSubPaths(99), ['reps/90.mp3', 'reps/9.mp3']);
-    });
-
-    test('Every number from 1 to 100 returns 1 or 2 valid non-empty files', () {
-      for (int i = 1; i <= 100; i++) {
-        final paths = player.resolveRepSubPaths(i);
-        expect(paths.isNotEmpty, isTrue, reason: 'Failed for rep $i');
-        expect(paths.length <= 2, isTrue, reason: 'Too many pieces for rep $i');
-        for (final p in paths) {
-          expect(p.startsWith('reps/'), isTrue);
-          expect(p.endsWith('.mp3'), isTrue);
+  group('Đếm số', () {
+    test('mỗi số 1..100 là một file có thật, đủ cả giọng nữ và nam', () {
+      for (final gender in VoiceGender.values) {
+        for (var n = 1; n <= 100; n++) {
+          final path = player.resolveAssetPath(
+            VoiceLineKey.rep,
+            params: {'n': n},
+            gender: gender,
+          );
+          expect(path, isNotNull, reason: 'rep $n');
+          final file = File('assets/$path');
+          expect(file.existsSync() && file.lengthSync() > 0, isTrue,
+              reason: 'thiếu hoặc rỗng: assets/$path');
         }
       }
     });
 
-    test('resolveAssetPaths with gender', () {
-      final female = player.resolveAssetPaths(
-        VoiceLineKey.rep,
-        params: {'n': 21},
-        gender: VoiceGender.female,
-      );
-      expect(female, ['audio/reps/20.mp3', 'audio/reps/mot.mp3']);
+    test('ngoài 1..100 thì đọc bằng TTS', () {
+      expect(player.resolveAssetPath(VoiceLineKey.rep, params: {'n': 0}), isNull);
+      expect(player.resolveAssetPath(VoiceLineKey.rep, params: {'n': 101}), isNull);
+    });
 
-      final male = player.resolveAssetPaths(
-        VoiceLineKey.rep,
-        params: {'n': 21},
-        gender: VoiceGender.male,
+    test('giọng nam lấy trong thư mục male', () {
+      expect(
+        player.resolveAssetPath(VoiceLineKey.rep,
+            params: {'n': 21}, gender: VoiceGender.male),
+        'audio/male/reps/21.mp3',
       );
-      expect(male, ['audio/male/reps/20.mp3', 'audio/male/reps/mot.mp3']);
+      expect(player.resolveAssetPath(VoiceLineKey.rep, params: {'n': 21}),
+          'audio/reps/21.mp3');
+    });
+  });
+
+  group('Không đoán file theo nội dung chữ', () {
+    test('mẹo đầu bài có chữ "tay", "hông" không phát nhầm câu nhắc tư thế', () {
+      for (final text in [
+        'Hạ ngực chậm, khuỷu tay chếch về sau',
+        'Đặt khuỷu tay dưới vai, giữ hông ngang thân',
+        'Nghỉ tay chút rồi chiến tiếp',
+      ]) {
+        expect(player.resolveAssetPath(null, text: text), isNull, reason: text);
+      }
+    });
+
+    test('nhắc tư thế chỉ dùng MP3 khi đúng câu của bài', () {
+      expect(
+        player.resolveAssetPath(null,
+            slug: 'jumping-jack', issueCode: 'arms_not_overhead'),
+        'audio/form/hands_overhead.mp3',
+      );
+      expect(
+        player.resolveAssetPath(null,
+            slug: 'push-up', issueCode: 'pushup_not_deep_enough'),
+        isNull,
+      );
+      expect(
+        player.resolveAssetPath(null,
+            slug: 'bodyweight-squat', issueCode: 'shallow_depth'),
+        isNull,
+      );
+    });
+  });
+
+  group('Phong cách giọng', () {
+    test('phong cách mặc định "coach" dùng câu nhắc thu sẵn', () {
+      expect(player.resolveAssetPath(VoiceLineKey.go), 'audio/countdown/go.mp3');
+      expect(player.resolveAssetPath(VoiceLineKey.setDone),
+          'audio/cues/set_done.mp3');
+    });
+
+    test('chọn phong cách riêng thì câu nhắc đọc bằng TTS, số vẫn dùng MP3', () {
+      expect(player.resolveAssetPath(VoiceLineKey.go, styledLines: true), isNull);
+      expect(player.resolveAssetPath(VoiceLineKey.setDone, styledLines: true),
+          isNull);
+      expect(
+        player.resolveAssetPath(VoiceLineKey.rep,
+            params: {'n': 7}, styledLines: true),
+        'audio/reps/7.mp3',
+      );
+      expect(
+        player.resolveAssetPath(VoiceLineKey.startCountdown,
+            params: {'n': 3}, styledLines: true),
+        'audio/countdown/3.mp3',
+      );
     });
   });
 }

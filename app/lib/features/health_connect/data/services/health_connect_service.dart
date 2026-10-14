@@ -7,12 +7,11 @@ class HealthConnectService {
 
   static const List<HealthDataType> requiredTypes = [
     HealthDataType.STEPS,
-    HealthDataType.TOTAL_CALORIES_BURNED,
-    HealthDataType.WORKOUT,
+    // Calo vận động (không gồm calo cơ thể tự đốt khi nghỉ, khoảng 1.500 kcal/ngày)
+    HealthDataType.ACTIVE_ENERGY_BURNED,
   ];
 
   static const List<HealthDataAccess> accessPermissions = [
-    HealthDataAccess.READ_WRITE,
     HealthDataAccess.READ,
     HealthDataAccess.READ,
   ];
@@ -106,7 +105,7 @@ class HealthConnectService {
       final now = DateTime.now();
       final midnight = DateTime(now.year, now.month, now.day);
       final healthData = await _health.getHealthDataFromTypes(
-        types: [HealthDataType.TOTAL_CALORIES_BURNED],
+        types: [HealthDataType.ACTIVE_ENERGY_BURNED],
         startTime: midnight,
         endTime: now,
       );

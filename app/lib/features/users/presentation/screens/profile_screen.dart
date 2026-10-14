@@ -1576,9 +1576,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     isSelected: voiceSettings.selectedStyleId == styleItem.$1,
                     onSelect: () => voiceNotifier.setStyle(styleItem.$1),
                     onPreview: () {
-                      // Phát âm thanh giọng người thật: "Bắt đầu nào!"
-                      voiceCoach.speakLine(
-                        VoiceLineKey.go,
+                      if (styleItem.$1 == 'coach') {
+                        // Phong cách mặc định dùng giọng thu sẵn nam/nữ đang chọn
+                        voiceCoach.speakLine(VoiceLineKey.go, interrupt: true);
+                        return;
+                      }
+                      final targetStyle =
+                          styles[styleItem.$1] ?? styles['supportive']!;
+                      final sample =
+                          voiceCoach.pickLine(styleItem.$1, VoiceLineKey.go) ??
+                          'Bắt đầu nào!';
+                      final rate = (targetStyle.rate *
+                              voiceSettings.speed.multiplier)
+                          .clamp(0.1, 1.0);
+                      voiceCoach.speakText(
+                        sample,
+                        rate: rate,
+                        pitch: targetStyle.pitch,
                         interrupt: true,
                       );
                     },

@@ -267,26 +267,19 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
 
   Future<void> _performSpeak(VoiceQueueEntry entry) async {
     try {
-      // 1. Ưu tiên phát file âm thanh người thật (.mp3) nếu có (hỗ trợ Lego audio 1..100)
-      final assetPaths = _audioPlayer.resolveAssetPaths(
+      // 1. Câu có giọng thu sẵn (MP3 nam/nữ) thì phát MP3, không thì đọc bằng TTS
+      final assetPath = _audioPlayer.resolveAssetPath(
         entry.key,
         params: entry.params,
         slug: entry.slug,
         issueCode: entry.issueCode,
         text: entry.text,
+        styledLines: _settings.selectedStyleId != 'coach',
         gender: _settings.gender,
       );
-
-      if (assetPaths != null && assetPaths.isNotEmpty) {
-        final played = await _audioPlayer.playAssetSequence(assetPaths);
-        if (played) {
-          return;
-        }
+      if (assetPath != null && await _audioPlayer.playAsset(assetPath)) {
+        return;
       }
-
-      debugPrint(
-        '[VoiceCoach] Không có file MP3 cho câu: "${entry.text}", dùng TTS fallback',
-      );
 
       // 2. Fallback về TTS nếu chưa có file MP3 cho câu này
       if (entry.rate != null) await _tts.setSpeechRate(entry.rate!);
