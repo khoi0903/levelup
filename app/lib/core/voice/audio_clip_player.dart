@@ -135,6 +135,11 @@ class AudioClipPlayer {
       _playCompleter = completer;
 
       await _player.play(AssetSource(assetPath));
+      if (session != _playSessionId) {
+        // Bị dừng trong lúc đang mở file: play() xong sau stop() nên file vẫn kêu → dừng lại
+        await _player.stop();
+        return true;
+      }
       // Clip dài nhất ~3 giây; giới hạn để hàng đợi không kẹt nếu máy không báo phát xong
       await completer.future.timeout(const Duration(seconds: 6), onTimeout: () {});
       if (session == _playSessionId) _playCompleter = null;

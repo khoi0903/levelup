@@ -281,7 +281,8 @@ class FlutterTtsVoiceCoach implements VoiceCoach {
         return;
       }
 
-      // 2. Fallback về TTS nếu chưa có file MP3 cho câu này
+      // 2. Fallback về TTS nếu chưa có file MP3 cho câu này; dừng MP3 còn sót để không chồng 2 giọng
+      await _audioPlayer.stop();
       if (entry.rate != null) await _tts.setSpeechRate(entry.rate!);
       if (entry.pitch != null) await _tts.setPitch(entry.pitch!);
 
