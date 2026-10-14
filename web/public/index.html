@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LevelUp – Tập luyện cùng AI</title>
+<meta name="description" content="LevelUp: ứng dụng tập luyện cho người Việt. Kế hoạch tập theo tuần, AI coach, đếm số lần bằng camera, chụp món ăn tính calo.">
+<link rel="icon" href="/logo.png">
+<style>
+  :root { --bg:#f5f7fd; --card:#fff; --text:#1b1f33; --muted:#5b6178; --primary:#4b63e8; --line:#e1e5f2; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#12141c; --card:#1b1e29; --text:#e9ebf5; --muted:#a3a8c0; --line:#2c3142; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  header { background:linear-gradient(160deg,#4b63e8,#3a4bc8); color:#fff; padding:56px 16px 64px; text-align:center; }
+  header img { width:88px; height:88px; border-radius:22px; background:#fff; }
+  header h1 { font-size:40px; margin:14px 0 4px; }
+  header p { margin:0; font-size:19px; opacity:.92; }
+  main { max-width:880px; margin:-32px auto 0; padding:0 16px 48px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:20px; }
+  .card b { display:block; font-size:17px; margin-bottom:4px; }
+  .card span { color:var(--muted); font-size:15px; }
+  .note { color:var(--muted); font-size:14px; text-align:center; margin-top:28px; }
+  footer { text-align:center; color:var(--muted); font-size:14px; padding:0 16px 32px; }
+  footer a { color:var(--primary); }
+</style>
+</head>
+<body>
+<header>
+  <img src="/logo.png" alt="Logo LevelUp">
+  <h1>LevelUp</h1>
+  <p>Tập đều mỗi tuần, có AI coach đồng hành</p>
+</header>
+<main>
+  <div class="grid">
+    <div class="card"><b>💪 Kế hoạch theo tuần</b><span>Chọn mục tiêu và số ngày rảnh, LevelUp lên lịch tập tại nhà không cần dụng cụ.</span></div>
+    <div class="card"><b>📷 Đếm bằng camera</b><span>Tự đếm số lần và nhắc sai tư thế. Video xử lý ngay trên điện thoại.</span></div>
+    <div class="card"><b>🤖 AI coach</b><span>Hỏi đáp tập luyện, dinh dưỡng bằng tiếng Việt, đổi bài khi bạn mệt.</span></div>
+    <div class="card"><b>🍜 Chụp món tính calo</b><span>Chụp món ăn Việt, ước lượng calo và đạm, tinh bột, chất béo.</span></div>
+    <div class="card"><b>🔥 Giữ động lực</b><span>Check-in, streak tuần, tổng kết tuần, tập cùng bạn bè.</span></div>
+  </div>
+  <p class="note">Sắp có trên Google Play.</p>
+</main>
+<footer>
+  <a href="/privacy">Chính sách quyền riêng tư</a> · <a href="/delete-account">Xoá tài khoản</a> ·
+  <a href="mailto:khoivt0@gmail.com">khoivt0@gmail.com</a>
+</footer>
+</body>
+</html>

@@ -4,16 +4,35 @@
     "cleanUrls": true,
     "trailingSlash": false,
     "redirects": [
-      { "source": "/", "destination": "/privacy", "type": 302 },
-      { "source": "/auth-action", "destination": "/reset", "type": 301 },
-      { "source": "/referral", "destination": "/invite", "type": 301 }
+      {
+        "source": "/auth-action",
+        "destination": "/reset",
+        "type": 301
+      },
+      {
+        "source": "/referral",
+        "destination": "/invite",
+        "type": 301
+      }
     ],
     "headers": [
-      { "source": "/reset", "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex" },
-        { "key": "Referrer-Policy", "value": "no-referrer" },
-        { "key": "Cache-Control", "value": "no-store" }
-      ] }
+      {
+        "source": "/reset",
+        "headers": [
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "no-referrer"
+          },
+          {
+            "key": "Cache-Control",
+            "value": "no-store"
+          }
+        ]
+      }
     ]
   }
 }
