@@ -5,6 +5,8 @@ plugins {
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
     id("com.google.gms.google-services")
+    // Đẩy AAB lên Google Play qua Play Developer API (scripts/publish-play.ps1, docs/play-publish.md)
+    id("com.github.triplet.play")
 }
 
 // Optional local release credentials; never commit this file or the keystore.
@@ -87,6 +89,14 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+// Khoá service account để ngoài git (android/play-service-account.json, đã có trong .gitignore).
+// Track mặc định "internal"; đổi bằng --track=alpha (test kín) khi chạy publishBundle.
+play {
+    serviceAccountCredentials.set(rootProject.file("play-service-account.json"))
+    track.set("internal")
+    defaultToAppBundles.set(true)
 }
 
 dependencies {
