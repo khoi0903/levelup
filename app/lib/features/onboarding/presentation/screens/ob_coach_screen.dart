@@ -10,6 +10,9 @@ import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/onboarding_header.dart';
 import '../../../../core/widgets/missing_hint.dart';
 import '../../../../core/widgets/primary_button.dart';
+import '../../../buddies/presentation/controllers/buddy_controller.dart';
+import '../../../home/presentation/controllers/home_controller.dart';
+import '../../../streak/presentation/controllers/streak_controller.dart';
 import '../../domain/models/onboarding_models.dart';
 import '../controllers/onboarding_controller.dart';
 
@@ -29,6 +32,10 @@ class _ObCoachScreenState extends ConsumerState<ObCoachScreen> {
       final repo = ref.read(onboardingRepositoryProvider);
       final response = await repo.completeOnboarding(state);
       ref.read(onboardingResponseProvider.notifier).state = response;
+      // Màn khởi động đã tải trước các API này khi chưa onboarding (404): tải lại theo hồ sơ mới
+      ref.invalidate(homePlanProvider);
+      ref.invalidate(streakFutureProvider);
+      ref.invalidate(buddyTodayFutureProvider);
       if (mounted) {
         context.push('/onboarding/plan');
       }
