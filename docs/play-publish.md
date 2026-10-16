@@ -25,14 +25,14 @@ Script từ chối chạy nếu thiếu, để không đẩy nhầm bản ký kh
 Trong thư mục `app` (PowerShell):
 
 ```powershell
-.\publish-play.ps1 -BumpBuild               # tăng +N trong pubspec, build, đẩy lên internal
-.\publish-play.ps1 -BumpBuild -Track alpha  # test kín (closed testing)
+.\publish-play.ps1 -BumpBuild                  # tăng +N trong pubspec, build, đẩy lên test kín (alpha)
+.\publish-play.ps1 -BumpBuild -Track internal  # thử nội bộ
 ```
 
 - `versionCode` (số sau dấu `+` trong `pubspec.yaml`) phải lớn hơn mọi bản đã tải lên.
   `-BumpBuild` tự tăng 1; muốn đổi `1.0.8` → `1.0.9` thì sửa tay `pubspec.yaml`.
   Sau khi đẩy xong, commit `pubspec.yaml` theo nhánh `release/<phiên bản>` như trước.
-- Track: `internal` (mặc định), `alpha` = test kín, `beta` = test mở, `production`.
+- Track: `alpha` = test kín (mặc định), `internal` = thử nội bộ, `beta` = test mở, `production`.
 - `-ReleaseStatus draft` để tạo bản nháp, vào Play Console tự bấm phát hành.
 - `-SkipBuild` đẩy lại AAB đã build ở `app/build/app/outputs/bundle/release/`.
 - Ghi chú phát hành (tuỳ chọn): `app/android/app/src/main/play/release-notes/vi-VN/default.txt`.
