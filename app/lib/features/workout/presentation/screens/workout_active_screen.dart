@@ -119,11 +119,11 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
     final coach = ref.read(voiceCoachProvider);
     if (_lastAnnouncedExerciseIndex != s.exerciseIndex) {
       _lastAnnouncedExerciseIndex = s.exerciseIndex;
+      final slug = item.exercise?.slug ?? item.exerciseId;
       coach.speakLine(
         VoiceLineKey.exerciseNext,
-        params: {'exercise': item.nameVi},
+        params: {'exercise': item.nameVi, 'slug': slug},
       );
-      final slug = item.exercise?.slug ?? item.exerciseId;
       coach.speakStartTip(slug);
     }
     // Tự mở camera: màn camera tự đếm lùi và đọc "bắt đầu", không đọc hai lần

@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io' show Platform;
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../constants/auth_constants.dart';
@@ -31,10 +33,13 @@ final unauthorizedHandlerProvider = Provider<UnauthorizedHandler?>(
 );
 
 final apiBaseUrlProvider = Provider<String>((ref) {
-  return const String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://localhost:8081',
-  );
+  const fromEnv = String.fromEnvironment('API_BASE_URL');
+  if (fromEnv.isNotEmpty) return fromEnv;
+  // Trên Android emulator, máy tính chủ là 10.0.2.2 (không phải localhost)
+  if (!kIsWeb && Platform.isAndroid) {
+    return 'http://10.0.2.2:8081';
+  }
+  return 'http://localhost:8081';
 });
 
 class ApiClient {

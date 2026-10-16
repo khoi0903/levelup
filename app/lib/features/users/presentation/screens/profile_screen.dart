@@ -1513,6 +1513,53 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 const Divider(color: AppColors.border, height: 1),
                 const SizedBox(height: 12),
                 const Text(
+                  'Giọng huấn luyện viên',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildVoiceGenderCard(
+                        gender: VoiceGender.female,
+                        title: 'Giọng Nữ',
+                        subtitle: 'Hoài My • Truyền cảm',
+                        isSelected: voiceSettings.gender == VoiceGender.female,
+                        onTap: () {
+                          voiceNotifier.setGender(VoiceGender.female);
+                          voiceCoach.speakLine(
+                            VoiceLineKey.go,
+                            interrupt: true,
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildVoiceGenderCard(
+                        gender: VoiceGender.male,
+                        title: 'Giọng Nam',
+                        subtitle: 'Nam Minh • Mạnh mẽ',
+                        isSelected: voiceSettings.gender == VoiceGender.male,
+                        onTap: () {
+                          voiceNotifier.setGender(VoiceGender.male);
+                          voiceCoach.speakLine(
+                            VoiceLineKey.go,
+                            interrupt: true,
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                const Divider(color: AppColors.border, height: 1),
+                const SizedBox(height: 12),
+                const Text(
                   'Phong cách giọng',
                   style: TextStyle(
                     fontSize: 14,
@@ -1529,17 +1576,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     isSelected: voiceSettings.selectedStyleId == styleItem.$1,
                     onSelect: () => voiceNotifier.setStyle(styleItem.$1),
                     onPreview: () {
-                      final effectiveId = styleItem.$1 == 'coach'
-                          ? (_selectedCoachStyle == 'strict'
-                              ? 'strict'
-                              : _selectedCoachStyle == 'funny'
-                              ? 'funny'
-                              : 'supportive')
-                          : styleItem.$1;
+                      if (styleItem.$1 == 'coach') {
+                        // Phong cách mặc định dùng giọng thu sẵn nam/nữ đang chọn
+                        voiceCoach.speakLine(VoiceLineKey.go, interrupt: true);
+                        return;
+                      }
                       final targetStyle =
-                          styles[effectiveId] ?? styles['supportive']!;
+                          styles[styleItem.$1] ?? styles['supportive']!;
                       final sample =
-                          voiceCoach.pickLine(effectiveId, VoiceLineKey.go) ??
+                          voiceCoach.pickLine(styleItem.$1, VoiceLineKey.go) ??
                           'Bắt đầu nào!';
                       final rate = (targetStyle.rate *
                               voiceSettings.speed.multiplier)
@@ -1728,6 +1773,80 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildVoiceGenderCard({
+    required VoiceGender gender,
+    required String title,
+    required String subtitle,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isSelected
+            ? AppColors.primaryLight.withValues(alpha: 0.5)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSelected ? AppColors.primary : AppColors.border,
+          width: isSelected ? 1.5 : 1,
+        ),
+      ),
+      child: InkWell(
+        key: ValueKey('settings-voice-gender-${gender.code}'),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          child: Row(
+            children: [
+              Icon(
+                gender == VoiceGender.female
+                    ? Icons.record_voice_over_rounded
+                    : Icons.mic_external_on_rounded,
+                size: 20,
+                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              if (isSelected)
+                const Icon(
+                  Icons.check_circle_rounded,
+                  size: 16,
+                  color: AppColors.primary,
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
