@@ -2,13 +2,13 @@
 # Hướng dẫn chuẩn bị khoá: docs/play-publish.md
 #
 # Ví dụ (chạy trong thư mục app):
-#   .\publish-play.ps1                     # build + đẩy lên track internal
-#   .\publish-play.ps1 -Track alpha        # test kín (closed testing)
+#   .\publish-play.ps1                     # build + đẩy lên track alpha (test kín)
+#   .\publish-play.ps1 -Track internal     # thử nội bộ
 #   .\publish-play.ps1 -BumpBuild          # tăng số build trong pubspec (1.0.8+9 -> 1.0.8+10) rồi build
 #   .\publish-play.ps1 -SkipBuild          # chỉ đẩy AAB đã build sẵn
 param(
     [ValidateSet('internal', 'alpha', 'beta', 'production')]
-    [string]$Track = 'internal',
+    [string]$Track = 'alpha',
     [ValidateSet('completed', 'draft', 'inProgress', 'halted')]
     [string]$ReleaseStatus = 'completed',
     [string]$ApiBaseUrl = 'https://levelup-backend-kjqn.onrender.com',

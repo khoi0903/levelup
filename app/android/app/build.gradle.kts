@@ -92,10 +92,10 @@ flutter {
 }
 
 // Khoá service account để ngoài git (android/play-service-account.json, đã có trong .gitignore).
-// Track mặc định "internal"; đổi bằng --track=alpha (test kín) khi chạy publishBundle.
+// Track mặc định "alpha" (test kín); đổi bằng --track=internal|beta|production khi chạy publishBundle.
 play {
     serviceAccountCredentials.set(rootProject.file("play-service-account.json"))
-    track.set("internal")
+    track.set("alpha")
     defaultToAppBundles.set(true)
 }
 
