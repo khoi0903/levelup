@@ -249,10 +249,10 @@ List<WorkoutPlanItem> buildSuggestedExercises({
       restSec = 20;
     } else if (type == SuggestedWorkoutType.light10) {
       if (e.primaryMuscle == 'mobility') {
-        sets = 1;
+        // 2 lượt × 45 giây (hai bên / hai lần), 6 bài ≈ 10 phút
+        sets = 2;
         reps = null;
-        final baseDuration = 30 + ((diff - 1) * 5);
-        durationSec = baseDuration.clamp(30, 45);
+        durationSec = 45;
         restSec = 10;
       } else {
         sets = 2;

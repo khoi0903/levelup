@@ -359,10 +359,10 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Hiển thị "Đã đốt khi tập: 350 kcal · 5200 bước"
+      // Hiển thị "Calo vận động: 350 kcal · 5200 bước"
       expect(find.byKey(const ValueKey('nutrition-burned-kcal')), findsOneWidget);
       expect(
-        find.text('Đã đốt khi tập: 350 kcal · 5200 bước'),
+        find.text('Calo vận động: 350 kcal · 5200 bước'),
         findsOneWidget,
       );
 
@@ -450,10 +450,9 @@ void main() {
 
       for (final item in setup.items) {
         expect(item.exercise?.primaryMuscle, 'mobility');
-        expect(item.sets, 1);
+        expect(item.sets, 2);
         expect(item.reps, isNull);
-        expect(item.durationSec, greaterThanOrEqualTo(30));
-        expect(item.durationSec, lessThanOrEqualTo(45));
+        expect(item.durationSec, 45);
         expect(item.restSec, 10);
       }
     });

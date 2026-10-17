@@ -280,8 +280,8 @@ class _Summary extends StatelessWidget {
         if (today.totalBurnedKcal > 0) ...[
           Text(
             today.steps > 0
-                ? 'Đã đốt khi tập: ${today.totalBurnedKcal} kcal · ${today.steps} bước'
-                : 'Đã đốt khi tập: ${today.totalBurnedKcal} kcal',
+                ? 'Calo vận động: ${today.totalBurnedKcal} kcal · ${today.steps} bước'
+                : 'Calo vận động: ${today.totalBurnedKcal} kcal',
             key: const ValueKey('nutrition-burned-kcal'),
             style: const TextStyle(
               fontSize: 13,

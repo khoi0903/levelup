@@ -388,7 +388,7 @@ void main() {
     );
 
     testWidgets(
-      'Màn Dinh dưỡng: hiện dòng "Đã đốt khi tập: X kcal" khi burnedKcal > 0',
+      'Màn Dinh dưỡng: hiện dòng "Calo vận động: X kcal" khi burnedKcal > 0',
       (tester) async {
         final nutritionRepoWithKcal = FakeNutritionRepository(
           initial: const NutritionToday(
@@ -417,9 +417,9 @@ void main() {
 
         await tester.pumpAndSettle();
 
-        // Hiển thị "Đã đốt khi tập: 320 kcal"
+        // Hiển thị "Calo vận động: 320 kcal"
         expect(find.byKey(const ValueKey('nutrition-burned-kcal')), findsOneWidget);
-        expect(find.text('Đã đốt khi tập: 320 kcal'), findsOneWidget);
+        expect(find.text('Calo vận động: 320 kcal'), findsOneWidget);
       },
     );
 
