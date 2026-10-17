@@ -125,9 +125,31 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
               final user = userAsync.valueOrNull;
               final location = user?.profile?.location;
               final equipment = user?.profile?.equipment ?? const [];
-              final activeInjuries = user?.activeInjuries ?? const [];
+              final activeInjuries = user?.activeInjuryAreas ?? const [];
               final todayCheckin = user?.todayCheckin;
               final todayStr = user?.localDate ?? localDateString(DateTime.now());
+
+              final lastSaved = ref.watch(lastSavedWorkoutRequestProvider);
+              final hasPainFollowUp = user != null && user.painFollowUps.isNotEmpty;
+              final hasSharpToday = lastSaved != null &&
+                  lastSaved.painType == 'sharp' &&
+                  lastSaved.painAreas.isNotEmpty;
+              final hasPain = hasPainFollowUp || hasSharpToday;
+
+              String painLabel = '';
+              if (hasPainFollowUp) {
+                painLabel = user.painFollowUps.map((p) => p.label).join(', ');
+              } else if (hasSharpToday) {
+                painLabel = lastSaved.painAreas
+                    .map((a) => a.labelVi.toLowerCase())
+                    .join(', ');
+              }
+
+              final effectiveInjuries = <String>{
+                ...activeInjuries,
+                if (hasSharpToday) ...lastSaved.painAreas.map((a) => a.json),
+                if (hasPainFollowUp) ...user.painFollowUps.map((p) => p.bodyArea),
+              }.toList();
 
               // Tìm buổi hôm nay đã hoàn thành nếu có
               final todayDoneSession = plan.sessions
@@ -145,7 +167,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                 exercises: allExercises,
                 location: location,
                 userEquipment: equipment,
-                activeInjuries: activeInjuries,
+                activeInjuries: effectiveInjuries,
               );
 
               return Column(
@@ -187,6 +209,95 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                       ],
                     ),
                   ),
+
+                  // Dòng nhắc nhẹ khi đang đau
+                  if (hasPain) ...[
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+                      child: Container(
+                        key: const ValueKey('pain-reminder-banner'),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.placeholder,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Bạn đang đau $painLabel. Nghỉ cũng là một phần của tập luyện; nếu vẫn muốn tập, mình đã bỏ bài tác động vào vùng này.',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton(
+                                    key: const ValueKey('extra-pain-other-part-btn'),
+                                    onPressed: () => _tabController.animateTo(1),
+                                    style: OutlinedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      side: const BorderSide(color: AppColors.primary),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Tập phần khác',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: ElevatedButton(
+                                    key: const ValueKey('extra-pain-light10-btn'),
+                                    onPressed: () {
+                                      _startSetup(
+                                        buildSuggestedWorkoutSetup(
+                                          exercises: allExercises,
+                                          type: SuggestedWorkoutType.light10,
+                                          location: location,
+                                          userEquipment: equipment,
+                                          activeInjuries: effectiveInjuries,
+                                          durationMin: 10,
+                                        ),
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primary,
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Bản nhẹ 10 phút',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
 
                   // Tabs: Gợi ý / Tự chọn
                   Padding(
@@ -234,8 +345,9 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                           allExercises: allExercises,
                           location: location,
                           equipment: equipment,
-                          activeInjuries: activeInjuries,
+                          activeInjuries: effectiveInjuries,
                           todayCheckin: todayCheckin,
+                          hasPain: hasPain,
                         ),
 
                         // Tab 2: Tự chọn bài
@@ -243,7 +355,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                           allExercises: allExercises,
                           location: location,
                           equipment: equipment,
-                          activeInjuries: activeInjuries,
+                          activeInjuries: effectiveInjuries,
                         ),
                       ],
                     ),
@@ -269,6 +381,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
     required List<String> equipment,
     required List<String> activeInjuries,
     required TodayCheckin? todayCheckin,
+    bool hasPain = false,
   }) {
     final isLow = todayCheckin?.isLow == true;
     final isEnergized = todayCheckin?.isEnergized == true;
@@ -358,6 +471,23 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
           ),
         ),
         const SizedBox(height: 12),
+
+        if (hasPain) ...[
+          _buildSuggestedCard(
+            type: SuggestedWorkoutType.light10,
+            subtitle: '3 bài tập · 10 phút · Cường độ nhẹ nhàng, bảo vệ vùng đau',
+            icon: Icons.spa_rounded,
+            iconColor: const Color(0xFF059669),
+            bgColor: const Color(0xFFD1FAE5),
+            safeExercises: safeExercises,
+            location: location,
+            equipment: equipment,
+            activeInjuries: activeInjuries,
+            isLowCheckin: false,
+            durationMin: 10,
+          ),
+          const SizedBox(height: 10),
+        ],
 
         // 5 thẻ gợi ý
         _buildSuggestedCard(

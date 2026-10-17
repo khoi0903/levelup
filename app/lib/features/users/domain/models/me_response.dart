@@ -1,3 +1,4 @@
+import '../../../onboarding/domain/models/plan_models.dart';
 import '../../../product/domain/models/product_models.dart';
 import '../../../workout/domain/models/workout_models.dart';
 
@@ -293,6 +294,89 @@ class UserInjury {
   };
 }
 
+class PainFollowUp {
+  final String bodyArea;
+  final String label;
+  final String reportedOn;
+  final int days;
+
+  const PainFollowUp({
+    required this.bodyArea,
+    required this.label,
+    required this.reportedOn,
+    required this.days,
+  });
+
+  factory PainFollowUp.fromJson(Map<String, dynamic> json) => PainFollowUp(
+    bodyArea: json['bodyArea']?.toString() ?? '',
+    label: json['label']?.toString() ?? '',
+    reportedOn: json['reportedOn']?.toString() ?? '',
+    days: (json['days'] as num?)?.toInt() ?? 0,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'bodyArea': bodyArea,
+    'label': label,
+    'reportedOn': reportedOn,
+    'days': days,
+  };
+}
+
+class ActiveInjury {
+  final String bodyArea;
+  final String label;
+  final bool followUp;
+
+  const ActiveInjury({
+    required this.bodyArea,
+    required this.label,
+    this.followUp = false,
+  });
+
+  factory ActiveInjury.fromJson(Map<String, dynamic> json) => ActiveInjury(
+    bodyArea: json['bodyArea']?.toString() ?? '',
+    label: json['label']?.toString() ?? '',
+    followUp: json['followUp'] == true,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'bodyArea': bodyArea,
+    'label': label,
+    'followUp': followUp,
+  };
+}
+
+class PainFollowUpResponse {
+  final String status; // 'resolved' | 'monitoring' | 'injury'
+  final String message;
+  final PlanView? plan;
+
+  const PainFollowUpResponse({
+    required this.status,
+    required this.message,
+    this.plan,
+  });
+
+  bool get isResolved => status == 'resolved';
+  bool get isMonitoring => status == 'monitoring';
+  bool get isInjury => status == 'injury';
+
+  factory PainFollowUpResponse.fromJson(Map<String, dynamic> json) =>
+      PainFollowUpResponse(
+        status: json['status']?.toString() ?? '',
+        message: json['message']?.toString() ?? '',
+        plan: json['plan'] is Map<String, dynamic>
+            ? PlanView.fromJson(json['plan'] as Map<String, dynamic>)
+            : null,
+      );
+
+  Map<String, dynamic> toJson() => {
+    'status': status,
+    'message': message,
+    if (plan != null) 'plan': plan!.toJson(),
+  };
+}
+
 class MeResponse {
   final String id;
   final String displayName;
@@ -313,6 +397,8 @@ class MeResponse {
   final ProductConfig productConfig;
   final DateTime? createdAt;
   final bool referralRedeemEligible;
+  final List<PainFollowUp> painFollowUps;
+  final List<ActiveInjury> activeInjuries;
 
   const MeResponse({
     required this.id,
@@ -332,10 +418,13 @@ class MeResponse {
     this.productConfig = const ProductConfig(),
     this.createdAt,
     this.referralRedeemEligible = false,
+    this.painFollowUps = const [],
+    this.activeInjuries = const [],
   });
 
-  List<String> get activeInjuries =>
-      injuries.where((i) => i.active).map((i) => i.bodyArea).toList();
+  List<String> get activeInjuryAreas => activeInjuries.isNotEmpty
+      ? activeInjuries.map((i) => i.bodyArea).toList()
+      : injuries.where((i) => i.active).map((i) => i.bodyArea).toList();
 
   factory MeResponse.fromJson(Map<String, dynamic> json) {
     return MeResponse(
@@ -379,6 +468,22 @@ class MeResponse {
         json['productConfig'] as Map<String, dynamic>? ?? {},
       ),
       createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
+      painFollowUps:
+          (json['painFollowUps'] as List<dynamic>?)
+              ?.map((e) => PainFollowUp.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      activeInjuries:
+          (json['activeInjuries'] as List<dynamic>?)?.map((e) {
+            if (e is Map<String, dynamic>) {
+              return ActiveInjury.fromJson(e);
+            }
+            return ActiveInjury(
+              bodyArea: e.toString(),
+              label: e.toString(),
+            );
+          }).toList() ??
+          const [],
     );
   }
 
@@ -400,5 +505,7 @@ class MeResponse {
     'subscription': subscription.toJson(),
     'productConfig': productConfig.toJson(),
     'createdAt': createdAt?.toUtc().toIso8601String(),
+    'painFollowUps': painFollowUps.map((p) => p.toJson()).toList(),
+    'activeInjuries': activeInjuries.map((i) => i.toJson()).toList(),
   };
 }

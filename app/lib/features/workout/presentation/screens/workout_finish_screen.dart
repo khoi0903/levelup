@@ -36,6 +36,7 @@ class WorkoutFinishScreen extends ConsumerStatefulWidget {
 class _WorkoutFinishScreenState extends ConsumerState<WorkoutFinishScreen> {
   int _rpe = 7;
   final Set<PainArea> _pain = {};
+  String? _painType;
   final _noteController = TextEditingController();
 
   @override
@@ -45,11 +46,26 @@ class _WorkoutFinishScreenState extends ConsumerState<WorkoutFinishScreen> {
   }
 
   Future<void> _submit() async {
+    if (_pain.isNotEmpty && _painType == null) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Vui lòng chọn loại đau: mỏi cơ hay đau nhói / đau khớp.',
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      return;
+    }
+
     final result = await ref
         .read(activeWorkoutProvider.notifier)
         .submit(
           rpe: _rpe,
           painAreas: PainArea.values.where(_pain.contains).toList(),
+          painType: _pain.isNotEmpty ? _painType : null,
           note: _noteController.text,
         );
     if (!mounted || result == null) return;
@@ -177,20 +193,68 @@ class _WorkoutFinishScreenState extends ConsumerState<WorkoutFinishScreen> {
                               height: 40,
                               isSelected: _pain.contains(area),
                               onTap: () => setState(() {
-                                if (!_pain.remove(area)) _pain.add(area);
+                                if (!_pain.remove(area)) {
+                                  _pain.add(area);
+                                }
+                                if (_pain.isEmpty) {
+                                  _painType = null;
+                                }
                               }),
                             ),
                         ],
                       ),
                       if (_pain.isNotEmpty) ...[
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 12),
                         const Text(
-                          'Coach sẽ giảm nhẹ buổi sau. Đau kéo dài thì nên đi khám.',
+                          'Cảm giác đau như thế nào?',
                           style: TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
                           ),
                         ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            SelectionChip(
+                              key: const ValueKey('pain-type-soreness'),
+                              label: 'Mỏi cơ bình thường',
+                              height: 40,
+                              isSelected: _painType == 'soreness',
+                              onTap: () => setState(() => _painType = 'soreness'),
+                            ),
+                            SelectionChip(
+                              key: const ValueKey('pain-type-sharp'),
+                              label: 'Đau nhói / đau khớp',
+                              height: 40,
+                              isSelected: _painType == 'sharp',
+                              onTap: () => setState(() => _painType = 'sharp'),
+                            ),
+                          ],
+                        ),
+                        if (_painType == 'soreness') ...[
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Mỏi sau tập là bình thường. Giãn cơ, uống đủ nước nhé.',
+                            key: ValueKey('pain-hint-soreness'),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ] else if (_painType == 'sharp') ...[
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Coach sẽ đổi bài tránh vùng này và hỏi thăm bạn ngày mai. Đau kéo dài thì nên đi khám.',
+                            key: ValueKey('pain-hint-sharp'),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
                       ],
                       const SizedBox(height: 18),
                       const Text(

@@ -9,4 +9,10 @@ abstract class UserRepository {
 
   /// DELETE /me {"confirm": true}: xoá vĩnh viễn tài khoản và toàn bộ dữ liệu.
   Future<void> deleteAccount();
+
+  /// POST /pain-followups/{bodyArea} {"answer": "gone|better|same|worse"}
+  Future<PainFollowUpResponse> answerPainFollowUp(
+    String bodyArea,
+    String answer,
+  );
 }

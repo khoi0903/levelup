@@ -66,6 +66,11 @@ class WorkoutDraft {
         .toList();
   }
 
+  String? get painType {
+    final map = jsonDecode(stateJson) as Map<String, dynamic>;
+    return map['painType'] as String?;
+  }
+
   String? get note {
     final map = jsonDecode(stateJson) as Map<String, dynamic>;
     return map['note'] as String?;
@@ -81,6 +86,7 @@ class WorkoutDraft {
       variant: s.variant,
       rpe: rpe,
       painAreas: painAreas,
+      painType: painType,
       note: note,
       sets: s.sets,
     );
@@ -90,13 +96,15 @@ class WorkoutDraft {
     WorkoutSessionState state, {
     int? rpe,
     List<PainArea> painAreas = const [],
+    String? painType,
     String? note,
   }) {
     return jsonEncode({
       'sessionState': state.toJson(),
-      'rpe': ?rpe,
+      'rpe': rpe,
       if (painAreas.isNotEmpty)
         'painAreas': painAreas.map((p) => p.json).toList(),
+      if (painAreas.isNotEmpty && painType != null) 'painType': painType,
       if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
     });
   }

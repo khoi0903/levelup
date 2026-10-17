@@ -24,4 +24,16 @@ class ApiUserRepository implements UserRepository {
   Future<void> deleteAccount() async {
     await client.delete('/me', data: {'confirm': true});
   }
+
+  @override
+  Future<PainFollowUpResponse> answerPainFollowUp(
+    String bodyArea,
+    String answer,
+  ) async {
+    final response = await client.post(
+      '/pain-followups/$bodyArea',
+      data: {'answer': answer},
+    );
+    return PainFollowUpResponse.fromJson(response.data as Map<String, dynamic>);
+  }
 }

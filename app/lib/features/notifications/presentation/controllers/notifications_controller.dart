@@ -84,7 +84,13 @@ class NotificationCoordinator {
     // 1. App đang mở (foreground): Android không tự hiện thông báo FCM, nên app tự đẩy lên
     //    thanh thông báo của điện thoại (bật xuống từ đầu màn hình). Bấm vào → mở đúng màn.
     final local = _ref.read(localNotifierProvider);
-    await local.init(onTap: (route) => appRouter.go(mapNotificationRoute(route)));
+    await local.init(
+      onTap: (route) {
+        final targetRoute = mapNotificationRoute(route);
+        _ref.invalidate(userStatusFutureProvider);
+        appRouter.go(targetRoute);
+      },
+    );
     _messageSubscription = _pushService.onMessage.listen(local.show);
 
     // 2. App chạy nền (background): người dùng nhấn vào thông báo hệ thống
@@ -92,6 +98,7 @@ class NotificationCoordinator {
       message,
     ) {
       final targetRoute = mapNotificationRoute(message.route);
+      _ref.invalidate(userStatusFutureProvider);
       appRouter.go(targetRoute);
     });
 
@@ -118,6 +125,7 @@ class NotificationCoordinator {
       final initialMessage = await _pushService.getInitialMessage();
       if (initialMessage != null) {
         final targetRoute = mapNotificationRoute(initialMessage.route);
+        _ref.invalidate(userStatusFutureProvider);
         final currentUser = _ref.read(currentUserProvider);
         if (currentUser != null) {
           // Người dùng đã sẵn sàng trong app -> điều hướng luôn

@@ -7,6 +7,7 @@ import 'workout_session_state.dart';
 /// Loại buổi tập gợi ý nhanh.
 enum SuggestedWorkoutType {
   quick5('5 phút nhanh', 5, 'quick5'),
+  light10('Bản nhẹ 10 phút', 10, 'light'),
   fullBody('Toàn thân', 15, 'normal'),
   legsGlutes('Chân & mông', 15, 'normal'),
   armsShoulders('Tay & vai', 15, 'normal'),
@@ -100,6 +101,23 @@ List<WorkoutPlanItem> buildSuggestedExercises({
       }
       break;
 
+    case SuggestedWorkoutType.light10:
+      final easy = available.where((e) => (e.difficulty ?? 1) <= 2).toList();
+      final pool = easy.isNotEmpty
+          ? easy
+          : (List<ExerciseResponse>.from(available)
+            ..sort((a, b) => (a.difficulty ?? 3).compareTo(b.difficulty ?? 3)));
+      selected.addAll(pool.take(3));
+      if (selected.length < 3) {
+        for (final e in available) {
+          if (!selected.contains(e)) {
+            selected.add(e);
+            if (selected.length == 3) break;
+          }
+        }
+      }
+      break;
+
     case SuggestedWorkoutType.legsGlutes:
       final targetMuscles = {'legs', 'glutes'};
       final primary = available.where((e) => targetMuscles.contains(e.primaryMuscle)).toList();
@@ -179,6 +197,11 @@ List<WorkoutPlanItem> buildSuggestedExercises({
       reps = isDuration ? null : (6 + diff * 2);
       durationSec = isDuration ? (20 + diff * 5) : null;
       restSec = 20;
+    } else if (type == SuggestedWorkoutType.light10) {
+      sets = 2;
+      reps = isDuration ? null : 8;
+      durationSec = isDuration ? 20 : null;
+      restSec = 30;
     } else {
       final baseSets = diff >= 3 ? 3 : 2;
       sets = isLowCheckin ? max(1, baseSets - 1) : baseSets;
