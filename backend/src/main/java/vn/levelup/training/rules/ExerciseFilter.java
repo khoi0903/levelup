@@ -13,7 +13,14 @@ import vn.levelup.training.model.Exercise;
  */
 public final class ExerciseFilter {
 
+    /** Nhóm bài giãn cơ / vận động nhẹ: chỉ dùng khi người dùng tự chọn hoặc tập nhẹ, không xếp vào kế hoạch. */
+    public static final String MOBILITY = "mobility";
+
     private ExerciseFilter() {}
+
+    public static boolean isMobility(Exercise e) {
+        return MOBILITY.equals(e.primaryMuscle());
+    }
 
     public static List<Exercise> forUser(Collection<Exercise> all, String location,
                                          Set<String> userEquipment, Set<String> activeInjuries) {

@@ -58,6 +58,7 @@ public final class Week1PlanBuilder {
         int minutes = Math.max(10, Math.min(15, sessionMinutes));
         int exercisesPerSession = Math.max(4, Math.min(6, minutes / 2 - 1));
         List<Exercise> easyFirst = safeExercises.stream()
+            .filter(e -> !ExerciseFilter.isMobility(e))
             .sorted(Comparator.comparingInt(Exercise::difficultyOrDefault))
             .toList();
 
@@ -82,6 +83,7 @@ public final class Week1PlanBuilder {
         int minutes = Math.max(10, Math.min(15, durationMin == null ? 15 : durationMin));
         int count = Math.max(4, Math.min(6, minutes / 2 - 1));
         List<Exercise> easyFirst = safeExercises.stream()
+            .filter(e -> !ExerciseFilter.isMobility(e))
             .sorted(Comparator.comparingInt(Exercise::difficultyOrDefault))
             .toList();
         return pickItems(easyFirst, focus, count);

@@ -282,7 +282,10 @@ coll("daily_stats", {
     waterMl: { bsonType: "number", minimum: 0 },
     usage: { bsonType: "object", properties: { photoScans: { bsonType: "number" }, coachMessages: { bsonType: "number" } } },
     notificationsSent: { bsonType: "number", minimum: 0 },  // đếm nhanh cho giới hạn 2 lần/ngày
-    waterRemindersSent: { bsonType: "number", minimum: 0 }  // nhắc uống nước đếm riêng, tối đa 2
+    waterRemindersSent: { bsonType: "number", minimum: 0 },  // nhắc uống nước đếm riêng, tối đa 2
+    activity: { bsonType: "object", properties: {            // Health Connect: cộng dồn từ 0h, chỉ tăng
+                steps: { bsonType: "number", minimum: 0 }, activeKcal: { bsonType: "number", minimum: 0 },
+                source: { enum: ["health_connect"] }, updatedAt: { bsonType: "date" } } }
   }
 });
 dbx.daily_stats.createIndex({ userId: 1, localDate: 1 }, { unique: true });
