@@ -114,7 +114,8 @@ public class MeController {
             settings.achievements(user.id()),
             checkins.today(new ObjectId(user.id()), today.toString()),
             demo.allowedFor(user.authUid()), demo.isAdmin(user.authUid()), plans.subscription(user),
-            configs.get(), user.createdAt(), referrals.canRedeem(user), painFollowUps.due(user, today));
+            configs.get(), user.createdAt(), referrals.canRedeem(user), painFollowUps.due(user, today),
+            painFollowUps.activeInjuries(user));
     }
 
     public record MeResponse(
@@ -134,6 +135,7 @@ public class MeController {
         ProductConfig productConfig,
         Instant createdAt,
         boolean referralRedeemEligible,
-        List<PainFollowUpService.FollowUpView> painFollowUps  // vùng đau cần hỏi thăm hôm nay, rỗng nếu không có
+        List<PainFollowUpService.FollowUpView> painFollowUps,  // vùng đau cần hỏi thăm hôm nay, rỗng nếu không có
+        List<PainFollowUpService.ActiveInjuryView> activeInjuries  // vùng đang tránh khi chọn bài
     ) {}
 }

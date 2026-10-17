@@ -196,7 +196,8 @@ flowchart TD
     <tr><td class="ep"><span class="m get">GET</span>/plans/sessions/:id/alternatives</td><td>F2</td><td>Bài thay thế an toàn cho một bài trong buổi</td></tr>
     <tr><td class="ep"><span class="m post">POST</span>/plans/sessions/:id/swap</td><td>F2</td><td>Đổi bài trong buổi, tuỳ chọn "không gợi ý bài này nữa"</td></tr>
     <tr><td class="ep"><span class="m post">POST</span>/checkins</td><td>F2</td><td>Check-in sáng, trả về buổi tập đã điều chỉnh</td></tr>
-    <tr><td class="ep"><span class="m post">POST</span>/workouts</td><td>F2, F2b</td><td>Lưu buổi tập, trả về kỷ lục, tiến độ tuần, huy hiệu mới</td></tr>
+    <tr><td class="ep"><span class="m post">POST</span>/workouts</td><td>F2, F2b</td><td>Lưu buổi tập, trả về kỷ lục, tiến độ tuần, huy hiệu mới. <code>painType</code>: <code>soreness</code> (mỏi cơ, không đổi lịch) hoặc <code>sharp</code> (đau nhói: theo dõi vùng đau, đổi bài các buổi còn lại)</td></tr>
+    <tr><td class="ep"><span class="m post">POST</span>/pain-followups/{bodyArea}</td><td>F2</td><td>Trả lời hỏi thăm vùng đau (<code>gone|better|same|worse</code>); danh sách cần hỏi hôm nay ở <code>GET /me.painFollowUps</code>. Vẫn đau sau 3 ngày hoặc đau hơn thì thành chấn thương</td></tr>
     <tr><td class="ep"><span class="m post">POST</span>/coach/messages</td><td>Coach</td><td>Gửi tin, nhận câu trả lời dạng stream</td></tr>
     <tr><td class="ep"><span class="m get">GET</span>/coach/messages</td><td>Coach</td><td>Lịch sử chat, phân trang theo thời gian</td></tr>
     <tr><td class="ep"><span class="m post">POST</span>/skip-reports</td><td>F3</td><td>Lý do bỏ buổi, API áp dụng hành động tương ứng</td></tr>

@@ -101,12 +101,39 @@ public class PainFollowUpService {
         }
     }
 
-    /** POST /pain-followups/{bodyArea}: người dùng trả lời hỏi thăm. */
+    /** Vùng đang bị tránh khi chọn bài (chấn thương hoặc đang theo dõi), cho mục "Đã khỏi" trong app. */
+    public record ActiveInjuryView(String bodyArea, String label, boolean followUp) {}
+
+    public List<ActiveInjuryView> activeInjuries(User user) {
+        return user.injuries() == null ? List.of() : user.injuries().stream()
+            .filter(i -> !Boolean.FALSE.equals(i.active()))
+            .map(i -> new ActiveInjuryView(i.bodyArea(), CoachRules.areaVi(i.bodyArea()),
+                Boolean.TRUE.equals(i.followUp())))
+            .toList();
+    }
+
+    /**
+     * POST /pain-followups/{bodyArea}: người dùng trả lời hỏi thăm. Riêng "gone" dùng được cho mọi vùng đang
+     * tránh (kể cả chấn thương từ onboarding, coach hay hỏi thăm trước đó) để người dùng báo đã khỏi.
+     */
     public AnswerResponse answer(User user, String bodyArea, String answer) {
         ObjectId userId = new ObjectId(user.id());
         LocalDate today = LocalDates.today(user.timezone(), clock);
         PainRules.Watch watch = watches(user).stream().filter(w -> w.bodyArea().equals(bodyArea)).findFirst()
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "PAIN_FOLLOWUP_NOT_FOUND"));
+            .orElse(null);
+        if (watch == null) {
+            boolean injured = activeInjuries(user).stream().anyMatch(i -> i.bodyArea().equals(bodyArea));
+            if (!injured || !"gone".equals(answer)) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "PAIN_FOLLOWUP_NOT_FOUND");
+            }
+            mongo.updateFirst(Query.query(Criteria.where("_id").is(userId).and("injuries").elemMatch(
+                    Criteria.where("bodyArea").is(bodyArea).and("active").is(true))),
+                new Update().set("injuries.$.active", false).set("injuries.$.followUp", false)
+                    .set("injuries.$.resolvedAt", Date.from(clock.instant())), "users");
+            TrainingPlan plan = plans.current(userId, today);
+            return new AnswerResponse("resolved", PainRules.answer(new PainRules.Watch(bodyArea, today, null, null),
+                "gone", today, CoachRules.areaVi(bodyArea)).message(), plan == null ? null : plans.view(plan));
+        }
         PainRules.Decision decision = PainRules.answer(watch, answer, today, CoachRules.areaVi(bodyArea));
 
         Update update = new Update().set("injuries.$.lastAnswer", answer)
