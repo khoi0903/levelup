@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/api/api_exceptions.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/error_messages.dart';
@@ -37,6 +38,13 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final List<DateTime> _tapTimestamps = [];
+
+  final Set<String> _dismissedFollowUps = {};
+  final Map<String, String> _sendingFollowUps = {};
+  final Map<String, PainFollowUpResponse> _followUpResponses = {};
+  // Thẻ đã trả lời: /me tải lại sẽ không còn vùng này, giữ lại để hiện kết quả tới khi ẩn
+  final Map<String, PainFollowUp> _answeredFollowUps = {};
+  final Map<String, Timer> _followUpTimers = {};
 
   /// Vẽ lại mỗi phút để lời chào đổi theo giờ khi app mở qua mốc (11h, 13h, 18h...).
   Timer? _clockTimer;
@@ -75,6 +83,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void dispose() {
     _clockTimer?.cancel();
+    for (final timer in _followUpTimers.values) {
+      timer.cancel();
+    }
     super.dispose();
   }
 
@@ -366,6 +377,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   const SizedBox(height: 14),
 
+                  // Thẻ Hỏi thăm vùng đau (trên thẻ buổi hôm nay)
+                  for (final followUp in <String, PainFollowUp>{
+                    ..._answeredFollowUps,
+                    for (final f in me?.painFollowUps ?? const <PainFollowUp>[])
+                      f.bodyArea: f,
+                  }.values)
+                    if (!_dismissedFollowUps.contains(followUp.bodyArea)) ...[
+                      _buildPainFollowUpCard(context, ref, followUp),
+                      const SizedBox(height: 14),
+                    ],
+
                   // Card Buổi tập chính hôm nay
                   _buildTodayWorkoutCard(
                     context,
@@ -556,6 +578,333 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
     );
+  }
+
+  String _capitalizeFirst(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1);
+  }
+
+  Widget _buildPainFollowUpCard(
+    BuildContext context,
+    WidgetRef ref,
+    PainFollowUp followUp,
+  ) {
+    if (_followUpResponses.containsKey(followUp.bodyArea)) {
+      final res = _followUpResponses[followUp.bodyArea]!;
+      if (res.status == 'injury') {
+        return _buildInjuryWarningCard(context, followUp, res);
+      } else {
+        return _buildResolvedOrMonitoringCard(context, followUp, res);
+      }
+    }
+
+    return GlassCard(
+      key: ValueKey('pain-followup-card-${followUp.bodyArea}'),
+      padding: const EdgeInsets.all(16),
+      borderRadius: AppColors.radiusCard,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '${_capitalizeFirst(followUp.label)} hôm nay sao rồi?',
+            key: ValueKey('pain-title-${followUp.bodyArea}'),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Báo đau ${followUp.days} ngày trước',
+            key: ValueKey('pain-subtitle-${followUp.bodyArea}'),
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildAnswerButton(
+                  context,
+                  ref,
+                  followUp,
+                  'gone',
+                  'Hết đau',
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildAnswerButton(
+                  context,
+                  ref,
+                  followUp,
+                  'better',
+                  'Đỡ hơn',
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildAnswerButton(
+                  context,
+                  ref,
+                  followUp,
+                  'same',
+                  'Vẫn đau',
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildAnswerButton(
+                  context,
+                  ref,
+                  followUp,
+                  'worse',
+                  'Đau hơn',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnswerButton(
+    BuildContext context,
+    WidgetRef ref,
+    PainFollowUp followUp,
+    String answer,
+    String label,
+  ) {
+    final isSending = _sendingFollowUps[followUp.bodyArea] == answer;
+    final anySending = _sendingFollowUps.containsKey(followUp.bodyArea);
+
+    return InkWell(
+      key: ValueKey('pain-btn-$answer-${followUp.bodyArea}'),
+      onTap: anySending
+          ? null
+          : () => _onAnswerPain(ref, followUp, answer),
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        height: 38,
+        decoration: BoxDecoration(
+          color: anySending
+              ? AppColors.surface.withValues(alpha: 0.5)
+              : AppColors.surface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: anySending
+                ? AppColors.border.withValues(alpha: 0.5)
+                : AppColors.border,
+            width: 1,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: isSending
+            ? const SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
+              )
+            : Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: anySending
+                      ? AppColors.textSecondary.withValues(alpha: 0.5)
+                      : AppColors.textPrimary,
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildInjuryWarningCard(
+    BuildContext context,
+    PainFollowUp followUp,
+    PainFollowUpResponse response,
+  ) {
+    return Container(
+      key: ValueKey('pain-followup-card-${followUp.bodyArea}'),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(AppColors.radiusCard),
+        border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x1AD97706),
+            blurRadius: 14,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: Color(0xFFD97706),
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '${_capitalizeFirst(followUp.label)} cần chú ý',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            response.message,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerRight,
+            child: SizedBox(
+              height: 36,
+              child: ElevatedButton(
+                key: ValueKey('pain-dismiss-injury-${followUp.bodyArea}'),
+                onPressed: () {
+                  setState(() => _dismissedFollowUps.add(followUp.bodyArea));
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD97706),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+                child: const Text(
+                  'Đã hiểu',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResolvedOrMonitoringCard(
+    BuildContext context,
+    PainFollowUp followUp,
+    PainFollowUpResponse response,
+  ) {
+    return GlassCard(
+      key: ValueKey('pain-followup-card-${followUp.bodyArea}'),
+      padding: const EdgeInsets.all(16),
+      borderRadius: AppColors.radiusCard,
+      child: Row(
+        children: [
+          const Icon(
+            Icons.check_circle_rounded,
+            color: AppColors.primary,
+            size: 22,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              response.message,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _onAnswerPain(
+    WidgetRef ref,
+    PainFollowUp followUp,
+    String answer,
+  ) async {
+    setState(() => _sendingFollowUps[followUp.bodyArea] = answer);
+    try {
+      final res = await ref.read(userRepositoryProvider).answerPainFollowUp(
+        followUp.bodyArea,
+        answer,
+      );
+      ref.invalidate(userStatusFutureProvider);
+      ref.invalidate(homePlanProvider);
+      if (!mounted) return;
+      setState(() {
+        _sendingFollowUps.remove(followUp.bodyArea);
+        _followUpResponses[followUp.bodyArea] = res;
+        _answeredFollowUps[followUp.bodyArea] = followUp;
+      });
+      if (res.status != 'injury') {
+        _followUpTimers[followUp.bodyArea] =
+            Timer(const Duration(seconds: 3), () {
+          if (mounted) {
+            setState(() => _dismissedFollowUps.add(followUp.bodyArea));
+          }
+        });
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(res.message),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+      }
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _sendingFollowUps.remove(followUp.bodyArea));
+      if (e.statusCode == 404 || e.code == 'PAIN_FOLLOWUP_NOT_FOUND') {
+        setState(() => _dismissedFollowUps.add(followUp.bodyArea));
+        ref.invalidate(userStatusFutureProvider);
+      } else {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(mapErrorMessage(e)),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _sendingFollowUps.remove(followUp.bodyArea));
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(mapErrorMessage(e)),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+    }
   }
 
   Widget _buildTodayWorkoutCard(

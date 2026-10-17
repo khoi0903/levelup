@@ -138,6 +138,7 @@ class WorkoutRequest {
   final String variant;
   final int? rpe;
   final List<PainArea> painAreas;
+  final String? painType;
   final String? note;
   final List<SetLog> sets;
 
@@ -149,6 +150,7 @@ class WorkoutRequest {
     required this.variant,
     this.rpe,
     this.painAreas = const [],
+    this.painType,
     this.note,
     required this.sets,
   });
@@ -162,6 +164,7 @@ class WorkoutRequest {
     if (rpe != null) 'rpe': rpe,
     if (painAreas.isNotEmpty)
       'painAreas': painAreas.map((p) => p.json).toList(),
+    if (painAreas.isNotEmpty && painType != null) 'painType': painType,
     if (note != null && note!.trim().isNotEmpty) 'note': note!.trim(),
     'sets': sets.map((s) => s.toJson()).toList(),
   };

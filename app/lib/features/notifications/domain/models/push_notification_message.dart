@@ -14,6 +14,12 @@ class PushNotificationMessage {
     return r is String ? r : null;
   }
 
+  /// Lấy loại thông báo từ payload `data['type']`.
+  String? get type {
+    final t = data['type'];
+    return t is String ? t : null;
+  }
+
   factory PushNotificationMessage.fromRemoteMessage(RemoteMessage message) {
     return PushNotificationMessage(
       title: message.notification?.title ?? message.data['title']?.toString(),

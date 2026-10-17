@@ -65,6 +65,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('rpe-8')));
       await tester.pump();
       await tapText(tester, 'Gối');
+      await tapText(tester, 'Mỏi cơ bình thường');
       await tapText(tester, 'Xem kết quả');
 
       final body = h.repo.sentRequests.single.toJson();
@@ -72,6 +73,7 @@ void main() {
       expect(body['variant'], 'normal');
       expect(body['rpe'], 8);
       expect(body['painAreas'], ['knee']);
+      expect(body['painType'], 'soreness');
       expect(body['startedAt'], '2026-10-05T11:00:00.000Z');
       expect(body['endedAt'], '2026-10-05T11:02:00.000Z');
       expect(body['sets'], [

@@ -11,10 +11,16 @@ class FakeUserRepository implements UserRepository {
   SettingsRequest? lastRequest;
   Map<String, dynamic>? lastJson;
 
+  final List<({String bodyArea, String answer})> answeredPainFollowUps = [];
+  PainFollowUpResponse? painFollowUpResponseToReturn;
+  Exception? painFollowUpErrorToThrow;
+
   FakeUserRepository({
     MeResponse? meResponse,
     this.errorToThrow,
     this.deleteErrorToThrow,
+    this.painFollowUpResponseToReturn,
+    this.painFollowUpErrorToThrow,
   }) {
     _meResponse = meResponse;
   }
@@ -162,5 +168,54 @@ class FakeUserRepository implements UserRepository {
       throw errorToThrow!;
     }
     _meResponse = null;
+  }
+
+  @override
+  Future<PainFollowUpResponse> answerPainFollowUp(
+    String bodyArea,
+    String answer,
+  ) async {
+    answeredPainFollowUps.add((bodyArea: bodyArea, answer: answer));
+    if (painFollowUpErrorToThrow != null) {
+      throw painFollowUpErrorToThrow!;
+    }
+    final status = answer == 'gone'
+        ? 'resolved'
+        : (answer == 'worse' ? 'injury' : 'monitoring');
+    final message = answer == 'gone'
+        ? 'Vùng $bodyArea đã khỏi, tiếp tục tập luyện bình thường.'
+        : (answer == 'worse'
+            ? 'Vùng $bodyArea bị đau hơn, hãy nghỉ ngơi và đi khám chuyên khoa.'
+            : 'Coach sẽ tiếp tục tránh bài tập tác động vào vùng $bodyArea.');
+
+    if (_meResponse != null) {
+      _meResponse = MeResponse(
+        id: _meResponse!.id,
+        displayName: _meResponse!.displayName,
+        timezone: _meResponse!.timezone,
+        localDate: _meResponse!.localDate,
+        weekStart: _meResponse!.weekStart,
+        profile: _meResponse!.profile,
+        streak: _meResponse!.streak,
+        settings: _meResponse!.settings,
+        achievements: _meResponse!.achievements,
+        todayCheckin: _meResponse!.todayCheckin,
+        demoEnabled: _meResponse!.demoEnabled,
+        isAdmin: _meResponse!.isAdmin,
+        subscription: _meResponse!.subscription,
+        productConfig: _meResponse!.productConfig,
+        createdAt: _meResponse!.createdAt,
+        referralRedeemEligible: _meResponse!.referralRedeemEligible,
+        painFollowUps:
+            _meResponse!.painFollowUps.where((p) => p.bodyArea != bodyArea).toList(),
+        activeInjuries: answer == 'gone'
+            ? _meResponse!.activeInjuries.where((i) => i.bodyArea != bodyArea).toList()
+            : _meResponse!.activeInjuries,
+      );
+    }
+
+    // Như backend: vùng đã trả lời không còn trong painFollowUps khi tải lại /me
+    return painFollowUpResponseToReturn ??
+        PainFollowUpResponse(status: status, message: message);
   }
 }

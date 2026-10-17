@@ -192,6 +192,9 @@ final activeWorkoutProvider =
       return WorkoutController(ref);
     });
 
+final lastSavedWorkoutRequestProvider =
+    StateProvider<WorkoutRequest?>((ref) => null);
+
 class WorkoutController extends StateNotifier<WorkoutSessionState?> {
   WorkoutController(this._ref) : super(null);
 
@@ -203,6 +206,7 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
     required String status,
     int? rpe,
     List<PainArea> painAreas = const [],
+    String? painType,
     String? note,
   }) async {
     final s = state;
@@ -214,6 +218,7 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
         s,
         rpe: rpe,
         painAreas: painAreas,
+        painType: painType,
         note: note,
       ),
       updatedAt: _now(),
@@ -343,6 +348,7 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
   WorkoutRequest? buildRequest({
     int? rpe,
     List<PainArea> painAreas = const [],
+    String? painType,
     String? note,
   }) {
     final s = state;
@@ -355,6 +361,7 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
       variant: s.variant,
       rpe: rpe,
       painAreas: painAreas,
+      painType: painType,
       note: note,
       sets: s.sets,
     );
@@ -364,10 +371,16 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
   Future<WorkoutResult?> submit({
     int? rpe,
     List<PainArea> painAreas = const [],
+    String? painType,
     String? note,
   }) async {
     finish();
-    final request = buildRequest(rpe: rpe, painAreas: painAreas, note: note);
+    final request = buildRequest(
+      rpe: rpe,
+      painAreas: painAreas,
+      painType: painType,
+      note: note,
+    );
     if (request == null || state!.submitting) return null;
     if (state!.result != null) return state!.result;
     state = state!.copyWith(submitting: true, clearError: true);
@@ -377,6 +390,7 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
           .saveWorkout(request);
       if (!mounted || state == null) return result;
       state = state!.copyWith(submitting: false, result: result);
+      _ref.read(lastSavedWorkoutRequestProvider.notifier).state = request;
       // Xóa draft trên máy khi POST /workouts thành công
       try {
         await _ref
@@ -390,6 +404,7 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
           status: 'pending_submit',
           rpe: rpe,
           painAreas: painAreas,
+          painType: painType,
           note: note,
         );
       }
@@ -402,6 +417,7 @@ class WorkoutController extends StateNotifier<WorkoutSessionState?> {
         status: 'pending_submit',
         rpe: rpe,
         painAreas: painAreas,
+        painType: painType,
         note: note,
       );
       if (mounted && state != null) {

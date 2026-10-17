@@ -22,6 +22,7 @@ import 'package:fitness_app/features/notifications/presentation/controllers/noti
 
 import '../../../../core/voice/voice_models.dart';
 import '../../../../core/voice/voice_provider.dart';
+import '../../../home/presentation/controllers/home_controller.dart';
 import '../../../workout/data/camera/auto_camera_setting.dart';
 import '../controllers/user_controller.dart';
 import '../../domain/models/me_response.dart';
@@ -469,6 +470,69 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ],
         ),
         const SizedBox(height: 20),
+
+        // Vùng đang đau / chấn thương (ẩn nếu rỗng)
+        if (me.activeInjuries.isNotEmpty) ...[
+          const Text(
+            'Vùng đang đau / chấn thương',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          GlassCard(
+            key: const ValueKey('active-injuries-card'),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              children: [
+                for (int i = 0; i < me.activeInjuries.length; i++) ...[
+                  if (i > 0) const Divider(height: 1, color: AppColors.border),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _capitalizeFirst(me.activeInjuries[i].label),
+                            key: ValueKey(
+                              'injury-label-${me.activeInjuries[i].bodyArea}',
+                            ),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          key: ValueKey(
+                            'injury-recovered-${me.activeInjuries[i].bodyArea}',
+                          ),
+                          onPressed: () => _confirmRecovered(
+                            context,
+                            ref,
+                            me.activeInjuries[i],
+                          ),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            textStyle: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          child: const Text('Đã khỏi'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
 
         // 1. Tên hiển thị
         const Text(
@@ -1955,6 +2019,72 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           content: Text('Đã xoá tài khoản'),
         ),
       );
+    }
+  }
+
+  String _capitalizeFirst(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1);
+  }
+
+  Future<void> _confirmRecovered(
+    BuildContext context,
+    WidgetRef ref,
+    ActiveInjury injury,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Đã khỏi ${injury.label}?'),
+        content: Text(
+          'Bạn đã khỏi đau vùng ${injury.label} và sẵn sàng tập lại bình thường?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Chưa'),
+          ),
+          ElevatedButton(
+            key: ValueKey('injury-confirm-recovered-${injury.bodyArea}'),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Đã khỏi'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      final res = await ref.read(userRepositoryProvider).answerPainFollowUp(
+        injury.bodyArea,
+        'gone',
+      );
+      ref.invalidate(userStatusFutureProvider);
+      ref.invalidate(homePlanProvider);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(res.message),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(mapErrorMessage(e)),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
     }
   }
 }
