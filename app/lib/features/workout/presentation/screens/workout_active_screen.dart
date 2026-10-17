@@ -80,6 +80,7 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
 
   /// Bài đếm được bằng camera và người dùng bật "Tự mở camera khi bắt đầu hiệp".
   bool _autoCameraFor(WorkoutPlanItem item) =>
+      item.exercise?.primaryMuscle != 'mobility' &&
       ref.read(autoCameraProvider) &&
       ref.read(repSessionFactoryProvider).supports(item.exercise?.camera);
 
@@ -432,7 +433,8 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
   Widget _buildExercise(WorkoutSessionState s, WorkoutPlanItem item) {
     final exercise = item.exercise;
     final factory = ref.watch(repSessionFactoryProvider);
-    final canCamera = factory.supports(exercise?.camera);
+    final isMobility = exercise?.primaryMuscle == 'mobility';
+    final canCamera = !isMobility && factory.supports(exercise?.camera);
     final total = s.items.length;
     final progress = (s.exerciseIndex + (s.setNumber - 1) / item.sets) / total;
     final cues = exercise?.cues ?? const <String>[];

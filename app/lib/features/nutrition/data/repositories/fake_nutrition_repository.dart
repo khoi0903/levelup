@@ -84,6 +84,10 @@ class FakeNutritionRepository implements NutritionRepository {
           names: request.items.map((e) => e.name).toList(),
         ),
       ],
+      burnedKcal: current.burnedKcal,
+      steps: current.steps,
+      activeKcal: current.activeKcal,
+      totalBurnedKcal: current.totalBurnedKcal,
     );
     return current;
   }

@@ -40,6 +40,9 @@ class WorkoutPlanItem {
       );
 
   TrackingMode get tracking {
+    if (exercise?.primaryMuscle == 'mobility') {
+      return TrackingMode.duration;
+    }
     switch (exercise?.tracking) {
       case 'duration':
         return TrackingMode.duration;

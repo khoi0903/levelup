@@ -277,13 +277,24 @@ class _Summary extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 14),
-        if (today.burnedKcal > 0) ...[
+        if (today.totalBurnedKcal > 0) ...[
           Text(
-            'Đã đốt khi tập: ${today.burnedKcal} kcal',
+            today.steps > 0
+                ? 'Calo vận động: ${today.totalBurnedKcal} kcal · ${today.steps} bước'
+                : 'Calo vận động: ${today.totalBurnedKcal} kcal',
             key: const ValueKey('nutrition-burned-kcal'),
             style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 2),
+          const Text(
+            'Calo vận động chỉ để tham khảo, mục tiêu ăn giữ nguyên',
+            key: ValueKey('nutrition-activity-note'),
+            style: TextStyle(
+              fontSize: 11,
               color: AppColors.textSecondary,
             ),
           ),

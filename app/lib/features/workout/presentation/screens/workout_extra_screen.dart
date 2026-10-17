@@ -282,9 +282,16 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                     ),
-                                    child: const Text(
-                                      'Bản nhẹ 10 phút',
-                                      style: TextStyle(
+                                    child: Text(
+                                      hasSufficientMobilityExercises(
+                                        exercises: allExercises,
+                                        location: location,
+                                        userEquipment: equipment,
+                                        activeInjuries: effectiveInjuries,
+                                      )
+                                          ? 'Giãn cơ 10 phút'
+                                          : 'Bản nhẹ 10 phút',
+                                      style: const TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -386,6 +393,12 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
     final isLow = todayCheckin?.isLow == true;
     final isEnergized = todayCheckin?.isEnergized == true;
     final effectiveDuration = _selectedDuration ?? (isLow ? 5 : 15);
+    final hasMobility = hasSufficientMobilityExercises(
+      exercises: safeExercises,
+      location: location,
+      userEquipment: equipment,
+      activeInjuries: activeInjuries,
+    );
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
@@ -471,11 +484,13 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
           ),
         ),
         const SizedBox(height: 12),
-
-        if (hasPain) ...[
+        if (hasPain || hasMobility) ...[
           _buildSuggestedCard(
             type: SuggestedWorkoutType.light10,
-            subtitle: '3 bài tập · 10 phút · Cường độ nhẹ nhàng, bảo vệ vùng đau',
+            titleOverride: hasMobility ? 'Giãn cơ 10 phút' : 'Bản nhẹ 10 phút',
+            subtitle: hasMobility
+                ? '5–6 bài tập · 10 phút · Thư giãn và phục hồi cơ bắp'
+                : '3 bài tập · 10 phút · Cường độ nhẹ nhàng, bảo vệ vùng đau',
             icon: Icons.spa_rounded,
             iconColor: const Color(0xFF059669),
             bgColor: const Color(0xFFD1FAE5),
@@ -672,6 +687,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
 
   Widget _buildSuggestedCard({
     required SuggestedWorkoutType type,
+    String? titleOverride,
     required String subtitle,
     required IconData icon,
     required Color iconColor,
@@ -683,6 +699,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
     required bool isLowCheckin,
     required int durationMin,
   }) {
+    final displayTitle = titleOverride ?? type.title;
     return AppCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: InkWell(
@@ -716,7 +733,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    type.title,
+                    displayTitle,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
@@ -767,7 +784,12 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
         if (!nameNorm.contains(queryNorm)) return false;
       }
 
-      if (_selectedMuscleFilter == 'all') return true;
+      if (_selectedMuscleFilter == 'all') {
+        return e.primaryMuscle != 'mobility';
+      }
+      if (_selectedMuscleFilter == 'mobility') {
+        return e.primaryMuscle == 'mobility';
+      }
       if (_selectedMuscleFilter == 'legs_glutes') {
         return e.primaryMuscle == 'legs' || e.primaryMuscle == 'glutes';
       }
@@ -783,7 +805,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
       if (_selectedMuscleFilter == 'cardio') {
         return e.primaryMuscle == 'cardio';
       }
-      return true;
+      return e.primaryMuscle != 'mobility';
     }).toList();
 
     final isGym = location == 'gym';
@@ -875,6 +897,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
               _buildFilterChip('chest_back', 'Ngực & lưng'),
               _buildFilterChip('core', 'Bụng'),
               _buildFilterChip('cardio', 'Cardio'),
+              _buildFilterChip('mobility', 'Giãn cơ'),
             ],
           ),
         ),
