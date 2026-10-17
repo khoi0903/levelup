@@ -427,7 +427,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _showForgotPasswordModal(BuildContext context, AuthNotifier notifier) {
-    _resetEmailController.text = _emailController.text;
+    // Không điền sẵn email đăng nhập: robot kiểm thử của Google Play (đăng nhập bằng tài khoản thật)
+    // bấm "Gửi" là chủ tài khoản nhận mail đặt lại mật khẩu dù không ai yêu cầu.
+    _resetEmailController.clear();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
