@@ -57,7 +57,7 @@ public class OnboardingService {
 
         List<String> equipment = r.equipment() == null ? List.of() : r.equipment().stream().distinct().toList();
         List<String> injuryAreas = r.injuries() == null ? List.of() : r.injuries().stream().distinct().toList();
-        List<User.Injury> injuries = injuryAreas.stream().map(a -> new User.Injury(a, null, true, now)).toList();
+        List<User.Injury> injuries = injuryAreas.stream().map(a -> new User.Injury(a, null, true, now, null, null, null, null)).toList();
         Map<Integer, String> availability = new LinkedHashMap<>();
         r.availability().stream()
             .sorted((a, b) -> a.weekday().compareTo(b.weekday()))

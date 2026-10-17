@@ -56,7 +56,12 @@ public record User(
         Instant onboardingCompletedAt
     ) {}
 
-    public record Injury(String bodyArea, String note, Boolean active, Instant reportedAt) {}
+    /**
+     * followUp = true: vùng đau nhói báo sau buổi tập, đang được hỏi thăm mỗi ngày (PainRules).
+     * reportedOn / lastAnswerOn là localDate "YYYY-MM-DD"; lastAnswer: gone | better | same | worse.
+     */
+    public record Injury(String bodyArea, String note, Boolean active, Instant reportedAt,
+                         Boolean followUp, String reportedOn, String lastAnswer, String lastAnswerOn) {}
 
     public record Availability(Integer weekday, String slot) {}
 
