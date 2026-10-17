@@ -25,6 +25,14 @@ public final class NutritionRules {
 
     private NutritionRules() {}
 
+    /**
+     * Tổng calo vận động trong ngày: lấy số lớn hơn giữa buổi tập trong app và Health Connect (đồng hồ/điện thoại
+     * thường đã ghi cả lúc tập trong app), để không cộng trùng.
+     */
+    public static int totalBurnedKcal(int workoutKcal, int activeKcal) {
+        return Math.max(workoutKcal, activeKcal);
+    }
+
     /** Số liệu của một khẩu phần portionGrams, tính theo tỉ lệ với khẩu phần chuẩn trong kho. */
     public record Portion(int kcal, int kcalMin, int kcalMax, double proteinG, double carbsG, double fatG) {}
 

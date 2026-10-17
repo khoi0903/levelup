@@ -61,14 +61,13 @@ public class RevenueCatService {
         // Late delivery must not undo a newer renewal/expiration.
         Long previous = user.getLong("billingEventTimestampMs");
         if (previous != null && timestamp < previous) return;
+        // Chỉ đổi hạn trả tiền; ngày Pro được tặng (giới thiệu, admin) giữ nguyên
         if (PURCHASE.contains(event.type())) {
-            Instant expires = Instant.ofEpochMilli(event.expirationAtMs());
-            plan = new Document("tier", expires.isAfter(clock.instant()) ? "pro" : "free")
-                .append("source", "revenuecat").append("expiresAt", Date.from(expires))
-                .append("updatedAt", Date.from(clock.instant()));
+            plan = PlanGrantService.planDocument(PlanGrantService.giftExpiry(plan), PlanGrantService.giftSource(plan),
+                Instant.ofEpochMilli(event.expirationAtMs()), clock.instant());
         } else if ("EXPIRATION".equals(event.type())) {
-            plan = new Document("tier", "free").append("source", "revenuecat")
-                .append("expiresAt", Date.from(clock.instant())).append("updatedAt", Date.from(clock.instant()));
+            plan = PlanGrantService.planDocument(PlanGrantService.giftExpiry(plan), PlanGrantService.giftSource(plan),
+                clock.instant(), clock.instant());
         } else if (!"CANCELLATION".equals(event.type())) {
             log.info("[billing] ignored event={} type={}", event.id(), event.type());
             return;

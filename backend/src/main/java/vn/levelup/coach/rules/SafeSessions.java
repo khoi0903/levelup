@@ -34,8 +34,8 @@ public final class SafeSessions {
     /** Danh sách bài an toàn với người dùng. */
     public static List<Exercise> safeList(Collection<Exercise> active, String location, Set<String> equipment,
                                           Set<String> injuries) {
-        return ExerciseFilter.forUser(active.stream().filter(e -> !Boolean.FALSE.equals(e.isActive())).toList(),
-            location, equipment, injuries);
+        return ExerciseFilter.forUser(active.stream().filter(e -> !Boolean.FALSE.equals(e.isActive()))
+            .filter(e -> !ExerciseFilter.isMobility(e)).toList(), location, equipment, injuries);
     }
 
     /**

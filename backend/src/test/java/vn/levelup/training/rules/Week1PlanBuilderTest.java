@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
@@ -88,5 +89,21 @@ class Week1PlanBuilderTest {
         Week1PlanBuilder.Draft d = Week1PlanBuilder.build(LocalDate.parse("2026-10-05"), Map.of(), 10, LIBRARY);
         assertEquals(List.of("2026-10-05", "2026-10-07", "2026-10-09"),
             d.sessions().stream().map(TrainingPlan.Session::scheduledDate).toList());
+    }
+
+    @Test
+    void khong_xep_bai_gian_co_vao_ke_hoach_du_de_nhat() {
+        List<Exercise> library = new java.util.ArrayList<>(LIBRARY);
+        for (int i = 0; i < 6; i++) {
+            library.add(ex(ExerciseFilter.MOBILITY, 1, "duration"));
+        }
+        Set<String> mobility = library.stream().filter(ExerciseFilter::isMobility).map(Exercise::id)
+            .collect(java.util.stream.Collectors.toSet());
+        Week1PlanBuilder.Draft d = Week1PlanBuilder.build(LocalDate.parse("2026-10-05"), days(1, 3, 5), 15, library);
+        for (TrainingPlan.Session s : d.sessions()) {
+            assertTrue(s.items().stream().noneMatch(it -> mobility.contains(it.exerciseId().toHexString())));
+        }
+        assertTrue(Week1PlanBuilder.itemsFor("Toàn thân", 15, library).stream()
+            .noneMatch(it -> mobility.contains(it.exerciseId().toHexString())));
     }
 }

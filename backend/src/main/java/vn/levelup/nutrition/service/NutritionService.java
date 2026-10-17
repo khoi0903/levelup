@@ -21,6 +21,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import vn.levelup.training.service.ActivityService;
 import vn.levelup.identity.model.User;
 import vn.levelup.nutrition.dto.MealDtos;
 import vn.levelup.nutrition.dto.RecognitionDtos;
@@ -40,11 +41,13 @@ public class NutritionService {
     private final MongoTemplate mongo;
     private final FoodCatalog foods;
     private final Clock clock;
+    private final ActivityService activity;
 
-    public NutritionService(MongoTemplate mongo, FoodCatalog foods, Clock clock) {
+    public NutritionService(MongoTemplate mongo, FoodCatalog foods, Clock clock, ActivityService activity) {
         this.mongo = mongo;
         this.foods = foods;
         this.clock = clock;
+        this.activity = activity;
     }
 
     /** Lưu một bữa. Số liệu tính lại ở server; trả về tổng kết hôm nay kèm gợi ý nếu thiếu đạm. */
@@ -158,8 +161,10 @@ public class NutritionService {
                 NutritionRules.round1(target.carbsG() - carbs), NutritionRules.round1(target.fatG() - fat));
             suggestion = suggestion(LocalTime.now(clock.withZone(zone)), remaining);
         }
+        int burned = burnedKcal(userId, today);
+        ActivityService.Activity a = activity.today(userId, today).orElse(new ActivityService.Activity(0, 0));
         return new MealDtos.TodayView(today.toString(), target, consumed, remaining, waterMl(userId, today),
-            meals, suggestion, burnedKcal(userId, today));
+            meals, suggestion, burned, a.steps(), a.activeKcal(), NutritionRules.totalBurnedKcal(burned, a.activeKcal()));
     }
 
     private MealDtos.Suggestion suggestion(LocalTime localTime, MealDtos.Totals remaining) {

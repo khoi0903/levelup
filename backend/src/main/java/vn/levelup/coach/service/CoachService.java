@@ -49,6 +49,7 @@ import vn.levelup.training.model.Exercise;
 import vn.levelup.training.model.TrainingPlan;
 import vn.levelup.training.dto.TodayCheckin;
 import vn.levelup.training.repository.ExerciseRepository;
+import vn.levelup.training.service.ActivityService;
 import vn.levelup.training.service.CheckinService;
 import vn.levelup.coach.rules.CoachRules.Action;
 import vn.levelup.coach.rules.CoachRules.Fact;
@@ -121,8 +122,9 @@ public class CoachService {
         if (ai.available()) {
             List<Exercise> safe = SafeSessions.safeList(active, ctx.location(), ctx.equipment(), ctx.injuries());
             TodayCheckin checkin = CheckinService.today(mongo, userId, today.toString());
+            Optional<ActivityService.Activity> activity = ActivityService.today(mongo, userId, today);
             String system = CoachPrompts.chatSystem(ctx.style(),
-                userData(user, ctx, memory, plan, byId, safe, today, checkin));
+                userData(user, ctx, memory, plan, byId, safe, today, checkin, activity));
             Optional<Proposal> fromAi = askAi(system, conversation(recentMessages(userId), message), onReplyText);
             if (fromAi.isPresent()) {
                 p = fromAi.get();
@@ -349,7 +351,7 @@ public class CoachService {
 
     private static String userData(User user, UserCtx ctx, List<Fact> memory, TrainingPlan plan,
                                    Map<String, Exercise> byId, List<Exercise> safe, LocalDate today,
-                                   TodayCheckin checkin) {
+                                   TodayCheckin checkin, Optional<ActivityService.Activity> activity) {
         StringBuilder b = new StringBuilder();
         User.Profile p = user.profile();
         b.append("Tên: ").append(ctx.name()).append('\n');
@@ -367,6 +369,8 @@ public class CoachService {
         b.append("Vùng đang đau: ").append(ctx.injuries().isEmpty() ? "không có" : String.join(", ", ctx.injuries()))
             .append('\n');
         b.append("Check-in sáng nay: ").append(checkinText(checkin)).append('\n');
+        activity.ifPresent(a -> b.append("Hoạt động hôm nay (Health Connect): ").append(a.steps())
+            .append(" bước, ").append(a.activeKcal()).append(" kcal vận động\n"));
         if (!memory.isEmpty()) {
             b.append("Điều coach đã biết về người dùng:\n");
             memory.forEach(f -> b.append("- ").append(f.value()).append('\n'));

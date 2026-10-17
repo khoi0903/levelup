@@ -31,7 +31,7 @@ Mũi tên = nhóm này gọi nhóm kia (gọi hàm Java trong cùng ứng dụng
 | Nhóm | Làm gì | Endpoint |
 |---|---|---|
 | `identity` | Xác thực Firebase token, hồ sơ, cài đặt, thiết bị nhận push, onboarding | `/me`, `/devices`, `/onboarding` |
-| `training` | Thư viện bài tập, kế hoạch tuần, đổi bài / dời buổi, ghi buổi tập, check-in, số đo | `/exercises`, `/plans/*`, `/workouts`, `/checkins`, `/measurements` |
+| `training` | Thư viện bài tập, kế hoạch tuần, đổi bài / dời buổi, ghi buổi tập, check-in, số đo | `/exercises`, `/plans/*`, `/workouts`, `/checkins`, `/measurements`, `/activity/today` |
 | `coach` | Chat với AI coach, AI đề xuất hành động rồi backend kiểm tra mới ghi | `/coach/messages*` (có stream) |
 | `nutrition` | Tìm món, chụp ảnh món ăn tính calo, nước, tổng kết ngày | `/meals/recognize`, `/foods/search`, `/meals`, `/water`, `/nutrition/today` |
 | `engagement` | Hệ thống động lực: streak tuần, lý do bỏ buổi, buddy, tổng kết tuần, **cổng gửi thông báo duy nhất**, job định kỳ | `/streak*`, `/skip-reports`, `/pain-followups/*`, `/buddies/*`, `/reviews/*`, `/jobs/tick` |

@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import org.bson.types.ObjectId;
 import vn.levelup.training.model.Exercise;
 import vn.levelup.training.model.TrainingPlan;
+import vn.levelup.training.rules.ExerciseFilter;
 import vn.levelup.training.rules.SessionRules;
 
 
@@ -149,6 +150,7 @@ public final class SkipPlanner {
     static Exercise pick(List<Exercise> safe, Set<String> used, String muscle, String after) {
         List<Exercise> candidates = safe.stream()
             .filter(e -> !used.contains(e.id()))
+            .filter(e -> !ExerciseFilter.isMobility(e))
             .filter(e -> muscle == null || muscle.equals(e.primaryMuscle()))
             .sorted(Comparator.comparing(Exercise::id))
             .toList();

@@ -211,6 +211,18 @@ class ProductFlowTest extends FlowTestBase {
         assertTrue(configs.get().proEnabled());
         call(put("/admin/config").header("Authorization", ADMIN).contentType(MediaType.APPLICATION_JSON).content(initial.toJson()), 409);
     }
+    @Test void revenueCatExpirationKeepsGiftedDays() throws Exception {
+        onboard(); flags(true, false);
+        mongo.updateFirst(Query.query(Criteria.where("_id").is(userId())), Update.update("email", "gift@example.com"), "users");
+        call(post("/admin/grant-pro").header("Authorization", ADMIN).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"email\":\"gift@example.com\",\"days\":30}"), 204);
+        event("INITIAL_PURCHASE", UUID.randomUUID().toString(), Instant.now().plus(3, ChronoUnit.DAYS).toEpochMilli(), 1);
+        event("EXPIRATION", UUID.randomUUID().toString(), Instant.now().toEpochMilli(), 2);
+        assertEquals("pro", me().read("$.subscription.tier"), "hết hạn trả tiền không xoá 30 ngày tặng");
+        Document plan = user(userId()).get("plan", Document.class);
+        assertEquals("manual", plan.getString("source"));
+        assertTrue(plan.getDate("expiresAt").toInstant().isAfter(Instant.now().plus(29, ChronoUnit.DAYS)));
+    }
     @Test void adminGrantManualExtendsExistingPlan() throws Exception {
         onboard();
         mongo.updateFirst(Query.query(Criteria.where("_id").is(userId())), Update.update("email", "target@example.com"), "users");
