@@ -87,7 +87,7 @@ class _ProScreenState extends ConsumerState<ProScreen> {
     ];
 
     final expiresAtStr = me.subscription.expiresAt != null
-        ? me.subscription.expiresAt!.toLocal().toString().split(' ').first
+        ? _viDate(me.subscription.expiresAt!.toLocal())
         : '';
 
     return FeatureScaffold(
@@ -240,3 +240,6 @@ class _ProScreenState extends ConsumerState<ProScreen> {
     );
   }
 }
+
+String _viDate(DateTime d) =>
+    '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';

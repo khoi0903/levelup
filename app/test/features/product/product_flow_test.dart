@@ -449,7 +449,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Đã kích hoạt Pro'), findsOneWidget);
-    expect(find.text('Pro đến 2026-11-17'), findsOneWidget);
+    expect(find.text('Pro đến 17/11/2026'), findsOneWidget);
     expect(find.text('Quản lý gói'), findsOneWidget);
     expect(find.text('Dùng thử 7 ngày'), findsNothing);
   });
