@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import vn.levelup.identity.model.User;
+import vn.levelup.engagement.service.PainFollowUpService;
 import vn.levelup.engagement.service.ReferralService;
 import vn.levelup.shared.util.LocalDates;
 import vn.levelup.training.dto.WorkoutRequest;
@@ -36,6 +37,7 @@ import vn.levelup.training.dto.WorkoutResponse;
 import vn.levelup.training.model.Exercise;
 import vn.levelup.training.model.TrainingPlan;
 import vn.levelup.training.repository.ExerciseRepository;
+import vn.levelup.training.rules.PainRules;
 import vn.levelup.training.rules.RpeRules;
 import vn.levelup.training.rules.WorkoutRules;
 
@@ -59,13 +61,16 @@ public class WorkoutService {
     private final Clock clock;
     private final RpeAdjuster rpeAdjuster;
     private final ReferralService referrals;
+    private final PainFollowUpService painFollowUps;
 
-    public WorkoutService(MongoTemplate mongo, ExerciseRepository exercises, Clock clock, RpeAdjuster rpeAdjuster, ReferralService referrals) {
+    public WorkoutService(MongoTemplate mongo, ExerciseRepository exercises, Clock clock, RpeAdjuster rpeAdjuster, ReferralService referrals,
+                          PainFollowUpService painFollowUps) {
         this.mongo = mongo;
         this.exercises = exercises;
         this.clock = clock;
         this.rpeAdjuster = rpeAdjuster;
         this.referrals = referrals;
+        this.painFollowUps = painFollowUps;
     }
 
     /**
@@ -139,6 +144,7 @@ public class WorkoutService {
             .append("createdAt", Date.from(now));
         putIfPresent(log, "rpe", r.rpe());
         putIfPresent(log, "painAreas", r.painAreas());
+        putIfPresent(log, "painType", r.painType());
         putIfPresent(log, "note", r.note());
 
         // 2. Buổi trong kế hoạch: planned -> completed
@@ -208,7 +214,12 @@ public class WorkoutService {
 
         // 6. Buổi kế tiếp theo RPE và vùng đau (không chạy khi app gửi lại, vì đã return ở trên)
         rpeAdjuster.adjustNext(userId, localDate,
-            r.plannedSessionId() == null ? null : new ObjectId(r.plannedSessionId()), r.rpe(), r.painAreas());
+            r.plannedSessionId() == null ? null : new ObjectId(r.plannedSessionId()), r.rpe(),
+            PainRules.areasForAdjust(r.painType(), r.painAreas()));
+        // Đau nhói: theo dõi vùng đó, hỏi thăm từ hôm sau và đổi bài ở các buổi còn lại
+        if (PainRules.startsWatch(r.painType(), r.painAreas())) {
+            painFollowUps.startWatch(user, serverToday, r.painAreas());
+        }
 
         if (counts) referrals.completeFirstWorkout(userId);
 

@@ -25,6 +25,8 @@ public record WorkoutRequest(
     @NotNull @Pattern(regexp = "normal|light|quick5|advanced") String variant,
     @Min(1) @Max(10) Integer rpe,
     List<@Pattern(regexp = "lower_back|knee|shoulder|neck|wrist|ankle|hip|other") String> painAreas,
+    /** soreness: mỏi cơ (không đổi lịch). sharp: đau nhói/khớp (theo dõi, hỏi thăm hôm sau). Thiếu: như cũ. */
+    @Pattern(regexp = "soreness|sharp") String painType,
     @Size(max = 500) String note,
     @NotEmpty @Size(max = 200) List<@Valid @NotNull SetLog> sets
 ) {

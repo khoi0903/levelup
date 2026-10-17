@@ -34,7 +34,7 @@ Mũi tên = nhóm này gọi nhóm kia (gọi hàm Java trong cùng ứng dụng
 | `training` | Thư viện bài tập, kế hoạch tuần, đổi bài / dời buổi, ghi buổi tập, check-in, số đo | `/exercises`, `/plans/*`, `/workouts`, `/checkins`, `/measurements` |
 | `coach` | Chat với AI coach, AI đề xuất hành động rồi backend kiểm tra mới ghi | `/coach/messages*` (có stream) |
 | `nutrition` | Tìm món, chụp ảnh món ăn tính calo, nước, tổng kết ngày | `/meals/recognize`, `/foods/search`, `/meals`, `/water`, `/nutrition/today` |
-| `engagement` | Hệ thống động lực: streak tuần, lý do bỏ buổi, buddy, tổng kết tuần, **cổng gửi thông báo duy nhất**, job định kỳ | `/streak*`, `/skip-reports`, `/buddies/*`, `/reviews/*`, `/jobs/tick` |
+| `engagement` | Hệ thống động lực: streak tuần, lý do bỏ buổi, buddy, tổng kết tuần, **cổng gửi thông báo duy nhất**, job định kỳ | `/streak*`, `/skip-reports`, `/pain-followups/*`, `/buddies/*`, `/reviews/*`, `/jobs/tick` |
 | `shared` | Dùng chung: bảo mật/CORS, trả lỗi API, ngày theo múi giờ người dùng | — |
 | `demo` | Nút giả lập cho buổi demo, chỉ bật khi `DEMO_MODE=true` | `/demo/{action}` |
 

@@ -30,6 +30,7 @@ import vn.levelup.identity.service.ProductConfigService;
 import vn.levelup.identity.dto.SubscriptionView;
 import vn.levelup.identity.dto.ProductConfig;
 import java.time.Instant;
+import vn.levelup.engagement.service.PainFollowUpService;
 import vn.levelup.engagement.service.ReferralService;
 import vn.levelup.shared.util.LocalDates;
 import vn.levelup.training.dto.TodayCheckin;
@@ -49,9 +50,11 @@ public class MeController {
     private final PlanAccess plans;
     private final ProductConfigService configs;
     private final ReferralService referrals;
+    private final PainFollowUpService painFollowUps;
 
     public MeController(CurrentUserService currentUser, SettingsService settings, Clock clock,
-                        CheckinService checkins, AccountDeletionService deletion, DemoAccess demo, PlanAccess plans, ProductConfigService configs, ReferralService referrals) {
+                        CheckinService checkins, AccountDeletionService deletion, DemoAccess demo, PlanAccess plans, ProductConfigService configs, ReferralService referrals,
+                        PainFollowUpService painFollowUps) {
         this.currentUser = currentUser;
         this.settings = settings;
         this.clock = clock;
@@ -61,6 +64,7 @@ public class MeController {
         this.plans = plans;
         this.configs = configs;
         this.referrals = referrals;
+        this.painFollowUps = painFollowUps;
     }
 
     /**
@@ -110,7 +114,8 @@ public class MeController {
             settings.achievements(user.id()),
             checkins.today(new ObjectId(user.id()), today.toString()),
             demo.allowedFor(user.authUid()), demo.isAdmin(user.authUid()), plans.subscription(user),
-            configs.get(), user.createdAt(), referrals.canRedeem(user));
+            configs.get(), user.createdAt(), referrals.canRedeem(user), painFollowUps.due(user, today),
+            painFollowUps.activeInjuries(user));
     }
 
     public record MeResponse(
@@ -129,6 +134,8 @@ public class MeController {
         SubscriptionView subscription,
         ProductConfig productConfig,
         Instant createdAt,
-        boolean referralRedeemEligible
+        boolean referralRedeemEligible,
+        List<PainFollowUpService.FollowUpView> painFollowUps,  // vùng đau cần hỏi thăm hôm nay, rỗng nếu không có
+        List<PainFollowUpService.ActiveInjuryView> activeInjuries  // vùng đang tránh khi chọn bài
     ) {}
 }
