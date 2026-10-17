@@ -49,7 +49,8 @@ try {
     if (-not (Test-Path (Join-Path $bundleDir 'app-release.aab'))) { throw "Không thấy $bundleDir\app-release.aab" }
 
     Set-Location $androidDir
-    .\gradlew.bat publishReleaseBundle "--artifact-dir=$bundleDir" "--track=$Track" "--release-status=$ReleaseStatus"
+    # --rerun: Gradle không được coi bước tải lên là "up-to-date" và bỏ qua khi chạy lại cùng AAB
+    .\gradlew.bat publishReleaseBundle --rerun "--artifact-dir=$bundleDir" "--track=$Track" "--release-status=$ReleaseStatus"
     if ($LASTEXITCODE -ne 0) { throw 'Đẩy lên Google Play lỗi (xem log Gradle ở trên)' }
     Write-Host "Xong: $name ($code) đã lên track '$Track'."
 }
