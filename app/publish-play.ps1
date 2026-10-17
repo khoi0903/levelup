@@ -12,6 +12,8 @@ param(
     [ValidateSet('completed', 'draft', 'inProgress', 'halted')]
     [string]$ReleaseStatus = 'completed',
     [string]$ApiBaseUrl = 'https://levelup-backend-kjqn.onrender.com',
+    # Khoá SDK công khai RevenueCat (app Play Store), dành để nhúng vào app, không phải bí mật. Rỗng = không bán Pro.
+    [string]$RevenueCatKey = 'goog_pZfXKaEngSvQpzRBMEDZPxvoatS',
     [switch]$BumpBuild,
     [switch]$SkipBuild
 )
@@ -42,7 +44,7 @@ Write-Host "Phiên bản $name ($code) -> track '$Track', trạng thái '$Releas
 Push-Location $appDir
 try {
     if (-not $SkipBuild) {
-        flutter build appbundle --release "--dart-define=API_BASE_URL=$ApiBaseUrl"
+        flutter build appbundle --release "--dart-define=API_BASE_URL=$ApiBaseUrl" "--dart-define=REVENUECAT_ANDROID_KEY=$RevenueCatKey"
         if ($LASTEXITCODE -ne 0) { throw 'flutter build appbundle lỗi' }
     }
     $bundleDir = Join-Path $appDir 'build\app\outputs\bundle\release'

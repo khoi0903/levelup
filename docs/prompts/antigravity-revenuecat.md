@@ -7,24 +7,18 @@ Backend đã sẵn (PR #57 + feat/be-activity):
 - `/me.subscription {enabled, tier, expiresAt, limits}` là nguồn sự thật duy nhất; app không tự quyết ai là Pro.
 - Bán hay không do Admin bật `proEnabled` (mặc định tắt).
 
-## Người dùng cần chuẩn bị (làm 1 lần, trước khi Antigravity thử mua thật)
+## Đã thiết lập (2026-10-17)
 
-1. **Play Console → Kiếm tiền → Gói thuê bao**: tạo 2 sản phẩm
-   - `levelup_pro_monthly`: gói cơ bản `monthly`, 49.000đ/tháng, ưu đãi dùng thử 7 ngày.
-   - `levelup_pro_yearly`: gói cơ bản `yearly`, 399.000đ/năm, dùng thử 7 ngày.
-   Cần hồ sơ thanh toán (payments profile) đã xác minh. Sản phẩm chỉ kích hoạt được sau khi đã có bản AAB chứa
-   quyền BILLING trên một kênh (test kín là đủ).
-2. **RevenueCat** (app.revenuecat.com, miễn phí tới 2.500 USD doanh thu/tháng): tạo project LevelUp → thêm app
-   Google Play `vn.levelup.app` → tải JSON service account để RevenueCat đọc giao dịch (dùng lại
-   `play-publisher@levelup-pro...` và cấp thêm quyền "Xem dữ liệu tài chính" + "Quản lý đơn đặt hàng và gói thuê bao"
-   trong Play Console → Người dùng và quyền).
-   - Entitlement `pro`; gắn 2 sản phẩm trên. Offering `default` gồm package `$rc_monthly`, `$rc_annual`.
-   - Integrations → Webhooks: URL `https://levelup-backend-kjqn.onrender.com/billing/revenuecat/webhook`,
-     Authorization header = một chuỗi bí mật bạn tự đặt → cùng chuỗi đó đặt vào Render env
-     `REVENUECAT_WEBHOOK_SECRET` rồi Manual Deploy.
-   - Lấy **Public SDK key cho Android** (bắt đầu `goog_`). Đây là khoá công khai, build bằng
-     `--dart-define=REVENUECAT_ANDROID_KEY=goog_...` (không commit).
-3. Play Console → Kiểm thử giấy phép: thêm email Google của bạn để mua thử không mất tiền.
+- Play Console: gói thuê bao `levelup_pro` với 2 gói cơ bản `monthly` (49.000đ) và `yearly` (399.000đ), mỗi gói có
+  ưu đãi `trial7` (dùng thử 7 ngày, khách mới). Service account `play-publisher@levelup-pro...` có quyền xem dữ liệu
+  tài chính + quản lý đơn hàng/gói đăng ký.
+- RevenueCat project "LevelUp": app Play Store `vn.levelup.app` (credentials hợp lệ), sản phẩm `levelup_pro:monthly`,
+  `levelup_pro:yearly` gắn entitlement `pro`; offering `default` gồm `$rc_monthly`, `$rc_annual`.
+- Khoá SDK công khai Android: `app/publish-play.ps1` tự truyền `--dart-define=REVENUECAT_ANDROID_KEY=goog_...` khi build
+  (test và build tay không có khoá vẫn dùng FakeBillingService).
+- Webhook RevenueCat → `https://levelup-backend-kjqn.onrender.com/billing/revenuecat/webhook`. Giá trị header
+  Authorization trong RevenueCat phải **trùng nguyên văn** biến `REVENUECAT_WEBHOOK_SECRET` trên Render.
+- Bán thật: Admin bật `proEnabled`.
 
 ```
 Bạn đang ở nhánh feat/app-revenuecat (worktree D:\levelup-worktrees\app-revenuecat), không chuyển nhánh,
