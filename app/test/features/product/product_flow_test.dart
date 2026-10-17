@@ -10,6 +10,7 @@ import 'package:fitness_app/features/coach/presentation/controllers/coach_contro
 import 'package:fitness_app/features/coach/presentation/screens/coach_screen.dart';
 import 'package:fitness_app/features/product/domain/models/product_models.dart';
 import 'package:fitness_app/features/product/domain/repositories/product_repository.dart';
+import 'package:fitness_app/features/product/domain/services/billing_service.dart';
 import 'package:fitness_app/features/product/presentation/controllers/product_controller.dart';
 import 'package:fitness_app/features/product/presentation/screens/admin_screen.dart';
 import 'package:fitness_app/features/product/presentation/screens/pro_screen.dart';
@@ -71,6 +72,32 @@ class FakeProductRepository implements ProductRepository {
   }
 }
 
+class TestProBillingService implements BillingService {
+  final Future<String> Function(BillingPeriod period) onPurchase;
+  bool restoreCalled = false;
+  BillingPeriod? lastPurchasedPeriod;
+
+  TestProBillingService({required this.onPurchase});
+
+  @override
+  Future<String> purchase(BillingPeriod period) {
+    lastPurchasedPeriod = period;
+    return onPurchase(period);
+  }
+
+  @override
+  Future<String> restore() async {
+    restoreCalled = true;
+    return 'Đã khôi phục giao dịch';
+  }
+
+  @override
+  Future<Map<BillingPeriod, String>> getPrices() async => const {};
+
+  @override
+  Future<void> logOut() async {}
+}
+
 MeResponse me({
   bool enabled = false,
   bool referral = false,
@@ -94,6 +121,8 @@ Future<void> mount(
   String route = '/',
   FakeCoachRepository? coach,
   FakeNutritionRepository? nutrition,
+  BillingService? billingService,
+  FakeUserRepository? userRepo,
 }) async {
   final router = GoRouter(
     initialLocation: route,
@@ -120,9 +149,11 @@ Future<void> mount(
       overrides: [
         currentUserProvider.overrideWith((ref) => user),
         userRepositoryProvider.overrideWithValue(
-          FakeUserRepository(meResponse: user),
+          userRepo ?? FakeUserRepository(meResponse: user),
         ),
         productRepositoryProvider.overrideWithValue(repo),
+        if (billingService != null)
+          billingServiceProvider.overrideWithValue(billingService),
         if (nutrition != null)
           nutritionRepositoryProvider.overrideWithValue(nutrition),
         if (nutrition != null)
@@ -308,5 +339,142 @@ void main() {
     expect(repo.saved?['version'], 0);
     expect(repo.saved?['proEnabled'], isFalse);
     expect(find.text('Các nút demo'), findsNothing);
+  });
+
+  test('empty key uses FakeBillingService', () {
+    expect(isRevenueCatSupported(key: ''), isFalse);
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final billing = container.read(billingServiceProvider);
+    expect(billing, isA<FakeBillingService>());
+  });
+
+  testWidgets('cancelling purchase shows no error or snackbar', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+    final fakeBilling = FakeBillingService(purchaseResult: '');
+    await mount(
+      tester,
+      me(enabled: true),
+      FakeProductRepository(),
+      route: '/pro',
+      billingService: fakeBilling,
+    );
+    await tester.tap(find.text('Dùng thử 7 ngày'));
+    await tester.pumpAndSettle();
+    expect(fakeBilling.lastPurchasedPeriod, BillingPeriod.yearly);
+    expect(find.byType(SnackBar), findsNothing);
+  });
+
+  testWidgets('restore purchases calls restore method and shows feedback', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+    final fakeBilling = FakeBillingService();
+    await mount(
+      tester,
+      me(enabled: true),
+      FakeProductRepository(),
+      route: '/pro',
+      billingService: fakeBilling,
+    );
+    await tester.tap(find.text('Khôi phục giao dịch'));
+    await tester.pumpAndSettle();
+    expect(fakeBilling.restoreCalled, isTrue);
+    expect(find.text('Đã khôi phục giao dịch'), findsOneWidget);
+  });
+
+  testWidgets('successful purchase reloads /me and displays Pro status', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+    final initialUser = me(enabled: true);
+    final proUser = MeResponse(
+      id: initialUser.id,
+      displayName: initialUser.displayName,
+      localDate: initialUser.localDate,
+      subscription: Subscription(
+        enabled: true,
+        tier: 'pro',
+        expiresAt: DateTime.utc(2026, 11, 17),
+      ),
+      productConfig: initialUser.productConfig,
+    );
+
+    final router = GoRouter(
+      initialLocation: '/pro',
+      routes: [
+        GoRoute(path: '/pro', builder: (_, _) => const ProScreen()),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    late final ProviderContainer container;
+    final testBilling = TestProBillingService(
+      onPurchase: (period) async {
+        container.read(currentUserProvider.notifier).state = proUser;
+        return 'Đã kích hoạt Pro';
+      },
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container = ProviderContainer(
+          overrides: [
+            currentUserProvider.overrideWith((ref) => initialUser),
+            billingServiceProvider.overrideWithValue(testBilling),
+          ],
+        ),
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dùng thử 7 ngày'), findsOneWidget);
+    await tester.tap(find.text('Dùng thử 7 ngày'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Đã kích hoạt Pro'), findsOneWidget);
+    expect(find.text('Pro đến 2026-11-17'), findsOneWidget);
+    expect(find.text('Quản lý gói'), findsOneWidget);
+    expect(find.text('Dùng thử 7 ngày'), findsNothing);
+  });
+
+  testWidgets('proEnabled == false hides buy button and shows coming soon notice', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+    final user = MeResponse(
+      id: 'u1',
+      displayName: 'Khôi',
+      localDate: '2026-10-11',
+      subscription: const Subscription(enabled: true),
+      productConfig: const ProductConfig(proEnabled: false),
+    );
+    await mount(tester, user, FakeProductRepository(), route: '/pro');
+    expect(find.text('Dùng thử 7 ngày'), findsNothing);
+    expect(
+      find.text('Giá dự kiến. Chức năng mua đang được chuẩn bị.'),
+      findsOneWidget,
+    );
   });
 }

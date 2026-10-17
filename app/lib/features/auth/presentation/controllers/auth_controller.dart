@@ -7,6 +7,7 @@ import '../../../home/presentation/controllers/home_controller.dart';
 import '../../../notifications/domain/services/push_service.dart';
 import '../../../notifications/presentation/controllers/notifications_controller.dart';
 import '../../../onboarding/presentation/controllers/onboarding_controller.dart';
+import '../../../product/presentation/controllers/product_controller.dart';
 import '../../../users/presentation/controllers/user_controller.dart';
 import '../../../workout/presentation/controllers/workout_controller.dart';
 import '../../data/repositories/fake_auth_repository.dart';
@@ -261,6 +262,12 @@ Future<void> _performSignOutCore({
     await read(workoutDraftRepositoryProvider).deleteAllDrafts();
   } catch (e) {
     debugPrint('deleteAllDrafts error on sign out: $e');
+  }
+
+  try {
+    await read(billingServiceProvider).logOut();
+  } catch (e) {
+    debugPrint('billing logOut error on sign out: $e');
   }
 
   try {

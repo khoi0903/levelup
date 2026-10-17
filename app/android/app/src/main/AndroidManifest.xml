@@ -3,6 +3,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="com.android.vending.BILLING" />
     <!-- Health Connect: chỉ đọc số bước và calo vận động (điện thoại, đồng hồ ghi vào).
          Xin thêm quyền khi có tính năng dùng tới; CH Play duyệt theo từng quyền. -->
     <uses-permission android:name="android.permission.health.READ_STEPS" />
@@ -80,6 +81,10 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
         </intent>
     </queries>
 </manifest>

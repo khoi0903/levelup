@@ -25,6 +25,8 @@ class FakeUserRepository implements UserRepository {
     _meResponse = meResponse;
   }
 
+  set meResponse(MeResponse? r) => _meResponse = r;
+
   @override
   Future<MeResponse> getMe() async {
     if (errorToThrow != null) {

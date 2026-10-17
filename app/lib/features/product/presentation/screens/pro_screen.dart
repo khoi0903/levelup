@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../nutrition/presentation/widgets/nutrition_widgets.dart';
@@ -20,6 +22,42 @@ class ProScreen extends ConsumerStatefulWidget {
 class _ProScreenState extends ConsumerState<ProScreen> {
   BillingPeriod period = BillingPeriod.yearly;
   bool busy = false;
+
+  Future<void> _handlePurchase(BuildContext context) async {
+    setState(() => busy = true);
+    try {
+      final message = await ref.read(billingServiceProvider).purchase(period);
+      if (context.mounted && message.isNotEmpty) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message)));
+      }
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  Future<void> _handleRestore(BuildContext context) async {
+    setState(() => busy = true);
+    try {
+      final message = await ref.read(billingServiceProvider).restore();
+      if (context.mounted && message.isNotEmpty) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message)));
+      }
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  Future<void> _openSubscriptionManagement() async {
+    final uri = Uri.parse(
+      'https://play.google.com/store/account/subscriptions?package=vn.levelup.app',
+    );
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final me = ref.watch(currentUserProvider);
@@ -30,6 +68,9 @@ class _ProScreenState extends ConsumerState<ProScreen> {
       );
     }
     final c = me!.productConfig;
+    final isPro = me.subscription.tier == 'pro';
+    final prices = ref.watch(proPricesProvider).valueOrNull ?? const {};
+
     final rows = [
       [
         'AI coach',
@@ -44,6 +85,11 @@ class _ProScreenState extends ConsumerState<ProScreen> {
       ['Biểu đồ tiến bộ', '4 tuần gần nhất', 'Toàn bộ'],
       ['Giọng coach', '2 phong cách', '7 phong cách'],
     ];
+
+    final expiresAtStr = me.subscription.expiresAt != null
+        ? me.subscription.expiresAt!.toLocal().toString().split(' ').first
+        : '';
+
     return FeatureScaffold(
       title: 'LevelUp Pro',
       child: ListView(
@@ -87,70 +133,108 @@ class _ProScreenState extends ConsumerState<ProScreen> {
             ),
           ),
           const SizedBox(height: 18),
-          for (final p in BillingPeriod.values) ...[
-            GlassCard(
-              isSelected: period == p,
-              onTap: busy ? null : () => setState(() => period = p),
-              child: Row(
-                children: [
-                  Icon(
-                    period == p
-                        ? Icons.radio_button_checked
-                        : Icons.radio_button_off,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          p == BillingPeriod.monthly
-                              ? '${vnd(c.monthlyPriceVnd)}/tháng'
-                              : '${vnd(c.yearlyPriceVnd)}/năm',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 18,
-                          ),
-                        ),
-                        if (p == BillingPeriod.yearly)
-                          const Text('tiết kiệm 32%'),
-                      ],
+          if (!isPro)
+            for (final p in BillingPeriod.values) ...[
+              GlassCard(
+                isSelected: period == p,
+                onTap: busy ? null : () => setState(() => period = p),
+                child: Row(
+                  children: [
+                    Icon(
+                      period == p
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_off,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            prices[p] != null
+                                ? '${prices[p]}/${p == BillingPeriod.monthly ? 'tháng' : 'năm'}'
+                                : (p == BillingPeriod.monthly
+                                    ? '${vnd(c.monthlyPriceVnd)}/tháng'
+                                    : '${vnd(c.yearlyPriceVnd)}/năm'),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 18,
+                            ),
+                          ),
+                          if (p == BillingPeriod.yearly)
+                            const Text('tiết kiệm 32%'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+          if (isPro) ...[
+            Text(
+              'Pro đến $expiresAtStr',
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+                color: AppColors.primary,
               ),
             ),
             const SizedBox(height: 12),
-          ],
-          if (me.subscription.tier == 'pro')
-            Text(
-              'Gói Pro hiện tại • hết hạn ${me.subscription.expiresAt?.toLocal().toString().split(' ').first ?? ''}',
+            PrimaryButton(
+              label: 'Quản lý gói',
+              onPressed: busy ? null : _openSubscriptionManagement,
             ),
-          PrimaryButton(
-            label: 'Dùng thử ${c.trialDays} ngày',
-            isLoading: busy,
-            onPressed: busy
-                ? null
-                : () async {
-                    setState(() => busy = true);
-                    try {
-                      final message = await ref
-                          .read(billingServiceProvider)
-                          .purchase(period);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(SnackBar(content: Text(message)));
-                      }
-                    } finally {
-                      if (mounted) setState(() => busy = false);
-                    }
-                  },
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Giá dự kiến. Chức năng mua đang được chuẩn bị.',
-            textAlign: TextAlign.center,
-          ),
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton(
+                onPressed: busy ? null : () => _handleRestore(context),
+                child: const Text(
+                  'Khôi phục giao dịch',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ] else if (c.proEnabled) ...[
+            PrimaryButton(
+              label: c.trialDays > 0
+                  ? 'Dùng thử ${c.trialDays} ngày'
+                  : 'Nâng cấp Pro',
+              isLoading: busy,
+              onPressed: busy ? null : () => _handlePurchase(context),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'Tự gia hạn, huỷ bất kỳ lúc nào trong Google Play → Gói thuê bao',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton(
+                onPressed: busy ? null : () => _handleRestore(context),
+                child: const Text(
+                  'Khôi phục giao dịch',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ] else ...[
+            const SizedBox(height: 10),
+            const Text(
+              'Giá dự kiến. Chức năng mua đang được chuẩn bị.',
+              textAlign: TextAlign.center,
+            ),
+          ],
         ],
       ),
     );
