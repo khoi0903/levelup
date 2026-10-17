@@ -179,10 +179,6 @@ class FakeUserRepository implements UserRepository {
     if (painFollowUpErrorToThrow != null) {
       throw painFollowUpErrorToThrow!;
     }
-    if (painFollowUpResponseToReturn != null) {
-      return painFollowUpResponseToReturn!;
-    }
-
     final status = answer == 'gone'
         ? 'resolved'
         : (answer == 'worse' ? 'injury' : 'monitoring');
@@ -218,6 +214,8 @@ class FakeUserRepository implements UserRepository {
       );
     }
 
-    return PainFollowUpResponse(status: status, message: message);
+    // Như backend: vùng đã trả lời không còn trong painFollowUps khi tải lại /me
+    return painFollowUpResponseToReturn ??
+        PainFollowUpResponse(status: status, message: message);
   }
 }

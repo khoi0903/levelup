@@ -101,7 +101,7 @@ class WorkoutDraft {
   }) {
     return jsonEncode({
       'sessionState': state.toJson(),
-      'rpe': rpe,
+      'rpe': ?rpe,
       if (painAreas.isNotEmpty)
         'painAreas': painAreas.map((p) => p.json).toList(),
       if (painAreas.isNotEmpty && painType != null) 'painType': painType,

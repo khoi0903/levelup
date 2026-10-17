@@ -42,6 +42,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final Set<String> _dismissedFollowUps = {};
   final Map<String, String> _sendingFollowUps = {};
   final Map<String, PainFollowUpResponse> _followUpResponses = {};
+  // Thẻ đã trả lời: /me tải lại sẽ không còn vùng này, giữ lại để hiện kết quả tới khi ẩn
+  final Map<String, PainFollowUp> _answeredFollowUps = {};
   final Map<String, Timer> _followUpTimers = {};
 
   /// Vẽ lại mỗi phút để lời chào đổi theo giờ khi app mở qua mốc (11h, 13h, 18h...).
@@ -376,13 +378,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const SizedBox(height: 14),
 
                   // Thẻ Hỏi thăm vùng đau (trên thẻ buổi hôm nay)
-                  if (me?.painFollowUps.isNotEmpty == true) ...[
-                    for (final followUp in me!.painFollowUps)
-                      if (!_dismissedFollowUps.contains(followUp.bodyArea)) ...[
-                        _buildPainFollowUpCard(context, ref, followUp),
-                        const SizedBox(height: 14),
-                      ],
-                  ],
+                  for (final followUp in <String, PainFollowUp>{
+                    ..._answeredFollowUps,
+                    for (final f in me?.painFollowUps ?? const <PainFollowUp>[])
+                      f.bodyArea: f,
+                  }.values)
+                    if (!_dismissedFollowUps.contains(followUp.bodyArea)) ...[
+                      _buildPainFollowUpCard(context, ref, followUp),
+                      const SizedBox(height: 14),
+                    ],
 
                   // Card Buổi tập chính hôm nay
                   _buildTodayWorkoutCard(
@@ -855,6 +859,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       setState(() {
         _sendingFollowUps.remove(followUp.bodyArea);
         _followUpResponses[followUp.bodyArea] = res;
+        _answeredFollowUps[followUp.bodyArea] = followUp;
       });
       if (res.status != 'injury') {
         _followUpTimers[followUp.bodyArea] =
