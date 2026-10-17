@@ -36,7 +36,7 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObserver {
   final List<DateTime> _tapTimestamps = [];
 
   final Set<String> _dismissedFollowUps = {};
@@ -52,13 +52,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       triggerSyncPendingWorkoutDrafts(ref);
       _loadFastCacheIfNeeded();
+      ref.read(healthConnectControllerProvider.notifier).refreshTodayData();
     });
     _clockTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       if (mounted) setState(() {});
     });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.read(healthConnectControllerProvider.notifier).refreshTodayData();
+    }
   }
 
   Future<void> _loadFastCacheIfNeeded() async {
@@ -82,6 +91,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _clockTimer?.cancel();
     for (final timer in _followUpTimers.values) {
       timer.cancel();

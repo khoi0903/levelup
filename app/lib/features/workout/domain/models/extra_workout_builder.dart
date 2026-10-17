@@ -57,6 +57,22 @@ List<ExerciseResponse> filterExercisesForUser({
   }).toList();
 }
 
+/// Kiểm tra xem có đủ bài mobility an toàn (>= 3 bài, đã lọc chấn thương/vùng đau) hay không.
+bool hasSufficientMobilityExercises({
+  required List<ExerciseResponse> exercises,
+  String? location,
+  List<String> userEquipment = const [],
+  List<String> activeInjuries = const [],
+}) {
+  final safe = filterExercisesForUser(
+    exercises: exercises,
+    location: location,
+    userEquipment: userEquipment,
+    activeInjuries: activeInjuries,
+  );
+  return safe.where((e) => e.primaryMuscle == 'mobility').length >= 3;
+}
+
 /// Ghép 3–5 bài tập từ danh sách bài đã lọc theo nhóm cơ của loại buổi gợi ý.
 /// Mặc định 2–3 hiệp, số lần hoặc thời gian theo difficulty.
 /// Nếu [isLowCheckin] == true: bớt 1 hiệp mỗi bài (tối thiểu 1) và ưu tiên bài difficulty thấp.
@@ -78,8 +94,13 @@ List<WorkoutPlanItem> buildSuggestedExercises({
 
   if (available.isEmpty) return const [];
 
+  final safeMobility =
+      available.where((e) => e.primaryMuscle == 'mobility').toList();
+  var normalAvailable =
+      available.where((e) => e.primaryMuscle != 'mobility').toList();
+
   if (isLowCheckin) {
-    available = List<ExerciseResponse>.from(available)
+    normalAvailable = List<ExerciseResponse>.from(normalAvailable)
       ..sort((a, b) => (a.difficulty ?? 3).compareTo(b.difficulty ?? 3));
   }
 
@@ -89,10 +110,12 @@ List<WorkoutPlanItem> buildSuggestedExercises({
     case SuggestedWorkoutType.quick5:
       // Ưu tiên cardio, core, legs, chest
       final targetMuscles = {'cardio', 'core', 'legs', 'chest'};
-      final primary = available.where((e) => targetMuscles.contains(e.primaryMuscle)).toList();
+      final primary = normalAvailable
+          .where((e) => targetMuscles.contains(e.primaryMuscle))
+          .toList();
       selected.addAll(primary.take(3));
       if (selected.length < 3) {
-        for (final e in available) {
+        for (final e in normalAvailable) {
           if (!selected.contains(e)) {
             selected.add(e);
             if (selected.length == 3) break;
@@ -102,17 +125,25 @@ List<WorkoutPlanItem> buildSuggestedExercises({
       break;
 
     case SuggestedWorkoutType.light10:
-      final easy = available.where((e) => (e.difficulty ?? 1) <= 2).toList();
-      final pool = easy.isNotEmpty
-          ? easy
-          : (List<ExerciseResponse>.from(available)
-            ..sort((a, b) => (a.difficulty ?? 3).compareTo(b.difficulty ?? 3)));
-      selected.addAll(pool.take(3));
-      if (selected.length < 3) {
-        for (final e in available) {
-          if (!selected.contains(e)) {
-            selected.add(e);
-            if (selected.length == 3) break;
+      if (safeMobility.length >= 3) {
+        // Dùng 5–6 bài mobility
+        selected.addAll(safeMobility.take(6));
+      } else {
+        final easy =
+            normalAvailable.where((e) => (e.difficulty ?? 1) <= 2).toList();
+        final pool = easy.isNotEmpty
+            ? easy
+            : (List<ExerciseResponse>.from(normalAvailable)
+              ..sort(
+                (a, b) => (a.difficulty ?? 3).compareTo(b.difficulty ?? 3),
+              ));
+        selected.addAll(pool.take(3));
+        if (selected.length < 3) {
+          for (final e in normalAvailable) {
+            if (!selected.contains(e)) {
+              selected.add(e);
+              if (selected.length == 3) break;
+            }
           }
         }
       }
@@ -120,10 +151,12 @@ List<WorkoutPlanItem> buildSuggestedExercises({
 
     case SuggestedWorkoutType.legsGlutes:
       final targetMuscles = {'legs', 'glutes'};
-      final primary = available.where((e) => targetMuscles.contains(e.primaryMuscle)).toList();
+      final primary = normalAvailable
+          .where((e) => targetMuscles.contains(e.primaryMuscle))
+          .toList();
       selected.addAll(primary.take(5));
       if (selected.length < 3) {
-        for (final e in available) {
+        for (final e in normalAvailable) {
           if (!selected.contains(e)) {
             selected.add(e);
             if (selected.length >= 3) break;
@@ -134,10 +167,12 @@ List<WorkoutPlanItem> buildSuggestedExercises({
 
     case SuggestedWorkoutType.armsShoulders:
       final targetMuscles = {'arms', 'shoulders', 'chest', 'back'};
-      final primary = available.where((e) => targetMuscles.contains(e.primaryMuscle)).toList();
+      final primary = normalAvailable
+          .where((e) => targetMuscles.contains(e.primaryMuscle))
+          .toList();
       selected.addAll(primary.take(5));
       if (selected.length < 3) {
-        for (final e in available) {
+        for (final e in normalAvailable) {
           if (!selected.contains(e)) {
             selected.add(e);
             if (selected.length >= 3) break;
@@ -148,10 +183,12 @@ List<WorkoutPlanItem> buildSuggestedExercises({
 
     case SuggestedWorkoutType.coreAbs:
       final targetMuscles = {'core'};
-      final primary = available.where((e) => targetMuscles.contains(e.primaryMuscle)).toList();
+      final primary = normalAvailable
+          .where((e) => targetMuscles.contains(e.primaryMuscle))
+          .toList();
       selected.addAll(primary.take(5));
       if (selected.length < 3) {
-        for (final e in available) {
+        for (final e in normalAvailable) {
           if (!selected.contains(e)) {
             selected.add(e);
             if (selected.length >= 3) break;
@@ -162,28 +199,41 @@ List<WorkoutPlanItem> buildSuggestedExercises({
 
     case SuggestedWorkoutType.fullBody:
       // Ghép đa dạng nhóm cơ: 1 legs/glutes, 1 chest/shoulders, 1 back/arms, 1 core/cardio
-      final lower = available.where((e) => e.primaryMuscle == 'legs' || e.primaryMuscle == 'glutes').firstOrNull;
-      final upperPush = available.where((e) => e.primaryMuscle == 'chest' || e.primaryMuscle == 'shoulders').firstOrNull;
-      final upperPull = available.where((e) => e.primaryMuscle == 'back' || e.primaryMuscle == 'arms').firstOrNull;
-      final coreOrCardio = available.where((e) => e.primaryMuscle == 'core' || e.primaryMuscle == 'cardio').firstOrNull;
+      final lower = normalAvailable
+          .where((e) => e.primaryMuscle == 'legs' || e.primaryMuscle == 'glutes')
+          .firstOrNull;
+      final upperPush = normalAvailable
+          .where((e) => e.primaryMuscle == 'chest' || e.primaryMuscle == 'shoulders')
+          .firstOrNull;
+      final upperPull = normalAvailable
+          .where((e) => e.primaryMuscle == 'back' || e.primaryMuscle == 'arms')
+          .firstOrNull;
+      final coreOrCardio = normalAvailable
+          .where((e) => e.primaryMuscle == 'core' || e.primaryMuscle == 'cardio')
+          .firstOrNull;
 
       for (final e in [lower, upperPush, upperPull, coreOrCardio]) {
         if (e != null && !selected.contains(e)) selected.add(e);
       }
 
-      // Nếu chưa đủ 3 bài, điền thêm từ available
-      for (final e in available) {
+      // Nếu chưa đủ 3 bài, điền thêm từ normalAvailable
+      for (final e in normalAvailable) {
         if (selected.length >= 4) break;
         if (!selected.contains(e)) selected.add(e);
       }
       break;
   }
 
-  // Đảm bảo tối đa 5 bài, tối thiểu 3 bài nếu available >= 3
-  final finalSelected = selected.take(min(5, max(3, selected.length))).toList();
+  // Đảm bảo tối đa 6 bài cho mobility (hoặc 5 bài cho gợi ý thường)
+  final isMobilityLight =
+      type == SuggestedWorkoutType.light10 && safeMobility.length >= 3;
+  final maxCount = isMobilityLight ? 6 : 5;
+  final finalSelected =
+      selected.take(min(maxCount, max(3, selected.length))).toList();
 
   return finalSelected.map((e) {
-    final diff = (e.difficulty == null || e.difficulty! <= 0) ? 3 : e.difficulty!;
+    final diff =
+        (e.difficulty == null || e.difficulty! <= 0) ? 3 : e.difficulty!;
     final isDuration = e.tracking == 'duration';
 
     final int sets;
@@ -198,10 +248,18 @@ List<WorkoutPlanItem> buildSuggestedExercises({
       durationSec = isDuration ? (20 + diff * 5) : null;
       restSec = 20;
     } else if (type == SuggestedWorkoutType.light10) {
-      sets = 2;
-      reps = isDuration ? null : 8;
-      durationSec = isDuration ? 20 : null;
-      restSec = 30;
+      if (e.primaryMuscle == 'mobility') {
+        sets = 1;
+        reps = null;
+        final baseDuration = 30 + ((diff - 1) * 5);
+        durationSec = baseDuration.clamp(30, 45);
+        restSec = 10;
+      } else {
+        sets = 2;
+        reps = isDuration ? null : 8;
+        durationSec = isDuration ? 20 : null;
+        restSec = 30;
+      }
     } else {
       final baseSets = diff >= 3 ? 3 : 2;
       sets = isLowCheckin ? max(1, baseSets - 1) : baseSets;
@@ -252,13 +310,22 @@ WorkoutSetup buildSuggestedWorkoutSetup({
     durationMin: durationMin,
   );
 
+  final isMobilityLight = type == SuggestedWorkoutType.light10 &&
+      hasSufficientMobilityExercises(
+        exercises: exercises,
+        location: location,
+        userEquipment: userEquipment,
+        activeInjuries: activeInjuries,
+      );
+  final displayTitle = isMobilityLight ? 'Giãn cơ 10 phút' : type.title;
+
   final sessionId = id ?? generateExtraWorkoutId();
   final today = _localDateString(now ?? DateTime.now());
   final effectiveDuration = durationMin ?? type.durationMin;
 
   final session = SessionView(
     id: sessionId,
-    title: type.title,
+    title: displayTitle,
     scheduledDate: today,
     scheduledTime: '',
     durationMin: effectiveDuration,

@@ -205,7 +205,11 @@ class NutritionToday {
     this.meals = const [],
     this.suggestion,
     this.burnedKcal = 0,
-  });
+    this.steps = 0,
+    this.activeKcal = 0,
+    int? totalBurnedKcal,
+  }) : totalBurnedKcal = totalBurnedKcal ?? (burnedKcal > 0 ? burnedKcal : 0);
+
   final String localDate;
   final NutritionTarget? target;
   final Macros consumed;
@@ -214,6 +218,10 @@ class NutritionToday {
   final List<MealView> meals;
   final DinnerSuggestion? suggestion;
   final int burnedKcal;
+  final int steps;
+  final int activeKcal;
+  final int totalBurnedKcal;
+
   NutritionToday withWater(int value) => NutritionToday(
     localDate: localDate,
     target: target,
@@ -223,18 +231,27 @@ class NutritionToday {
     meals: meals,
     suggestion: suggestion,
     burnedKcal: burnedKcal,
+    steps: steps,
+    activeKcal: activeKcal,
+    totalBurnedKcal: totalBurnedKcal,
   );
+
   factory NutritionToday.fromJson(Map<String, dynamic> j) => NutritionToday(
-    localDate: j['localDate'] as String,
+    localDate: j['localDate'] as String? ?? '',
     target: j['target'] == null ? null : NutritionTarget.fromJson(j['target']),
-    consumed: Macros.fromJson(j['consumed']),
+    consumed: j['consumed'] == null ? const Macros() : Macros.fromJson(j['consumed']),
     remaining: j['remaining'] == null ? null : Macros.fromJson(j['remaining']),
-    waterMl: (j['waterMl'] as num).toInt(),
-    meals: (j['meals'] as List).map((e) => MealView.fromJson(e)).toList(),
+    waterMl: (j['waterMl'] as num?)?.toInt() ?? 0,
+    meals: (j['meals'] as List?)?.map((e) => MealView.fromJson(e)).toList() ?? const [],
     suggestion: j['suggestion'] == null
         ? null
         : DinnerSuggestion.fromJson(j['suggestion']),
     burnedKcal: (j['burnedKcal'] as num?)?.toInt() ?? 0,
+    steps: (j['steps'] as num?)?.toInt() ?? 0,
+    activeKcal: (j['activeKcal'] as num?)?.toInt() ?? 0,
+    totalBurnedKcal: (j['totalBurnedKcal'] as num?)?.toInt() ??
+        (j['burnedKcal'] as num?)?.toInt() ??
+        0,
   );
 }
 
