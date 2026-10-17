@@ -17,5 +17,6 @@ docker run --rm `
     -v "${here}\cv-configs.json:/scripts/cv-configs.json:ro" `
     -v "${here}\seed:/seed:ro" `
     mongo:8.0 mongosh $Uri /scripts/init.js /scripts/load-seed.js
+if ($LASTEXITCODE -ne 0) { throw "Nạp dữ liệu lỗi (xem log mongosh ở trên), Atlas chưa được cập nhật." }
 
 Write-Host "Xong: database fitness trên Atlas đã có collection và dữ liệu mẫu."
