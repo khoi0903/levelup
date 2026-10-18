@@ -1,7 +1,7 @@
 # Nutrition / F8 — bàn giao
 
 - `/nutrition`: ngày do backend trả về, target/consumed/remaining, macro, nước +250 ml, 4 nhóm bữa, gợi ý bữa tối nếu có.
-- `/nutrition/photo`: camera hoặc thư viện → nhận diện → sửa gram từng món → chọn bữa → lưu. Món không khớp bắt buộc tìm món thay thế hoặc xóa. 503 tự chuyển sang giao diện thủ công; 413/415/429/502 có hướng dẫn và lối tìm thủ công.
+- `/nutrition/photo`: camera hoặc thư viện → nhận diện → sửa gram từng món → chọn bữa → lưu. Món không có trong kho mà AI ước tính được thì hiện nhãn "AI ước tính", chỉ sửa được số gam (server tự tính calo); món không khớp và không có ước tính bắt buộc tìm món thay thế hoặc xóa. 503 tự chuyển sang giao diện thủ công; 413/415/429/502 có hướng dẫn và lối tìm thủ công.
 - `/nutrition/add?meal=dinner`: thêm từ kho; `extra: List<Food>` có thể dùng để kiểm tra gợi ý trước khi lưu. Tìm kiếm là màn `FoodSearchScreen` mở bằng Navigator, không cần route shell riêng.
 - Repository production luôn dùng `ApiClient`, Fake dùng cho test qua override Riverpod.
 - Không ghi ảnh vào bộ nhớ bền vững. `image_picker` dùng file tạm của plugin; app chỉ đọc byte, nén JPEG trong isolate/bộ nhớ, bỏ EXIF, giới hạn 2 MiB rồi base64 + SHA-256 đúng byte nén. Ảnh và bản nháp chỉ giữ trong RAM trong vòng đời màn.

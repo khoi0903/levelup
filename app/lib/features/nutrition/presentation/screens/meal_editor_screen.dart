@@ -283,7 +283,7 @@ class _MealEditorScreenState extends ConsumerState<MealEditorScreen> {
                         ),
                       ],
                     ),
-                    if (!items[i].matched) ...[
+                    if (!items[i].hasNutrition) ...[
                       const Text(
                         'Món chưa khớp kho thực phẩm. Hãy tìm món thay thế.',
                       ),
@@ -330,6 +330,11 @@ class _MealEditorScreenState extends ConsumerState<MealEditorScreen> {
                         }),
                       ),
                       Text('${items[i].macros.kcal.round()} kcal'),
+                      if (items[i].estimated)
+                        Text(
+                          'AI ước tính, món chưa có trong kho. Hãy sửa khẩu phần nếu chưa đúng.',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
                       TextButton(
                         onPressed: busy ? null : () => addFood(replace: i),
                         child: const Text('Đổi món'),

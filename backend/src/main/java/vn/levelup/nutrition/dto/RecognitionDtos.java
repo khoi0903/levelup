@@ -25,8 +25,9 @@ public final class RecognitionDtos {
     public record RecognitionResponse(String recognitionId, boolean cached, List<Item> items) {}
 
     /**
-     * Một món AI nhận ra. matched = false khi không có trong kho: foodId và số liệu để null,
-     * app cho người dùng tìm món (GET /foods/search) hoặc nhập tay.
+     * Một món AI nhận ra. matched = false khi không có trong kho: foodId null. Khi đó nếu AI ước tính được
+     * (estimated = true) thì có số liệu kèm khoảng ±25%, ngược lại số liệu để null; app cho người dùng
+     * sửa, tìm món (GET /foods/search) hoặc nhập tay.
      */
     public record Item(
         String name,
@@ -41,7 +42,8 @@ public final class RecognitionDtos {
         Double fatG,
         double confidence,
         boolean matched,
-        List<String> ingredients
+        List<String> ingredients,
+        boolean estimated
     ) {}
 
     /** Một món trong kết quả tìm kiếm, số liệu cho một khẩu phần chuẩn. */

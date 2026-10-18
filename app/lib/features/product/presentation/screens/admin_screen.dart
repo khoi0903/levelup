@@ -36,6 +36,15 @@ class AdminScreen extends ConsumerWidget {
               ),
             ),
           if (me.isAdmin)
+            GlassCard(
+              child: ListTile(
+                title: const Text('Duyệt món mới'),
+                subtitle: const Text('Món AI nhận ra mà kho chưa có'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push('/admin/foods'),
+              ),
+            ),
+          if (me.isAdmin)
             ref
                 .watch(adminConfigProvider)
                 .when(

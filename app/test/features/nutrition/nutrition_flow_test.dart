@@ -164,6 +164,33 @@ void main() {
     expect(repo.savedRequest!.method, 'photo');
     expect(repo.savedRequest!.recognitionId, '000000000000000000000002');
   });
+  testWidgets('AI-estimated item shows label and saves without foodId', (
+    tester,
+  ) async {
+    final repo = FakeNutritionRepository()
+      ..recognition = const Recognition(
+        recognitionId: '000000000000000000000002',
+        items: [
+          MealItem(
+            name: 'Trà dâu kem cheese',
+            grams: 500,
+            baseGrams: 500,
+            baseMacros: Macros(kcal: 375, proteinG: 6, carbsG: 60, fatG: 12),
+            estimated: true,
+          ),
+        ],
+      );
+    await pumpNutrition(tester, repo, route: '/nutrition/photo');
+    await tapVisible(tester, find.text('Chọn ảnh từ thư viện'));
+    expect(find.textContaining('AI ước tính'), findsOneWidget);
+    expect(find.textContaining('Món chưa khớp'), findsNothing);
+    expect(find.text('375 kcal ước tính'), findsOneWidget);
+    await tapVisible(tester, find.text('Lưu bữa ăn'));
+    final saved = repo.savedRequest!.items.single.toJson();
+    expect(saved['foodId'], isNull);
+    expect(saved.containsKey('kcal'), isFalse);
+    expect(saved['portionGrams'], 500);
+  });
   testWidgets('503 switches to manual and can save', (tester) async {
     final repo = FakeNutritionRepository()
       ..recognitionError = const ApiException(

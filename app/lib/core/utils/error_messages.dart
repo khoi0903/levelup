@@ -65,6 +65,14 @@ String mapErrorMessage(dynamic error, {String? defaultMessage}) {
         return 'Buổi này đã tập hoặc đã bỏ, không đổi được nữa.';
       case 'AI_UNAVAILABLE':
         return 'Trợ lý AI đang bận. Vui lòng thử lại sau giây lát.';
+      case 'FOOD_EXISTS':
+        return 'Kho đã có món trùng tên hoặc tên gọi khác. Hãy đổi tên hoặc bỏ món này.';
+      case 'CANDIDATE_REVIEWED':
+        return 'Món này đã được duyệt hoặc bỏ rồi.';
+      case 'CANDIDATE_NOT_FOUND':
+        return 'Không tìm thấy món chờ duyệt.';
+      case 'INVALID_NAME':
+        return 'Tên món không hợp lệ.';
       case 'VALIDATION_ERROR':
         return 'Thông tin nhập vào chưa hợp lệ. Vui lòng kiểm tra lại.';
       case 'NOTHING_TO_UPDATE':

@@ -437,7 +437,8 @@ coll("meal_logs", {
                                 quantity: { bsonType: "number" }, unit: { bsonType: "string" }, grams: { bsonType: "number" },
                                 kcal: { bsonType: "number" }, proteinG: { bsonType: "number" },
                                 carbsG: { bsonType: "number" }, fatG: { bsonType: "number" },
-                                aiSuggested: { bsonType: "bool" }, userEdited: { bsonType: "bool" } } } },
+                                aiSuggested: { bsonType: "bool" }, userEdited: { bsonType: "bool" },
+                                aiEstimated: { bsonType: "bool" } } } },
                 createdAt: { bsonType: "date" }, updatedAt: { bsonType: "date" } }
 });
 dbx.meal_logs.createIndex({ userId: 1, localDate: 1 });
@@ -451,6 +452,27 @@ coll("food_recognitions", {
 dbx.food_recognitions.createIndex({ imageSha256: 1 });                      // cache: cùng ảnh không gọi AI lại
 dbx.food_recognitions.createIndex({ userId: 1, imageSha256: 1 });          // cache theo từng người dùng
 dbx.food_recognitions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 180 });
+
+// Món chưa có trong kho foods mà AI nhận ra trong ảnh, chờ Admin duyệt.
+// key = tên bỏ dấu chữ thường; aiSamples (số AI /100 g) và savedSamples (số gam người dùng lưu) chỉ giữ
+// 20/50 lần gần nhất, không chứa userId. Món đã duyệt/bỏ thì không ghi thêm.
+coll("food_candidates", {
+  bsonType: "object", required: ["key", "nameVi", "status"],
+  properties: { key: { bsonType: "string" }, nameVi: { bsonType: "string" },
+                status: { enum: ["pending", "approved", "rejected"] },
+                userCount: { bsonType: "number" },
+                sightings: { bsonType: "number" }, saves: { bsonType: "number" },
+                aiSamples: { bsonType: "array" }, savedSamples: { bsonType: "array" },
+                foodId: { bsonType: "objectId" }, firstSeenAt: { bsonType: "date" }, lastSeenAt: { bsonType: "date" } }
+});
+dbx.food_candidates.createIndex({ key: 1 }, { unique: true });
+dbx.food_candidates.createIndex({ status: 1, userCount: -1, lastSeenAt: -1 });
+// Mỗi người dùng đếm một lần cho mỗi món (userCount); xoá tài khoản thì xoá theo userId
+coll("food_candidate_users", {
+  bsonType: "object", required: ["key", "userId"],
+  properties: { key: { bsonType: "string" }, userId: { bsonType: "objectId" }, at: { bsonType: "date" } }
+});
+dbx.food_candidate_users.createIndex({ userId: 1, key: 1 }, { unique: true });
 
 // ---------------------------------------------------------------------
 // AI coach và thông báo

@@ -20,9 +20,17 @@ public final class MealDtos {
 
     private MealDtos() {}
 
+    /** Giới hạn số liệu một món (dùng chung cho Item và FoodCandidateDtos.ApproveRequest). */
+    public static final String MAX_GRAMS = "3000";
+    public static final String MAX_KCAL = "3000";
+    public static final String MAX_PROTEIN_G = "300";
+    public static final String MAX_CARBS_G = "500";
+    public static final String MAX_FAT_G = "300";
+
     /**
      * Bữa ăn sau khi người dùng đã sửa khẩu phần. Món có foodId thì server tự tính lại số liệu từ kho,
-     * không tin kcal app gửi. Món nhập tay (không foodId) bắt buộc có kcal, giới hạn trong khoảng hợp lý.
+     * món AI ước tính trong ảnh thì tính lại từ số /100 g theo số gam; không tin kcal app gửi.
+     * Món nhập tay (không foodId) bắt buộc có kcal, giới hạn trong khoảng hợp lý.
      */
     public record MealRequest(
         @NotNull @Pattern(regexp = "breakfast|lunch|dinner|snack") String meal,
@@ -35,11 +43,11 @@ public final class MealDtos {
     public record Item(
         @Pattern(regexp = "[0-9a-f]{24}") String foodId,
         @NotBlank @Size(max = 100) String name,
-        @DecimalMin("1") @DecimalMax("3000") Double portionGrams,
-        @DecimalMin("0") @DecimalMax("3000") Double kcal,
-        @DecimalMin("0") @DecimalMax("300") Double proteinG,
-        @DecimalMin("0") @DecimalMax("500") Double carbsG,
-        @DecimalMin("0") @DecimalMax("300") Double fatG
+        @DecimalMin("1") @DecimalMax(MAX_GRAMS) Double portionGrams,
+        @DecimalMin("0") @DecimalMax(MAX_KCAL) Double kcal,
+        @DecimalMin("0") @DecimalMax(MAX_PROTEIN_G) Double proteinG,
+        @DecimalMin("0") @DecimalMax(MAX_CARBS_G) Double carbsG,
+        @DecimalMin("0") @DecimalMax(MAX_FAT_G) Double fatG
     ) {}
 
     public record WaterRequest(@NotNull @Min(50) @Max(2000) Integer ml) {}
