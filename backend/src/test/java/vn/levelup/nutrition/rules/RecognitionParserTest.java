@@ -1,6 +1,7 @@
 package vn.levelup.nutrition.rules;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -46,5 +47,35 @@ class RecognitionParserTest {
             "{\"dishes\":[{\"name\":\"x\",\"portionGrams\":300,\"confidence\":0.5,\"ingredients\":\"bò\"}]}"}) {
             assertThrows(RecognitionParser.InvalidOutputException.class, () -> RecognitionParser.parse(raw), raw);
         }
+    }
+
+    @Test
+    void docSoUocTinhCho100g() {
+        RecognitionParser.Dish d = RecognitionParser.parse("""
+            {"dishes":[{"nameVi":"Trà dâu kem cheese","portionGrams":500,"confidence":0.8,
+              "per100g":{"kcal":75,"proteinG":1.2,"carbsG":12,"fatG":2.5}}]}""").get(0);
+        assertEquals(new RecognitionParser.Estimate(75, 1.2, 12, 2.5), d.per100g());
+        NutritionRules.Portion p = NutritionRules.estimatePortion(d.per100g(), d.portionGrams());
+        assertEquals(375, p.kcal());
+        assertEquals(281, p.kcalMin());
+        assertEquals(469, p.kcalMax());
+        assertEquals(60.0, p.carbsG());
+    }
+
+    @Test
+    void soUocTinhVoLyThiBoQuaNhungVanGiuMon() {
+        for (String per100g : new String[] {
+            "null", "\"75\"", "{\"kcal\":75}", "{\"kcal\":950,\"proteinG\":0,\"carbsG\":0,\"fatG\":100}",
+            "{\"kcal\":0,\"proteinG\":0,\"carbsG\":0,\"fatG\":0}",
+            "{\"kcal\":75,\"proteinG\":-1,\"carbsG\":12,\"fatG\":2.5}",
+            "{\"kcal\":75,\"proteinG\":60,\"carbsG\":60,\"fatG\":0}",
+            "{\"kcal\":300,\"proteinG\":1,\"carbsG\":12,\"fatG\":2.5}"}) {
+            RecognitionParser.Dish d = RecognitionParser.parse(
+                "{\"dishes\":[{\"nameVi\":\"Món lạ\",\"portionGrams\":300,\"confidence\":0.5,\"per100g\":"
+                    + per100g + "}]}").get(0);
+            assertNull(d.per100g(), per100g);
+        }
+        assertNull(RecognitionParser.parse(
+            "{\"dishes\":[{\"nameVi\":\"Món lạ\",\"portionGrams\":300,\"confidence\":0.5}]}").get(0).per100g());
     }
 }

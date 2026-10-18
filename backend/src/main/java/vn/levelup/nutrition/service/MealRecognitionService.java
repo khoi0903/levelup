@@ -54,8 +54,10 @@ public class MealRecognitionService {
         Chỉ trả về đúng một object JSON, không kèm chữ nào khác, theo dạng:
         {"dishes":[{"name":"tên tiếng Anh","nameVi":"tên món tiếng Việt có dấu",\
         "ingredients":["thành phần chính"],"portionGrams":số gam ước lượng của phần trong ảnh,\
-        "confidence":số từ 0 đến 1}]}
+        "confidence":số từ 0 đến 1,"per100g":{"kcal":số,"proteinG":số,"carbsG":số,"fatG":số}}]}
         Dùng tên món Việt phổ biến, ví dụ: Phở bò tái, Cơm tấm sườn nướng, Bánh mì thịt, Bún chả Hà Nội.
+        per100g là ước tính dinh dưỡng cho 100 g món đó theo cách nấu/pha phổ biến ở Việt Nam
+        (đồ uống: tính cả đường, sữa, topping thường dùng); kcal phải gần bằng 4×đạm + 4×tinh bột + 9×béo.
         Tối đa 10 món. Ảnh không có món ăn thì trả {"dishes":[]}.""";
     static final String PROMPT = "Nhận diện các món trong ảnh và ước lượng khẩu phần.";
     static final String RETRY_PROMPT = PROMPT
@@ -66,16 +68,18 @@ public class MealRecognitionService {
     private final FoodCatalog foods;
     private final Clock clock;
     private final PlanAccess plans;
+    private final FoodCandidateService candidates;
     private final String model;
 
     public MealRecognitionService(MongoTemplate mongo, AiClient ai, FoodCatalog foods, Clock clock,
-                                  PlanAccess plans,
+                                  PlanAccess plans, FoodCandidateService candidates,
                                   @Value("${levelup.ai.model:claude-opus-5-5}") String model) {
         this.mongo = mongo;
         this.ai = ai;
         this.foods = foods;
         this.clock = clock;
         this.plans = plans;
+        this.candidates = candidates;
         this.model = model;
     }
 
@@ -150,7 +154,14 @@ public class MealRecognitionService {
             .append("localDate", localDate)
             .append("createdAt", Date.from(Instant.now(clock)));
         mongo.insert(rec, "food_recognitions");
-        return response(id, false, dishes);
+        RecognitionDtos.RecognitionResponse result = response(id, false, dishes);
+        // Món chưa có trong kho: gom vào kho chờ để Admin duyệt (chỉ lần gọi AI thật, không tính ảnh cache)
+        for (int i = 0; i < dishes.size(); i++) {
+            if (!result.items().get(i).matched()) {
+                candidates.recordRecognized(userId, dishes.get(i));
+            }
+        }
+        return result;
     }
 
     /** Tăng photoScans nếu còn lượt, trong một lệnh. Hết lượt thì upsert đụng index unique → false. */
@@ -186,18 +197,30 @@ public class MealRecognitionService {
                 NutritionRules.Portion p = NutritionRules.portion(f, d.portionGrams());
                 items.add(new RecognitionDtos.Item(d.name(), f.id(), f.nameVi(), d.portionGrams(), p.kcal(),
                     p.kcalMin(), p.kcalMax(), p.proteinG(), p.carbsG(), p.fatG(), d.confidence(), true,
-                    d.ingredients()));
+                    d.ingredients(), false));
+            } else if (d.per100g() != null) {
+                NutritionRules.Portion p = NutritionRules.estimatePortion(d.per100g(), d.portionGrams());
+                items.add(new RecognitionDtos.Item(d.name(), null, d.nameVi(), d.portionGrams(), p.kcal(),
+                    p.kcalMin(), p.kcalMax(), p.proteinG(), p.carbsG(), p.fatG(), d.confidence(), false,
+                    d.ingredients(), true));
             } else {
                 items.add(new RecognitionDtos.Item(d.name(), null, d.nameVi(), d.portionGrams(), null, null, null,
-                    null, null, null, d.confidence(), false, d.ingredients()));
+                    null, null, null, d.confidence(), false, d.ingredients(), false));
             }
         }
         return new RecognitionDtos.RecognitionResponse(id.toHexString(), cached, items);
     }
 
     static Document dishDocument(RecognitionParser.Dish d) {
-        return new Document("name", d.name()).append("nameVi", d.nameVi()).append("ingredients", d.ingredients())
-            .append("portionGrams", d.portionGrams()).append("confidence", d.confidence());
+        Document doc = new Document("name", d.name()).append("nameVi", d.nameVi())
+            .append("ingredients", d.ingredients()).append("portionGrams", d.portionGrams())
+            .append("confidence", d.confidence());
+        RecognitionParser.Estimate e = d.per100g();
+        if (e != null) {
+            doc.append("per100g", new Document("kcal", e.kcal()).append("proteinG", e.proteinG())
+                .append("carbsG", e.carbsG()).append("fatG", e.fatG()));
+        }
+        return doc;
     }
 
     static List<RecognitionParser.Dish> dishesFrom(Document recognition) {
@@ -208,8 +231,17 @@ public class MealRecognitionService {
         return raw.getList("dishes", Document.class, List.of()).stream()
             .map(d -> new RecognitionParser.Dish(d.getString("name"), d.getString("nameVi"),
                 d.getList("ingredients", String.class, List.of()), ((Number) d.get("portionGrams")).doubleValue(),
-                ((Number) d.get("confidence")).doubleValue()))
+                ((Number) d.get("confidence")).doubleValue(), estimate(d.get("per100g", Document.class))))
             .toList();
+    }
+
+    private static RecognitionParser.Estimate estimate(Document per100g) {
+        if (per100g == null) {
+            return null;
+        }
+        return new RecognitionParser.Estimate(((Number) per100g.get("kcal")).doubleValue(),
+            ((Number) per100g.get("proteinG")).doubleValue(), ((Number) per100g.get("carbsG")).doubleValue(),
+            ((Number) per100g.get("fatG")).doubleValue());
     }
 
     public static String sha256Hex(byte[] data) {

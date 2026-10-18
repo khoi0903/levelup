@@ -149,6 +149,30 @@ void main() {
     expect(result.items.last.valid, isFalse);
     expect(result.items.last.name, 'Unknown');
   });
+  test('recognition estimated item is usable without foodId', () {
+    final item = MealItem.fromRecognition({
+      'name': 'Strawberry tea',
+      'nameVi': 'Trà dâu kem cheese',
+      'foodId': null,
+      'portionGrams': 500,
+      'kcal': 375,
+      'proteinG': 6,
+      'carbsG': 60,
+      'fatG': 12.5,
+      'kcalMin': 281,
+      'kcalMax': 469,
+      'matched': false,
+      'estimated': true,
+      'confidence': .8,
+      'ingredients': [],
+    });
+    expect(item.matched, isFalse);
+    expect(item.estimated, isTrue);
+    expect(item.valid, isTrue);
+    expect(item.withGrams(250).macros.kcal, 187.5);
+    expect(item.toJson()['foodId'], isNull);
+    expect(item.toJson()['kcal'], 375);
+  });
   test('API paths, query, auth, body and Java response contracts', () async {
     final client = ApiClient(
       baseUrl: 'http://test.invalid',

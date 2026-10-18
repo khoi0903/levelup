@@ -28,6 +28,7 @@ import vn.levelup.nutrition.dto.RecognitionDtos;
 import vn.levelup.nutrition.model.Food;
 import vn.levelup.nutrition.rules.NutritionRules;
 import vn.levelup.nutrition.rules.RecognitionParser;
+import vn.levelup.nutrition.rules.VietText;
 import vn.levelup.shared.util.LocalDates;
 
 
@@ -42,12 +43,15 @@ public class NutritionService {
     private final FoodCatalog foods;
     private final Clock clock;
     private final ActivityService activity;
+    private final FoodCandidateService candidates;
 
-    public NutritionService(MongoTemplate mongo, FoodCatalog foods, Clock clock, ActivityService activity) {
+    public NutritionService(MongoTemplate mongo, FoodCatalog foods, Clock clock, ActivityService activity,
+                            FoodCandidateService candidates) {
         this.mongo = mongo;
         this.foods = foods;
         this.clock = clock;
         this.activity = activity;
+        this.candidates = candidates;
     }
 
     /** Lưu một bữa. Số liệu tính lại ở server; trả về tổng kết hôm nay kèm gợi ý nếu thiếu đạm. */
@@ -80,8 +84,17 @@ public class NutritionService {
         double protein = 0;
         double carbs = 0;
         double fat = 0;
+        // Món AI ước tính (chưa có trong kho): server tự tính calo theo số gam, người dùng chỉ sửa được số gam
+        java.util.Map<String, RecognitionParser.Estimate> estimates = new java.util.HashMap<>();
+        if (recognition != null) {
+            for (RecognitionParser.Dish d : MealRecognitionService.dishesFrom(recognition)) {
+                if (d.per100g() != null) {
+                    estimates.putIfAbsent(VietText.normalize(d.nameVi()), d.per100g());
+                }
+            }
+        }
         for (MealDtos.Item it : r.items()) {
-            Document item = item(it, "photo".equals(r.method()));
+            Document item = item(it, "photo".equals(r.method()), estimates);
             items.add(item);
             kcal += ((Number) item.get("kcal")).doubleValue();
             protein += ((Number) item.get("proteinG")).doubleValue();
@@ -110,11 +123,24 @@ public class NutritionService {
                 .append("kcalMax", (int) Math.round(kcal * (1 + NutritionRules.RANGE)));
         }
         mongo.insert(meal, "meal_logs");
+        // Món không có trong kho: số người dùng đã xem/sửa trước khi lưu, gom vào kho chờ duyệt
+        for (Document item : items) {
+            if (item.get("foodId") == null) {
+                candidates.recordSaved(userId, item.getString("name"),
+                    item.get("grams") instanceof Number g ? g.doubleValue() : null,
+                    ((Number) item.get("kcal")).doubleValue(), ((Number) item.get("proteinG")).doubleValue(),
+                    ((Number) item.get("carbsG")).doubleValue(), ((Number) item.get("fatG")).doubleValue(),
+                    "photo".equals(r.method()));
+            }
+        }
         return today(user);
     }
 
-    /** Món có foodId: tính lại từ kho. Món nhập tay: dùng số app gửi, đã giới hạn bằng validation. */
-    private Document item(MealDtos.Item it, boolean fromPhoto) {
+    /**
+     * Món có foodId: tính lại từ kho. Món AI ước tính trong ảnh: tính lại từ số /100 g đã lưu theo số gam.
+     * Món nhập tay: dùng số app gửi, đã giới hạn bằng validation.
+     */
+    private Document item(MealDtos.Item it, boolean fromPhoto, java.util.Map<String, RecognitionParser.Estimate> estimates) {
         Document d = new Document("name", it.name().trim()).append("aiSuggested", fromPhoto);
         if (it.foodId() != null) {
             Food food = foods.byId(it.foodId())
@@ -123,6 +149,12 @@ public class NutritionService {
             NutritionRules.Portion p = NutritionRules.portion(food, grams);
             return d.append("foodId", new ObjectId(food.id())).append("grams", grams).append("kcal", p.kcal())
                 .append("proteinG", p.proteinG()).append("carbsG", p.carbsG()).append("fatG", p.fatG());
+        }
+        RecognitionParser.Estimate estimate = estimates.get(VietText.normalize(it.name()));
+        if (estimate != null && it.portionGrams() != null) {
+            NutritionRules.Portion p = NutritionRules.estimatePortion(estimate, it.portionGrams());
+            return d.append("grams", it.portionGrams()).append("kcal", p.kcal()).append("proteinG", p.proteinG())
+                .append("carbsG", p.carbsG()).append("fatG", p.fatG()).append("aiEstimated", true);
         }
         if (it.kcal() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ITEM_KCAL_REQUIRED");

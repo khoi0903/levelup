@@ -10,7 +10,8 @@ import tools.jackson.databind.json.JsonMapper;
 /**
  * Đọc và kiểm tra JSON AI trả về cho ảnh món ăn. AI không ghi database:
  * chỉ kết quả qua được bước kiểm tra này mới được lưu.
- * Dạng mong đợi: {"dishes":[{"name","nameVi","ingredients":[...],"portionGrams","confidence"}]}
+ * Dạng mong đợi: {"dishes":[{"name","nameVi","ingredients":[...],"portionGrams","confidence",
+ * "per100g":{"kcal","proteinG","carbsG","fatG"}}]}. per100g là số AI ước tính, sai thì bỏ (không làm hỏng cả kết quả).
  */
 public final class RecognitionParser {
 
@@ -20,7 +21,33 @@ public final class RecognitionParser {
     private static final JsonMapper JSON = JsonMapper.builder().build();
 
     public record Dish(String name, String nameVi, List<String> ingredients, double portionGrams,
-                       double confidence) {}
+                       double confidence, Estimate per100g) {}
+
+    /** Số liệu AI ước tính cho 100 g, chỉ dùng cho món chưa có trong kho. */
+    public record Estimate(double kcal, double proteinG, double carbsG, double fatG) {
+
+        static final double MAX_KCAL = 900;
+
+        /**
+         * null khi không hợp lý: kcal ngoài 1–900, đạm + tinh bột + béo quá 100 g,
+         * hoặc kcal lệch hơn 25% (tối thiểu 20 kcal) so với 4·đạm + 4·tinh bột + 9·béo.
+         */
+        public static Estimate of(double kcal, double proteinG, double carbsG, double fatG) {
+            if (!(kcal >= 1 && kcal <= MAX_KCAL) || !(proteinG >= 0 && carbsG >= 0 && fatG >= 0)
+                    || proteinG + carbsG + fatG > 100) {
+                return null;
+            }
+            double fromMacros = 4 * proteinG + 4 * carbsG + 9 * fatG;
+            if (Math.abs(fromMacros - kcal) > Math.max(20, kcal * 0.25)) {
+                return null;
+            }
+            return new Estimate(Math.round(kcal), round1(proteinG), round1(carbsG), round1(fatG));
+        }
+
+        private static double round1(double v) {
+            return Math.round(v * 10) / 10.0;
+        }
+    }
 
     /** JSON sai định dạng hoặc giá trị ngoài khoảng cho phép. */
     public static class InvalidOutputException extends RuntimeException {
@@ -78,9 +105,24 @@ public final class RecognitionParser {
                 }
             }
             result.add(new Dish(limit(name != null ? name : nameVi), limit(nameVi != null ? nameVi : name),
-                List.copyOf(ingredients), Math.round(grams.doubleValue()), conf.doubleValue()));
+                List.copyOf(ingredients), Math.round(grams.doubleValue()), conf.doubleValue(),
+                estimate(d.get("per100g"))));
         }
         return List.copyOf(result);
+    }
+
+    private static Estimate estimate(JsonNode per100g) {
+        if (per100g == null || !per100g.isObject()) {
+            return null;
+        }
+        for (String f : new String[] {"kcal", "proteinG", "carbsG", "fatG"}) {
+            JsonNode v = per100g.get(f);
+            if (v == null || !v.isNumber()) {
+                return null;
+            }
+        }
+        return Estimate.of(per100g.get("kcal").doubleValue(), per100g.get("proteinG").doubleValue(),
+            per100g.get("carbsG").doubleValue(), per100g.get("fatG").doubleValue());
     }
 
     private static String text(JsonNode node, String field) {

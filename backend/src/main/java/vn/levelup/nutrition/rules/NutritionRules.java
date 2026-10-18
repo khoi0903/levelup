@@ -44,6 +44,18 @@ public final class NutritionRules {
             round1(food.carbsG() * factor), round1(food.fatG() * factor));
     }
 
+    /** Khoảng kcal của món AI tự ước tính (chưa có trong kho): rộng hơn, ±25%. */
+    public static final double ESTIMATE_RANGE = 0.25;
+
+    /** Số liệu một khẩu phần tính từ số AI ước tính cho 100 g. */
+    public static Portion estimatePortion(RecognitionParser.Estimate per100g, double portionGrams) {
+        double factor = portionGrams / 100;
+        double kcal = per100g.kcal() * factor;
+        return new Portion((int) Math.round(kcal), (int) Math.round(kcal * (1 - ESTIMATE_RANGE)),
+            (int) Math.round(kcal * (1 + ESTIMATE_RANGE)), round1(per100g.proteinG() * factor),
+            round1(per100g.carbsG() * factor), round1(per100g.fatG() * factor));
+    }
+
     public static double round1(double v) {
         return Math.round(v * 10) / 10.0;
     }

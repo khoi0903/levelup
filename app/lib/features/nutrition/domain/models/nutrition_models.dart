@@ -68,6 +68,7 @@ class Food {
 }
 
 /// Base nutrition is for baseGrams; every edit scales from that original value.
+/// estimated: món chưa có trong kho, số liệu do AI ước tính (server đã kiểm tra), lưu như món nhập tay.
 class MealItem {
   const MealItem({
     required this.name,
@@ -77,14 +78,18 @@ class MealItem {
     this.baseMacros,
     this.kcalMin,
     this.kcalMax,
+    this.estimated = false,
   });
   final String name;
   final String? foodId;
   final double grams, baseGrams;
   final Macros? baseMacros;
   final double? kcalMin, kcalMax;
+  final bool estimated;
   bool get matched => foodId != null && baseMacros != null;
-  bool get valid => matched && grams.isFinite && grams >= 1 && grams <= 3000;
+  bool get hasNutrition => matched || (estimated && baseMacros != null);
+  bool get valid =>
+      hasNutrition && grams.isFinite && grams >= 1 && grams <= 3000;
   Macros get macros => (baseMacros ?? const Macros()).scale(
     baseGrams > 0 ? grams / baseGrams : 1,
   );
@@ -96,6 +101,7 @@ class MealItem {
     baseMacros: baseMacros,
     kcalMin: kcalMin,
     kcalMax: kcalMax,
+    estimated: estimated,
   );
   factory MealItem.fromFood(Food food) => MealItem(
     name: food.nameVi,
@@ -104,15 +110,20 @@ class MealItem {
     baseGrams: food.servingGrams,
     baseMacros: food.macros,
   );
-  factory MealItem.fromRecognition(Map<String, dynamic> j) => MealItem(
-    name: (j['nameVi'] ?? j['name']) as String,
-    foodId: j['matched'] == true ? j['foodId'] as String? : null,
-    grams: number(j, 'portionGrams'),
-    baseGrams: number(j, 'portionGrams'),
-    baseMacros: j['matched'] == true ? Macros.fromJson(j) : null,
-    kcalMin: (j['kcalMin'] as num?)?.toDouble(),
-    kcalMax: (j['kcalMax'] as num?)?.toDouble(),
-  );
+  factory MealItem.fromRecognition(Map<String, dynamic> j) {
+    final matched = j['matched'] == true;
+    final estimated = !matched && j['estimated'] == true && j['kcal'] != null;
+    return MealItem(
+      name: (j['nameVi'] ?? j['name']) as String,
+      foodId: matched ? j['foodId'] as String? : null,
+      grams: number(j, 'portionGrams'),
+      baseGrams: number(j, 'portionGrams'),
+      baseMacros: matched || estimated ? Macros.fromJson(j) : null,
+      kcalMin: (j['kcalMin'] as num?)?.toDouble(),
+      kcalMax: (j['kcalMax'] as num?)?.toDouble(),
+      estimated: estimated,
+    );
+  }
   Map<String, dynamic> toJson() => {
     'foodId': foodId,
     'name': name,
