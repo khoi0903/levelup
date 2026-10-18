@@ -6,6 +6,8 @@ import '../../../activity/data/repositories/api_activity_repository.dart';
 import '../../../activity/domain/models/activity_models.dart';
 import '../../../activity/domain/repositories/activity_repository.dart';
 import '../../../users/presentation/controllers/user_controller.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../data/services/health_connect_links.dart';
 import '../../data/services/health_connect_service.dart';
 import '../../domain/models/health_connect_state.dart';
 
@@ -13,12 +15,22 @@ final healthConnectServiceProvider = Provider<HealthConnectService>((ref) {
   return HealthConnectService();
 });
 
+final healthConnectLinksProvider = Provider<HealthConnectLinks>(
+  (ref) => HealthConnectLinks(),
+);
+
+/// Tạo lại khi đổi tài khoản: số liệu và bộ đếm lần gửi của tài khoản trước không mang sang.
 final healthConnectControllerProvider =
     StateNotifierProvider<HealthConnectController, HealthConnectState>((ref) {
   final service = ref.watch(healthConnectServiceProvider);
+  final uid = ref.watch(
+    authStateChangesProvider.select((auth) => auth.valueOrNull?.id),
+  );
   return HealthConnectController(
     service,
     ref: ref,
+    uid: uid,
+    links: ref.watch(healthConnectLinksProvider),
   );
 });
 
@@ -29,6 +41,10 @@ class HealthConnectController extends StateNotifier<HealthConnectState> {
   final Duration syncInterval;
   final DateTime Function() clock;
   final bool Function()? isPlatformSupportedOverride;
+
+  /// Tài khoản đang đăng nhập. Khi có [links], chỉ đọc số liệu nếu tài khoản này đã tự bấm kết nối trên máy.
+  final String? uid;
+  final HealthConnectLinks? links;
 
   DateTime? _lastSyncTime;
   int? _lastSentSteps;
@@ -42,6 +58,8 @@ class HealthConnectController extends StateNotifier<HealthConnectState> {
     this.syncInterval = const Duration(minutes: 15),
     DateTime Function()? clock,
     this.isPlatformSupportedOverride,
+    this.uid,
+    this.links,
   })  : clock = clock ?? DateTime.now,
         super(const HealthConnectState()) {
     checkStatus();
@@ -77,11 +95,37 @@ class HealthConnectController extends StateNotifier<HealthConnectState> {
     }
 
     final hasPerm = await _service.hasPermissions();
-    if (hasPerm) {
+    if (!mounted) return;
+    if (hasPerm && await _accountLinked()) {
+      if (!mounted) return;
       state = state.copyWith(status: HealthConnectStatus.authorized);
       await refreshTodayData();
-    } else {
+    } else if (mounted) {
       state = state.copyWith(status: HealthConnectStatus.notAuthorized);
+    }
+  }
+
+  /// Máy đã cấp quyền nhưng tài khoản khác bấm kết nối: tài khoản này phải tự kết nối.
+  Future<bool> _accountLinked() async {
+    final store = links;
+    if (store == null) return true;
+    final id = uid;
+    if (id == null) return false;
+    try {
+      return await store.isLinked(id);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _linkAccount() async {
+    final store = links;
+    final id = uid;
+    if (store == null || id == null) return;
+    try {
+      await store.link(id);
+    } catch (_) {
+      // Không lưu được thì lần mở app sau sẽ hỏi kết nối lại
     }
   }
 
@@ -89,8 +133,13 @@ class HealthConnectController extends StateNotifier<HealthConnectState> {
   Future<bool> connect() async {
     state = state.copyWith(status: HealthConnectStatus.loading);
     try {
+      if (links != null && uid == null) {
+        state = state.copyWith(status: HealthConnectStatus.notAuthorized);
+        return false;
+      }
       final granted = await _service.requestPermissions();
       if (granted) {
+        await _linkAccount();
         state = state.copyWith(status: HealthConnectStatus.authorized);
         await refreshTodayData();
         return true;
@@ -98,6 +147,7 @@ class HealthConnectController extends StateNotifier<HealthConnectState> {
         // Kiểm tra lại vì trên một số phiên bản requestAuthorization có thể trả về false nhưng người dùng đã cấp quyền một phần
         final hasPerm = await _service.hasPermissions();
         if (hasPerm) {
+          await _linkAccount();
           state = state.copyWith(status: HealthConnectStatus.authorized);
           await refreshTodayData();
           return true;
@@ -116,9 +166,12 @@ class HealthConnectController extends StateNotifier<HealthConnectState> {
 
   /// Làm mới dữ liệu hôm nay (bước chân, calo tiêu thụ) và đồng bộ lên server nếu đã cấp quyền
   Future<void> refreshTodayData() async {
+    // Chưa kết nối (hoặc tài khoản này chưa tự kết nối): không đọc số liệu của máy
+    if (!state.isAuthorized) return;
     try {
       final steps = await _service.getTodaySteps();
       final calories = await _service.getTodayCaloriesBurned();
+      if (!mounted) return;
       state = state.copyWith(
         data: HealthDataSummary(
           steps: steps,
