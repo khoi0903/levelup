@@ -8,7 +8,9 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -84,19 +86,27 @@ public class NutritionService {
         double protein = 0;
         double carbs = 0;
         double fat = 0;
+        // Khoảng kcal của bữa: cộng khoảng từng món (món kho ±15%, món AI ước tính ±25%)
+        double kcalMin = 0;
+        double kcalMax = 0;
+        List<RecognitionParser.Dish> dishes = recognition == null ? List.of()
+            : MealRecognitionService.dishesFrom(recognition);
         // Món AI ước tính (chưa có trong kho): server tự tính calo theo số gam, người dùng chỉ sửa được số gam
-        java.util.Map<String, RecognitionParser.Estimate> estimates = new java.util.HashMap<>();
-        if (recognition != null) {
-            for (RecognitionParser.Dish d : MealRecognitionService.dishesFrom(recognition)) {
-                if (d.per100g() != null) {
-                    estimates.putIfAbsent(VietText.normalize(d.nameVi()), d.per100g());
-                }
+        Map<String, RecognitionParser.Estimate> estimates = new HashMap<>();
+        for (RecognitionParser.Dish d : dishes) {
+            if (d.per100g() != null) {
+                estimates.putIfAbsent(VietText.normalize(d.nameVi()), d.per100g());
             }
         }
         for (MealDtos.Item it : r.items()) {
-            Document item = item(it, "photo".equals(r.method()), estimates);
+            Document item = item(it, recognition != null, estimates);
             items.add(item);
-            kcal += ((Number) item.get("kcal")).doubleValue();
+            double k = ((Number) item.get("kcal")).doubleValue();
+            double range = Boolean.TRUE.equals(item.get("aiEstimated")) ? NutritionRules.ESTIMATE_RANGE
+                : NutritionRules.RANGE;
+            kcal += k;
+            kcalMin += k * (1 - range);
+            kcalMax += k * (1 + range);
             protein += ((Number) item.get("proteinG")).doubleValue();
             carbs += ((Number) item.get("carbsG")).doubleValue();
             fat += ((Number) item.get("fatG")).doubleValue();
@@ -116,22 +126,15 @@ public class NutritionService {
             .append("updatedAt", Date.from(now));
         if (recognition != null) {
             meal.append("recognitionId", recognition.getObjectId("_id"));
-            MealRecognitionService.dishesFrom(recognition).stream()
-                .mapToDouble(RecognitionParser.Dish::confidence).min()
+            dishes.stream().mapToDouble(RecognitionParser.Dish::confidence).min()
                 .ifPresent(c -> meal.append("aiConfidence", c));
-            meal.append("kcalMin", (int) Math.round(kcal * (1 - NutritionRules.RANGE)))
-                .append("kcalMax", (int) Math.round(kcal * (1 + NutritionRules.RANGE)));
+            meal.append("kcalMin", (int) Math.round(kcalMin)).append("kcalMax", (int) Math.round(kcalMax));
         }
         mongo.insert(meal, "meal_logs");
-        // Món ảnh chưa có trong kho: số người dùng đã xem/sửa trước khi lưu, gom vào kho chờ duyệt.
-        // Không gom tên gõ tay (method manual/search): dễ là chữ riêng tư hoặc không phải tên món.
-        for (Document item : "photo".equals(r.method()) ? items : List.<Document>of()) {
-            if (item.get("foodId") == null) {
-                candidates.recordSaved(userId, item.getString("name"),
-                    item.get("grams") instanceof Number g ? g.doubleValue() : null,
-                    ((Number) item.get("kcal")).doubleValue(), ((Number) item.get("proteinG")).doubleValue(),
-                    ((Number) item.get("carbsG")).doubleValue(), ((Number) item.get("fatG")).doubleValue(),
-                    "photo".equals(r.method()));
+        // Chỉ món AI ước tính (tên khớp món AI nhận ra trong ảnh) vào kho chờ: không gom tên tự gõ của app
+        for (Document item : items) {
+            if (Boolean.TRUE.equals(item.get("aiEstimated"))) {
+                candidates.recordSaved(userId, item.getString("name"), ((Number) item.get("grams")).doubleValue());
             }
         }
         return today(user);
@@ -141,7 +144,7 @@ public class NutritionService {
      * Món có foodId: tính lại từ kho. Món AI ước tính trong ảnh: tính lại từ số /100 g đã lưu theo số gam.
      * Món nhập tay: dùng số app gửi, đã giới hạn bằng validation.
      */
-    private Document item(MealDtos.Item it, boolean fromPhoto, java.util.Map<String, RecognitionParser.Estimate> estimates) {
+    private Document item(MealDtos.Item it, boolean fromPhoto, Map<String, RecognitionParser.Estimate> estimates) {
         Document d = new Document("name", it.name().trim()).append("aiSuggested", fromPhoto);
         if (it.foodId() != null) {
             Food food = foods.byId(it.foodId())

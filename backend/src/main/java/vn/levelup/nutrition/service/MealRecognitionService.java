@@ -9,7 +9,6 @@ import java.util.Date;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -47,7 +46,8 @@ public class MealRecognitionService {
     private static final Logger log = LoggerFactory.getLogger(MealRecognitionService.class);
 
     public static final int MAX_IMAGE_BYTES = 2 * 1024 * 1024;
-    static final int MAX_TOKENS = 1024;
+    /** Mỗi món thêm per100g (~30 token): mâm 10 món cần hơn 1024. */
+    static final int MAX_TOKENS = 2048;
 
     static final String SYSTEM = """
         Bạn là chuyên gia dinh dưỡng, nhận diện món ăn Việt Nam từ ảnh.
@@ -156,11 +156,13 @@ public class MealRecognitionService {
         mongo.insert(rec, "food_recognitions");
         RecognitionDtos.RecognitionResponse result = response(id, false, dishes);
         // Món chưa có trong kho: gom vào kho chờ để Admin duyệt (chỉ lần gọi AI thật, không tính ảnh cache)
+        List<RecognitionParser.Dish> unmatched = new ArrayList<>();
         for (int i = 0; i < dishes.size(); i++) {
             if (!result.items().get(i).matched()) {
-                candidates.recordRecognized(userId, dishes.get(i));
+                unmatched.add(dishes.get(i));
             }
         }
+        candidates.recordRecognized(userId, unmatched);
         return result;
     }
 
@@ -191,22 +193,15 @@ public class MealRecognitionService {
         List<Food> catalog = foods.all();
         List<RecognitionDtos.Item> items = new ArrayList<>();
         for (RecognitionParser.Dish d : dishes) {
-            Optional<FoodMatcher.Scored> match = FoodMatcher.bestMatch(List.of(d.nameVi(), d.name()), catalog);
-            if (match.isPresent()) {
-                Food f = match.get().food();
-                NutritionRules.Portion p = NutritionRules.portion(f, d.portionGrams());
-                items.add(new RecognitionDtos.Item(d.name(), f.id(), f.nameVi(), d.portionGrams(), p.kcal(),
-                    p.kcalMin(), p.kcalMax(), p.proteinG(), p.carbsG(), p.fatG(), d.confidence(), true,
-                    d.ingredients(), false));
-            } else if (d.per100g() != null) {
-                NutritionRules.Portion p = NutritionRules.estimatePortion(d.per100g(), d.portionGrams());
-                items.add(new RecognitionDtos.Item(d.name(), null, d.nameVi(), d.portionGrams(), p.kcal(),
-                    p.kcalMin(), p.kcalMax(), p.proteinG(), p.carbsG(), p.fatG(), d.confidence(), false,
-                    d.ingredients(), true));
-            } else {
-                items.add(new RecognitionDtos.Item(d.name(), null, d.nameVi(), d.portionGrams(), null, null, null,
-                    null, null, null, d.confidence(), false, d.ingredients(), false));
-            }
+            // Món trong kho dùng số của kho; không có thì dùng số AI ước tính (nếu hợp lệ); không có nữa thì để trống
+            Food f = FoodMatcher.bestMatch(List.of(d.nameVi(), d.name()), catalog)
+                .map(FoodMatcher.Scored::food).orElse(null);
+            NutritionRules.Portion p = f != null ? NutritionRules.portion(f, d.portionGrams())
+                : d.per100g() != null ? NutritionRules.estimatePortion(d.per100g(), d.portionGrams()) : null;
+            items.add(new RecognitionDtos.Item(d.name(), f == null ? null : f.id(), f == null ? d.nameVi() : f.nameVi(),
+                d.portionGrams(), p == null ? null : p.kcal(), p == null ? null : p.kcalMin(),
+                p == null ? null : p.kcalMax(), p == null ? null : p.proteinG(), p == null ? null : p.carbsG(),
+                p == null ? null : p.fatG(), d.confidence(), f != null, d.ingredients(), f == null && p != null));
         }
         return new RecognitionDtos.RecognitionResponse(id.toHexString(), cached, items);
     }
@@ -215,10 +210,8 @@ public class MealRecognitionService {
         Document doc = new Document("name", d.name()).append("nameVi", d.nameVi())
             .append("ingredients", d.ingredients()).append("portionGrams", d.portionGrams())
             .append("confidence", d.confidence());
-        RecognitionParser.Estimate e = d.per100g();
-        if (e != null) {
-            doc.append("per100g", new Document("kcal", e.kcal()).append("proteinG", e.proteinG())
-                .append("carbsG", e.carbsG()).append("fatG", e.fatG()));
+        if (d.per100g() != null) {
+            doc.append("per100g", estimateDocument(d.per100g()));
         }
         return doc;
     }
@@ -231,17 +224,27 @@ public class MealRecognitionService {
         return raw.getList("dishes", Document.class, List.of()).stream()
             .map(d -> new RecognitionParser.Dish(d.getString("name"), d.getString("nameVi"),
                 d.getList("ingredients", String.class, List.of()), ((Number) d.get("portionGrams")).doubleValue(),
-                ((Number) d.get("confidence")).doubleValue(), estimate(d.get("per100g", Document.class))))
+                ((Number) d.get("confidence")).doubleValue(), estimateFrom(d.get("per100g", Document.class))))
             .toList();
     }
 
-    private static RecognitionParser.Estimate estimate(Document per100g) {
-        if (per100g == null) {
+    /** Cách lưu duy nhất của số /100 g (food_recognitions.per100g, food_candidates.aiSamples). */
+    static Document estimateDocument(RecognitionParser.Estimate e) {
+        return new Document("kcal", e.kcal()).append("proteinG", e.proteinG()).append("carbsG", e.carbsG())
+            .append("fatG", e.fatG());
+    }
+
+    /** Đọc lại số /100 g đã lưu; thiếu trường hoặc sai thì null (kiểm tra lại bằng Estimate.of). */
+    static RecognitionParser.Estimate estimateFrom(Document d) {
+        if (d == null) {
             return null;
         }
-        return new RecognitionParser.Estimate(((Number) per100g.get("kcal")).doubleValue(),
-            ((Number) per100g.get("proteinG")).doubleValue(), ((Number) per100g.get("carbsG")).doubleValue(),
-            ((Number) per100g.get("fatG")).doubleValue());
+        return RecognitionParser.Estimate.of(number(d, "kcal"), number(d, "proteinG"), number(d, "carbsG"),
+            number(d, "fatG"));
+    }
+
+    private static double number(Document d, String key) {
+        return d.get(key) instanceof Number n ? n.doubleValue() : Double.NaN;
     }
 
     public static String sha256Hex(byte[] data) {

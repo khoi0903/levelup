@@ -454,12 +454,12 @@ dbx.food_recognitions.createIndex({ userId: 1, imageSha256: 1 });          // ca
 dbx.food_recognitions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 180 });
 
 // Món chưa có trong kho foods mà AI nhận ra trong ảnh, chờ Admin duyệt.
-// key = tên bỏ dấu chữ thường; aiSamples/savedSamples chỉ giữ 20/50 lần gần nhất (không chứa userId).
-// "approving": đang duyệt (giành món trong một lệnh để không thêm trùng vào foods).
+// key = tên bỏ dấu chữ thường; aiSamples (số AI /100 g) và savedSamples (số gam người dùng lưu) chỉ giữ
+// 20/50 lần gần nhất, không chứa userId. Món đã duyệt/bỏ thì không ghi thêm.
 coll("food_candidates", {
   bsonType: "object", required: ["key", "nameVi", "status"],
   properties: { key: { bsonType: "string" }, nameVi: { bsonType: "string" },
-                status: { enum: ["pending", "approving", "approved", "rejected"] },
+                status: { enum: ["pending", "approved", "rejected"] },
                 userCount: { bsonType: "number" },
                 sightings: { bsonType: "number" }, saves: { bsonType: "number" },
                 aiSamples: { bsonType: "array" }, savedSamples: { bsonType: "array" },
@@ -472,8 +472,7 @@ coll("food_candidate_users", {
   bsonType: "object", required: ["key", "userId"],
   properties: { key: { bsonType: "string" }, userId: { bsonType: "objectId" }, at: { bsonType: "date" } }
 });
-dbx.food_candidate_users.createIndex({ key: 1, userId: 1 }, { unique: true });
-dbx.food_candidate_users.createIndex({ userId: 1 });
+dbx.food_candidate_users.createIndex({ userId: 1, key: 1 }, { unique: true });
 
 // ---------------------------------------------------------------------
 // AI coach và thông báo

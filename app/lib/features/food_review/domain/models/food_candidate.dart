@@ -1,3 +1,5 @@
+import '../../../nutrition/domain/models/nutrition_models.dart';
+
 /// Món chưa có trong kho, chờ Admin duyệt (GET /admin/food-candidates).
 class FoodCandidate {
   const FoodCandidate({
@@ -12,30 +14,28 @@ class FoodCandidate {
   });
   final String id, nameVi;
   final int userCount, sightings, saves;
+
+  /// Đủ số người dùng khác nhau để nên duyệt (ngưỡng do server quyết định).
   final bool readyForReview;
 
-  /// Số gợi ý cho 100 g: kcal, proteinG, carbsG, fatG.
-  final Map<String, double>? suggested;
+  /// Số gợi ý cho 100 g (trung vị các lần AI ước tính).
+  final Macros? suggested;
+
+  /// Khẩu phần người dùng hay lưu.
   final double? typicalGrams;
 
-  factory FoodCandidate.fromJson(Map<String, dynamic> j) {
-    final s = j['suggested'] as Map<String, dynamic>?;
-    return FoodCandidate(
-      id: j['id'] as String,
-      nameVi: j['nameVi'] as String? ?? '',
-      userCount: (j['userCount'] as num?)?.toInt() ?? 0,
-      sightings: (j['sightings'] as num?)?.toInt() ?? 0,
-      saves: (j['saves'] as num?)?.toInt() ?? 0,
-      readyForReview: j['readyForReview'] == true,
-      suggested: s == null
-          ? null
-          : {
-              for (final k in ['kcal', 'proteinG', 'carbsG', 'fatG'])
-                k: (s[k] as num?)?.toDouble() ?? 0,
-            },
-      typicalGrams: (j['typicalGrams'] as num?)?.toDouble(),
-    );
-  }
+  factory FoodCandidate.fromJson(Map<String, dynamic> j) => FoodCandidate(
+    id: j['id'] as String,
+    nameVi: j['nameVi'] as String? ?? '',
+    userCount: (j['userCount'] as num?)?.toInt() ?? 0,
+    sightings: (j['sightings'] as num?)?.toInt() ?? 0,
+    saves: (j['saves'] as num?)?.toInt() ?? 0,
+    readyForReview: j['readyForReview'] == true,
+    suggested: j['suggested'] == null
+        ? null
+        : Macros.fromJson(j['suggested'] as Map<String, dynamic>),
+    typicalGrams: (j['typicalGrams'] as num?)?.toDouble(),
+  );
 }
 
 /// Danh mục món, khớp mongo/seed/foods.json và validator backend.
@@ -52,6 +52,15 @@ const foodCategories = {
   'trang_mieng': 'Tráng miệng',
 };
 
+/// Giới hạn khớp MealDtos / FoodCandidateDtos.ApproveRequest ở backend.
+const maxServingGrams = 3000.0;
+const maxKcal = 3000.0;
+const maxProteinG = 300.0;
+const maxCarbsG = 500.0;
+const maxFatG = 300.0;
+const maxServingDescLength = 60;
+const maxFoodNameLength = 100;
+
 /// Số liệu cho một khẩu phần servingGrams (POST /admin/food-candidates/{id}/approve).
 class ApproveFood {
   const ApproveFood({
@@ -59,21 +68,16 @@ class ApproveFood {
     required this.category,
     required this.servingDesc,
     required this.servingGrams,
-    required this.kcal,
-    required this.proteinG,
-    required this.carbsG,
-    required this.fatG,
+    required this.macros,
   });
   final String nameVi, category, servingDesc;
-  final double servingGrams, kcal, proteinG, carbsG, fatG;
+  final double servingGrams;
+  final Macros macros;
   Map<String, dynamic> toJson() => {
     'nameVi': nameVi.trim(),
     'category': category,
     'servingDesc': servingDesc.trim(),
     'servingGrams': servingGrams,
-    'kcal': kcal,
-    'proteinG': proteinG,
-    'carbsG': carbsG,
-    'fatG': fatG,
+    ...macros.toJson(),
   };
 }

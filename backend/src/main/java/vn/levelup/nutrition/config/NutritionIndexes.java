@@ -6,20 +6,21 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
 
-/** Tạo sẵn food_candidates (cả trên database đã chạy từ trước, chưa chạy lại init.js). */
+/**
+ * Index của food_candidates, food_candidate_users (cả trên database đã chạy từ trước, chưa chạy lại init.js).
+ * Tạo index cũng tạo collection, ngoài transaction.
+ */
 @Configuration
 public class NutritionIndexes {
     private final MongoTemplate mongo;
     public NutritionIndexes(MongoTemplate mongo) { this.mongo = mongo; }
     @PostConstruct
     void initialize() {
-        if (!mongo.collectionExists("food_candidates")) mongo.createCollection("food_candidates");
         mongo.indexOps("food_candidates").ensureIndex(new Index().on("key", Sort.Direction.ASC).unique());
         mongo.indexOps("food_candidates").ensureIndex(new Index().on("status", Sort.Direction.ASC)
             .on("userCount", Sort.Direction.DESC).on("lastSeenAt", Sort.Direction.DESC));
-        if (!mongo.collectionExists("food_candidate_users")) mongo.createCollection("food_candidate_users");
-        mongo.indexOps("food_candidate_users").ensureIndex(new Index().on("key", Sort.Direction.ASC)
-            .on("userId", Sort.Direction.ASC).unique());
-        mongo.indexOps("food_candidate_users").ensureIndex(new Index().on("userId", Sort.Direction.ASC));
+        // userId đứng trước: một index phục vụ cả đếm (key, userId) lẫn xoá tài khoản theo userId
+        mongo.indexOps("food_candidate_users").ensureIndex(new Index().on("userId", Sort.Direction.ASC)
+            .on("key", Sort.Direction.ASC).unique());
     }
 }

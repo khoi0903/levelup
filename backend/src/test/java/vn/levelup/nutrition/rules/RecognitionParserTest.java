@@ -66,7 +66,7 @@ class RecognitionParserTest {
     void soUocTinhVoLyThiBoQuaNhungVanGiuMon() {
         for (String per100g : new String[] {
             "null", "\"75\"", "{\"kcal\":75}", "{\"kcal\":950,\"proteinG\":0,\"carbsG\":0,\"fatG\":100}",
-            "{\"kcal\":0,\"proteinG\":0,\"carbsG\":0,\"fatG\":0}",
+            "{\"kcal\":-1,\"proteinG\":0,\"carbsG\":0,\"fatG\":0}",
             "{\"kcal\":75,\"proteinG\":-1,\"carbsG\":12,\"fatG\":2.5}",
             "{\"kcal\":75,\"proteinG\":60,\"carbsG\":60,\"fatG\":0}",
             "{\"kcal\":300,\"proteinG\":1,\"carbsG\":12,\"fatG\":2.5}"}) {
@@ -77,5 +77,14 @@ class RecognitionParserTest {
         }
         assertNull(RecognitionParser.parse(
             "{\"dishes\":[{\"nameVi\":\"Món lạ\",\"portionGrams\":300,\"confidence\":0.5}]}").get(0).per100g());
+    }
+
+    @Test
+    void nuocLocTraKhongDuong0KcalVanCoUocTinh() {
+        RecognitionParser.Dish d = RecognitionParser.parse("""
+            {"dishes":[{"nameVi":"Trà đá","portionGrams":300,"confidence":0.9,
+              "per100g":{"kcal":0.4,"proteinG":0,"carbsG":0.1,"fatG":0}}]}""").get(0);
+        assertEquals(0, d.per100g().kcal());
+        assertEquals(0, NutritionRules.estimatePortion(d.per100g(), 300).kcal());
     }
 }

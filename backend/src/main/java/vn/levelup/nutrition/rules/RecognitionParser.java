@@ -29,11 +29,11 @@ public final class RecognitionParser {
         static final double MAX_KCAL = 900;
 
         /**
-         * null khi không hợp lý: kcal ngoài 1–900, đạm + tinh bột + béo quá 100 g,
-         * hoặc kcal lệch hơn 25% (tối thiểu 20 kcal) so với 4·đạm + 4·tinh bột + 9·béo.
+         * null khi không hợp lý: kcal ngoài 0–900 (0 cho nước lọc, trà không đường), đạm + tinh bột + béo quá
+         * 100 g, hoặc kcal lệch hơn 25% (tối thiểu 20 kcal) so với 4·đạm + 4·tinh bột + 9·béo. NaN bị loại.
          */
         public static Estimate of(double kcal, double proteinG, double carbsG, double fatG) {
-            if (!(kcal >= 1 && kcal <= MAX_KCAL) || !(proteinG >= 0 && carbsG >= 0 && fatG >= 0)
+            if (!(kcal >= 0 && kcal <= MAX_KCAL) || !(proteinG >= 0 && carbsG >= 0 && fatG >= 0)
                     || proteinG + carbsG + fatG > 100) {
                 return null;
             }
@@ -41,11 +41,8 @@ public final class RecognitionParser {
             if (Math.abs(fromMacros - kcal) > Math.max(20, kcal * 0.25)) {
                 return null;
             }
-            return new Estimate(Math.round(kcal), round1(proteinG), round1(carbsG), round1(fatG));
-        }
-
-        private static double round1(double v) {
-            return Math.round(v * 10) / 10.0;
+            return new Estimate(Math.round(kcal), NutritionRules.round1(proteinG), NutritionRules.round1(carbsG),
+                NutritionRules.round1(fatG));
         }
     }
 
@@ -115,14 +112,14 @@ public final class RecognitionParser {
         if (per100g == null || !per100g.isObject()) {
             return null;
         }
-        for (String f : new String[] {"kcal", "proteinG", "carbsG", "fatG"}) {
-            JsonNode v = per100g.get(f);
-            if (v == null || !v.isNumber()) {
-                return null;
-            }
-        }
-        return Estimate.of(per100g.get("kcal").doubleValue(), per100g.get("proteinG").doubleValue(),
-            per100g.get("carbsG").doubleValue(), per100g.get("fatG").doubleValue());
+        // Thiếu trường hoặc không phải số → NaN, Estimate.of loại
+        return Estimate.of(number(per100g, "kcal"), number(per100g, "proteinG"), number(per100g, "carbsG"),
+            number(per100g, "fatG"));
+    }
+
+    private static double number(JsonNode node, String field) {
+        JsonNode v = node.get(field);
+        return v != null && v.isNumber() ? v.doubleValue() : Double.NaN;
     }
 
     private static String text(JsonNode node, String field) {

@@ -1,3 +1,4 @@
+import 'package:fitness_app/core/api/api_exceptions.dart';
 import 'package:fitness_app/features/food_review/domain/models/food_candidate.dart';
 import 'package:fitness_app/features/food_review/domain/repositories/food_review_repository.dart';
 import 'package:fitness_app/features/food_review/presentation/controllers/food_review_controller.dart';
@@ -24,13 +25,17 @@ class FakeFoodReviewRepository implements FoodReviewRepository {
   ];
   final approved = <String, ApproveFood>{};
   final rejected = <String>[];
+  Object? approveError;
 
   @override
   Future<List<FoodCandidate>> pending() async => items
       .where((e) => !approved.containsKey(e.id) && !rejected.contains(e.id))
       .toList();
   @override
-  Future<void> approve(String id, ApproveFood food) async => approved[id] = food;
+  Future<void> approve(String id, ApproveFood food) async {
+    if (approveError != null) throw approveError!;
+    approved[id] = food;
+  }
   @override
   Future<void> reject(String id) async => rejected.add(id);
 }
@@ -65,7 +70,7 @@ void main() {
     await mountReview(tester, repo);
     expect(find.text('Trà dâu kem cheese'), findsOneWidget);
     expect(find.textContaining('6 người'), findsOneWidget);
-    expect(find.textContaining('nên duyệt'), findsOneWidget);
+    expect(find.textContaining('lưu 4 lần · nên duyệt'), findsOneWidget);
     await tester.tap(find.text('Duyệt'));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Thêm vào kho'));
@@ -73,11 +78,12 @@ void main() {
     await tester.pumpAndSettle();
     final food = repo.approved['c1']!;
     expect(food.servingGrams, 500);
-    expect(food.kcal, 400);
-    expect(food.proteinG, 6);
-    expect(food.carbsG, 60);
-    expect(food.fatG, 12);
+    expect(food.macros.kcal, 400);
+    expect(food.macros.proteinG, 6);
+    expect(food.macros.carbsG, 60);
+    expect(food.macros.fatG, 12);
     expect(food.category, 'do_uong');
+    expect(food.toJson()['kcal'], 400);
     expect(find.text('Chưa có món nào chờ duyệt.'), findsOneWidget);
   });
 
@@ -95,5 +101,34 @@ void main() {
     await tester.pumpAndSettle();
     expect(repo.rejected, ['c1']);
     expect(find.text('Chưa có món nào chờ duyệt.'), findsOneWidget);
+  });
+
+  testWidgets('0 g is rejected and FOOD_EXISTS shows a clear message', (
+    tester,
+  ) async {
+    final repo = FakeFoodReviewRepository()
+      ..approveError = const ApiException(
+        code: 'FOOD_EXISTS',
+        statusCode: 409,
+      );
+    await mountReview(tester, repo);
+    await tester.tap(find.text('Duyệt'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Khẩu phần (gram)'),
+      '0',
+    );
+    await tester.ensureVisible(find.text('Thêm vào kho'));
+    await tester.tap(find.text('Thêm vào kho'));
+    await tester.pumpAndSettle();
+    expect(find.text('Từ 1 đến 3000'), findsOneWidget);
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Khẩu phần (gram)'),
+      '500',
+    );
+    await tester.ensureVisible(find.text('Thêm vào kho'));
+    await tester.tap(find.text('Thêm vào kho'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Kho đã có món trùng tên'), findsOneWidget);
   });
 }

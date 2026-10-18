@@ -37,11 +37,8 @@ public final class NutritionRules {
     public record Portion(int kcal, int kcalMin, int kcalMax, double proteinG, double carbsG, double fatG) {}
 
     public static Portion portion(Food food, double portionGrams) {
-        double factor = food.servingGrams() > 0 ? portionGrams / food.servingGrams() : 1;
-        double kcal = food.kcal() * factor;
-        return new Portion((int) Math.round(kcal), (int) Math.round(kcal * (1 - RANGE)),
-            (int) Math.round(kcal * (1 + RANGE)), round1(food.proteinG() * factor),
-            round1(food.carbsG() * factor), round1(food.fatG() * factor));
+        return scaled(food.kcal(), food.proteinG(), food.carbsG(), food.fatG(),
+            food.servingGrams() > 0 ? portionGrams / food.servingGrams() : 1, RANGE);
     }
 
     /** Khoảng kcal của món AI tự ước tính (chưa có trong kho): rộng hơn, ±25%. */
@@ -49,11 +46,15 @@ public final class NutritionRules {
 
     /** Số liệu một khẩu phần tính từ số AI ước tính cho 100 g. */
     public static Portion estimatePortion(RecognitionParser.Estimate per100g, double portionGrams) {
-        double factor = portionGrams / 100;
-        double kcal = per100g.kcal() * factor;
-        return new Portion((int) Math.round(kcal), (int) Math.round(kcal * (1 - ESTIMATE_RANGE)),
-            (int) Math.round(kcal * (1 + ESTIMATE_RANGE)), round1(per100g.proteinG() * factor),
-            round1(per100g.carbsG() * factor), round1(per100g.fatG() * factor));
+        return scaled(per100g.kcal(), per100g.proteinG(), per100g.carbsG(), per100g.fatG(), portionGrams / 100,
+            ESTIMATE_RANGE);
+    }
+
+    private static Portion scaled(double kcal, double proteinG, double carbsG, double fatG, double factor,
+                                  double range) {
+        double k = kcal * factor;
+        return new Portion((int) Math.round(k), (int) Math.round(k * (1 - range)), (int) Math.round(k * (1 + range)),
+            round1(proteinG * factor), round1(carbsG * factor), round1(fatG * factor));
     }
 
     public static double round1(double v) {

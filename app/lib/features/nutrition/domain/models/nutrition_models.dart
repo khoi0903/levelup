@@ -87,7 +87,9 @@ class MealItem {
   final double? kcalMin, kcalMax;
   final bool estimated;
   bool get matched => foodId != null && baseMacros != null;
-  bool get hasNutrition => matched || (estimated && baseMacros != null);
+
+  /// Có số liệu (món trong kho hoặc AI ước tính) nên lưu được; món chưa khớp và không có ước tính thì không.
+  bool get hasNutrition => baseMacros != null;
   bool get valid =>
       hasNutrition && grams.isFinite && grams >= 1 && grams <= 3000;
   Macros get macros => (baseMacros ?? const Macros()).scale(
@@ -112,7 +114,7 @@ class MealItem {
   );
   factory MealItem.fromRecognition(Map<String, dynamic> j) {
     final matched = j['matched'] == true;
-    final estimated = !matched && j['estimated'] == true && j['kcal'] != null;
+    final estimated = !matched && j['estimated'] == true;
     return MealItem(
       name: (j['nameVi'] ?? j['name']) as String,
       foodId: matched ? j['foodId'] as String? : null,

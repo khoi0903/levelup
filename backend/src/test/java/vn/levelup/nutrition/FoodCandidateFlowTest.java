@@ -100,16 +100,24 @@ class FoodCandidateFlowTest extends FlowTestBase {
         assertEquals(1, c.getList("aiSamples", Document.class).size());
         assertNull(mongo.findOne(Query.query(Criteria.where("key").is("pho bo")), Document.class, "food_candidates"));
 
-        // 3. Người dùng chỉ sửa số gam (500 → 400); calo app gửi bị bỏ qua, server tự tính 75 kcal/100 g × 400 g
+        // 3. Người dùng chỉ sửa số gam (500 → 400); calo app gửi bị bỏ qua, server tự tính 75 kcal/100 g × 400 g.
+        //    Món tên tự gõ (không khớp món AI nhận ra) vẫn lưu nhưng không vào kho chờ.
         call(post("/meals").header("Authorization", token).contentType(MediaType.APPLICATION_JSON).content("""
             {"meal":"snack","method":"photo","recognitionId":"%s",
-             "items":[{"name":"%s","portionGrams":400,"kcal":999,"proteinG":6,"carbsG":60,"fatG":12}]}"""
-            .formatted(r.read("$.recognitionId"), name)), 200);
-        Document item = mongo.findOne(Query.query(Criteria.where("userId").is(userId())), Document.class,
-            "meal_logs").getList("items", Document.class).get(0);
+             "items":[{"name":"%s","portionGrams":400,"kcal":999,"proteinG":6,"carbsG":60,"fatG":12},
+                      {"name":"%s ghi chú","kcal":100}]}"""
+            .formatted(r.read("$.recognitionId"), name, name)), 200);
+        Document meal = mongo.findOne(Query.query(Criteria.where("userId").is(userId())), Document.class,
+            "meal_logs");
+        Document item = meal.getList("items", Document.class).get(0);
         assertEquals(300, item.getInteger("kcal"));
         assertEquals(48.0, item.getDouble("carbsG"));
         assertTrue(item.getBoolean("aiEstimated"));
+        // Khoảng của bữa: món ước tính ±25%, món còn lại ±15%
+        assertEquals(310, meal.getInteger("kcalMin"));       // 225 + 85
+        assertEquals(490, meal.getInteger("kcalMax"));       // 375 + 115
+        assertNull(mongo.findOne(Query.query(Criteria.where("key").is(key + " ghi chu")), Document.class,
+            "food_candidates"));
         assertEquals(1, candidate().getInteger("saves"));
         assertEquals(1, candidate().getInteger("userCount"));   // cùng người: không đếm lại
 
@@ -122,7 +130,7 @@ class FoodCandidateFlowTest extends FlowTestBase {
         // 4. Người thường không thấy API admin
         call(get("/admin/food-candidates").header("Authorization", token), 404);
 
-        // 5. Admin thấy gợi ý từ số đã lưu (300 kcal / 400 g = 75 kcal/100 g) và khẩu phần hay gặp 400 g
+        // 5. Admin thấy gợi ý /100 g (trung vị AI: 75 kcal) và khẩu phần người dùng hay lưu (400 g)
         DocumentContext list = call(get("/admin/food-candidates").header("Authorization", ADMIN), 200);
         List<Double> kcal = list.read("$[?(@.nameVi == '" + name + "')].suggested.kcal");
         assertEquals(List.of(75.0), kcal);
@@ -148,6 +156,7 @@ class FoodCandidateFlowTest extends FlowTestBase {
         DocumentContext again = recognize();
         assertTrue(again.<Boolean>read("$.items[1].matched"));
         assertEquals(food.getObjectId("_id").toHexString(), again.read("$.items[1].foodId"));
+        assertEquals(0, mongo.count(Query.query(Criteria.where("key").is(key)), "food_candidate_users"));
     }
 
     @Test
@@ -164,8 +173,27 @@ class FoodCandidateFlowTest extends FlowTestBase {
         call(post("/admin/food-candidates/" + id + "/approve").header("Authorization", ADMIN)
             .contentType(MediaType.APPLICATION_JSON).content("{\"nameVi\":\"x\",\"category\":\"pizza\"}"), 400);
         call(get("/admin/food-candidates?status=abc").header("Authorization", ADMIN), 400);
+
+        // Tên trùng alias của món đã có trong kho: 409, món vẫn chờ duyệt (transaction hoàn lại)
+        Document withAlias = mongo.findOne(Query.query(Criteria.where("aliases.0").exists(true)), Document.class,
+            "foods");
+        String alias = withAlias.getList("aliases", String.class).get(0);
+        assertEquals("FOOD_EXISTS", call(post("/admin/food-candidates/" + id + "/approve")
+            .header("Authorization", ADMIN).contentType(MediaType.APPLICATION_JSON).content("""
+                {"nameVi":"%s","category":"com","servingDesc":"1 phần","servingGrams":300,
+                 "kcal":400,"proteinG":10,"carbsG":60,"fatG":12}""".formatted(alias)), 409).read("$.code"));
+        assertEquals("pending", candidate().getString("status"));
+        assertNull(candidate().get("foodId"));
+
         call(post("/admin/food-candidates/" + id + "/reject").header("Authorization", ADMIN), 204);
         assertEquals("rejected", candidate().getString("status"));
+        assertEquals(0, mongo.count(Query.query(Criteria.where("key").is(key)), "food_candidate_users"));
+
+        // Món đã bỏ: lần nhận diện sau không ghi thêm
+        recognize();
+        assertEquals("rejected", candidate().getString("status"));
+        assertEquals(1, candidate().getInteger("sightings"));
+        assertEquals(0, mongo.count(Query.query(Criteria.where("key").is(key)), "food_candidate_users"));
         call(post("/admin/food-candidates/000000000000000000000000/reject").header("Authorization", ADMIN), 404);
     }
 }
