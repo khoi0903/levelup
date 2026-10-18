@@ -17,5 +17,9 @@ public class NutritionIndexes {
         mongo.indexOps("food_candidates").ensureIndex(new Index().on("key", Sort.Direction.ASC).unique());
         mongo.indexOps("food_candidates").ensureIndex(new Index().on("status", Sort.Direction.ASC)
             .on("userCount", Sort.Direction.DESC).on("lastSeenAt", Sort.Direction.DESC));
+        if (!mongo.collectionExists("food_candidate_users")) mongo.createCollection("food_candidate_users");
+        mongo.indexOps("food_candidate_users").ensureIndex(new Index().on("key", Sort.Direction.ASC)
+            .on("userId", Sort.Direction.ASC).unique());
+        mongo.indexOps("food_candidate_users").ensureIndex(new Index().on("userId", Sort.Direction.ASC));
     }
 }

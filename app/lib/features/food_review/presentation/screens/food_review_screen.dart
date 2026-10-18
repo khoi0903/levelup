@@ -115,6 +115,24 @@ class _CandidateCard extends ConsumerWidget {
 
   Future<void> _reject(BuildContext context, WidgetRef ref) async {
     final messenger = ScaffoldMessenger.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Bỏ "${candidate.nameVi}"?'),
+        content: const Text('Món sẽ không hiện trong danh sách chờ duyệt nữa.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Huỷ'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Bỏ món'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
     try {
       await ref.read(foodReviewRepositoryProvider).reject(candidate.id);
       ref.invalidate(pendingFoodsProvider);

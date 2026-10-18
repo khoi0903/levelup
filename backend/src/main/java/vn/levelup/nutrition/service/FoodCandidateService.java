@@ -23,7 +23,7 @@ import vn.levelup.nutrition.rules.RecognitionParser;
 import vn.levelup.nutrition.rules.VietText;
 
 /**
- * Kho chờ food_candidates: món chưa có trong kho foods mà AI nhận ra hoặc người dùng nhập tay.
+ * Kho chờ food_candidates: món chưa có trong kho foods mà AI nhận ra trong ảnh.
  * Gom theo tên đã chuẩn hóa để sau này có dữ liệu món ăn; AI không ghi vào foods, chỉ Admin duyệt mới thêm vào kho.
  * Lỗi ghi kho chờ không bao giờ làm hỏng việc nhận diện hay lưu bữa.
  */
@@ -32,6 +32,8 @@ public class FoodCandidateService {
 
     private static final Logger log = LoggerFactory.getLogger(FoodCandidateService.class);
     static final String COLLECTION = "food_candidates";
+    /** Một dòng cho mỗi (món, người dùng): đếm số người khác nhau mà không giữ mảng userId lớn trong món. */
+    static final String USERS = "food_candidate_users";
     static final int AI_SAMPLES = 20;
     static final int SAVED_SAMPLES = 50;
 
@@ -45,24 +47,24 @@ public class FoodCandidateService {
 
     /** AI nhận ra món không có trong kho. */
     public void recordRecognized(ObjectId userId, RecognitionParser.Dish dish) {
-        Update u = base(userId, dish.nameVi()).inc("sightings", 1);
+        Update u = base(dish.nameVi()).inc("sightings", 1);
         if (dish.per100g() != null) {
             RecognitionParser.Estimate e = dish.per100g();
             u.push("aiSamples").slice(-AI_SAMPLES).each(new Document("kcal", e.kcal()).append("proteinG", e.proteinG())
                 .append("carbsG", e.carbsG()).append("fatG", e.fatG()).append("at", now()));
         }
-        upsert(dish.nameVi(), u);
+        upsert(userId, dish.nameVi(), u);
     }
 
-    /** Người dùng lưu một món không có foodId (từ ảnh hoặc nhập tay): số liệu người thật đã xem/sửa. */
+    /** Người dùng lưu món ảnh không có foodId: số liệu người thật đã xem/sửa (không lưu userId trong mẫu). */
     public void recordSaved(ObjectId userId, String name, Double grams, double kcal, double proteinG, double carbsG,
                             double fatG, boolean fromPhoto) {
-        Document sample = new Document("userId", userId).append("kcal", kcal).append("proteinG", proteinG)
+        Document sample = new Document("kcal", kcal).append("proteinG", proteinG)
             .append("carbsG", carbsG).append("fatG", fatG).append("fromPhoto", fromPhoto).append("at", now());
         if (grams != null) {
             sample.append("grams", grams);
         }
-        upsert(name, base(userId, name).inc("saves", 1).push("savedSamples").slice(-SAVED_SAMPLES).each(sample));
+        upsert(userId, name, base(name).inc("saves", 1).push("savedSamples").slice(-SAVED_SAMPLES).each(sample));
     }
 
     public List<FoodCandidateDtos.CandidateView> list(String status, int limit) {
@@ -73,58 +75,74 @@ public class FoodCandidateService {
 
     /** Thêm món vào kho foods (source "ai", đã duyệt) và đánh dấu món chờ là approved. */
     public FoodCandidateDtos.CandidateView approve(String adminUid, String id, FoodCandidateDtos.ApproveRequest r) {
-        Document candidate = pending(id);
         String searchName = VietText.normalize(r.nameVi());
         if (searchName.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "INVALID_NAME");
         }
-        if (mongo.exists(Query.query(Criteria.where("searchName").is(searchName)), "foods")) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "FOOD_EXISTS");
-        }
+        // Giành món trong một lệnh: hai lần bấm duyệt cùng lúc chỉ một lần thêm vào kho
+        Document candidate = claim(id, "approving");
+        ObjectId candidateId = candidate.getObjectId("_id");
         String original = candidate.getString("nameVi");
         List<String> aliases = original != null && !VietText.normalize(original).equals(searchName)
             ? List.of(VietText.normalize(original)) : List.of();
         ObjectId foodId = new ObjectId();
-        mongo.insert(new Document("_id", foodId).append("nameVi", r.nameVi().trim()).append("searchName", searchName)
-            .append("aliases", aliases).append("category", r.category()).append("servingDesc", r.servingDesc().trim())
-            .append("servingGrams", r.servingGrams()).append("kcal", r.kcal()).append("proteinG", r.proteinG())
-            .append("carbsG", r.carbsG()).append("fatG", r.fatG()).append("source", "ai").append("verified", true)
-            .append("createdAt", now()), "foods");
-        mongo.updateFirst(Query.query(Criteria.where("_id").is(candidate.getObjectId("_id"))),
+        try {
+            if (mongo.exists(Query.query(Criteria.where("searchName").is(searchName)), "foods")) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "FOOD_EXISTS");
+            }
+            mongo.insert(new Document("_id", foodId).append("nameVi", r.nameVi().trim())
+                .append("searchName", searchName).append("aliases", aliases).append("category", r.category())
+                .append("servingDesc", r.servingDesc().trim()).append("servingGrams", r.servingGrams())
+                .append("kcal", r.kcal()).append("proteinG", r.proteinG()).append("carbsG", r.carbsG())
+                .append("fatG", r.fatG()).append("source", "ai").append("verified", true)
+                .append("createdAt", now()), "foods");
+        } catch (RuntimeException e) {
+            // Thêm vào kho lỗi: trả món về chờ duyệt để Admin thử lại
+            mongo.updateFirst(Query.query(Criteria.where("_id").is(candidateId)), Update.update("status", "pending"),
+                COLLECTION);
+            throw e;
+        }
+        mongo.updateFirst(Query.query(Criteria.where("_id").is(candidateId)),
             Update.update("status", "approved").set("foodId", foodId).set("reviewedAt", now())
                 .set("reviewedBy", adminUid), COLLECTION);
-        audit(adminUid, "food_approve", candidate.getObjectId("_id"), foodId);
-        return view(mongo.findById(candidate.getObjectId("_id"), Document.class, COLLECTION));
+        audit(adminUid, "food_approve", candidateId, foodId);
+        return view(mongo.findById(candidateId, Document.class, COLLECTION));
     }
 
     public void reject(String adminUid, String id) {
-        Document candidate = pending(id);
+        Document candidate = claim(id, "rejected");
         mongo.updateFirst(Query.query(Criteria.where("_id").is(candidate.getObjectId("_id"))),
-            Update.update("status", "rejected").set("reviewedAt", now()).set("reviewedBy", adminUid), COLLECTION);
+            Update.update("reviewedAt", now()).set("reviewedBy", adminUid), COLLECTION);
         audit(adminUid, "food_reject", candidate.getObjectId("_id"), null);
     }
 
-    private Document pending(String id) {
+    /** Đổi pending sang [status] trong một lệnh; món đã duyệt/bỏ hoặc đang được duyệt thì 409. */
+    private Document claim(String id, String status) {
         if (id == null || !ObjectId.isValid(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "CANDIDATE_NOT_FOUND");
         }
-        Document d = mongo.findById(new ObjectId(id), Document.class, COLLECTION);
-        if (d == null) {
+        Query byId = Query.query(Criteria.where("_id").is(new ObjectId(id)));
+        Document d = mongo.findAndModify(Query.query(Criteria.where("_id").is(new ObjectId(id)).and("status")
+            .is("pending")), Update.update("status", status), Document.class, COLLECTION);
+        if (d != null) {
+            return d;
+        }
+        if (!mongo.exists(byId, COLLECTION)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "CANDIDATE_NOT_FOUND");
         }
-        if (!"pending".equals(d.getString("status"))) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "CANDIDATE_REVIEWED");
-        }
-        return d;
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "CANDIDATE_REVIEWED");
     }
 
-    private Update base(ObjectId userId, String name) {
+    private Update base(String name) {
         return new Update().setOnInsert("nameVi", name.trim()).setOnInsert("status", "pending")
-            .setOnInsert("firstSeenAt", now()).set("lastSeenAt", now()).addToSet("userIds", userId);
+            .setOnInsert("userCount", 0).setOnInsert("firstSeenAt", now()).set("lastSeenAt", now());
     }
 
-    /** Upsert theo key; hai request cùng tạo một món thì lần thứ hai cập nhật bản đã có. */
-    private void upsert(String name, Update update) {
+    /**
+     * Upsert theo key; hai request cùng tạo một món thì lần thứ hai cập nhật bản đã có.
+     * Người dùng lần đầu gặp món này (chèn được dòng food_candidate_users) thì tăng userCount.
+     */
+    private void upsert(ObjectId userId, String name, Update update) {
         String key = VietText.normalize(name);
         if (key.isEmpty()) {
             return;
@@ -139,11 +157,11 @@ public class FoodCandidateService {
                     // request khác vừa tạo món này: thử lại sẽ cập nhật
                 }
             }
-            // userCount để sắp xếp: số người dùng khác nhau
-            Document d = mongo.findOne(q, Document.class, COLLECTION);
-            if (d != null) {
-                mongo.updateFirst(q, Update.update("userCount", d.getList("userIds", Object.class, List.of()).size()),
-                    COLLECTION);
+            try {
+                mongo.insert(new Document("key", key).append("userId", userId).append("at", now()), USERS);
+                mongo.updateFirst(q, new Update().inc("userCount", 1), COLLECTION);
+            } catch (DuplicateKeyException seen) {
+                // người dùng này đã được đếm cho món này
             }
         } catch (RuntimeException e) {
             log.warn("Không ghi được food_candidates cho '{}': {}", key, e.getMessage());
@@ -173,7 +191,7 @@ public class FoodCandidateService {
                 num(s, "fatG")))
             .toList();
         RecognitionParser.Estimate e = FoodCandidateRules.suggestPer100g(saved, ai);
-        int users = d.getList("userIds", Object.class, List.of()).size();
+        int users = (int) num(d, "userCount");
         Date last = d.getDate("lastSeenAt");
         return new FoodCandidateDtos.CandidateView(d.getObjectId("_id").toHexString(), d.getString("nameVi"),
             d.getString("status"), users, (int) num(d, "sightings"), (int) num(d, "saves"),

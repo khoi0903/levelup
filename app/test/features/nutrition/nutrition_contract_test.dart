@@ -171,7 +171,7 @@ void main() {
     expect(item.valid, isTrue);
     expect(item.withGrams(250).macros.kcal, 187.5);
     expect(item.toJson()['foodId'], isNull);
-    expect(item.toJson()['kcal'], 375);
+    expect(item.toJson().containsKey('kcal'), isFalse);
   });
   test('API paths, query, auth, body and Java response contracts', () async {
     final client = ApiClient(

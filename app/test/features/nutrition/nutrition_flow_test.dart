@@ -188,7 +188,8 @@ void main() {
     await tapVisible(tester, find.text('Lưu bữa ăn'));
     final saved = repo.savedRequest!.items.single.toJson();
     expect(saved['foodId'], isNull);
-    expect(saved['kcal'], 375);
+    expect(saved.containsKey('kcal'), isFalse);
+    expect(saved['portionGrams'], 500);
   });
   testWidgets('503 switches to manual and can save', (tester) async {
     final repo = FakeNutritionRepository()

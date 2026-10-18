@@ -33,7 +33,8 @@ public class AccountDeletionService {
     static final List<String> BY_USER_ID = List.of(
         "training_plans", "workout_logs", "daily_stats", "meal_logs", "food_recognitions", "coach_messages",
         "body_measurements", "personal_records", "progress_photos", "skip_reports", "weekly_reviews",
-        "weekly_streaks", "notifications", "billing_events", "admin_audit");
+        "weekly_streaks", "notifications", "billing_events", "admin_audit",
+        "food_candidate_users");
 
     /** Tên FirebaseApp do PushConfig tạo khi có FIREBASE_CREDENTIALS. */
     static final String FIREBASE_APP = "levelup-fcm";

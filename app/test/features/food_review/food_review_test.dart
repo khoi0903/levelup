@@ -86,6 +86,13 @@ void main() {
     await mountReview(tester, repo);
     await tester.tap(find.text('Bỏ'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Huỷ'));
+    await tester.pumpAndSettle();
+    expect(repo.rejected, isEmpty);
+    await tester.tap(find.text('Bỏ'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bỏ món'));
+    await tester.pumpAndSettle();
     expect(repo.rejected, ['c1']);
     expect(find.text('Chưa có món nào chờ duyệt.'), findsOneWidget);
   });

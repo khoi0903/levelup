@@ -123,8 +123,9 @@ public class NutritionService {
                 .append("kcalMax", (int) Math.round(kcal * (1 + NutritionRules.RANGE)));
         }
         mongo.insert(meal, "meal_logs");
-        // Món không có trong kho: số người dùng đã xem/sửa trước khi lưu, gom vào kho chờ duyệt
-        for (Document item : items) {
+        // Món ảnh chưa có trong kho: số người dùng đã xem/sửa trước khi lưu, gom vào kho chờ duyệt.
+        // Không gom tên gõ tay (method manual/search): dễ là chữ riêng tư hoặc không phải tên món.
+        for (Document item : "photo".equals(r.method()) ? items : List.<Document>of()) {
             if (item.get("foodId") == null) {
                 candidates.recordSaved(userId, item.getString("name"),
                     item.get("grams") instanceof Number g ? g.doubleValue() : null,

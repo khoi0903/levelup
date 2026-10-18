@@ -48,6 +48,7 @@ class FoodCandidateFlowTest extends FlowTestBase {
     @AfterEach
     void cleanUpFood() {
         mongo.remove(Query.query(Criteria.where("key").is(key)), "food_candidates");
+        mongo.remove(Query.query(Criteria.where("key").is(key)), "food_candidate_users");
         mongo.remove(Query.query(Criteria.where("searchName").is(key)), "foods");
         mongo.remove(Query.query(Criteria.where("uid").is("food-admin")), "admin_audit");
         Document u = user();
@@ -110,6 +111,13 @@ class FoodCandidateFlowTest extends FlowTestBase {
         assertEquals(48.0, item.getDouble("carbsG"));
         assertTrue(item.getBoolean("aiEstimated"));
         assertEquals(1, candidate().getInteger("saves"));
+        assertEquals(1, candidate().getInteger("userCount"));   // cùng người: không đếm lại
+
+        // Tên gõ tay (manual) không vào kho chờ
+        call(post("/meals").header("Authorization", token).contentType(MediaType.APPLICATION_JSON).content("""
+            {"meal":"snack","method":"manual","items":[{"name":"%s riêng","kcal":100}]}""".formatted(name)), 200);
+        assertNull(mongo.findOne(Query.query(Criteria.where("key").is(key + " rieng")), Document.class,
+            "food_candidates"));
 
         // 4. Người thường không thấy API admin
         call(get("/admin/food-candidates").header("Authorization", token), 404);

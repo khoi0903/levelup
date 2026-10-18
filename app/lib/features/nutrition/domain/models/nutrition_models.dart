@@ -128,7 +128,8 @@ class MealItem {
     'foodId': foodId,
     'name': name,
     'portionGrams': grams,
-    ...macros.toJson(),
+    // Món AI ước tính: server tự tính calo theo số gam, không gửi số liệu (người dùng chỉ sửa được gam)
+    if (!estimated) ...macros.toJson(),
   };
 }
 

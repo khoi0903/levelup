@@ -453,19 +453,27 @@ dbx.food_recognitions.createIndex({ imageSha256: 1 });                      // c
 dbx.food_recognitions.createIndex({ userId: 1, imageSha256: 1 });          // cache theo từng người dùng
 dbx.food_recognitions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 180 });
 
-// Món chưa có trong kho foods (AI nhận ra hoặc người dùng nhập tay), chờ Admin duyệt.
-// key = tên bỏ dấu chữ thường; aiSamples/savedSamples chỉ giữ 20/50 lần gần nhất.
+// Món chưa có trong kho foods mà AI nhận ra trong ảnh, chờ Admin duyệt.
+// key = tên bỏ dấu chữ thường; aiSamples/savedSamples chỉ giữ 20/50 lần gần nhất (không chứa userId).
+// "approving": đang duyệt (giành món trong một lệnh để không thêm trùng vào foods).
 coll("food_candidates", {
   bsonType: "object", required: ["key", "nameVi", "status"],
   properties: { key: { bsonType: "string" }, nameVi: { bsonType: "string" },
-                status: { enum: ["pending", "approved", "rejected"] },
-                userIds: { bsonType: "array" }, userCount: { bsonType: "number" },
+                status: { enum: ["pending", "approving", "approved", "rejected"] },
+                userCount: { bsonType: "number" },
                 sightings: { bsonType: "number" }, saves: { bsonType: "number" },
                 aiSamples: { bsonType: "array" }, savedSamples: { bsonType: "array" },
                 foodId: { bsonType: "objectId" }, firstSeenAt: { bsonType: "date" }, lastSeenAt: { bsonType: "date" } }
 });
 dbx.food_candidates.createIndex({ key: 1 }, { unique: true });
 dbx.food_candidates.createIndex({ status: 1, userCount: -1, lastSeenAt: -1 });
+// Mỗi người dùng đếm một lần cho mỗi món (userCount); xoá tài khoản thì xoá theo userId
+coll("food_candidate_users", {
+  bsonType: "object", required: ["key", "userId"],
+  properties: { key: { bsonType: "string" }, userId: { bsonType: "objectId" }, at: { bsonType: "date" } }
+});
+dbx.food_candidate_users.createIndex({ key: 1, userId: 1 }, { unique: true });
+dbx.food_candidate_users.createIndex({ userId: 1 });
 
 // ---------------------------------------------------------------------
 // AI coach và thông báo
