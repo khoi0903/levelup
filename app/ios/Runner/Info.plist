@@ -30,6 +30,10 @@
 	<string>LevelUp dùng ảnh bạn chọn để nhận diện món ăn và tính calo. Ảnh không được lưu trên máy chủ.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>LevelUp dùng camera để đếm số lần tập trên điện thoại. Video không được lưu hoặc gửi đi.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>LevelUp nghe vài giây sau khi coach hỏi để bạn điều khiển bằng giọng nói khi tập (chỉ khi bạn bật trong Cài đặt).</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>LevelUp nhận dạng các lệnh ngắn như "bỏ bài", "tạm dừng" khi bạn bật điều khiển bằng giọng nói.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
