@@ -280,7 +280,8 @@ coll("daily_stats", {
                energy: { enum: ["tired", "normal", "energized"] },
                sleep: { enum: ["lt6", "h6_7", "h7_8", "gt8"] }, at: { bsonType: "date" } } },
     waterMl: { bsonType: "number", minimum: 0 },
-    usage: { bsonType: "object", properties: { photoScans: { bsonType: "number" }, coachMessages: { bsonType: "number" } } },
+    usage: { bsonType: "object", properties: { photoScans: { bsonType: "number" }, coachMessages: { bsonType: "number" },
+                                               voiceLines: { bsonType: "number" } } },  // voiceLines: câu AI giọng coach (Pro)
     notificationsSent: { bsonType: "number", minimum: 0 },  // đếm nhanh cho giới hạn 2 lần/ngày
     waterRemindersSent: { bsonType: "number", minimum: 0 },  // nhắc uống nước đếm riêng, tối đa 2
     activity: { bsonType: "object", properties: {            // Health Connect: cộng dồn từ 0h, chỉ tăng

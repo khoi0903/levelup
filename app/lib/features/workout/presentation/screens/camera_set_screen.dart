@@ -17,6 +17,9 @@ import '../../domain/models/workout_models.dart';
 import '../../domain/models/workout_session_state.dart';
 import '../../../../core/voice/voice_models.dart';
 import '../../../../core/voice/voice_provider.dart';
+import '../../../coach/data/repositories/voice_line_repository.dart';
+import '../../data/camera/wave_skip_tips.dart';
+import '../../domain/models/wave_skip_logic.dart';
 import '../controllers/workout_controller.dart';
 import '../widgets/workout_widgets.dart';
 
@@ -37,9 +40,11 @@ class CameraSetArgs {
 }
 
 /// Kết quả trả về màn Đang tập. [set] null nghĩa là người dùng chọn đếm tay.
+/// [skipExercise]: người dùng vẫy tay (hoặc bấm) bỏ bài này.
 class CameraSetOutcome {
   final SetLog? set;
-  const CameraSetOutcome(this.set);
+  final bool skipExercise;
+  const CameraSetOutcome(this.set, {this.skipExercise = false});
 }
 
 enum _Stage { setup, counting, confirm }
@@ -121,6 +126,9 @@ class _CameraSetScreenState extends ConsumerState<CameraSetScreen> {
                     targetReps: widget.args.targetReps ?? item.reps,
                     targetSec: item.durationSec,
                     onManual: _manual,
+                    onSkip: () => context.pop(
+                      const CameraSetOutcome(null, skipExercise: true),
+                    ),
                     onDone: (snapshot) => setState(() {
                       _snapshot = snapshot;
                       _stage = _Stage.confirm;
@@ -158,6 +166,7 @@ List<String> cameraTipsVi(ExerciseCamera camera) {
     position,
     'Đứng lọt cả người, từ đầu tới chân, trong khung hình.',
     if (custom is String && custom.trim().isNotEmpty) custom.trim(),
+    'Muốn bỏ bài: vẫy một tay trên đầu, không cần chạy lại điện thoại.',
   ];
 }
 
@@ -415,6 +424,7 @@ class _CountingView extends ConsumerStatefulWidget {
     this.targetSec,
     required this.onManual,
     required this.onDone,
+    this.onSkip,
   });
 
   final String name;
@@ -425,6 +435,9 @@ class _CountingView extends ConsumerStatefulWidget {
   final int? targetSec;
   final VoidCallback onManual;
   final ValueChanged<RepSnapshot> onDone;
+
+  /// Bỏ cả bài (vẫy tay hoặc bấm trên thẻ hỏi); null thì không nhận vẫy tay.
+  final VoidCallback? onSkip;
 
   @override
   ConsumerState<_CountingView> createState() => _CountingViewState();
@@ -447,6 +460,11 @@ class _CountingViewState extends ConsumerState<_CountingView>
 
   int _lastRep = 0;
   final Set<int> _spokenHoldSeconds = {};
+
+  // Vẫy tay để bỏ bài, hỏi khi đứng lâu không tập
+  final WaveSkipLogic _waveSkip = WaveSkipLogic();
+  Timer? _waveSkipTicker;
+  String? _promptText;
   DateTime _lastFormIssueTime = DateTime.fromMillisecondsSinceEpoch(0);
   DateTime _lastLostPersonTime = DateTime.fromMillisecondsSinceEpoch(0);
 
@@ -484,6 +502,7 @@ class _CountingViewState extends ConsumerState<_CountingView>
         if (!mounted) return;
         setState(() => _latest = r);
         _handleVoiceFeedback(r);
+        _handleWaveSkip(_waveSkip.onSnapshot(r, _now()));
         // Đủ mục tiêu thì tự kết thúc hiệp → màn xác nhận → nghỉ
         _maybeAutoFinish(r);
       });
@@ -528,8 +547,111 @@ class _CountingViewState extends ConsumerState<_CountingView>
           _countingDown = false;
         });
         coach.speakLine(VoiceLineKey.go, interrupt: true);
+        _startWaveSkip();
       }
     });
+  }
+
+  /// Đồng hồ của màn tập (test thay được), dùng cho vẫy tay / hỏi đổi bài.
+  DateTime _now() => ref.read(workoutClockProvider)();
+
+  void _startWaveSkip() {
+    if (widget.onSkip == null) return;
+    _waveSkip.start(_now(), _latest);
+    _waveSkipTicker?.cancel();
+    _waveSkipTicker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted || !_foreground || _busy) return;
+      _handleWaveSkip(_waveSkip.tick(_now()));
+    });
+    unawaited(_maybeSpeakWaveTip());
+  }
+
+  /// Ba buổi đầu: nhắc một câu cách vẫy tay (sau đó thôi, hoặc khi đã vẫy thành công).
+  Future<void> _maybeSpeakWaveTip() async {
+    try {
+      final tips = ref.read(waveSkipTipsProvider);
+      if (!await tips.shouldSpeak()) return;
+      await tips.markSpoken();
+      if (!mounted) return;
+      await ref.read(voiceCoachProvider).whenIdle(max: const Duration(seconds: 3));
+      if (!mounted || _waveSkip.countdownLeft != null) return;
+      ref.read(voiceCoachProvider).speakText(waveSkipTipVi);
+    } catch (_) {
+      // Không lưu được thì thôi nhắc
+    }
+  }
+
+  void _handleWaveSkip(List<WaveSkipEvent> events) {
+    final coach = ref.read(voiceCoachProvider);
+    for (final e in events) {
+      switch (e) {
+        case WaveSkipEvent.prompt:
+          setState(() => _promptText = waveSkipPromptVi);
+          unawaited(_speakPrompt());
+        case WaveSkipEvent.countdown:
+          setState(() => _promptText = null);
+          coach.speakText(
+            'Bỏ bài sau ${_waveSkip.countdownSec} giây. Làm tiếp một lần để huỷ.',
+            interrupt: true,
+          );
+          unawaited(ref.read(waveSkipTipsProvider).markLearned().catchError((_) {}));
+        case WaveSkipEvent.countdownTick:
+          setState(() {});
+        case WaveSkipEvent.cancelled:
+          setState(() {});
+          coach.speakText('Tiếp tục nhé.', interrupt: true);
+        case WaveSkipEvent.skip:
+          unawaited(_skipExercise());
+      }
+    }
+  }
+
+  /// Câu hỏi "đổi bài không": server trả câu AI (Pro) hoặc câu mẫu; mạng chậm thì dùng câu mẫu.
+  Future<void> _speakPrompt() async {
+    var text = waveSkipPromptVi;
+    try {
+      final r = _latest;
+      final line = await ref
+          .read(voiceLineRepositoryProvider)
+          .line(
+            situation: 'idle_prompt',
+            exerciseName: widget.name,
+            repsDone: r.isHold ? null : r.repCount,
+            targetReps: r.isHold ? null : widget.targetReps,
+            formIssues: r.issues.map((i) => i.code).toSet().toList(),
+          )
+          .timeout(const Duration(seconds: 4));
+      if (line.text.trim().isNotEmpty) text = line.text.trim();
+    } catch (_) {
+      // Dùng câu mẫu
+    }
+    if (!mounted || !_waveSkip.promptVisible(_now())) return;
+    setState(() => _promptText = text);
+    ref.read(voiceCoachProvider).speakText(text, interrupt: true);
+  }
+
+  void _requestSkip() => _handleWaveSkip([_waveSkip.requestSkip()]);
+
+  void _dismissWaveSkip() {
+    final wasCountingDown = _waveSkip.countdownLeft != null;
+    _waveSkip.dismiss();
+    setState(() => _promptText = null);
+    if (wasCountingDown) {
+      ref.read(voiceCoachProvider).speakText('Tiếp tục nhé.', interrupt: true);
+    }
+  }
+
+  Future<void> _skipExercise() async {
+    final onSkip = widget.onSkip;
+    if (onSkip == null || _busy) return;
+    _waveSkipTicker?.cancel();
+    setState(() => _busy = true);
+    try {
+      await _session?.stop();
+    } catch (_) {
+      // Vẫn bỏ bài
+    }
+    if (mounted) onSkip();
   }
 
   void _handleVoiceFeedback(RepSnapshot r) {
@@ -658,6 +780,7 @@ class _CountingViewState extends ConsumerState<_CountingView>
   @override
   void dispose() {
     _countdownTimer?.cancel();
+    _waveSkipTicker?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     unawaited(_sub?.cancel());
     final session = _session;
@@ -758,7 +881,51 @@ class _CountingViewState extends ConsumerState<_CountingView>
                             'hông, gối và cổ chân.',
                       ),
                     ),
-                  if (lastIssue != null)
+                  if (running && widget.onSkip != null && !_countingDown)
+                    Positioned(
+                      right: 12,
+                      top: r.personMissing ? 84 : 12,
+                      child: Tooltip(
+                        message: 'Vẫy một tay trên đầu để bỏ bài',
+                        child: Icon(
+                          Icons.back_hand_rounded,
+                          key: const ValueKey('wave-hand-icon'),
+                          size: 28,
+                          color: r.handRaised
+                              ? AppColors.primary
+                              : Colors.white.withValues(alpha: 0.45),
+                        ),
+                      ),
+                    ),
+                  if (_waveSkip.countdownLeft != null)
+                    Positioned(
+                      left: 12,
+                      right: 12,
+                      bottom: 12,
+                      child: _WaveSkipCard(
+                        key: const ValueKey('wave-skip-countdown'),
+                        text: 'Bỏ bài sau ${_waveSkip.countdownLeft} giây. '
+                            'Làm tiếp một lần để huỷ.',
+                        primaryLabel: 'Huỷ',
+                        onPrimary: _dismissWaveSkip,
+                      ),
+                    )
+                  else if (_promptText != null &&
+                      _waveSkip.promptVisible(_now()))
+                    Positioned(
+                      left: 12,
+                      right: 12,
+                      bottom: 12,
+                      child: _WaveSkipCard(
+                        key: const ValueKey('wave-skip-prompt'),
+                        text: _promptText!,
+                        primaryLabel: 'Tập tiếp',
+                        onPrimary: _dismissWaveSkip,
+                        secondaryLabel: 'Bỏ bài này',
+                        onSecondary: _requestSkip,
+                      ),
+                    )
+                  else if (lastIssue != null)
                     Positioned(
                       left: 12,
                       right: 12,
@@ -860,6 +1027,63 @@ class _CountingViewState extends ConsumerState<_CountingView>
       ),
     );
   }
+}
+
+/// Thẻ trên khung camera: hỏi đổi bài hoặc đếm ngược bỏ bài.
+class _WaveSkipCard extends StatelessWidget {
+  const _WaveSkipCard({
+    super.key,
+    required this.text,
+    required this.primaryLabel,
+    required this.onPrimary,
+    this.secondaryLabel,
+    this.onSecondary,
+  });
+
+  final String text;
+  final String primaryLabel;
+  final VoidCallback onPrimary;
+  final String? secondaryLabel;
+  final VoidCallback? onSecondary;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.fromLTRB(14, 12, 8, 6),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.back_hand_rounded, color: AppColors.primary),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                text,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            if (secondaryLabel != null)
+              TextButton(onPressed: onSecondary, child: Text(secondaryLabel!)),
+            TextButton(onPressed: onPrimary, child: Text(primaryLabel)),
+          ],
+        ),
+      ],
+    ),
+  );
 }
 
 class _OverlayBanner extends StatelessWidget {
