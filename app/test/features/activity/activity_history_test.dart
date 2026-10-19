@@ -3,6 +3,7 @@ import 'package:fitness_app/features/activity/data/repositories/fake_activity_re
 import 'package:fitness_app/features/activity/domain/models/activity_models.dart';
 import 'package:fitness_app/features/activity/presentation/screens/activity_history_screen.dart';
 import 'package:fitness_app/features/health_connect/data/services/health_connect_service.dart';
+import 'package:fitness_app/features/health_connect/domain/models/health_connect_state.dart';
 import 'package:fitness_app/features/health_connect/presentation/controllers/health_connect_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -154,6 +155,55 @@ void main() {
   // Dùng HealthConnectService thật để chắc chắn không có buổi tập thì không gọi plugin
   test('service: không có buổi tập trả 0 mà không đọc Health Connect', () async {
     expect(await HealthConnectService().getActiveKcalInWindows(const []), 0);
+  });
+  test('vừa tập xong: phần calo trùng giờ tập tăng thì gửi ngay, không chờ 15 phút', () async {
+    var now = DateTime(2026, 10, 19, 10);
+    final service = FakeHealthConnectService()
+      ..steps = 3000
+      ..calories = 200;
+    final repo = FakeActivityRepository()
+      ..today = ActivityToday(
+        localDate: '2026-10-19',
+        workoutWindows: [
+          WorkoutWindow(
+            startedAt: DateTime.utc(2026, 10, 19, 2),
+            endedAt: DateTime.utc(2026, 10, 19, 2, 30),
+          ),
+        ],
+      );
+    final controller = HealthConnectController(
+      service,
+      activityRepository: repo,
+      clock: () => now,
+      isPlatformSupportedOverride: () => true,
+    );
+    await pumpEventQueue();
+    expect(repo.sentRequests, hasLength(1));
+    // 5 phút sau: chỉ phần trùng giờ tập tăng (buổi tập vừa lưu) → gửi ngay
+    now = now.add(const Duration(minutes: 5));
+    service.kcalInWorkouts = 60;
+    await controller.refreshTodayData();
+    expect(repo.sentRequests, hasLength(2));
+    expect(repo.sentRequests.last.activeKcalInWorkouts, 60);
+    // Không có gì tăng: vẫn tôn trọng 15 phút
+    now = now.add(const Duration(minutes: 1));
+    await controller.refreshTodayData();
+    expect(repo.sentRequests, hasLength(2));
+    controller.dispose();
+  });
+
+  test('số của máy đọc từ hôm qua (app mở qua đêm) không gán sang hôm nay', () {
+    const days = [ActivityDay(localDate: '2026-10-19', steps: 300)];
+    final yesterday = HealthDataSummary(
+      steps: 12000,
+      lastUpdated: DateTime(2026, 10, 18, 23, 50),
+    );
+    expect(withLocalToday(days, yesterday).last.steps, 300);
+    final today = HealthDataSummary(
+      steps: 2000,
+      lastUpdated: DateTime(2026, 10, 19, 8),
+    );
+    expect(withLocalToday(days, today).last.steps, 2000);
   });
 }
 

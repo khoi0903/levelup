@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/glass_card.dart';
+import '../../../health_connect/domain/models/health_connect_state.dart';
 import '../../../health_connect/presentation/controllers/health_connect_controller.dart';
 import '../../../nutrition/presentation/widgets/nutrition_widgets.dart';
 import '../../domain/models/activity_models.dart';
@@ -25,9 +26,7 @@ class ActivityHistoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Số bước máy này đọc được (có thể mới hơn máy chủ trước lần gửi kế tiếp), để hôm nay khớp Trang chủ
-    final localSteps = ref.watch(
-      healthConnectControllerProvider.select((s) => s.data?.displaySteps ?? 0),
-    );
+    final local = ref.watch(healthConnectControllerProvider.select((s) => s.data));
     return FeatureScaffold(
       title: 'Bước chân & vận động',
       child: ref
@@ -40,7 +39,7 @@ class ActivityHistoryScreen extends ConsumerWidget {
             ),
             data: (days) => RefreshIndicator(
               onRefresh: () async => ref.invalidate(activityHistoryProvider),
-              child: _HistoryBody(days: _withLocalToday(days, localSteps)),
+              child: _HistoryBody(days: withLocalToday(days, local)),
             ),
           ),
     );
@@ -48,8 +47,15 @@ class ActivityHistoryScreen extends ConsumerWidget {
 }
 
 /// Ngày cuối (hôm nay) lấy số bước lớn hơn giữa máy chủ và máy này.
-List<ActivityDay> _withLocalToday(List<ActivityDay> days, int localSteps) {
-  if (days.isEmpty || localSteps <= days.last.steps) return days;
+@visibleForTesting
+/// Chỉ khi số của máy đọc đúng ngày đó (app để mở qua đêm thì số hôm qua không bị gán sang hôm nay).
+List<ActivityDay> withLocalToday(List<ActivityDay> days, HealthDataSummary? local) {
+  if (days.isEmpty || local == null) return days;
+  final u = local.lastUpdated;
+  final readOn = '${u.year.toString().padLeft(4, '0')}-${u.month.toString().padLeft(2, '0')}-'
+      '${u.day.toString().padLeft(2, '0')}';
+  final localSteps = local.displaySteps;
+  if (readOn != days.last.localDate || localSteps <= days.last.steps) return days;
   final t = days.last;
   return [
     ...days.take(days.length - 1),

@@ -252,8 +252,13 @@ class HealthConnectController extends StateNotifier<HealthConnectState> {
       _lastSyncTime = null;
     }
 
-    // Tối đa 1 lần / 15 phút
-    if (_lastSyncTime != null && now.difference(_lastSyncTime!) < syncInterval) {
+    // Tối đa 1 lần / 15 phút; riêng phần calo trùng giờ tập vừa tăng (mới tập xong) thì gửi ngay
+    // để tổng calo không bị cộng trùng trong lúc chờ
+    final overlapIncreased =
+        (activeKcalInWorkouts ?? 0) > (_lastSentInWorkouts ?? 0);
+    if (_lastSyncTime != null &&
+        now.difference(_lastSyncTime!) < syncInterval &&
+        !overlapIncreased) {
       return;
     }
 
