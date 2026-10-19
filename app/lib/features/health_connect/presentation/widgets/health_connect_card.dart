@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -173,8 +174,9 @@ class HealthConnectCard extends ConsumerWidget {
 
     // Đã cấp quyền và đồng bộ
     final data = state.data;
-    final steps = data?.steps ?? 0;
-    final calories = (data?.caloriesBurned ?? 0).toInt();
+    // Số lớn hơn giữa máy này và máy chủ (tài khoản dùng nhiều điện thoại) để khớp màn Dinh dưỡng
+    final steps = data?.displaySteps ?? 0;
+    final calories = data?.displayActiveKcal ?? 0;
     const int stepGoal = 10000;
     final double stepProgress = (steps / stepGoal).clamp(0.0, 1.0);
 
@@ -378,6 +380,15 @@ class HealthConnectCard extends ConsumerWidget {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 4),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: () => context.push('/activity'),
+              icon: const Icon(Icons.bar_chart_rounded, size: 18),
+              label: const Text('Xem các ngày trước'),
+            ),
           ),
         ],
       ),

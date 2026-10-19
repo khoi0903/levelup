@@ -85,4 +85,12 @@ class NutritionRulesTest {
         assertEquals("Hôm nay bạn còn thiếu khoảng 45 g đạm. Bữa tới thử Canh chua cá (18 g đạm, 150 kcal)"
             + " và Gà kho gừng (27 g đạm, 260 kcal) nhé.", msg);
     }
+
+    @Test
+    void tongCaloVanDongCongBuoiTapVaPhanNgoaiGioTap() {
+        assertEquals(180, NutritionRules.totalBurnedKcal(150, 180, null));   // app cũ: lấy số lớn hơn
+        assertEquals(290, NutritionRules.totalBurnedKcal(150, 180, 40));      // 150 + (180 − 40)
+        assertEquals(150, NutritionRules.totalBurnedKcal(150, 30, 60));       // trùng nhiều hơn tổng: không âm
+        assertEquals(180, NutritionRules.totalBurnedKcal(0, 180, 0));
+    }
 }

@@ -5,6 +5,9 @@ class FakeActivityRepository implements ActivityRepository {
   final List<ActivitySyncRequest> sentRequests = [];
   ActivitySyncResponse? nextResponse;
   Exception? errorToThrow;
+  ActivityToday today = const ActivityToday(localDate: '');
+  List<ActivityDay> history = const [];
+  int todayCalls = 0;
 
   @override
   Future<ActivitySyncResponse> syncTodayActivity(ActivitySyncRequest request) async {
@@ -19,5 +22,22 @@ class FakeActivityRepository implements ActivityRepository {
           activeKcal: request.activeKcal,
           stored: true,
         );
+  }
+
+  @override
+  Future<ActivityToday> getToday() async {
+    todayCalls++;
+    if (errorToThrow != null) {
+      throw errorToThrow!;
+    }
+    return today;
+  }
+
+  @override
+  Future<List<ActivityDay>> getHistory(int days) async {
+    if (errorToThrow != null) {
+      throw errorToThrow!;
+    }
+    return history;
   }
 }

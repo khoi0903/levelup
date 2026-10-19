@@ -197,10 +197,11 @@ public class NutritionService {
                 NutritionRules.round1(target.carbsG() - carbs), NutritionRules.round1(target.fatG() - fat));
             suggestion = suggestion(LocalTime.now(clock.withZone(zone)), remaining);
         }
-        int burned = burnedKcal(userId, today);
-        ActivityService.Activity a = activity.today(userId, today).orElse(new ActivityService.Activity(0, 0));
+        int burned = activity.workoutKcal(userId, today);
+        ActivityService.Activity a = activity.today(userId, today).orElse(new ActivityService.Activity(0, 0, null));
         return new MealDtos.TodayView(today.toString(), target, consumed, remaining, waterMl(userId, today),
-            meals, suggestion, burned, a.steps(), a.activeKcal(), NutritionRules.totalBurnedKcal(burned, a.activeKcal()));
+            meals, suggestion, burned, a.steps(), a.activeKcal(),
+            NutritionRules.totalBurnedKcal(burned, a.activeKcal(), a.activeKcalInWorkouts()));
     }
 
     private MealDtos.Suggestion suggestion(LocalTime localTime, MealDtos.Totals remaining) {
@@ -225,13 +226,6 @@ public class NutritionService {
         NutritionRules.Target target = NutritionRules.effectiveTarget(user.nutritionTargets(), today, gender);
         return new MealDtos.WaterView(today.toString(), ((Number) day.get("waterMl")).intValue(),
             target == null ? null : target.waterMl());
-    }
-
-    /** Tổng calo đốt ước tính của các buổi tập trong ngày (workout_logs.kcalBurned). */
-    private int burnedKcal(ObjectId userId, LocalDate day) {
-        return mongo.find(Query.query(Criteria.where("userId").is(userId).and("localDate").is(day.toString())),
-                Document.class, "workout_logs").stream()
-            .mapToInt(d -> d.get("kcalBurned") instanceof Number n ? n.intValue() : 0).sum();
     }
 
     private int waterMl(ObjectId userId, LocalDate day) {

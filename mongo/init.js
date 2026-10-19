@@ -285,6 +285,7 @@ coll("daily_stats", {
     waterRemindersSent: { bsonType: "number", minimum: 0 },  // nhắc uống nước đếm riêng, tối đa 2
     activity: { bsonType: "object", properties: {            // Health Connect: cộng dồn từ 0h, chỉ tăng
                 steps: { bsonType: "number", minimum: 0 }, activeKcal: { bsonType: "number", minimum: 0 },
+                activeKcalInWorkouts: { bsonType: "number", minimum: 0 },  // phần trùng giờ tập trong app
                 source: { enum: ["health_connect"] }, updatedAt: { bsonType: "date" } } }
   }
 });

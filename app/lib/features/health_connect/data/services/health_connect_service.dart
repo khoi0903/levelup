@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:health/health.dart';
 
+import '../../../activity/domain/models/activity_models.dart';
+
 class HealthConnectService {
   final Health _health = Health();
 
@@ -122,4 +124,57 @@ class HealthConnectService {
       return 0.0;
     }
   }
+
+  /// Phần calo vận động hôm nay rơi vào giờ các buổi tập trong app [windows].
+  Future<double> getActiveKcalInWindows(List<WorkoutWindow> windows) async {
+    if (kIsWeb || windows.isEmpty) return 0.0;
+    try {
+      final now = DateTime.now();
+      final midnight = DateTime(now.year, now.month, now.day);
+      final healthData = await _health.getHealthDataFromTypes(
+        types: [HealthDataType.ACTIVE_ENERGY_BURNED],
+        startTime: midnight,
+        endTime: now,
+      );
+      return activeKcalInWindows([
+        for (final d in healthData)
+          if (d.value is NumericHealthValue)
+            (
+              from: d.dateFrom,
+              to: d.dateTo,
+              kcal: (d.value as NumericHealthValue).numericValue.toDouble(),
+            ),
+      ], windows);
+    } catch (e) {
+      debugPrint('Health getActiveKcalInWindows error: $e');
+      return 0.0;
+    }
+  }
+}
+
+/// Cộng calo các bản ghi theo tỉ lệ thời gian trùng với các buổi tập (bản ghi 10 phút trùng 5 phút → một nửa).
+double activeKcalInWindows(
+  List<({DateTime from, DateTime to, double kcal})> records,
+  List<WorkoutWindow> windows,
+) {
+  var total = 0.0;
+  for (final r in records) {
+    final length = r.to.difference(r.from).inMilliseconds;
+    var overlap = 0;
+    for (final w in windows) {
+      final start = r.from.isAfter(w.startedAt) ? r.from : w.startedAt;
+      final end = r.to.isBefore(w.endedAt) ? r.to : w.endedAt;
+      if (end.isAfter(start)) overlap += end.difference(start).inMilliseconds;
+    }
+    if (length <= 0) {
+      // Bản ghi tức thời: tính đủ nếu nằm trong một buổi tập
+      final inside = windows.any(
+        (w) => !r.from.isBefore(w.startedAt) && !r.from.isAfter(w.endedAt),
+      );
+      if (inside) total += r.kcal;
+    } else {
+      total += r.kcal * (overlap / length).clamp(0.0, 1.0);
+    }
+  }
+  return total;
 }

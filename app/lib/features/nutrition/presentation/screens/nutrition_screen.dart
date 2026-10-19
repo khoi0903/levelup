@@ -289,6 +289,19 @@ class _Summary extends StatelessWidget {
               color: AppColors.textSecondary,
             ),
           ),
+          if (today.burnedKcal > 0 &&
+              today.totalBurnedKcal > today.burnedKcal) ...[
+            const SizedBox(height: 2),
+            Text(
+              'Tập trong app ${today.burnedKcal} kcal + đi lại, vận động khác '
+              '${today.totalBurnedKcal - today.burnedKcal} kcal',
+              key: const ValueKey('nutrition-burned-breakdown'),
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
           const SizedBox(height: 2),
           const Text(
             'Calo vận động chỉ để tham khảo, mục tiêu ăn giữ nguyên',

@@ -1,6 +1,7 @@
 import 'package:fitness_app/app/router.dart';
 import 'package:fitness_app/features/activity/data/repositories/api_activity_repository.dart';
 import 'package:fitness_app/features/activity/data/repositories/fake_activity_repository.dart';
+import 'package:fitness_app/features/activity/domain/models/activity_models.dart';
 import 'package:fitness_app/features/auth/data/repositories/fake_auth_repository.dart';
 import 'package:fitness_app/features/auth/domain/models/auth_user.dart';
 import 'package:fitness_app/features/auth/presentation/controllers/auth_controller.dart';
@@ -46,6 +47,15 @@ class FakeHealthConnectService extends HealthConnectService {
 
   @override
   Future<double> getTodayCaloriesBurned() async => calories;
+
+  double kcalInWorkouts = 0;
+  List<WorkoutWindow>? lastWindows;
+
+  @override
+  Future<double> getActiveKcalInWindows(List<WorkoutWindow> windows) async {
+    lastWindows = windows;
+    return windows.isEmpty ? 0 : kcalInWorkouts;
+  }
 }
 
 class FakePhotoPicker implements MealPhotoPicker {
@@ -361,6 +371,11 @@ void main() {
 
       // Hiển thị "Calo vận động: 350 kcal · 5200 bước"
       expect(find.byKey(const ValueKey('nutrition-burned-kcal')), findsOneWidget);
+      // Chia nhỏ: buổi tập 200 + đi lại 150
+      expect(
+        find.text('Tập trong app 200 kcal + đi lại, vận động khác 150 kcal'),
+        findsOneWidget,
+      );
       expect(
         find.text('Calo vận động: 350 kcal · 5200 bước'),
         findsOneWidget,
