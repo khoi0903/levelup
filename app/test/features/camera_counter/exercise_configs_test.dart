@@ -47,7 +47,19 @@ void main() {
               exercise['slug'] as String,
         };
         final slugs = exercises.map((e) => e['slug'] as String).toSet();
-        expect(exercises, hasLength(34));
+        // 34 bài tập + 10 bài giãn cơ (mobility, không đếm bằng camera)
+        expect(exercises, hasLength(44));
+        final mobility =
+            exercises.where((e) => e['primaryMuscle'] == 'mobility').toList();
+        expect(mobility, hasLength(10));
+        for (final exercise in mobility) {
+          expect(
+            (exercise['cv'] as Map)['supported'],
+            isFalse,
+            reason: exercise['slug'] as String,
+          );
+          expect(all.containsKey(exercise['slug']), isFalse);
+        }
         expect(slugs, hasLength(exercises.length));
         expect(slugs.containsAll(all.keys), isTrue);
         // Legacy configs can exist behind false seed flags; newly unsupported

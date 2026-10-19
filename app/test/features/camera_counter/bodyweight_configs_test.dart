@@ -64,7 +64,11 @@ void main() {
     final seed = (jsonDecode(
       File('../mongo/seed/exercises.json').readAsStringSync(),
     ) as List).cast<Map<String, dynamic>>();
-    final added = seed.skip(20).toList();
+    // 14 bài thêm sau 20 bài gốc; bài giãn cơ (mobility) thêm sau đó có test riêng
+    final added = seed
+        .skip(20)
+        .where((e) => e['primaryMuscle'] != 'mobility')
+        .toList();
     expect(added, hasLength(14));
     expect(
       added
