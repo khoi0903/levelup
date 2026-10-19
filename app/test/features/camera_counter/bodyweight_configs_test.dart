@@ -64,12 +64,8 @@ void main() {
     final seed = (jsonDecode(
       File('../mongo/seed/exercises.json').readAsStringSync(),
     ) as List).cast<Map<String, dynamic>>();
-    // 14 bài thêm sau 20 bài gốc; bài giãn cơ (mobility) thêm sau đó có test riêng
-    final added = seed
-        .skip(20)
-        .where((e) => e['primaryMuscle'] != 'mobility')
-        .toList();
-    expect(added, hasLength(14));
+    // Mọi bài sau 20 bài gốc: chỉ ba bài nhìn ngang đơn giản được bật camera, và bật khi và chỉ khi có cấu hình
+    final added = seed.skip(20).toList();
     expect(
       added
           .where((e) => (e['cv'] as Map)['supported'] == true)
