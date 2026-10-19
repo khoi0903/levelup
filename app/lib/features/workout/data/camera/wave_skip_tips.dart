@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Câu nhắc cách vẫy tay (3 buổi đầu) và câu hỏi đổi bài mẫu (khi không lấy được câu từ server).
 const waveSkipTipVi = 'Mẹo: muốn bỏ bài thì vẫy một tay trên đầu, không cần chạy lại điện thoại.';
+/// Vẫy tay khi bật điều khiển giọng nói: coach hỏi lệnh.
+const voiceCommandAskVi = 'Mình nghe đây: bỏ bài, tạm dừng, hay xong hiệp?';
 const waveSkipPromptVi =
     'Cần đổi bài không? Vẫy tay trên đầu nếu muốn bỏ qua, hoặc cứ tập tiếp nhé.';
 

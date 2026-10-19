@@ -1,4 +1,5 @@
 import 'package:fitness_app/core/voice/voice_coach.dart';
+import 'package:fitness_app/core/voice/voice_commands.dart';
 import 'package:fitness_app/core/voice/voice_provider.dart';
 import 'package:fitness_app/features/workout/data/camera/auto_camera_setting.dart';
 import 'package:fitness_app/features/workout/data/camera/camera_setup_skip.dart';
@@ -224,6 +225,7 @@ class WorkoutHarness {
   final voice = FakeVoiceCoach();
   final voiceLines = FakeVoiceLineRepository();
   final waveTips = MemoryWaveSkipTips();
+  final commands = FakeVoiceCommandListener();
   final clock = FakeClock();
   late ProviderContainer container;
 
@@ -247,6 +249,7 @@ class WorkoutHarness {
         voiceCoachProvider.overrideWithValue(voice),
         voiceLineRepositoryProvider.overrideWithValue(voiceLines),
         waveSkipTipsProvider.overrideWithValue(waveTips),
+        voiceCommandListenerProvider.overrideWithValue(commands),
         workoutClockProvider.overrideWithValue(clock.call),
         // /me.localDate (ngày theo máy chủ) khớp đồng hồ giả
         userRepositoryProvider.overrideWithValue(
@@ -311,4 +314,23 @@ class MemoryWaveSkipTips extends WaveSkipTips {
   Future<void> markSpoken() async => spoken++;
   @override
   Future<void> markLearned() async => spoken = WaveSkipTips.maxTips;
+}
+
+/// Micro giả: mỗi lần nghe trả lệnh kế tiếp trong [queue] (hết thì null).
+class FakeVoiceCommandListener implements VoiceCommandListener {
+  final List<VoiceCommand?> queue = [];
+  int listens = 0;
+  bool available = true;
+
+  @override
+  Future<bool> init() async => available;
+
+  @override
+  Future<VoiceCommand?> listenOnce({Duration window = const Duration(seconds: 6)}) async {
+    listens++;
+    return queue.isEmpty ? null : queue.removeAt(0);
+  }
+
+  @override
+  Future<void> stop() async {}
 }

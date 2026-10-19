@@ -117,6 +117,9 @@ class VoiceSettings {
   /// Đọc mẹo kỹ thuật khi bắt đầu bài tập mới (mặc định bật)
   final bool readStartTip;
 
+  /// Điều khiển bằng giọng nói ở màn camera (thử nghiệm, mặc định tắt, cần quyền micro)
+  final bool voiceCommands;
+
   const VoiceSettings({
     this.enabled = true,
     this.gender = VoiceGender.female,
@@ -124,6 +127,7 @@ class VoiceSettings {
     this.speed = VoiceSpeed.normal,
     this.mutedTemporarily = false,
     this.readStartTip = true,
+    this.voiceCommands = false,
   });
 
   bool get effectiveActive => enabled && !mutedTemporarily;
@@ -135,6 +139,7 @@ class VoiceSettings {
     VoiceSpeed? speed,
     bool? mutedTemporarily,
     bool? readStartTip,
+    bool? voiceCommands,
   }) {
     return VoiceSettings(
       enabled: enabled ?? this.enabled,
@@ -143,6 +148,7 @@ class VoiceSettings {
       speed: speed ?? this.speed,
       mutedTemporarily: mutedTemporarily ?? this.mutedTemporarily,
       readStartTip: readStartTip ?? this.readStartTip,
+      voiceCommands: voiceCommands ?? this.voiceCommands,
     );
   }
 }
