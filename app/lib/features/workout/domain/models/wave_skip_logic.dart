@@ -16,6 +16,9 @@ enum WaveSkipEvent {
 
   /// Hết đếm ngược: bỏ bài.
   skip,
+
+  /// Vẫy tay khi bật điều khiển giọng nói: nghe lệnh (bỏ bài, tạm dừng, xong hiệp...).
+  listen,
 }
 
 /// Luật vẫy tay để bỏ bài, tách khỏi widget để test bằng đồng hồ giả.
@@ -30,7 +33,11 @@ class WaveSkipLogic {
     this.promptFor = const Duration(seconds: 8),
     this.recentActivity = const Duration(seconds: 3),
     this.countdownSec = 3,
+    this.waveOpensListening = false,
   });
+
+  /// true (bật điều khiển giọng nói): vẫy tay mở nghe lệnh thay vì đếm ngược bỏ bài.
+  bool waveOpensListening;
 
   final Duration idleAfter;
   final Duration promptFor;
@@ -82,7 +89,7 @@ class WaveSkipLogic {
       _lastWave = r.waveCount;
       final idle = !r.holding && now.difference(_lastActivity!) >= recentActivity;
       if (_countdownLeft == null && (promptVisible(now) || idle)) {
-        events.add(_startCountdown());
+        events.add(waveOpensListening ? WaveSkipEvent.listen : _startCountdown());
       }
     }
     return events;

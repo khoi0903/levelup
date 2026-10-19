@@ -1,7 +1,9 @@
 import 'package:fitness_app/features/onboarding/domain/models/plan_models.dart';
 import 'package:fitness_app/features/workout/data/camera/rep_counting_session.dart';
 import 'package:fitness_app/features/workout/data/camera/wave_skip_tips.dart';
+import 'package:fitness_app/core/voice/voice_commands.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'workout_test_helpers.dart';
@@ -129,5 +131,57 @@ void main() {
     await tester.tap(find.text('Huỷ'));
     await tester.pump();
     expect(find.byKey(const ValueKey('wave-skip-countdown')), findsNothing);
+  });
+
+  group('điều khiển bằng giọng nói (bật trong Cài đặt)', () {
+    setUp(() => SharedPreferences.setMockInitialValues({'voice_commands_enabled': true}));
+
+    testWidgets('vẫy tay → coach hỏi → nói "bỏ bài" → đếm ngược rồi sang bài sau', (
+      tester,
+    ) async {
+      final h = await openCamera(tester);
+      h.commands.queue.add(VoiceCommand.skip);
+      await seconds(tester, h, 4);
+      sessionOf(h).emit(
+        const RepSnapshot(status: RepCountingStatus.running, waveCount: 1),
+      );
+      await tester.pump();
+      await tester.pump();
+      await tester.pump();
+      expect(h.voice.spokenTexts, contains(voiceCommandAskVi));
+      expect(h.commands.listens, 1);
+      expect(find.byKey(const ValueKey('wave-skip-countdown')), findsOneWidget);
+      await seconds(tester, h, 3);
+      await tester.pumpAndSettle();
+      expect(find.text('Goblet squat'), findsWidgets);
+    });
+
+    testWidgets('coach hỏi đổi bài → nói "tạm dừng" → camera tạm dừng', (
+      tester,
+    ) async {
+      final h = await openCamera(tester);
+      h.commands.queue.add(VoiceCommand.pause);
+      await seconds(tester, h, 21);
+      await tester.pump();
+      await tester.pump();
+      expect(h.commands.listens, 1);
+      expect(find.text('Tiếp tục'), findsOneWidget); // nút Tạm dừng đổi thành Tiếp tục
+      expect(h.voice.spokenTexts.last, 'Đã tạm dừng. Bấm Tiếp tục khi sẵn sàng.');
+      expect(find.byKey(const ValueKey('wave-skip-prompt')), findsNothing);
+    });
+
+    testWidgets('không nghe rõ thì không làm gì', (tester) async {
+      final h = await openCamera(tester);
+      await seconds(tester, h, 4);
+      sessionOf(h).emit(
+        const RepSnapshot(status: RepCountingStatus.running, waveCount: 1),
+      );
+      await tester.pump();
+      await tester.pump();
+      await tester.pump();
+      expect(h.voice.spokenTexts.last, 'Mình chưa nghe rõ, cứ tập tiếp nhé.');
+      expect(find.byKey(const ValueKey('wave-skip-countdown')), findsNothing);
+      expect(find.text('Squat'), findsWidgets);
+    });
   });
 }

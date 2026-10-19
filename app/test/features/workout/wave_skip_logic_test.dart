@@ -72,4 +72,13 @@ void main() {
     expect(l.promptVisible(at(21)), isFalse);
     expect(l.tick(at(22)), isEmpty);
   });
+
+  test('bật điều khiển giọng nói: vẫy tay mở nghe lệnh thay vì đếm ngược', () {
+    final l = WaveSkipLogic(waveOpensListening: true)..start(t0, idle);
+    expect(
+      l.onSnapshot(const RepSnapshot(waveCount: 1), at(5)),
+      [WaveSkipEvent.listen],
+    );
+    expect(l.countdownLeft, isNull);
+  });
 }
