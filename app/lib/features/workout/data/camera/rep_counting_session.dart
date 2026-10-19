@@ -27,10 +27,18 @@ class RepSnapshot {
   /// Đang giữ đúng tư thế ngay lúc này (để UI báo "đang tính giờ").
   final bool holding;
 
+  /// Đang giơ một tay cao (sáng biểu tượng bàn tay trên màn camera).
+  final bool handRaised;
+
+  /// Số lần vẫy tay đã nhận trong phiên, chỉ tăng (vẫy tay để bỏ bài).
+  final int waveCount;
+
   const RepSnapshot({
     this.isHold = false,
     this.holdDuration = Duration.zero,
     this.holding = false,
+    this.handRaised = false,
+    this.waveCount = 0,
     this.repCount = 0,
     this.personMissing = false,
     this.averageConfidence = 0,
@@ -108,6 +116,8 @@ class _CameraRepCountingSession implements RepCountingSession {
     isHold: r.isHold,
     holdDuration: r.holdDuration,
     holding: r.holding,
+    handRaised: r.handRaised,
+    waveCount: r.waveCount,
     repCount: r.repCount,
     personMissing: r.personMissing,
     averageConfidence: r.averageConfidence,

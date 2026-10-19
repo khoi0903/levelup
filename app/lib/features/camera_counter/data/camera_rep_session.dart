@@ -18,7 +18,15 @@ class CameraRepResult {
     required this.status,
     required this.error,
     required this.mode,
+    this.handRaised = false,
+    this.waveCount = 0,
   });
+
+  /// Đang giơ một tay cao (WaveDetector), để UI sáng biểu tượng bàn tay.
+  final bool handRaised;
+
+  /// Số lần vẫy tay đã nhận trong phiên, chỉ tăng.
+  final int waveCount;
 
   final RepCounterResult counter;
   final FormCheckResult form;
@@ -128,6 +136,7 @@ class CameraRepSession {
   final Duration Function()? _elapsedOverride;
   final Stopwatch _clock = Stopwatch();
   final _results = StreamController<CameraRepResult>.broadcast();
+  final _wave = WaveDetector();
   final _adapter = const MlkitPoseAdapter();
   final _formChecker = const FormChecker();
   late CameraRepResult _latest;
@@ -256,6 +265,7 @@ class CameraRepSession {
   void _suspendFrames() {
     _acceptFrames = false;
     _generation++;
+    _wave.reset();
     _presenceTimer?.cancel();
     _presenceTimer = null;
   }
@@ -298,12 +308,12 @@ class CameraRepSession {
       // A very slow result must not make a stale person look present again.
       if (_elapsed - startedAt > RepCounter.personMissingAfter) return;
       // Timestamp at delivery, after await: a timer may have advanced domain.
-      _counter.addFrame(
-        _adapter.toFrame(
-          poses.isEmpty ? null : poses.first,
-          timestamp: _timestamp(frame: true),
-        ),
+      final frame = _adapter.toFrame(
+        poses.isEmpty ? null : poses.first,
+        timestamp: _timestamp(frame: true),
       );
+      _counter.addFrame(frame);
+      _wave.addFrame(poses.isEmpty ? null : frame);
       _error = null;
       _publish();
     } catch (error) {
@@ -325,6 +335,8 @@ class CameraRepSession {
     status: _status,
     error: _error,
     mode: config.mode,
+    handRaised: _wave.handRaised,
+    waveCount: _wave.waveCount,
   );
 
   void _publish() {

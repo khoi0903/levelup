@@ -314,7 +314,12 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
         targetReps: _reps,
       ),
     );
-    if (!mounted || outcome == null || outcome.set == null) return;
+    if (!mounted || outcome == null) return;
+    if (outcome.skipExercise) {
+      _skipExercise();
+      return;
+    }
+    if (outcome.set == null) return;
     final rest = ref.read(activeWorkoutProvider.notifier).logSet(outcome.set!);
     _afterLog(rest);
   }

@@ -2,6 +2,8 @@ import 'package:fitness_app/core/voice/voice_coach.dart';
 import 'package:fitness_app/core/voice/voice_provider.dart';
 import 'package:fitness_app/features/workout/data/camera/auto_camera_setting.dart';
 import 'package:fitness_app/features/workout/data/camera/camera_setup_skip.dart';
+import 'package:fitness_app/features/workout/data/camera/wave_skip_tips.dart';
+import 'package:fitness_app/features/coach/data/repositories/voice_line_repository.dart';
 
 import 'dart:async';
 
@@ -220,6 +222,8 @@ class WorkoutHarness {
 
   /// Ghi lại câu giọng đọc đã "nói" để test kiểm tra.
   final voice = FakeVoiceCoach();
+  final voiceLines = FakeVoiceLineRepository();
+  final waveTips = MemoryWaveSkipTips();
   final clock = FakeClock();
   late ProviderContainer container;
 
@@ -241,6 +245,8 @@ class WorkoutHarness {
         autoCameraProvider.overrideWith((ref) => FixedAutoCamera(autoCamera)),
         // Giọng đọc giả: test không có engine TTS thật (không chờ "nói xong", không gọi plugin)
         voiceCoachProvider.overrideWithValue(voice),
+        voiceLineRepositoryProvider.overrideWithValue(voiceLines),
+        waveSkipTipsProvider.overrideWithValue(waveTips),
         workoutClockProvider.overrideWithValue(clock.call),
         // /me.localDate (ngày theo máy chủ) khớp đồng hồ giả
         userRepositoryProvider.overrideWithValue(
@@ -275,4 +281,34 @@ class FixedAutoCamera extends AutoCameraNotifier {
   FixedAutoCamera(bool value) {
     state = value;
   }
+}
+
+/// Câu giọng coach giả: [text] (Pro: câu AI) hoặc ném lỗi để thử câu mẫu.
+class FakeVoiceLineRepository implements VoiceLineRepository {
+  String? text;
+  bool fail = false;
+  final List<String> situations = [];
+
+  @override
+  Future<VoiceLine> line({
+    required String situation,
+    required String exerciseName,
+    int? repsDone,
+    int? targetReps,
+    List<String> formIssues = const [],
+  }) async {
+    situations.add(situation);
+    if (fail || text == null) throw Exception('offline');
+    return VoiceLine(text!, ai: true);
+  }
+}
+
+class MemoryWaveSkipTips extends WaveSkipTips {
+  int spoken = 0;
+  @override
+  Future<bool> shouldSpeak() async => spoken < WaveSkipTips.maxTips;
+  @override
+  Future<void> markSpoken() async => spoken++;
+  @override
+  Future<void> markLearned() async => spoken = WaveSkipTips.maxTips;
 }

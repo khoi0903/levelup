@@ -7,3 +7,4 @@ export 'form_rule.dart';
 export 'joint_angle.dart';
 export 'pose.dart';
 export 'rep_counter.dart';
+export 'wave_detector.dart';
