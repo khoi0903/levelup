@@ -129,8 +129,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('7 ngày gần nhất'), findsOneWidget);
     expect(find.text('12.0k'), findsOneWidget); // cột hôm nay
-    // Trung bình các ngày có dữ liệu: (6×4000 + 12000) / 7
-    expect(find.text('Trung bình 5142 bước/ngày (các ngày có dữ liệu)'), findsOneWidget);
+    // Trung bình các ngày có bước: (6×4000 + 12000) / 7
+    expect(find.text('Trung bình 5142 bước/ngày (các ngày có bước chân)'), findsOneWidget);
     expect(find.text('T2 19/10'), findsOneWidget);
     expect(find.text('Tập 150 + đi lại 260 kcal'), findsOneWidget);
     final newest = tester.getTopLeft(find.text('T2 19/10')).dy;

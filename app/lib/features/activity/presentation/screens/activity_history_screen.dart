@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/glass_card.dart';
+import '../../../health_connect/presentation/controllers/health_connect_controller.dart';
 import '../../../nutrition/presentation/widgets/nutrition_widgets.dart';
 import '../../domain/models/activity_models.dart';
 import '../controllers/activity_history_controller.dart';
@@ -23,6 +24,10 @@ class ActivityHistoryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Số bước máy này đọc được (có thể mới hơn máy chủ trước lần gửi kế tiếp), để hôm nay khớp Trang chủ
+    final localSteps = ref.watch(
+      healthConnectControllerProvider.select((s) => s.data?.displaySteps ?? 0),
+    );
     return FeatureScaffold(
       title: 'Bước chân & vận động',
       child: ref
@@ -35,11 +40,27 @@ class ActivityHistoryScreen extends ConsumerWidget {
             ),
             data: (days) => RefreshIndicator(
               onRefresh: () async => ref.invalidate(activityHistoryProvider),
-              child: _HistoryBody(days: days),
+              child: _HistoryBody(days: _withLocalToday(days, localSteps)),
             ),
           ),
     );
   }
+}
+
+/// Ngày cuối (hôm nay) lấy số bước lớn hơn giữa máy chủ và máy này.
+List<ActivityDay> _withLocalToday(List<ActivityDay> days, int localSteps) {
+  if (days.isEmpty || localSteps <= days.last.steps) return days;
+  final t = days.last;
+  return [
+    ...days.take(days.length - 1),
+    ActivityDay(
+      localDate: t.localDate,
+      steps: localSteps,
+      activeKcal: t.activeKcal,
+      workoutKcal: t.workoutKcal,
+      totalBurnedKcal: t.totalBurnedKcal,
+    ),
+  ];
 }
 
 class _HistoryBody extends StatelessWidget {
@@ -49,12 +70,14 @@ class _HistoryBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final withData = days.where((d) => d.steps > 0 || d.totalBurnedKcal > 0);
+    // Trung bình bước chỉ tính ngày có bước (ngày chỉ tập trong app không kéo thấp)
+    final withSteps = days.where((d) => d.steps > 0);
     final week = days.length > 7 ? days.sublist(days.length - 7) : days;
     final newestFirst = days.reversed.toList();
-    final avgSteps = withData.isEmpty
+    final avgSteps = withSteps.isEmpty
         ? 0
-        : withData.map((d) => d.steps).reduce((a, b) => a + b) ~/
-              withData.length;
+        : withSteps.map((d) => d.steps).reduce((a, b) => a + b) ~/
+              withSteps.length;
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
@@ -72,7 +95,7 @@ class _HistoryBody extends StatelessWidget {
               Text(
                 withData.isEmpty
                     ? 'Chưa có dữ liệu. Kết nối Health Connect ở Trang chủ để ghi nhận bước chân.'
-                    : 'Trung bình $avgSteps bước/ngày (các ngày có dữ liệu)',
+                    : 'Trung bình $avgSteps bước/ngày (các ngày có bước chân)',
                 key: const ValueKey('activity-average'),
                 style: const TextStyle(
                   fontSize: 12,
