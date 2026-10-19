@@ -20,6 +20,7 @@ import '../../../../core/widgets/selection_chip.dart';
 
 import 'package:fitness_app/features/notifications/presentation/controllers/notifications_controller.dart';
 
+import '../../../../core/voice/voice_commands.dart';
 import '../../../../core/voice/voice_models.dart';
 import '../../../../core/voice/voice_provider.dart';
 import '../../../home/presentation/controllers/home_controller.dart';
@@ -38,6 +39,29 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  /// Bật điều khiển giọng nói: xin quyền micro trước, không được thì giữ tắt.
+  Future<void> _setVoiceCommands(bool enabled) async {
+    final notifier = ref.read(voiceSettingsProvider.notifier);
+    if (!enabled) {
+      await notifier.setVoiceCommands(false);
+      return;
+    }
+    final messenger = ScaffoldMessenger.of(context);
+    final ok = await ref.read(voiceCommandListenerProvider).init();
+    if (!ok) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Không dùng được micro hoặc máy chưa có nhận dạng giọng nói. '
+            'Hãy cho phép LevelUp dùng micro trong Cài đặt.',
+          ),
+        ),
+      );
+      return;
+    }
+    await notifier.setVoiceCommands(true);
+  }
+
   final _nameController = TextEditingController();
   final _nameFocusNode = FocusNode();
   String _lastSavedName = '';
@@ -1729,6 +1753,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   activeThumbColor: AppColors.primary,
                   contentPadding: EdgeInsets.zero,
                   onChanged: (val) => voiceNotifier.setReadStartTip(val),
+                ),
+                SwitchListTile(
+                  key: const ValueKey('settings-voice-commands'),
+                  title: const Text(
+                    'Điều khiển bằng giọng nói (thử nghiệm)',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: const Text(
+                    'Khi đếm bằng camera: vẫy tay hoặc khi coach hỏi, nói "bỏ bài", '
+                    '"tập tiếp", "tạm dừng", "xong hiệp". Cần quyền micro; máy dùng '
+                    'dịch vụ nhận dạng giọng nói của Google, chỉ nghe vài giây sau mỗi lần hỏi.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  value: voiceSettings.voiceCommands,
+                  activeThumbColor: AppColors.primary,
+                  contentPadding: EdgeInsets.zero,
+                  onChanged: (val) => _setVoiceCommands(val),
                 ),
                 const SizedBox(height: 8),
               ],

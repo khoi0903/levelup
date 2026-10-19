@@ -12,6 +12,7 @@ const String _prefVoiceGender = 'voice_coach_gender';
 const String _prefVoiceStyle = 'voice_coach_style';
 const String _prefVoiceSpeed = 'voice_coach_speed';
 const String _prefVoiceStartTip = 'voice_coach_start_tip';
+const String _prefVoiceCommands = 'voice_commands_enabled';
 
 class VoiceSettingsNotifier extends StateNotifier<VoiceSettings> {
   VoiceSettingsNotifier() : super(const VoiceSettings()) {
@@ -28,6 +29,7 @@ class VoiceSettingsNotifier extends StateNotifier<VoiceSettings> {
       final speedStr = prefs.getString(_prefVoiceSpeed) ?? 'normal';
       final speed = VoiceSpeed.fromString(speedStr);
       final readStartTip = prefs.getBool(_prefVoiceStartTip) ?? true;
+      final voiceCommands = prefs.getBool(_prefVoiceCommands) ?? false;
 
       state = VoiceSettings(
         enabled: enabled,
@@ -36,6 +38,7 @@ class VoiceSettingsNotifier extends StateNotifier<VoiceSettings> {
         speed: speed,
         mutedTemporarily: false,
         readStartTip: readStartTip,
+        voiceCommands: voiceCommands,
       );
     } catch (_) {}
   }
@@ -77,6 +80,14 @@ class VoiceSettingsNotifier extends StateNotifier<VoiceSettings> {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_prefVoiceStartTip, enabled);
+    } catch (_) {}
+  }
+
+  Future<void> setVoiceCommands(bool enabled) async {
+    state = state.copyWith(voiceCommands: enabled);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_prefVoiceCommands, enabled);
     } catch (_) {}
   }
 

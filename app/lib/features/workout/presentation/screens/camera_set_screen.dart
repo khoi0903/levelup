@@ -18,6 +18,7 @@ import '../../domain/models/workout_session_state.dart';
 import '../../../../core/voice/voice_models.dart';
 import '../../../../core/voice/voice_provider.dart';
 import '../../../coach/data/repositories/voice_line_repository.dart';
+import '../../../../core/voice/voice_commands.dart';
 import '../../data/camera/wave_skip_tips.dart';
 import '../../domain/models/wave_skip_logic.dart';
 import '../controllers/workout_controller.dart';
@@ -465,6 +466,8 @@ class _CountingViewState extends ConsumerState<_CountingView>
   final WaveSkipLogic _waveSkip = WaveSkipLogic();
   Timer? _waveSkipTicker;
   String? _promptText;
+  bool _listening = false;
+  VoiceCommandListener? _activeListener;
   DateTime _lastFormIssueTime = DateTime.fromMillisecondsSinceEpoch(0);
   DateTime _lastLostPersonTime = DateTime.fromMillisecondsSinceEpoch(0);
 
@@ -557,6 +560,7 @@ class _CountingViewState extends ConsumerState<_CountingView>
 
   void _startWaveSkip() {
     if (widget.onSkip == null) return;
+    _waveSkip.waveOpensListening = _voiceCommandsOn;
     _waveSkip.start(_now(), _latest);
     _waveSkipTicker?.cancel();
     _waveSkipTicker = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -602,7 +606,60 @@ class _CountingViewState extends ConsumerState<_CountingView>
           coach.speakText('Tiếp tục nhé.', interrupt: true);
         case WaveSkipEvent.skip:
           unawaited(_skipExercise());
+        case WaveSkipEvent.listen:
+          unawaited(_listenForCommand(ask: true));
       }
+    }
+  }
+
+  bool get _voiceCommandsOn => ref.read(voiceSettingsProvider).voiceCommands;
+
+  /// Nghe một câu lệnh (chỉ khi người dùng bật trong Cài đặt). [ask]: coach hỏi trước "bạn muốn gì".
+  /// Chờ giọng coach nói xong rồi mới mở micro, để không tự nghe tiếng của chính app.
+  Future<void> _listenForCommand({required bool ask}) async {
+    if (_listening || !mounted || !_voiceCommandsOn) return;
+    setState(() => _listening = true);
+    final coach = ref.read(voiceCoachProvider);
+    try {
+      if (ask) coach.speakText(voiceCommandAskVi, interrupt: true);
+      await coach.whenIdle(max: const Duration(seconds: 6));
+      if (!mounted) return;
+      final listener = ref.read(voiceCommandListenerProvider);
+      _activeListener = listener;
+      final command = await listener.listenOnce();
+      if (!mounted) return;
+      _onVoiceCommand(command, asked: ask);
+    } catch (_) {
+      // Micro lỗi: bỏ qua, vẫn dùng được nút và vẫy tay
+    } finally {
+      if (mounted) {
+        setState(() => _listening = false);
+      } else {
+        _listening = false;
+      }
+    }
+  }
+
+  void _onVoiceCommand(VoiceCommand? command, {required bool asked}) {
+    final coach = ref.read(voiceCoachProvider);
+    switch (command) {
+      case VoiceCommand.skip:
+        _requestSkip();
+      case VoiceCommand.resume:
+        _waveSkip.dismiss();
+        setState(() => _promptText = null);
+        coach.speakText('Tiếp tục nhé.', interrupt: true);
+      case VoiceCommand.pause:
+        _waveSkip.dismiss();
+        setState(() => _promptText = null);
+        unawaited(_pause());
+        coach.speakText('Đã tạm dừng. Bấm Tiếp tục khi sẵn sàng.', interrupt: true);
+      case VoiceCommand.finishSet:
+        _waveSkip.dismiss();
+        setState(() => _promptText = null);
+        unawaited(_finish());
+      case null:
+        if (asked) coach.speakText('Mình chưa nghe rõ, cứ tập tiếp nhé.', interrupt: true);
     }
   }
 
@@ -628,6 +685,8 @@ class _CountingViewState extends ConsumerState<_CountingView>
     if (!mounted || !_waveSkip.promptVisible(_now())) return;
     setState(() => _promptText = text);
     ref.read(voiceCoachProvider).speakText(text, interrupt: true);
+    // Bật điều khiển giọng nói: nghe câu trả lời ("bỏ bài", "tập tiếp"...) sau câu hỏi
+    unawaited(_listenForCommand(ask: false));
   }
 
   void _requestSkip() => _handleWaveSkip([_waveSkip.requestSkip()]);
@@ -781,6 +840,7 @@ class _CountingViewState extends ConsumerState<_CountingView>
   void dispose() {
     _countdownTimer?.cancel();
     _waveSkipTicker?.cancel();
+    if (_listening) unawaited(_activeListener?.stop());
     WidgetsBinding.instance.removeObserver(this);
     unawaited(_sub?.cancel());
     final session = _session;
@@ -895,6 +955,17 @@ class _CountingViewState extends ConsumerState<_CountingView>
                               ? AppColors.primary
                               : Colors.white.withValues(alpha: 0.45),
                         ),
+                      ),
+                    ),
+                  if (_listening)
+                    const Positioned(
+                      left: 12,
+                      right: 56,
+                      top: 12,
+                      child: _OverlayBanner(
+                        key: ValueKey('voice-listening'),
+                        icon: Icons.mic_rounded,
+                        text: 'Đang nghe… nói "bỏ bài", "tập tiếp", "tạm dừng" hoặc "xong hiệp".',
                       ),
                     ),
                   if (_waveSkip.countdownLeft != null)
