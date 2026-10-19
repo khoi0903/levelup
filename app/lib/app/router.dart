@@ -1,6 +1,7 @@
 import '../features/product/presentation/screens/pro_screen.dart';
 import '../features/product/presentation/screens/referral_screen.dart';
 import '../features/food_review/presentation/screens/food_review_screen.dart';
+import '../features/activity/presentation/screens/activity_history_screen.dart';
 import '../features/product/presentation/screens/admin_screen.dart';
 
 import 'package:flutter/material.dart';
@@ -77,6 +78,10 @@ GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
     GoRoute(path: '/pro', builder: (_, _) => const ProScreen()),
     GoRoute(path: '/referrals', builder: (_, _) => const ReferralScreen()),
     GoRoute(path: '/admin', builder: (_, _) => const AdminScreen()),
+    GoRoute(
+      path: '/activity',
+      builder: (_, _) => const ActivityHistoryScreen(),
+    ),
     GoRoute(
       path: '/admin/foods',
       builder: (_, _) => const FoodReviewScreen(),

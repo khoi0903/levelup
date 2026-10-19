@@ -69,7 +69,8 @@ public final class MealDtos {
      * Calo, macro, nước, các bữa hôm nay. target null khi người dùng chưa có mục tiêu;
      * remaining = target - consumed, có thể âm khi đã ăn vượt.
      * burnedKcal: calo đốt ước tính từ các buổi tập hôm nay, chỉ để xem (không cộng vào mục tiêu ăn).
-     * steps, activeKcal: từ Health Connect (0 khi chưa kết nối). totalBurnedKcal = max(burnedKcal, activeKcal),
+     * steps, activeKcal: từ Health Connect (0 khi chưa kết nối). totalBurnedKcal = burnedKcal + calo vận động
+     * ngoài giờ tập (NutritionRules.totalBurnedKcal; app cũ chưa gửi phần trùng giờ tập thì max như trước),
      * cũng chỉ để xem: mục tiêu ăn không tăng theo vận động.
      */
     public record TodayView(

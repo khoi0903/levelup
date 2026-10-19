@@ -49,6 +49,7 @@ class HealthConnectController extends StateNotifier<HealthConnectState> {
   DateTime? _lastSyncTime;
   int? _lastSentSteps;
   int? _lastSentActiveKcal;
+  int? _lastSentInWorkouts;
   String? _lastSentLocalDate;
 
   HealthConnectController(
@@ -172,15 +173,33 @@ class HealthConnectController extends StateNotifier<HealthConnectState> {
       final steps = await _service.getTodaySteps();
       final calories = await _service.getTodayCaloriesBurned();
       if (!mounted) return;
+      final previous = state.data;
       state = state.copyWith(
         data: HealthDataSummary(
           steps: steps,
           caloriesBurned: calories,
+          serverSteps: previous?.serverSteps ?? 0,
+          serverActiveKcal: previous?.serverActiveKcal ?? 0,
           lastUpdated: clock(),
         ),
       );
+      // Số máy chủ (lớn nhất giữa các điện thoại) và giờ buổi tập hôm nay để tính phần calo trùng giờ tập
+      final today = await _fetchServerToday();
+      if (!mounted) return;
+      int? inWorkouts;
+      if (today != null) {
+        state = state.copyWith(
+          data: state.data!.copyWith(
+            serverSteps: today.steps,
+            serverActiveKcal: today.activeKcal,
+          ),
+        );
+        inWorkouts = (await _service.getActiveKcalInWindows(
+          today.workoutWindows,
+        )).round();
+      }
       if (state.isAuthorized) {
-        await _maybeSyncActivity(steps, calories.round());
+        await _maybeSyncActivity(steps, calories.round(), inWorkouts);
       }
     } catch (e) {
       // Giữ nguyên dữ liệu cũ nếu fetch bị lỗi tạm thời
@@ -193,7 +212,22 @@ class HealthConnectController extends StateNotifier<HealthConnectState> {
   /// - localDate = /me.localDate nếu trùng ngày trên điện thoại, ngược lại dùng ngày điện thoại
   /// - Bỏ qua im lặng nếu lỗi mạng
   /// - Không gửi gì khi chưa kết nối Health Connect / web / iOS
-  Future<void> _maybeSyncActivity(int steps, int activeKcal) async {
+  Future<ActivityToday?> _fetchServerToday() async {
+    if (!_isPlatformSupported()) return null;
+    final repo = _effectiveActivityRepo;
+    if (repo == null) return null;
+    try {
+      return await repo.getToday();
+    } catch (_) {
+      return null; // Lỗi mạng: vẫn hiện số của máy, không báo lỗi
+    }
+  }
+
+  Future<void> _maybeSyncActivity(
+    int steps,
+    int activeKcal,
+    int? activeKcalInWorkouts,
+  ) async {
     if (!_isPlatformSupported()) return;
     if (!state.isAuthorized) return;
     final repo = _effectiveActivityRepo;
@@ -214,6 +248,7 @@ class HealthConnectController extends StateNotifier<HealthConnectState> {
     if (_lastSentLocalDate != null && _lastSentLocalDate != effectiveLocalDate) {
       _lastSentSteps = null;
       _lastSentActiveKcal = null;
+      _lastSentInWorkouts = null;
       _lastSyncTime = null;
     }
 
@@ -225,7 +260,9 @@ class HealthConnectController extends StateNotifier<HealthConnectState> {
     // Chỉ gửi khi số liệu tăng so với lần gửi trước
     final hasIncreased = (_lastSentSteps == null && _lastSentActiveKcal == null)
         ? (steps > 0 || activeKcal > 0)
-        : (steps > (_lastSentSteps ?? 0) || activeKcal > (_lastSentActiveKcal ?? 0));
+        : (steps > (_lastSentSteps ?? 0) ||
+              activeKcal > (_lastSentActiveKcal ?? 0) ||
+              (activeKcalInWorkouts ?? 0) > (_lastSentInWorkouts ?? 0));
 
     if (!hasIncreased) {
       return;
@@ -240,11 +277,13 @@ class HealthConnectController extends StateNotifier<HealthConnectState> {
           localDate: effectiveLocalDate,
           steps: safeSteps,
           activeKcal: safeActiveKcal,
+          activeKcalInWorkouts: activeKcalInWorkouts?.clamp(0, safeActiveKcal),
         ),
       );
       _lastSyncTime = now;
       _lastSentSteps = safeSteps;
       _lastSentActiveKcal = safeActiveKcal;
+      _lastSentInWorkouts = activeKcalInWorkouts;
       _lastSentLocalDate = effectiveLocalDate;
     } catch (_) {
       // Lỗi mạng: bỏ qua im lặng, không SnackBar
