@@ -87,4 +87,12 @@ class RecognitionParserTest {
         assertEquals(0, d.per100g().kcal());
         assertEquals(0, NutritionRules.estimatePortion(d.per100g(), 300).kcal());
     }
+
+    @Test
+    void kcalThapHonSoTuMacroThiLayTheoMacro() {
+        RecognitionParser.Dish d = RecognitionParser.parse("""
+            {"dishes":[{"nameVi":"Trà chanh","portionGrams":500,"confidence":0.9,
+              "per100g":{"kcal":0,"proteinG":0,"carbsG":5,"fatG":0}}]}""").get(0);
+        assertEquals(20, d.per100g().kcal());
+    }
 }

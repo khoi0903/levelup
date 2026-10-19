@@ -31,6 +31,7 @@ public final class RecognitionParser {
         /**
          * null khi không hợp lý: kcal ngoài 0–900 (0 cho nước lọc, trà không đường), đạm + tinh bột + béo quá
          * 100 g, hoặc kcal lệch hơn 25% (tối thiểu 20 kcal) so với 4·đạm + 4·tinh bột + 9·béo. NaN bị loại.
+         * kcal thấp hơn số tính từ macro thì nâng lên bằng số đó.
          */
         public static Estimate of(double kcal, double proteinG, double carbsG, double fatG) {
             if (!(kcal >= 0 && kcal <= MAX_KCAL) || !(proteinG >= 0 && carbsG >= 0 && fatG >= 0)
@@ -41,8 +42,9 @@ public final class RecognitionParser {
             if (Math.abs(fromMacros - kcal) > Math.max(20, kcal * 0.25)) {
                 return null;
             }
-            return new Estimate(Math.round(kcal), NutritionRules.round1(proteinG), NutritionRules.round1(carbsG),
-                NutritionRules.round1(fatG));
+            // AI ghi kcal thấp hơn số tính từ macro (vd 0 kcal nhưng 5 g đường) thì lấy số từ macro: không đếm thiếu
+            return new Estimate(Math.round(Math.max(kcal, fromMacros)), NutritionRules.round1(proteinG),
+                NutritionRules.round1(carbsG), NutritionRules.round1(fatG));
         }
     }
 

@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -20,7 +21,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+import com.mongodb.MongoException;
 import org.springframework.web.server.ResponseStatusException;
 import vn.levelup.nutrition.dto.FoodCandidateDtos;
 import vn.levelup.nutrition.model.Food;
@@ -46,11 +49,14 @@ public class FoodCandidateService {
     private final MongoTemplate mongo;
     private final FoodCatalog foods;
     private final Clock clock;
+    private final TransactionTemplate transactions;
 
-    public FoodCandidateService(MongoTemplate mongo, FoodCatalog foods, Clock clock) {
+    public FoodCandidateService(MongoTemplate mongo, FoodCatalog foods, Clock clock,
+                                PlatformTransactionManager manager) {
         this.mongo = mongo;
         this.foods = foods;
         this.clock = clock;
+        this.transactions = new TransactionTemplate(manager);
     }
 
     /** AI nhận ra các món không có trong kho (trong một ảnh, cùng tên chỉ tính một lần). */
@@ -85,8 +91,32 @@ public class FoodCandidateService {
      * Thêm món vào kho foods (source "ai", đã duyệt) và đánh dấu món chờ là approved, cùng admin_audit,
      * trong một transaction như các thay đổi admin khác.
      */
-    @Transactional
     public FoodCandidateDtos.CandidateView approve(String adminUid, String id, FoodCandidateDtos.ApproveRequest r) {
+        return inTransaction(() -> doApprove(adminUid, id, r));
+    }
+
+    public void reject(String adminUid, String id) {
+        inTransaction(() -> doReject(adminUid, id));
+    }
+
+    /**
+     * Hai admin xử lý cùng một món cùng lúc: transaction thua bị MongoDB huỷ vì WriteConflict
+     * (TransientTransactionError) trước khi tới findAndModify → báo 409 như món đã được xử lý, không phải 500.
+     */
+    private <T> T inTransaction(Supplier<T> work) {
+        try {
+            return transactions.execute(status -> work.get());
+        } catch (RuntimeException e) {
+            for (Throwable c = e; c != null; c = c.getCause()) {
+                if (c instanceof MongoException m && m.hasErrorLabel(MongoException.TRANSIENT_TRANSACTION_ERROR_LABEL)) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "CANDIDATE_REVIEWED");
+                }
+            }
+            throw e;
+        }
+    }
+
+    private FoodCandidateDtos.CandidateView doApprove(String adminUid, String id, FoodCandidateDtos.ApproveRequest r) {
         String searchName = VietText.normalize(r.nameVi());
         if (searchName.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "INVALID_NAME");
@@ -115,11 +145,11 @@ public class FoodCandidateService {
         return view(mongo.findById(candidate.getObjectId("_id"), Document.class, COLLECTION));
     }
 
-    @Transactional
-    public void reject(String adminUid, String id) {
+    private Void doReject(String adminUid, String id) {
         Document candidate = claim(id, Update.update("status", "rejected").set("reviewedAt", now())
             .set("reviewedBy", adminUid));
         decided(adminUid, "food_reject", candidate, null);
+        return null;
     }
 
     /** Đổi món pending bằng [update] trong một lệnh; món đã duyệt/bỏ thì 409, không có thì 404. */
@@ -156,33 +186,51 @@ public class FoodCandidateService {
     }
 
     /**
-     * Ghi vào món pending có key này (tạo mới nếu chưa có). Người dùng lần đầu gặp món (upsert tạo được dòng
-     * food_candidate_users) thì tăng userCount trong cùng lệnh. Món đã duyệt/bỏ: upsert đụng index unique key → bỏ qua.
+     * Ghi vào món pending có key này (tạo mới nếu chưa có); món đã duyệt/bỏ thì bỏ qua.
+     * Sau đó nếu người dùng lần đầu gặp món (upsert tạo được dòng food_candidate_users) thì tăng userCount.
      */
     private void record(ObjectId userId, String key, Update update) {
         if (key.isEmpty()) {
             return;
         }
         try {
-            boolean newUser = mongo.upsert(Query.query(Criteria.where("key").is(key).and("userId").is(userId)),
-                new Update().setOnInsert("at", now()), USERS).getUpsertedId() != null;
-            if (newUser) {
-                update.inc("userCount", 1);
+            if (!writePending(key, update)) {
+                return;
             }
-            Query pending = Query.query(Criteria.where("key").is(key).and("status").is("pending"));
-            for (int attempt = 0; attempt < 2; attempt++) {
+            Query userRow = Query.query(Criteria.where("key").is(key).and("userId").is(userId));
+            boolean newUser;
+            try {
+                newUser = mongo.upsert(userRow, new Update().setOnInsert("at", now()), USERS).getUpsertedId() != null;
+            } catch (DuplicateKeyException sameUserRace) {
+                newUser = false;     // request khác của cùng người vừa tạo dòng này và sẽ tự đếm
+            }
+            if (newUser) {
                 try {
-                    mongo.upsert(pending, update, COLLECTION);
-                    return;
-                } catch (DuplicateKeyException e) {
-                    // Lần 1: request khác vừa tạo món này, thử lại sẽ cập nhật. Lần 2: món đã được duyệt/bỏ.
+                    mongo.updateFirst(Query.query(Criteria.where("key").is(key)), new Update().inc("userCount", 1),
+                        COLLECTION);
+                } catch (RuntimeException e) {
+                    // Không đếm được thì bỏ dòng để lần sau đếm lại
+                    mongo.remove(userRow, USERS);
+                    throw e;
                 }
-            }
-            if (newUser) {
-                mongo.remove(Query.query(Criteria.where("key").is(key).and("userId").is(userId)), USERS);
             }
         } catch (RuntimeException e) {
             log.warn("Không ghi được food_candidates cho '{}': {}", key, e.getMessage());
+        }
+    }
+
+    /** Upsert món pending; false khi món đã được duyệt/bỏ (upsert đụng index unique key). */
+    private boolean writePending(String key, Update update) {
+        Query pending = Query.query(Criteria.where("key").is(key).and("status").is("pending"));
+        try {
+            mongo.upsert(pending, update, COLLECTION);
+            return true;
+        } catch (DuplicateKeyException e) {
+            if (!mongo.exists(pending, COLLECTION)) {
+                return false;                         // đã duyệt/bỏ
+            }
+            mongo.upsert(pending, update, COLLECTION); // request khác vừa tạo món này
+            return true;
         }
     }
 

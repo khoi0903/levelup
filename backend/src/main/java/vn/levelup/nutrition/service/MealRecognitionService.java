@@ -141,27 +141,29 @@ public class MealRecognitionService {
         }
         long latencyMs = (System.nanoTime() - started) / 1_000_000;
 
-        // 4. Lưu kết quả đã kiểm tra (không lưu ảnh)
+        // 4. Lưu kết quả đã kiểm tra (không lưu ảnh). Món khớp kho bỏ số AI ước tính: lưu bữa luôn dùng số của kho
         ObjectId id = new ObjectId();
+        RecognitionDtos.RecognitionResponse result = response(id, false, dishes);
+        List<RecognitionParser.Dish> unmatched = new ArrayList<>();
+        List<Document> stored = new ArrayList<>();
+        for (int i = 0; i < dishes.size(); i++) {
+            boolean matched = result.items().get(i).matched();
+            if (!matched) {
+                unmatched.add(dishes.get(i));
+            }
+            stored.add(dishDocument(dishes.get(i), !matched));
+        }
         Document rec = new Document("_id", id)
             .append("userId", userId)
             .append("imageSha256", hash)
             .append("model", model)
-            .append("rawResult", new Document("dishes", dishes.stream().map(MealRecognitionService::dishDocument)
-                .toList()))
+            .append("rawResult", new Document("dishes", stored))
             .append("latencyMs", latencyMs)
             .append("attempts", attempts)
             .append("localDate", localDate)
             .append("createdAt", Date.from(Instant.now(clock)));
         mongo.insert(rec, "food_recognitions");
-        RecognitionDtos.RecognitionResponse result = response(id, false, dishes);
         // Món chưa có trong kho: gom vào kho chờ để Admin duyệt (chỉ lần gọi AI thật, không tính ảnh cache)
-        List<RecognitionParser.Dish> unmatched = new ArrayList<>();
-        for (int i = 0; i < dishes.size(); i++) {
-            if (!result.items().get(i).matched()) {
-                unmatched.add(dishes.get(i));
-            }
-        }
         candidates.recordRecognized(userId, unmatched);
         return result;
     }
@@ -206,11 +208,11 @@ public class MealRecognitionService {
         return new RecognitionDtos.RecognitionResponse(id.toHexString(), cached, items);
     }
 
-    static Document dishDocument(RecognitionParser.Dish d) {
+    static Document dishDocument(RecognitionParser.Dish d, boolean keepEstimate) {
         Document doc = new Document("name", d.name()).append("nameVi", d.nameVi())
             .append("ingredients", d.ingredients()).append("portionGrams", d.portionGrams())
             .append("confidence", d.confidence());
-        if (d.per100g() != null) {
+        if (keepEstimate && d.per100g() != null) {
             doc.append("per100g", estimateDocument(d.per100g()));
         }
         return doc;

@@ -118,6 +118,11 @@ class FoodCandidateFlowTest extends FlowTestBase {
         assertEquals(490, meal.getInteger("kcalMax"));       // 375 + 115
         assertNull(mongo.findOne(Query.query(Criteria.where("key").is(key + " ghi chu")), Document.class,
             "food_candidates"));
+        // Món khớp kho gửi thiếu foodId không được tính theo số AI và không vào kho chờ
+        call(post("/meals").header("Authorization", token).contentType(MediaType.APPLICATION_JSON).content("""
+            {"meal":"snack","method":"photo","recognitionId":"%s",
+             "items":[{"name":"Phở bò","portionGrams":300,"kcal":100}]}""".formatted(r.<String>read("$.recognitionId"))), 200);
+        assertNull(mongo.findOne(Query.query(Criteria.where("key").is("pho bo")), Document.class, "food_candidates"));
         assertEquals(1, candidate().getInteger("saves"));
         assertEquals(1, candidate().getInteger("userCount"));   // cùng người: không đếm lại
 
