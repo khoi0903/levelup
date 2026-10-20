@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'dart:async';
+
 import '../../../../core/utils/cache_for_extension.dart';
 import '../../../../core/utils/fast_cache.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
@@ -35,8 +36,9 @@ final homePlanProvider = FutureProvider.autoDispose<PlanView>((ref) async {
   return plan;
 });
 
-final activeWorkoutDraftProvider =
-    FutureProvider.autoDispose<WorkoutDraft?>((ref) async {
+final activeWorkoutDraftProvider = FutureProvider.autoDispose<WorkoutDraft?>((
+  ref,
+) async {
   final repo = ref.watch(workoutDraftRepositoryProvider);
   final now = ref.watch(workoutClockProvider)();
   // Quá 12 giờ tự xóa
@@ -50,7 +52,7 @@ Future<bool> syncPendingWorkoutDrafts({
   required DateTime now,
   void Function()? onSuccess,
 }) async {
-  await draftRepo.deleteExpiredDrafts(now, maxAge: const Duration(hours: 12));
+  // Gửi buổi chưa gửi được trước, rồi mới dọn bản nháp hết hạn
   final pendings = await draftRepo.getPendingSubmitDrafts();
   var anySuccess = false;
   for (final draft in pendings) {
@@ -63,6 +65,7 @@ Future<bool> syncPendingWorkoutDrafts({
       // Giữ nguyên pending_submit
     }
   }
+  await draftRepo.deleteExpiredDrafts(now, maxAge: const Duration(hours: 12));
   if (anySuccess && onSuccess != null) {
     onSuccess();
   }
