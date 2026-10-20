@@ -14,18 +14,20 @@ class DriftWorkoutDraftRepository implements WorkoutDraftRepository {
   DriftWorkoutDraftRepository(this._db);
 
   WorkoutDraft _toDomain(WorkoutDraftEntry entry) => WorkoutDraft(
-        clientId: entry.clientId,
-        sessionId: entry.sessionId,
-        stateJson: entry.stateJson,
-        updatedAt: entry.updatedAt,
-        status: entry.status,
-      );
+    clientId: entry.clientId,
+    sessionId: entry.sessionId,
+    stateJson: entry.stateJson,
+    updatedAt: entry.updatedAt,
+    status: entry.status,
+  );
 
   @override
   Future<void> saveDraft(WorkoutDraft draft) async {
     if (_useFallback) return _memoryFallback.saveDraft(draft);
     try {
-      await _db.into(_db.workoutDrafts).insertOnConflictUpdate(
+      await _db
+          .into(_db.workoutDrafts)
+          .insertOnConflictUpdate(
             WorkoutDraftsCompanion.insert(
               clientId: draft.clientId,
               sessionId: Value(draft.sessionId),
@@ -103,9 +105,9 @@ class DriftWorkoutDraftRepository implements WorkoutDraftRepository {
   Future<void> updateStatus(String clientId, String status) async {
     if (_useFallback) return _memoryFallback.updateStatus(clientId, status);
     try {
-      await (_db.update(_db.workoutDrafts)
-            ..where((tbl) => tbl.clientId.equals(clientId)))
-          .write(
+      await (_db.update(
+        _db.workoutDrafts,
+      )..where((tbl) => tbl.clientId.equals(clientId))).write(
         WorkoutDraftsCompanion(
           status: Value(status),
           updatedAt: Value(DateTime.now()),
@@ -121,9 +123,9 @@ class DriftWorkoutDraftRepository implements WorkoutDraftRepository {
   Future<void> deleteDraft(String clientId) async {
     if (_useFallback) return _memoryFallback.deleteDraft(clientId);
     try {
-      await (_db.delete(_db.workoutDrafts)
-            ..where((tbl) => tbl.clientId.equals(clientId)))
-          .go();
+      await (_db.delete(
+        _db.workoutDrafts,
+      )..where((tbl) => tbl.clientId.equals(clientId))).go();
     } catch (_) {
       _useFallback = true;
       return _memoryFallback.deleteDraft(clientId);
@@ -134,18 +136,34 @@ class DriftWorkoutDraftRepository implements WorkoutDraftRepository {
   Future<int> deleteExpiredDrafts(
     DateTime now, {
     Duration maxAge = const Duration(hours: 12),
+    Duration pendingMaxAge = WorkoutDraft.pendingMaxAge,
   }) async {
     if (_useFallback) {
-      return _memoryFallback.deleteExpiredDrafts(now, maxAge: maxAge);
+      return _memoryFallback.deleteExpiredDrafts(
+        now,
+        maxAge: maxAge,
+        pendingMaxAge: pendingMaxAge,
+      );
     }
     try {
-      final threshold = now.subtract(maxAge);
-      return await (_db.delete(_db.workoutDrafts)
-            ..where((tbl) => tbl.updatedAt.isSmallerThanValue(threshold)))
+      final activeThreshold = now.subtract(maxAge);
+      final pendingThreshold = now.subtract(pendingMaxAge);
+      // Buổi chưa gửi được (pending_submit) không xóa theo hạn 12 giờ: giữ để gửi lại
+      return await (_db.delete(_db.workoutDrafts)..where(
+            (tbl) =>
+                (tbl.status.equals('pending_submit') &
+                    tbl.updatedAt.isSmallerThanValue(pendingThreshold)) |
+                (tbl.status.equals('pending_submit').not() &
+                    tbl.updatedAt.isSmallerThanValue(activeThreshold)),
+          ))
           .go();
     } catch (_) {
       _useFallback = true;
-      return _memoryFallback.deleteExpiredDrafts(now, maxAge: maxAge);
+      return _memoryFallback.deleteExpiredDrafts(
+        now,
+        maxAge: maxAge,
+        pendingMaxAge: pendingMaxAge,
+      );
     }
   }
 

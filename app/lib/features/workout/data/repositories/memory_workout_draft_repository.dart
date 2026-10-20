@@ -65,9 +65,16 @@ class MemoryWorkoutDraftRepository implements WorkoutDraftRepository {
   Future<int> deleteExpiredDrafts(
     DateTime now, {
     Duration maxAge = const Duration(hours: 12),
+    Duration pendingMaxAge = WorkoutDraft.pendingMaxAge,
   }) async {
     final expiredKeys = _drafts.entries
-        .where((e) => e.value.isExpired(now, maxAge: maxAge))
+        .where(
+          (e) => e.value.isExpired(
+            now,
+            maxAge: maxAge,
+            pendingMaxAge: pendingMaxAge,
+          ),
+        )
         .map((e) => e.key)
         .toList();
     for (final k in expiredKeys) {

@@ -30,11 +30,16 @@ class WorkoutDraft {
     }
   }
 
+  /// Buổi chưa gửi được giữ tối đa chừng này để còn gửi lại (backend nhận buổi gửi muộn).
+  static const Duration pendingMaxAge = Duration(days: 30);
+
   bool isExpired(
     DateTime now, {
     Duration maxAge = const Duration(hours: 12),
+    Duration pendingMaxAge = WorkoutDraft.pendingMaxAge,
   }) {
-    return now.difference(updatedAt) > maxAge;
+    final age = now.difference(updatedAt);
+    return isPendingSubmit ? age > pendingMaxAge : age > maxAge;
   }
 
   WorkoutSessionState get sessionState {
