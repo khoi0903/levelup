@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
@@ -33,21 +34,21 @@ class ObPlanScreen extends ConsumerWidget {
               children: [
                 const OnboardingHeader(currentStep: 7),
                 const SizedBox(height: 18),
-                const Text(
+                Text(
                   AppStrings.planTitle,
                   style: TextStyle(
                     fontSize: 26,
                     height: 1.25,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
+                Text(
                   AppStrings.planSubtitle,
                   style: TextStyle(
                     fontSize: 15,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -72,9 +73,9 @@ class ObPlanScreen extends ConsumerWidget {
                                   decoration: BoxDecoration(
                                     border: isLast
                                         ? null
-                                        : const Border(
+                                        : Border(
                                             bottom: BorderSide(
-                                              color: AppColors.borderLight,
+                                              color: context.colors.borderLight,
                                               width: 1.0,
                                             ),
                                           ),
@@ -86,19 +87,19 @@ class ObPlanScreen extends ConsumerWidget {
                                         height: 44,
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
-                                          color: AppColors.cardSelectedBg,
+                                          color: context.colors.cardSelectedBg,
                                           borderRadius: BorderRadius.circular(12),
                                           border: Border.all(
-                                            color: AppColors.cardSelectedBorder,
+                                            color: context.colors.cardSelectedBorder,
                                             width: 1.0,
                                           ),
                                         ),
                                         child: Text(
                                           session.dayLabel,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w800,
-                                            color: AppColors.accentLink,
+                                            color: context.colors.accentLink,
                                           ),
                                         ),
                                       ),
@@ -112,28 +113,28 @@ class ObPlanScreen extends ConsumerWidget {
                                                 session.scheduledTime.isNotEmpty) ...[
                                               Text(
                                                 '${session.scheduledDate} · ${session.scheduledTime}',
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.w700,
-                                                  color: AppColors.accentLink,
+                                                  color: context.colors.accentLink,
                                                 ),
                                               ),
                                               const SizedBox(height: 2),
                                             ],
                                             Text(
                                               session.title,
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.w700,
-                                                color: AppColors.textPrimary,
+                                                color: context.colors.textPrimary,
                                               ),
                                             ),
                                             const SizedBox(height: 2),
                                             Text(
                                               '${session.durationMinutes} phút · ${session.exerciseCount} động tác',
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 fontSize: 13,
-                                                color: AppColors.textSecondary,
+                                                color: context.colors.textSecondary,
                                               ),
                                             ),
                                             if (session.items.isNotEmpty) ...[
@@ -142,9 +143,9 @@ class ObPlanScreen extends ConsumerWidget {
                                                 session.items
                                                     .map((i) => i.nameVi ?? i.exerciseId)
                                                     .join(' · '),
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontSize: 12,
-                                                  color: AppColors.textSecondary,
+                                                  color: context.colors.textSecondary,
                                                 ),
                                                 maxLines: 2,
                                                 overflow: TextOverflow.ellipsis,
@@ -178,19 +179,19 @@ class ObPlanScreen extends ConsumerWidget {
                             borderRadius: AppColors.radiusButton,
                             child: Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.check_circle_rounded,
                                   size: 18,
-                                  color: AppColors.accent,
+                                  color: context.colors.accent,
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     planAsync.valueOrNull!.injuryNote!,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
-                                      color: AppColors.textPrimary,
+                                      color: context.colors.textPrimary,
                                     ),
                                   ),
                                 ),
@@ -207,21 +208,21 @@ class ObPlanScreen extends ConsumerWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 AppStrings.buddyInviteTitle,
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
+                                  color: context.colors.textPrimary,
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              const Text(
+                              Text(
                                 AppStrings.buddyInviteSubtitle,
                                 style: TextStyle(
                                   fontSize: 14,
                                   height: 1.5,
-                                  color: AppColors.textSecondary,
+                                  color: context.colors.textSecondary,
                                 ),
                               ),
                               const SizedBox(height: 14),

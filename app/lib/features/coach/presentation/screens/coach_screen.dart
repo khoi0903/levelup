@@ -3,7 +3,7 @@ import '../../../product/presentation/widgets/product_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/app_skeleton.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -87,20 +87,20 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
       appBar: AppBar(
         title: Column(
           children: [
-            const Text(
+            Text(
               'AI Coach',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
             Text(
               'Còn ${state.remainingToday} lượt hôm nay',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ],
@@ -121,10 +121,10 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                     horizontal: 16,
                     vertical: 10,
                   ),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFEE2E2),
+                  decoration: BoxDecoration(
+                    color: context.colors.errorBg,
                     border: Border(
-                      bottom: BorderSide(color: Color(0xFFFCA5A5), width: 1),
+                      bottom: BorderSide(color: context.colors.errorBorder, width: 1),
                     ),
                   ),
                   child: Row(
@@ -139,9 +139,9 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                         child: Text(
                           mapErrorMessage(state.error),
                           key: const ValueKey('coach-error-banner'),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
-                            color: Color(0xFF991B1B),
+                            color: context.colors.errorText,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -260,12 +260,12 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                   (q) => ActionChip(
                     key: ValueKey('coach-suggestion-$q'),
                     label: Text(q),
-                    backgroundColor: AppColors.surface,
-                    side: const BorderSide(color: AppColors.border),
-                    labelStyle: const TextStyle(
+                    backgroundColor: context.colors.surface,
+                    side: BorderSide(color: context.colors.border),
+                    labelStyle: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
+                      color: context.colors.primary,
                     ),
                     onPressed: state.isSending ? null : () => _handleSend(q),
                   ),
@@ -279,7 +279,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
   }
 
   Widget _buildTyping() {
-    return const Align(
+    return Align(
       alignment: Alignment.centerLeft,
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 6),
@@ -289,7 +289,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
           style: TextStyle(
             fontSize: 13,
             fontStyle: FontStyle.italic,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
         ),
       ),
@@ -320,14 +320,14 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                 Container(
                   width: 32,
                   height: 32,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryLight,
+                  decoration: BoxDecoration(
+                    color: context.colors.primaryLight,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.smart_toy_rounded,
                     size: 18,
-                    color: AppColors.primary,
+                    color: context.colors.primary,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -339,7 +339,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                     vertical: 11,
                   ),
                   decoration: BoxDecoration(
-                    color: isUser ? AppColors.primary : AppColors.surface,
+                    color: isUser ? context.colors.buttonFill : context.colors.surface,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(16),
                       topRight: const Radius.circular(16),
@@ -352,12 +352,12 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                     ),
                     border: isUser
                         ? null
-                        : Border.all(color: AppColors.border, width: 1.0),
+                        : Border.all(color: context.colors.border, width: 1.0),
                     boxShadow: [
                       BoxShadow(
                         color: isUser
-                            ? AppColors.btnShadow
-                            : AppColors.cardNormalShadow,
+                            ? context.colors.btnShadow
+                            : context.colors.cardNormalShadow,
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -368,7 +368,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       height: 1.4,
-                      color: isUser ? Colors.white : AppColors.textPrimary,
+                      color: isUser ? Colors.white : context.colors.textPrimary,
                     ),
                   ),
                 ),
@@ -400,19 +400,19 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
           children: [
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.fitness_center_rounded,
                   size: 18,
-                  color: AppColors.primary,
+                  color: context.colors.primary,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     card.change ?? 'Đề xuất điều chỉnh buổi tập',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                 ),
@@ -427,7 +427,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
+                  color: context.colors.primaryLight,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
@@ -435,26 +435,26 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                     Expanded(
                       child: Text(
                         card.fromExerciseName!,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                           decoration: TextDecoration.lineThrough,
                         ),
                       ),
                     ),
-                    const Icon(
+                    Icon(
                       Icons.arrow_forward_rounded,
                       size: 14,
-                      color: AppColors.primary,
+                      color: context.colors.primary,
                     ),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         card.toExerciseName!,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.primary,
+                          color: context.colors.primary,
                         ),
                       ),
                     ),
@@ -466,9 +466,9 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
               const SizedBox(height: 6),
               Text(
                 'Lý do: ${card.reason}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
             ],
@@ -494,11 +494,11 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
               ),
             ] else ...[
               Row(
-                children: const [
+                children: [
                   Icon(
                     Icons.check_circle_rounded,
                     size: 16,
-                    color: AppColors.primary,
+                    color: context.colors.primary,
                   ),
                   SizedBox(width: 6),
                   Text(
@@ -506,7 +506,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
+                      color: context.colors.primary,
                     ),
                   ),
                 ],
@@ -521,9 +521,9 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
   Widget _buildInputBar(CoachChatState state) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.border, width: 1)),
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        border: Border(top: BorderSide(color: context.colors.border, width: 1)),
       ),
       child: Row(
         children: [
@@ -534,12 +534,12 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
               onSubmitted: (_) => _handleSend(),
               decoration: InputDecoration(
                 hintText: 'Nhắn cho Coach...',
-                hintStyle: const TextStyle(
+                hintStyle: TextStyle(
                   fontSize: 14,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
                 filled: true,
-                fillColor: AppColors.primaryLight,
+                fillColor: context.colors.primaryLight,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24),
                   borderSide: BorderSide.none,
@@ -555,12 +555,12 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
           Container(
             width: 44,
             height: 44,
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
+            decoration: BoxDecoration(
+              color: context.colors.buttonFill,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.btnShadow,
+                  color: context.colors.btnShadow,
                   blurRadius: 8,
                   offset: Offset(0, 3),
                 ),

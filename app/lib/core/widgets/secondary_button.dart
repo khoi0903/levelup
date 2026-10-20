@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../constants/app_palette.dart';
 
 class SecondaryButton extends StatelessWidget {
   final String label;
@@ -22,17 +23,17 @@ class SecondaryButton extends StatelessWidget {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: isDark ? AppColors.textPrimary : AppColors.surface,
+        color: isDark ? context.colors.textPrimary : context.colors.surface,
         borderRadius: BorderRadius.circular(AppColors.radiusButton),
         border: Border.all(
-          color: isDark ? Colors.transparent : AppColors.border,
+          color: isDark ? Colors.transparent : context.colors.border,
           width: 1.0,
         ),
         boxShadow: isDark
             ? null
-            : const [
+            : [
                 BoxShadow(
-                  color: AppColors.cardNormalShadow,
+                  color: context.colors.cardNormalShadow,
                   blurRadius: 10,
                   offset: Offset(0, 2),
                 ),
@@ -59,7 +60,7 @@ class SecondaryButton extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: isDark ? Colors.white : AppColors.textSecondary,
+                      color: isDark ? context.colors.surface : context.colors.textSecondary,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),

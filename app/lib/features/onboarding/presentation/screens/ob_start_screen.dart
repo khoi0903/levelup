@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
@@ -36,13 +37,13 @@ class ObStartScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   AppStrings.startReady,
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.8,
-                    color: AppColors.accentDark,
+                    color: context.colors.accentLink,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -52,16 +53,16 @@ class ObStartScreen extends ConsumerWidget {
                     fontSize: 28,
                     height: 1.25,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 10),
-                const Text(
+                Text(
                   AppStrings.startSubtitle,
                   style: TextStyle(
                     fontSize: 15,
                     height: 1.5,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -75,19 +76,19 @@ class ObStartScreen extends ConsumerWidget {
                       Container(
                         height: 140,
                         width: double.infinity,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primaryLight,
+                        decoration: BoxDecoration(
+                          color: context.colors.primaryLight,
                           borderRadius: BorderRadius.vertical(
                             top: Radius.circular(AppColors.radiusCard),
                           ),
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
+                          children: [
                             Icon(
                               Icons.fitness_center,
                               size: 36,
-                              color: AppColors.primary,
+                              color: context.colors.primary,
                             ),
                             SizedBox(height: 6),
                             Text(
@@ -95,7 +96,7 @@ class ObStartScreen extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: AppColors.textSecondary,
+                                color: context.colors.textSecondary,
                               ),
                             ),
                           ],
@@ -113,20 +114,20 @@ class ObStartScreen extends ConsumerWidget {
                                   Expanded(
                                     child: Text(
                                       item.$1,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w600,
-                                        color: AppColors.textPrimary,
+                                        color: context.colors.textPrimary,
                                       ),
                                     ),
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
                                     item.$2,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
-                                      color: AppColors.textSecondary,
+                                      color: context.colors.textSecondary,
                                     ),
                                   ),
                                 ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../constants/app_palette.dart';
 import '../constants/app_strings.dart';
 
 class OnboardingHeader extends StatelessWidget {
@@ -26,21 +27,21 @@ class OnboardingHeader extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 AppStrings.appName,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.2,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               Text(
                 stepText,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
             ],
@@ -62,20 +63,20 @@ class OnboardingHeader extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: context.colors.surface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border, width: 1.0),
-                boxShadow: const [
+                border: Border.all(color: context.colors.border, width: 1.0),
+                boxShadow: [
                   BoxShadow(
-                    color: AppColors.cardNormalShadow,
+                    color: context.colors.cardNormalShadow,
                     blurRadius: 10,
                     offset: Offset(0, 2),
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.chevron_left_rounded,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 size: 26,
               ),
             ),
@@ -88,10 +89,10 @@ class OnboardingHeader extends StatelessWidget {
         const SizedBox(width: 14),
         Text(
           stepText,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
         ),
       ],
@@ -109,7 +110,7 @@ class _ProgressBar extends StatelessWidget {
     return Container(
       height: 8,
       decoration: BoxDecoration(
-        color: AppColors.progressTrack,
+        color: context.colors.progressTrack,
         borderRadius: BorderRadius.circular(AppColors.radiusPill),
       ),
       child: LayoutBuilder(
@@ -121,7 +122,7 @@ class _ProgressBar extends StatelessWidget {
               width: constraints.maxWidth * progress,
               height: 8,
               decoration: BoxDecoration(
-                color: AppColors.progressFill,
+                color: context.colors.progressFill,
                 borderRadius: BorderRadius.circular(AppColors.radiusPill),
               ),
             ),

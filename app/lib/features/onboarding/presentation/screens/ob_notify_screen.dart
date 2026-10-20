@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
@@ -33,7 +34,7 @@ class ObNotifyScreen extends ConsumerWidget {
                       context.push('/onboarding/start');
                     },
                     style: TextButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
+                      foregroundColor: context.colors.textSecondary,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 4,
                         vertical: 10,
@@ -68,15 +69,15 @@ class ObNotifyScreen extends ConsumerWidget {
                                   vertical: 12,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.cardSelectedBg,
+                                  color: context.colors.cardSelectedBg,
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
-                                    color: AppColors.cardSelectedBorder,
+                                    color: context.colors.cardSelectedBorder,
                                     width: 1.0,
                                   ),
-                                  boxShadow: const [
+                                  boxShadow: [
                                     BoxShadow(
-                                      color: AppColors.cardSelectedShadow,
+                                      color: context.colors.cardSelectedShadow,
                                       blurRadius: 16,
                                       offset: Offset(0, 6),
                                     ),
@@ -89,7 +90,7 @@ class ObNotifyScreen extends ConsumerWidget {
                                       width: 40,
                                       height: 40,
                                       decoration: BoxDecoration(
-                                        color: AppColors.primary,
+                                        color: context.colors.buttonFill,
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: const Icon(
@@ -103,13 +104,13 @@ class ObNotifyScreen extends ConsumerWidget {
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
-                                        children: const [
+                                        children: [
                                           Text(
                                             AppStrings.notifyMockTitle1,
                                             style: TextStyle(
                                               fontSize: 13,
                                               fontWeight: FontWeight.w700,
-                                              color: AppColors.textPrimary,
+                                              color: context.colors.textPrimary,
                                             ),
                                           ),
                                           SizedBox(height: 2),
@@ -118,7 +119,7 @@ class ObNotifyScreen extends ConsumerWidget {
                                             style: TextStyle(
                                               fontSize: 14,
                                               height: 1.45,
-                                              color: AppColors.textSecondary,
+                                              color: context.colors.textSecondary,
                                             ),
                                           ),
                                         ],
@@ -138,10 +139,10 @@ class ObNotifyScreen extends ConsumerWidget {
                                     vertical: 12,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.surface,
+                                    color: context.colors.surface,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
-                                      color: AppColors.border,
+                                      color: context.colors.border,
                                       width: 1.0,
                                     ),
                                   ),
@@ -153,14 +154,14 @@ class ObNotifyScreen extends ConsumerWidget {
                                         width: 40,
                                         height: 40,
                                         decoration: BoxDecoration(
-                                          color: AppColors.primaryLight,
+                                          color: context.colors.primaryLight,
                                           borderRadius: BorderRadius.circular(
                                             12,
                                           ),
                                         ),
-                                        child: const Icon(
+                                        child: Icon(
                                           Icons.chat_bubble,
-                                          color: AppColors.primary,
+                                          color: context.colors.primary,
                                           size: 20,
                                         ),
                                       ),
@@ -169,13 +170,13 @@ class ObNotifyScreen extends ConsumerWidget {
                                         child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
-                                          children: const [
+                                          children: [
                                             Text(
                                               AppStrings.notifyMockTitle2,
                                               style: TextStyle(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w700,
-                                                color: AppColors.textPrimary,
+                                                color: context.colors.textPrimary,
                                               ),
                                             ),
                                             SizedBox(height: 2),
@@ -184,7 +185,7 @@ class ObNotifyScreen extends ConsumerWidget {
                                               style: TextStyle(
                                                 fontSize: 14,
                                                 height: 1.45,
-                                                color: AppColors.textSecondary,
+                                                color: context.colors.textSecondary,
                                               ),
                                             ),
                                           ],
@@ -199,22 +200,22 @@ class ObNotifyScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 24),
 
-                        const Text(
+                        Text(
                           AppStrings.notifyTitle,
                           style: TextStyle(
                             fontSize: 26,
                             height: 1.25,
                             fontWeight: FontWeight.w800,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           AppStrings.notifySubtitle,
                           style: TextStyle(
                             fontSize: 15,
                             height: 1.5,
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -260,15 +261,15 @@ class _NotifyFeatureItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(Icons.check_circle, color: AppColors.accent, size: 20),
+        Icon(Icons.check_circle, color: context.colors.accent, size: 20),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
         ),

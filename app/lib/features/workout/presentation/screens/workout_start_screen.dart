@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/api/api_exceptions.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/app_skeleton.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -358,9 +358,9 @@ class _Overview extends ConsumerWidget {
                 const SizedBox(height: 10),
               ],
               if (setup.items.isEmpty)
-                const Text(
+                Text(
                   'Buổi này chưa có bài tập.',
-                  style: TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: context.colors.textSecondary),
                 ),
             ],
           ),
@@ -376,7 +376,7 @@ class _Overview extends ConsumerWidget {
               label: shouldOpenExtra ? 'Tập thêm' : 'Bắt đầu',
               icon: Icon(
                 shouldOpenExtra ? Icons.add_rounded : Icons.play_arrow_rounded,
-                color: AppColors.surface,
+                color: context.colors.surface,
               ),
               onPressed: setup.items.isEmpty
                   ? null
@@ -438,25 +438,25 @@ class _ExerciseRow extends StatelessWidget {
                       ),
                       margin: const EdgeInsets.only(right: 6),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryLight,
+                        color: context.colors.primaryLight,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         '$index',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.primary,
+                          color: context.colors.primary,
                         ),
                       ),
                     ),
                     Expanded(
                       child: Text(
                         item.nameVi,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                     ),
@@ -468,21 +468,21 @@ class _ExerciseRow extends StatelessWidget {
                     item.targetLabel,
                     if (item.restSec > 0) 'nghỉ ${item.restSec}s',
                   ].join(' · '),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],
             ),
           ),
           if (hasCamera) ...[
-            const Tooltip(
+            Tooltip(
               message: 'Đếm được bằng camera',
               child: Icon(
                 Icons.videocam_outlined,
                 size: 20,
-                color: AppColors.primary,
+                color: context.colors.primary,
               ),
             ),
             const SizedBox(width: 6),
@@ -491,17 +491,17 @@ class _ExerciseRow extends StatelessWidget {
             TextButton.icon(
               key: ValueKey('swap-btn-${item.exerciseId}'),
               onPressed: onSwap,
-              icon: const Icon(
+              icon: Icon(
                 Icons.swap_horiz_rounded,
                 size: 16,
-                color: AppColors.primary,
+                color: context.colors.primary,
               ),
-              label: const Text(
+              label: Text(
                 'Đổi',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
+                  color: context.colors.primary,
                 ),
               ),
               style: TextButton.styleFrom(

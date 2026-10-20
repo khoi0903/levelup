@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../domain/models/progress_models.dart';
 
@@ -67,7 +67,8 @@ class MeasurementChart extends StatelessWidget {
                   painter: _MeasurementPainter(
                     points,
                     Theme.of(context).textTheme.labelSmall!
-                        .copyWith(color: AppColors.textSecondary, fontSize: 10),
+                        .copyWith(color: context.colors.textSecondary, fontSize: 10),
+                    context.colors,
                   ),
                 ),
               ),
@@ -87,7 +88,7 @@ class MeasurementChart extends StatelessWidget {
             ),
             if (points.length == 1) const Text('Thêm lần đo để xem xu hướng.'),
             Material(
-              color: AppColors.surface,
+              color: context.colors.surface,
               child: ExpansionTile(
                 tilePadding: EdgeInsets.zero,
                 title: const Text('Xem các lần đo'),
@@ -111,9 +112,10 @@ class MeasurementChart extends StatelessWidget {
 }
 
 class _MeasurementPainter extends CustomPainter {
-  _MeasurementPainter(this.points, this.axisStyle);
+  _MeasurementPainter(this.points, this.axisStyle, this.colors);
   final List<MeasurementPoint> points;
   final TextStyle axisStyle;
+  final AppPalette colors;
   @override
   void paint(Canvas canvas, Size size) {
     const left = 42.0, top = 12.0, bottom = 12.0;
@@ -128,7 +130,7 @@ class _MeasurementPainter extends CustomPainter {
       points.last.date.difference(points.first.date).inDays,
     );
     final grid = Paint()
-      ..color = AppColors.border
+      ..color = colors.border
       ..strokeWidth = 1;
     for (var i = 0; i < 3; i++) {
       final y = top + height * i / 2;
@@ -156,7 +158,7 @@ class _MeasurementPainter extends CustomPainter {
         )
         .toList();
     final paint = Paint()
-      ..color = AppColors.primary
+      ..color = colors.primary
       ..strokeWidth = 2.5
       ..style = PaintingStyle.stroke;
     final path = Path()..moveTo(offsets.first.dx, offsets.first.dy);
@@ -172,5 +174,6 @@ class _MeasurementPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _MeasurementPainter oldDelegate) =>
-      oldDelegate.points != points || oldDelegate.axisStyle != axisStyle;
+      oldDelegate.points != points || oldDelegate.axisStyle != axisStyle ||
+      oldDelegate.colors != colors;
 }

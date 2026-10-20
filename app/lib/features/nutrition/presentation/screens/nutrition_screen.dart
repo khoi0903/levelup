@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/app_skeleton.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -87,7 +87,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                       children: [
                 Text(
                   'Hôm nay • ${today.localDate}',
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: context.colors.textSecondary),
                 ),
                 const SizedBox(height: 14),
                 AppCard(child: _Summary(today)),
@@ -228,8 +228,8 @@ class _Summary extends StatelessWidget {
                       value: target == null || target.kcal <= 0
                           ? 0
                           : (today.consumed.kcal / target.kcal).clamp(0, 1),
-                      color: AppColors.progressFill,
-                      backgroundColor: AppColors.progressTrack,
+                      color: context.colors.progressFill,
+                      backgroundColor: context.colors.progressTrack,
                     ),
                   ),
                   Padding(
@@ -283,10 +283,10 @@ class _Summary extends StatelessWidget {
                 ? 'Calo vận động: ${today.totalBurnedKcal} kcal · ${today.steps} bước'
                 : 'Calo vận động: ${today.totalBurnedKcal} kcal',
             key: const ValueKey('nutrition-burned-kcal'),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
           if (today.burnedKcal > 0 &&
@@ -296,19 +296,19 @@ class _Summary extends StatelessWidget {
               'Tập trong app ${today.burnedKcal} kcal + đi lại, vận động khác '
               '${today.totalBurnedKcal - today.burnedKcal} kcal',
               key: const ValueKey('nutrition-burned-breakdown'),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ],
           const SizedBox(height: 2),
-          const Text(
+          Text(
             'Calo vận động chỉ để tham khảo, mục tiêu ăn giữ nguyên',
             key: ValueKey('nutrition-activity-note'),
             style: TextStyle(
               fontSize: 11,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 4),

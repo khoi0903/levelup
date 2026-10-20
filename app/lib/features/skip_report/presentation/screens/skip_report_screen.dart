@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
@@ -38,12 +39,12 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Không tập được hôm nay',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         backgroundColor: Colors.transparent,
@@ -71,18 +72,18 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
       children: [
-        const Text(
+        Text(
           'Đừng lo! Lắng nghe cơ thể là một phần của hành trình.',
           style: TextStyle(
             fontSize: 19,
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 6),
-        const Text(
+        Text(
           'Hãy cho coach biết lý do, coach sẽ điều chỉnh kế hoạch để bạn duy trì streak mà không bị quá tải.',
-          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
         ),
         const SizedBox(height: 18),
 
@@ -103,12 +104,12 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
           const SizedBox(height: 18),
         ],
 
-        const Text(
+        Text(
           'Lý do chính',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 10),
@@ -170,12 +171,12 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
         // Vùng đau nếu reason == pain
         if (isPain) ...[
           const SizedBox(height: 18),
-          const Text(
+          Text(
             'Chọn vùng bị đau / khó chịu',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 10),
@@ -201,12 +202,12 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
         ],
 
         const SizedBox(height: 18),
-        const Text(
+        Text(
           'Ghi chú thêm (không bắt buộc)',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -217,24 +218,24 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
               notifier.setNote(text.trim().isEmpty ? null : text.trim()),
           decoration: InputDecoration(
             hintText: 'Nhập ghi chú hoặc cảm nhận của bạn...',
-            hintStyle: const TextStyle(
+            hintStyle: TextStyle(
               fontSize: 13,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
             filled: true,
-            fillColor: AppColors.surface,
+            fillColor: context.colors.surface,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppColors.border),
+              borderSide: BorderSide(color: context.colors.border),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppColors.border),
+              borderSide: BorderSide(color: context.colors.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(
-                color: AppColors.primary,
+              borderSide: BorderSide(
+                color: context.colors.primary,
                 width: 1.5,
               ),
             ),
@@ -248,9 +249,9 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFFEE2E2),
+              color: context.colors.errorBg,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFFCA5A5), width: 1),
+              border: Border.all(color: context.colors.errorBorder, width: 1),
             ),
             child: Row(
               children: [
@@ -264,9 +265,9 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
                   child: Text(
                     mapErrorMessage(state.error),
                     key: const ValueKey('skip-report-error-text'),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
-                      color: Color(0xFF991B1B),
+                      color: context.colors.errorText,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -305,21 +306,21 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
         decoration: BoxDecoration(
-          color: AppColors.primaryLight,
+          color: context.colors.primaryLight,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border, width: 1),
+          border: Border.all(color: context.colors.border, width: 1),
         ),
         child: Column(
           children: [
-            Icon(icon, color: AppColors.primary, size: 24),
+            Icon(icon, color: context.colors.primary, size: 24),
             const SizedBox(height: 6),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: AppColors.accentLink,
+                color: context.colors.accentLink,
               ),
             ),
           ],
@@ -353,18 +354,18 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
                 children: [
                   Text(
                     label,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     desc,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
@@ -375,11 +376,11 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
               height: 20,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isSelected ? AppColors.primary : Colors.transparent,
+                color: isSelected ? context.colors.buttonFill : Colors.transparent,
                 border: Border.all(
                   color: isSelected
-                      ? AppColors.primary
-                      : AppColors.radioUnselectedBorder,
+                      ? context.colors.buttonFill
+                      : context.colors.radioUnselectedBorder,
                   width: 2,
                 ),
               ),
@@ -406,10 +407,10 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.surface,
+          color: isSelected ? context.colors.buttonFill : context.colors.surface,
           borderRadius: BorderRadius.circular(AppColors.radiusPill),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
+            color: isSelected ? context.colors.buttonFill : context.colors.border,
             width: 1.0,
           ),
         ),
@@ -418,7 +419,7 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
           style: TextStyle(
             fontSize: 13,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected ? Colors.white : AppColors.textPrimary,
+            color: isSelected ? Colors.white : context.colors.textPrimary,
           ),
         ),
       ),
@@ -440,24 +441,24 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
         Container(
           width: 60,
           height: 60,
-          decoration: const BoxDecoration(
-            color: AppColors.primaryLight,
+          decoration: BoxDecoration(
+            color: context.colors.primaryLight,
             shape: BoxShape.circle,
           ),
-          child: const Icon(
+          child: Icon(
             Icons.smart_toy_outlined,
             size: 36,
-            color: AppColors.primary,
+            color: context.colors.primary,
           ),
         ),
         const SizedBox(height: 16),
-        const Text(
+        Text(
           'Coach đã tiếp nhận!',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 12),
@@ -466,12 +467,12 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 children: [
                   Icon(
                     Icons.chat_bubble_outline_rounded,
                     size: 18,
-                    color: AppColors.primary,
+                    color: context.colors.primary,
                   ),
                   SizedBox(width: 8),
                   Text(
@@ -479,7 +480,7 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.accentLink,
+                      color: context.colors.accentLink,
                     ),
                   ),
                 ],
@@ -488,11 +489,11 @@ class _SkipReportScreenState extends ConsumerState<SkipReportScreen> {
               Text(
                 message,
                 key: const ValueKey('skip-report-coach-message'),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   height: 1.5,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
             ],

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
@@ -112,21 +113,21 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
               children: [
                 const OnboardingHeader(currentStep: 2),
                 const SizedBox(height: 22),
-                const Text(
+                Text(
                   AppStrings.bodyTitle,
                   style: TextStyle(
                     fontSize: 26,
                     height: 1.25,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   AppStrings.bodySubtitle,
                   style: TextStyle(
                     fontSize: 15,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -136,12 +137,12 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           AppStrings.genderLabel,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -224,9 +225,9 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
                             borderRadius: AppColors.radiusButton,
                             child: Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.insights_rounded,
-                                  color: AppColors.accent,
+                                  color: context.colors.accent,
                                   size: 24,
                                 ),
                                 const SizedBox(width: 12),
@@ -236,11 +237,11 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
                                       goalWeight,
                                       estimatedWeeks,
                                     ),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 14,
                                       height: 1.5,
                                       fontWeight: FontWeight.w600,
-                                      color: AppColors.textPrimary,
+                                      color: context.colors.textPrimary,
                                     ),
                                   ),
                                 ),
@@ -295,7 +296,7 @@ class _GenderButton extends StatelessWidget {
           style: TextStyle(
             fontSize: 15,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected ? AppColors.accentLink : AppColors.textPrimary,
+            color: isSelected ? context.colors.accentLink : context.colors.textPrimary,
           ),
         ),
       ),
@@ -321,10 +322,10 @@ class _NumberInputField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -336,9 +337,9 @@ class _NumberInputField extends StatelessWidget {
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             onChanged: onChanged,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
               fontWeight: FontWeight.w600,
             ),
             decoration: const InputDecoration(

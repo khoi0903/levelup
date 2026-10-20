@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/api/api_exceptions.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../coach/presentation/controllers/coach_controller.dart';
@@ -258,8 +258,8 @@ class _SwapExerciseSheetState extends ConsumerState<SwapExerciseSheet> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
+      decoration: BoxDecoration(
+        color: context.colors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
@@ -286,10 +286,10 @@ class _SwapExerciseSheetState extends ConsumerState<SwapExerciseSheet> {
                   Expanded(
                     child: Text(
                       'Đổi bài ${widget.item.nameVi}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                   ),
@@ -311,14 +311,14 @@ class _SwapExerciseSheetState extends ConsumerState<SwapExerciseSheet> {
                       else if (_error != null)
                         _buildError()
                       else if (_alternatives.isEmpty)
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.symmetric(vertical: 32),
                           child: Center(
                             child: Text(
                               'Chưa có bài thay thế phù hợp',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: AppColors.textSecondary,
+                                color: context.colors.textSecondary,
                               ),
                             ),
                           ),
@@ -352,13 +352,13 @@ class _SwapExerciseSheetState extends ConsumerState<SwapExerciseSheet> {
                                           () => _remember = val ?? false,
                                         ),
                                 ),
-                                const Expanded(
+                                Expanded(
                                   child: Text(
                                     'Không gợi ý bài này nữa',
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
-                                      color: AppColors.textPrimary,
+                                      color: context.colors.textPrimary,
                                     ),
                                   ),
                                 ),
@@ -379,8 +379,8 @@ class _SwapExerciseSheetState extends ConsumerState<SwapExerciseSheet> {
                 label: const Text('Hỏi coach gợi ý thêm'),
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(46),
-                  side: const BorderSide(color: AppColors.primary),
-                  foregroundColor: AppColors.primary,
+                  side: BorderSide(color: context.colors.primary),
+                  foregroundColor: context.colors.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -402,9 +402,9 @@ class _SwapExerciseSheetState extends ConsumerState<SwapExerciseSheet> {
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: context.colors.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: context.colors.border),
           ),
           child: Row(
             children: [
@@ -508,10 +508,10 @@ class _AlternativeCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           alt.nameVi,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                       ),
@@ -523,15 +523,15 @@ class _AlternativeCard extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryLight,
+                            color: context.colors.primaryLight,
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Camera',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.primary,
+                              color: context.colors.primary,
                             ),
                           ),
                         ),
@@ -542,9 +542,9 @@ class _AlternativeCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       alt.reason!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],

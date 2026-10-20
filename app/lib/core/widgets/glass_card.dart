@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../constants/app_palette.dart';
 
 class AppCard extends StatelessWidget {
   final Widget child;
@@ -24,22 +25,22 @@ class AppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final decoration = BoxDecoration(
-      color: isSelected ? AppColors.cardSelectedBg : AppColors.cardNormalBg,
+      color: isSelected ? context.colors.cardSelectedBg : context.colors.cardNormalBg,
       borderRadius: BorderRadius.circular(borderRadius),
       border: Border.all(
-        color: isSelected ? AppColors.cardSelectedBorder : AppColors.cardNormalBorder,
+        color: isSelected ? context.colors.cardSelectedBorder : context.colors.cardNormalBorder,
         width: isSelected ? 1.5 : 1.0,
       ),
       boxShadow: [
         if (isSelected)
-          const BoxShadow(
-            color: AppColors.cardSelectedShadow,
+          BoxShadow(
+            color: context.colors.cardSelectedShadow,
             blurRadius: 18,
             offset: Offset(0, 6),
           )
         else
-          const BoxShadow(
-            color: AppColors.cardNormalShadow,
+          BoxShadow(
+            color: context.colors.cardNormalShadow,
             blurRadius: 14,
             offset: Offset(0, 4),
           ),
@@ -90,8 +91,8 @@ class AppRadio extends StatelessWidget {
       return Container(
         width: size,
         height: size,
-        decoration: const BoxDecoration(
-          color: AppColors.primary,
+        decoration: BoxDecoration(
+          color: context.colors.buttonFill,
           shape: BoxShape.circle,
         ),
         child: const Icon(
@@ -106,10 +107,10 @@ class AppRadio extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: AppColors.radioUnselectedBg,
+        color: context.colors.radioUnselectedBg,
         shape: BoxShape.circle,
         border: Border.all(
-          color: AppColors.radioUnselectedBorder,
+          color: context.colors.radioUnselectedBorder,
           width: 2.0,
         ),
       ),

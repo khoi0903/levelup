@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../constants/app_palette.dart';
 
 class PrimaryButton extends StatelessWidget {
   final String label;
@@ -26,13 +27,13 @@ class PrimaryButton extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         color: isEnabled
-            ? AppColors.primary
-            : AppColors.primary.withValues(alpha: 0.35),
+            ? context.colors.buttonFill
+            : context.colors.buttonFill.withValues(alpha: 0.35),
         borderRadius: BorderRadius.circular(AppColors.radiusButton),
         boxShadow: isEnabled
-            ? const [
+            ? [
                 BoxShadow(
-                  color: AppColors.btnShadow,
+                  color: context.colors.btnShadow,
                   blurRadius: 20,
                   offset: Offset(0, 8),
                 ),

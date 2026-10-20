@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../controllers/shell_controller.dart';
 
 /// Khung ứng dụng với thanh điều hướng dưới 5 tab dùng StatefulShellRoute:
@@ -63,10 +63,10 @@ class _AppShellScreenState extends ConsumerState<AppShellScreen> {
         top: false,
         child: Container(
           height: 64,
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
+          decoration: BoxDecoration(
+            color: context.colors.surface,
             border: Border(
-              top: BorderSide(color: AppColors.border, width: 1.0),
+              top: BorderSide(color: context.colors.border, width: 1.0),
             ),
             boxShadow: [
               BoxShadow(
@@ -158,7 +158,7 @@ class _NavItem extends StatelessWidget {
             Icon(
               icon,
               size: 22,
-              color: isSelected ? AppColors.primary : AppColors.textSecondary,
+              color: isSelected ? context.colors.primary : context.colors.textSecondary,
             ),
             const SizedBox(height: 2),
             Text(
@@ -169,7 +169,7 @@ class _NavItem extends StatelessWidget {
                 fontSize: 10,
                 height: 1.1,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                color: isSelected ? context.colors.primary : context.colors.textSecondary,
               ),
             ),
           ],

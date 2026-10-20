@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/app_skeleton.dart';
 import '../../../../core/widgets/error_view.dart';
@@ -37,12 +38,12 @@ class StreakScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Chuỗi tuần (Streak)',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         backgroundColor: Colors.transparent,
@@ -63,7 +64,7 @@ class StreakScreen extends ConsumerWidget {
                     ReloadingIndicator(isReloading: isReloading),
                     Expanded(
                       child: RefreshIndicator(
-                        color: AppColors.primary,
+                        color: context.colors.primary,
                         onRefresh: () async {
                           ref.invalidate(streakFutureProvider);
                         },
@@ -96,34 +97,34 @@ class StreakScreen extends ConsumerWidget {
               Container(
                 width: 72,
                 height: 72,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primaryLight,
+                  color: context.colors.primaryLight,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.local_fire_department_rounded,
                   size: 42,
-                  color: AppColors.primary,
+                  color: context.colors.primary,
                 ),
               ),
               const SizedBox(height: 12),
               Text(
                 '${streak.currentWeeks} tuần liên tiếp',
                 key: const ValueKey('streak-current-text'),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 6),
               Text(
                 'Kỷ lục cao nhất: ${streak.bestWeeks} tuần',
                 key: const ValueKey('streak-best-text'),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
             ],
@@ -140,12 +141,12 @@ class StreakScreen extends ConsumerWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE0F2FE),
+                  color: context.colors.infoBg,
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.ac_unit_rounded,
-                  color: Color(0xFF0284C7),
+                  color: context.colors.infoAccent,
                   size: 24,
                 ),
               ),
@@ -157,18 +158,18 @@ class StreakScreen extends ConsumerWidget {
                     Text(
                       'Thẻ đóng băng: ${streak.freezesAvailable} thẻ',
                       key: const ValueKey('streak-freezes-text'),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
-                    const Text(
+                    Text(
                       'Tự động bảo vệ streak nếu bạn có một tuần bận rộn.',
                       style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -189,21 +190,21 @@ class StreakScreen extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Tuần này',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                     Text(
                       '${thisWeek.completedSessions}/${thisWeek.targetSessions} buổi',
                       key: const ValueKey('streak-this-week-count'),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.accentLink,
+                        color: context.colors.accentLink,
                       ),
                     ),
                   ],
@@ -217,9 +218,9 @@ class StreakScreen extends ConsumerWidget {
                               .clamp(0.0, 1.0)
                         : 0.0,
                     minHeight: 8,
-                    backgroundColor: AppColors.progressTrack,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.progressFill,
+                    backgroundColor: context.colors.progressTrack,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      context.colors.progressFill,
                     ),
                   ),
                 ),
@@ -228,9 +229,9 @@ class StreakScreen extends ConsumerWidget {
                   thisWeek.completedSessions >= thisWeek.targetSessions
                       ? 'Đã hoàn thành mục tiêu tuần! Streak của bạn an toàn.'
                       : 'Còn ${thisWeek.targetSessions - thisWeek.completedSessions} buổi để giữ vững streak tuần.',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],
@@ -250,22 +251,22 @@ class StreakScreen extends ConsumerWidget {
                     ? 'Tuần đầu tiên của bạn'
                     : 'Lịch sử ${sortedWeeks.length} tuần gần nhất',
                 key: const ValueKey('streak-history-title'),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 14),
               if (sortedWeeks.isEmpty)
-                const Padding(
+                Padding(
                   padding: EdgeInsets.symmetric(vertical: 12),
                   child: Center(
                     child: Text(
                       'Chưa có lịch sử tuần trước.',
                       style: TextStyle(
                         fontSize: 13,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ),
@@ -307,10 +308,10 @@ class StreakScreen extends ConsumerWidget {
                 children: [
                   Text(
                     weekTitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   Text(
@@ -326,17 +327,17 @@ class StreakScreen extends ConsumerWidget {
             ),
             Text(
               '${week.completedSessions}/${week.targetSessions} buổi',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
             const SizedBox(width: 4),
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
               size: 20,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ],
         ),
