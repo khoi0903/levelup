@@ -7,9 +7,9 @@ import '../core/constants/app_palette.dart';
 class AppTheme {
   AppTheme._();
 
-  static ThemeData get lightTheme => _build(AppPalette.light);
+  static final ThemeData lightTheme = _build(AppPalette.light);
 
-  static ThemeData get darkTheme => _build(AppPalette.dark);
+  static final ThemeData darkTheme = _build(AppPalette.dark);
 
   static ThemeData _build(AppPalette c) {
     final baseTextTheme = GoogleFonts.plusJakartaSansTextTheme(
