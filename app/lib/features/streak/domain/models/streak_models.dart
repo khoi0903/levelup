@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 
 class StreakWeek {
   final String weekStart;
@@ -256,45 +256,46 @@ class WeekStatusInfo {
   });
 }
 
-WeekStatusInfo mapWeekStatus(String status) {
+/// Nhãn, biểu tượng và màu theo trạng thái tuần; [c] là bảng màu theo theme (sáng/tối).
+WeekStatusInfo mapWeekStatus(String status, AppPalette c) {
   switch (status) {
     case 'achieved':
     case 'completed':
-      return const WeekStatusInfo(
+      return WeekStatusInfo(
         label: 'Đạt',
         icon: Icons.check_circle_rounded,
-        color: AppColors.primary,
-        bgColor: AppColors.primaryLight,
+        color: c.primary,
+        bgColor: c.primaryLight,
       );
     case 'missed':
     case 'broken':
-      return const WeekStatusInfo(
+      return WeekStatusInfo(
         label: 'Chưa đạt',
         icon: Icons.cancel_outlined,
         color: Colors.redAccent,
-        bgColor: Color(0xFFFEE2E2),
+        bgColor: c.errorBg,
       );
     case 'frozen':
-      return const WeekStatusInfo(
+      return WeekStatusInfo(
         label: 'Dùng thẻ đóng băng',
         icon: Icons.ac_unit_rounded,
-        color: Color(0xFF0284C7),
-        bgColor: Color(0xFFE0F2FE),
+        color: c.infoAccent,
+        bgColor: c.infoBg,
       );
     case 'in_progress':
-      return const WeekStatusInfo(
+      return WeekStatusInfo(
         label: 'Đang diễn ra',
         icon: Icons.timelapse_rounded,
-        color: AppColors.accentLink,
-        bgColor: AppColors.primaryLight,
+        color: c.accentLink,
+        bgColor: c.primaryLight,
       );
     case 'none':
     default:
-      return const WeekStatusInfo(
+      return WeekStatusInfo(
         label: 'Không có dữ liệu',
         icon: Icons.radio_button_unchecked_rounded,
-        color: AppColors.textSecondary,
-        bgColor: Color(0xFFF3F4F6),
+        color: c.textSecondary,
+        bgColor: c.mutedBg,
       );
   }
 }

@@ -10,6 +10,7 @@ import 'dart:async';
 
 import 'package:camera/camera.dart';
 import 'package:fitness_app/app/router.dart';
+import 'package:fitness_app/app/theme.dart';
 import 'package:fitness_app/features/onboarding/data/repositories/fake_plan_repository.dart';
 import 'package:fitness_app/features/onboarding/domain/models/plan_models.dart';
 import 'package:fitness_app/features/onboarding/presentation/controllers/onboarding_controller.dart';
@@ -201,6 +202,8 @@ class WorkoutHarness {
     FakePermissionGate? permission,
     CameraSetupSkip? setupSkip,
     this.autoCamera = false,
+    this.themeMode,
+    this.extraOverrides = const [],
   }) : planRepo = FakePlanRepository(planView: plan),
        repo = repo ?? FakeWorkoutRepository(exercises: testExercises),
        draftRepo = draftRepo ?? MemoryWorkoutDraftRepository(),
@@ -220,6 +223,12 @@ class WorkoutHarness {
 
   /// "Tự mở camera khi bắt đầu hiệp" (app mặc định bật). Test cũ đi luồng bấm tay nên mặc định tắt ở đây.
   final bool autoCamera;
+
+  /// Có giá trị thì dùng theme sáng/tối của app (test chế độ tối); null giữ ThemeData mặc định như cũ.
+  final ThemeMode? themeMode;
+
+  /// Override thêm (repo giả của các màn khác khi duyệt toàn app).
+  final List<Override> extraOverrides;
 
   /// Ghi lại câu giọng đọc đã "nói" để test kiểm tra.
   final voice = FakeVoiceCoach();
@@ -264,6 +273,7 @@ class WorkoutHarness {
         coachRepositoryProvider.overrideWithValue(
           FakeCoachRepository(initialMessages: const []),
         ),
+        ...extraOverrides,
       ],
     );
     addTearDown(container.dispose);
@@ -271,6 +281,9 @@ class WorkoutHarness {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp.router(
+          theme: themeMode == null ? null : AppTheme.lightTheme,
+          darkTheme: themeMode == null ? null : AppTheme.darkTheme,
+          themeMode: themeMode ?? ThemeMode.system,
           routerConfig: createAppRouter(initialLocation: location),
         ),
       ),

@@ -58,7 +58,7 @@ class StreakWeekDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     StreakWeekDetail detail,
   ) {
-    final statusInfo = mapWeekStatus(detail.status);
+    final statusInfo = mapWeekStatus(detail.status, context.colors);
     final weekTitle = formatWeekRange(detail.weekStart);
     final now = DateTime.now();
     final todayStr =

@@ -281,7 +281,7 @@ class StreakScreen extends ConsumerWidget {
   }
 
   Widget _buildWeekRow(BuildContext context, StreakWeek week) {
-    final statusInfo = mapWeekStatus(week.status);
+    final statusInfo = mapWeekStatus(week.status, context.colors);
     final weekTitle = formatWeekRange(week.weekStart);
 
     return InkWell(

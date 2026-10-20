@@ -1,3 +1,4 @@
+import 'package:fitness_app/core/constants/app_palette.dart';
 import 'package:fitness_app/features/streak/data/repositories/fake_streak_repository.dart';
 import 'package:fitness_app/features/streak/domain/models/streak_models.dart';
 import 'package:fitness_app/features/streak/presentation/controllers/streak_controller.dart';
@@ -10,26 +11,26 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('StreakFlow (F4)', () {
     test('mapWeekStatus maps status correctly, none does not return "Đang diễn ra"', () {
-      final noneStatus = mapWeekStatus('none');
+      final noneStatus = mapWeekStatus('none', AppPalette.light);
       expect(noneStatus.label, 'Không có dữ liệu');
       expect(noneStatus.label, isNot(equals('Đang diễn ra')));
 
-      final inProgressStatus = mapWeekStatus('in_progress');
+      final inProgressStatus = mapWeekStatus('in_progress', AppPalette.light);
       expect(inProgressStatus.label, 'Đang diễn ra');
 
-      final achievedStatus = mapWeekStatus('achieved');
+      final achievedStatus = mapWeekStatus('achieved', AppPalette.light);
       expect(achievedStatus.label, 'Đạt');
 
-      final completedStatus = mapWeekStatus('completed');
+      final completedStatus = mapWeekStatus('completed', AppPalette.light);
       expect(completedStatus.label, 'Đạt');
 
-      final missedStatus = mapWeekStatus('missed');
+      final missedStatus = mapWeekStatus('missed', AppPalette.light);
       expect(missedStatus.label, 'Chưa đạt');
 
-      final brokenStatus = mapWeekStatus('broken');
+      final brokenStatus = mapWeekStatus('broken', AppPalette.light);
       expect(brokenStatus.label, 'Chưa đạt');
 
-      final frozenStatus = mapWeekStatus('frozen');
+      final frozenStatus = mapWeekStatus('frozen', AppPalette.light);
       expect(frozenStatus.label, 'Dùng thẻ đóng băng');
     });
 

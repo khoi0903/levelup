@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/theme.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
@@ -104,48 +105,52 @@ class _CameraSetScreenState extends ConsumerState<CameraSetScreen> {
   @override
   Widget build(BuildContext context) {
     final subtitle = 'Hiệp ${widget.args.setNumber}/${item.sets}';
-    return Scaffold(
-      body: GradientBackground(
-        child: SafeArea(
-          child: _checkingSkip
-              ? const Center(child: CircularProgressIndicator())
-              : switch (_stage) {
-                  _Stage.setup => _SetupView(
-                    item: item,
-                    name: item.nameVi,
-                    subtitle: subtitle,
-                    camera: camera,
-                    onReady: () => setState(() => _stage = _Stage.counting),
-                    onManual: _manual,
-                  ),
-                  _Stage.counting => _CountingView(
-                    key: ValueKey('counting-$_attempt'),
-                    name: item.nameVi,
-                    subtitle: subtitle,
-                    camera: camera,
-                    slug: item.exercise?.slug ?? item.exerciseId,
-                    targetReps: widget.args.targetReps ?? item.reps,
-                    targetSec: item.durationSec,
-                    onManual: _manual,
-                    onSkip: () => context.pop(
-                      const CameraSetOutcome(null, skipExercise: true),
+    // Màn camera giữ giao diện sáng cả khi app ở chế độ tối (màu trong màn này là hằng số bản sáng)
+    return Theme(
+      data: AppTheme.lightTheme,
+      child: Scaffold(
+        body: GradientBackground(
+          child: SafeArea(
+            child: _checkingSkip
+                ? const Center(child: CircularProgressIndicator())
+                : switch (_stage) {
+                    _Stage.setup => _SetupView(
+                      item: item,
+                      name: item.nameVi,
+                      subtitle: subtitle,
+                      camera: camera,
+                      onReady: () => setState(() => _stage = _Stage.counting),
+                      onManual: _manual,
                     ),
-                    onDone: (snapshot) => setState(() {
-                      _snapshot = snapshot;
-                      _stage = _Stage.confirm;
-                    }),
-                  ),
-                  _Stage.confirm => _ConfirmView(
-                    args: widget.args,
-                    camera: camera,
-                    snapshot: _snapshot ?? const RepSnapshot(),
-                    onRecount: () => setState(() {
-                      _attempt++;
-                      _stage = _Stage.counting;
-                    }),
-                    onSave: (set) => context.pop(CameraSetOutcome(set)),
-                  ),
-                },
+                    _Stage.counting => _CountingView(
+                      key: ValueKey('counting-$_attempt'),
+                      name: item.nameVi,
+                      subtitle: subtitle,
+                      camera: camera,
+                      slug: item.exercise?.slug ?? item.exerciseId,
+                      targetReps: widget.args.targetReps ?? item.reps,
+                      targetSec: item.durationSec,
+                      onManual: _manual,
+                      onSkip: () => context.pop(
+                        const CameraSetOutcome(null, skipExercise: true),
+                      ),
+                      onDone: (snapshot) => setState(() {
+                        _snapshot = snapshot;
+                        _stage = _Stage.confirm;
+                      }),
+                    ),
+                    _Stage.confirm => _ConfirmView(
+                      args: widget.args,
+                      camera: camera,
+                      snapshot: _snapshot ?? const RepSnapshot(),
+                      onRecount: () => setState(() {
+                        _attempt++;
+                        _stage = _Stage.counting;
+                      }),
+                      onSave: (set) => context.pop(CameraSetOutcome(set)),
+                    ),
+                  },
+          ),
         ),
       ),
     );
