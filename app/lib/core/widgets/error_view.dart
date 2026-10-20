@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
+import '../constants/app_palette.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/primary_button.dart';
 
@@ -42,24 +42,24 @@ class ErrorView extends StatelessWidget {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
+                  color: context.colors.primaryLight,
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.border, width: 1.0),
+                  border: Border.all(color: context.colors.border, width: 1.0),
                 ),
                 child: Icon(
                   icon,
                   size: 34,
-                  color: AppColors.primary,
+                  color: context.colors.primary,
                 ),
               ),
               const SizedBox(height: 16),
               Text(
                 displayTitle,
                 key: const ValueKey('error-view-title'),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -67,11 +67,11 @@ class ErrorView extends StatelessWidget {
               Text(
                 message,
                 key: const ValueKey('error-view-message'),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   height: 1.45,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),

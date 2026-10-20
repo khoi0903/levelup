@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../workout/domain/models/workout_models.dart';
@@ -99,12 +99,12 @@ class AchievementsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Huy hiệu của bạn',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         backgroundColor: Colors.transparent,
@@ -124,13 +124,13 @@ class AchievementsScreen extends ConsumerWidget {
                     Container(
                       width: 52,
                       height: 52,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primaryLight,
+                      decoration: BoxDecoration(
+                        color: context.colors.primaryLight,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.military_tech_rounded,
-                        color: AppColors.primary,
+                        color: context.colors.primary,
                         size: 32,
                       ),
                     ),
@@ -139,22 +139,22 @@ class AchievementsScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Bộ sưu tập huy hiệu',
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.textPrimary,
+                              color: context.colors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             'Đã mở khóa $earnedCount/$totalCount huy hiệu',
                             key: const ValueKey('achievements-count-text'),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                             ),
                           ),
                         ],
@@ -164,17 +164,17 @@ class AchievementsScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 18),
-              const Text(
+              Text(
                 'Danh sách huy hiệu',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 10),
               for (final badge in displayedBadges)
-                _buildBadgeItem(badge, earnedBadge: earnedMap[badge.code]),
+                _buildBadgeItem(context, badge, earnedBadge: earnedMap[badge.code]),
             ],
           ),
         ),
@@ -182,7 +182,7 @@ class AchievementsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildBadgeItem(Achievement badge, {Achievement? earnedBadge}) {
+  Widget _buildBadgeItem(BuildContext context, Achievement badge, {Achievement? earnedBadge}) {
     final isEarned = earnedBadge != null;
     final earnedDateText = _formatEarnedDate(earnedBadge?.earnedAt);
 
@@ -198,11 +198,11 @@ class AchievementsScreen extends ConsumerWidget {
               height: 44,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isEarned ? AppColors.primaryLight : const Color(0xFFF3F4F6),
+                color: isEarned ? context.colors.primaryLight : context.colors.mutedBg,
               ),
               child: Icon(
                 isEarned ? Icons.military_tech_rounded : Icons.lock_outline_rounded,
-                color: isEarned ? AppColors.primary : Colors.grey,
+                color: isEarned ? context.colors.primary : Colors.grey,
                 size: 26,
               ),
             ),
@@ -219,14 +219,14 @@ class AchievementsScreen extends ConsumerWidget {
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
-                            color: isEarned ? AppColors.textPrimary : Colors.grey.shade700,
+                            color: isEarned ? context.colors.textPrimary : context.colors.textSecondary,
                           ),
                         ),
                       ),
                       if (isEarned) ...[
                         const SizedBox(width: 6),
-                        const Icon(Icons.check_circle_rounded,
-                            size: 16, color: AppColors.primary),
+                        Icon(Icons.check_circle_rounded,
+                            size: 16, color: context.colors.primary),
                       ],
                     ],
                   ),
@@ -236,7 +236,9 @@ class AchievementsScreen extends ConsumerWidget {
                       badge.descriptionVi!,
                       style: TextStyle(
                         fontSize: 12,
-                        color: isEarned ? AppColors.textSecondary : Colors.grey,
+                        color: isEarned
+                            ? context.colors.textSecondary
+                            : context.colors.textSecondary.withValues(alpha: 0.75),
                       ),
                     ),
                   ],
@@ -244,10 +246,10 @@ class AchievementsScreen extends ConsumerWidget {
                     const SizedBox(height: 4),
                     Text(
                       'Đạt ngày $earnedDateText',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
+                        color: context.colors.primary,
                       ),
                     ),
                   ],

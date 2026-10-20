@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/app_palette.dart';
 
 /// Banner thông báo khi mất kết nối mạng hoặc server không phản hồi.
 class OfflineBanner extends StatelessWidget {
@@ -17,10 +18,10 @@ class OfflineBanner extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF4E5), // Soft warm amber
+        color: context.colors.warningBg, // Soft warm amber
         border: Border(
           bottom: BorderSide(
-            color: const Color(0xFFFFD599),
+            color: context.colors.warningBorder,
             width: 1.0,
           ),
         ),
@@ -36,10 +37,10 @@ class OfflineBanner extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF92400E),
+                color: context.colors.warningText,
               ),
             ),
           ),

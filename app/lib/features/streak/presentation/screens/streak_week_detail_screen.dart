@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/error_view.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -20,12 +21,12 @@ class StreakWeekDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Chi tiết tuần',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         backgroundColor: Colors.transparent,
@@ -36,9 +37,9 @@ class StreakWeekDetailScreen extends ConsumerWidget {
         child: SafeArea(
           child: detailAsync.when(
             data: (detail) => _buildContent(context, ref, detail),
-            loading: () => const Center(
+            loading: () => Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                valueColor: AlwaysStoppedAnimation<Color>(context.colors.primary),
               ),
             ),
             error: (err, _) => ErrorView(
@@ -81,10 +82,10 @@ class StreakWeekDetailScreen extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       weekTitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                   ),
@@ -123,21 +124,21 @@ class StreakWeekDetailScreen extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Tiến độ tuần',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                   Text(
                     '${detail.completedSessions}/${detail.targetSessions} buổi',
                     key: const ValueKey('streak-detail-session-count'),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.accentLink,
+                      color: context.colors.accentLink,
                     ),
                   ),
                 ],
@@ -151,9 +152,9 @@ class StreakWeekDetailScreen extends ConsumerWidget {
                             .clamp(0.0, 1.0)
                       : 0.0,
                   minHeight: 7,
-                  backgroundColor: AppColors.progressTrack,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    AppColors.progressFill,
+                  backgroundColor: context.colors.progressTrack,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    context.colors.progressFill,
                   ),
                 ),
               ),
@@ -162,14 +163,14 @@ class StreakWeekDetailScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
 
-        const Padding(
+        Padding(
           padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           child: Text(
             'Lịch chi tiết 7 ngày',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
         ),
@@ -212,7 +213,7 @@ class StreakWeekDetailScreen extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: isToday ? FontWeight.w800 : FontWeight.w700,
-                    color: isToday ? AppColors.primary : AppColors.textPrimary,
+                    color: isToday ? context.colors.primary : context.colors.textPrimary,
                   ),
                 ),
                 if (isToday) ...[
@@ -223,15 +224,15 @@ class StreakWeekDetailScreen extends ConsumerWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
+                      color: context.colors.primaryLight,
                       borderRadius: BorderRadius.circular(AppColors.radiusPill),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Hôm nay',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
+                        color: context.colors.primary,
                       ),
                     ),
                   ),
@@ -242,23 +243,23 @@ class StreakWeekDetailScreen extends ConsumerWidget {
 
             // Content
             if (isRestDay)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(vertical: 4),
                 child: Text(
                   'Nghỉ',
                   style: TextStyle(
                     fontSize: 13,
                     fontStyle: FontStyle.italic,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               )
             else ...[
               // Planned sessions
-              ...day.sessions.map((s) => _buildSessionItem(s)),
+              ...day.sessions.map((s) => _buildSessionItem(context, s)),
 
               // Workouts
-              ...day.workouts.map((w) => _buildWorkoutItem(w)),
+              ...day.workouts.map((w) => _buildWorkoutItem(context, w)),
             ],
           ],
         ),
@@ -266,17 +267,17 @@ class StreakWeekDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSessionItem(StreakSessionItem session) {
-    final (statusText, statusColor) = _mapSessionStatus(session.status);
+  Widget _buildSessionItem(BuildContext context, StreakSessionItem session) {
+    final (statusText, statusColor) = _mapSessionStatus(context, session.status);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.fitness_center_rounded,
             size: 16,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -284,10 +285,10 @@ class StreakWeekDetailScreen extends ConsumerWidget {
               session.scheduledTime != null && session.scheduledTime!.isNotEmpty
                   ? '${session.title} (${session.scheduledTime})'
                   : session.title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
           ),
@@ -304,7 +305,7 @@ class StreakWeekDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildWorkoutItem(StreakWorkoutItem workout) {
+  Widget _buildWorkoutItem(BuildContext context, StreakWorkoutItem workout) {
     final startTime = _formatTime(workout.startedAt);
     final isExtra = workout.plannedSessionId == null;
     final notCounted = !workout.countsForStreak;
@@ -314,32 +315,32 @@ class StreakWeekDetailScreen extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: const Color(0xFFF8FAFC),
+          color: context.colors.mutedBg,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFE2E8F0), width: 0.8),
+          border: Border.all(color: context.colors.border, width: 0.8),
         ),
         child: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.check_circle_outline_rounded,
               size: 15,
-              color: AppColors.primary,
+              color: context.colors.primary,
             ),
             const SizedBox(width: 8),
             Text(
               startTime.isNotEmpty ? '$startTime · ' : '',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
             Text(
               '${workout.durationMin} phút',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
             const Spacer(),
@@ -347,15 +348,15 @@ class StreakWeekDetailScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
+                  color: context.colors.infoBg,
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: const Text(
+                child: Text(
                   'Tập thêm',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF2563EB),
+                    color: context.colors.infoAccent,
                   ),
                 ),
               ),
@@ -365,7 +366,7 @@ class StreakWeekDetailScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFEF3C7),
+                  color: context.colors.warningBg,
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: const Text(
@@ -383,19 +384,19 @@ class StreakWeekDetailScreen extends ConsumerWidget {
     );
   }
 
-  (String, Color) _mapSessionStatus(String status) {
+  (String, Color) _mapSessionStatus(BuildContext context, String status) {
     switch (status) {
       case 'completed':
-        return ('Đã tập ✓', AppColors.primary);
+        return ('Đã tập ✓', context.colors.primary);
       case 'skipped':
         return ('Bỏ', Colors.redAccent);
       case 'rest':
-        return ('Nghỉ', AppColors.textSecondary);
+        return ('Nghỉ', context.colors.textSecondary);
       case 'rescheduled':
-        return ('Đổi lịch', AppColors.accentLink);
+        return ('Đổi lịch', context.colors.accentLink);
       case 'planned':
       default:
-        return ('Chưa tập', AppColors.textSecondary);
+        return ('Chưa tập', context.colors.textSecondary);
     }
   }
 

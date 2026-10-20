@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
+import '../constants/app_palette.dart';
 
 class GradientBackground extends StatelessWidget {
   final Widget child;
@@ -11,8 +11,8 @@ class GradientBackground extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: AppColors.screenGradient,
+      decoration: BoxDecoration(
+        gradient: context.colors.screenGradient,
       ),
       child: child,
     );

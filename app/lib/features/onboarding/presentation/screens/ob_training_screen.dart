@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/onboarding_header.dart';
@@ -64,13 +64,13 @@ class ObTrainingScreen extends ConsumerWidget {
               children: [
                 const OnboardingHeader(currentStep: 3),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   AppStrings.trainingTitle,
                   style: TextStyle(
                     fontSize: 26,
                     height: 1.25,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -81,12 +81,12 @@ class ObTrainingScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // 1. Kinh nghiệm
-                        const Text(
+                        Text(
                           AppStrings.expLabel,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -106,12 +106,12 @@ class ObTrainingScreen extends ConsumerWidget {
                         const SizedBox(height: 20),
 
                         // 2. Nơi tập
-                        const Text(
+                        Text(
                           AppStrings.locationLabel,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -131,10 +131,10 @@ class ObTrainingScreen extends ConsumerWidget {
 
                         // 3. Dụng cụ có sẵn
                         RichText(
-                          text: const TextSpan(
+                          text: TextSpan(
                             style: TextStyle(
                               fontSize: 14,
-                              color: AppColors.textPrimary,
+                              color: context.colors.textPrimary,
                             ),
                             children: [
                               TextSpan(
@@ -145,7 +145,7 @@ class ObTrainingScreen extends ConsumerWidget {
                                 text: AppStrings.equipmentMultipleHint,
                                 style: TextStyle(
                                   fontWeight: FontWeight.w500,
-                                  color: AppColors.textSecondary,
+                                  color: context.colors.textSecondary,
                                 ),
                               ),
                             ],
@@ -177,12 +177,12 @@ class ObTrainingScreen extends ConsumerWidget {
                         const SizedBox(height: 20),
 
                         // 4. Chấn thương
-                        const Text(
+                        Text(
                           AppStrings.injuryLabel,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -209,11 +209,11 @@ class ObTrainingScreen extends ConsumerWidget {
                           }).toList(),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           AppStrings.injuryNote,
                           style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                           ),
                         ),
                         const SizedBox(height: 16),

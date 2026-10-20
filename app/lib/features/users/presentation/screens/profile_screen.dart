@@ -7,9 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/theme_mode.dart';
 import '../../../../core/api/api_client.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/app_skeleton.dart';
@@ -196,11 +198,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           TextButton(
             key: const ValueKey('confirm-goal-change'),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text(
+            child: Text(
               'Xác nhận',
               style: TextStyle(
                 fontWeight: FontWeight.w700,
-                color: AppColors.primary,
+                color: context.colors.primary,
               ),
             ),
           ),
@@ -326,12 +328,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Hồ sơ & Cài đặt',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         backgroundColor: Colors.transparent,
@@ -348,7 +350,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         child: Text(
                           mapErrorMessage(userAsync.error),
                           textAlign: TextAlign.center,
-                          style: const TextStyle(color: AppColors.textSecondary),
+                          style: TextStyle(color: context.colors.textSecondary),
                         ),
                       ),
                     )
@@ -364,7 +366,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ReloadingIndicator(isReloading: isReloading),
                         Expanded(
                           child: RefreshIndicator(
-                            color: AppColors.primary,
+                            color: context.colors.primary,
                             onRefresh: () async {
                               ref.invalidate(userStatusFutureProvider);
                             },
@@ -400,17 +402,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: const Color(0xFFFEE2E2),
+              color: context.colors.errorBg,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFFCA5A5), width: 1),
+              border: Border.all(color: context.colors.errorBorder, width: 1),
             ),
             child: Text(
               mapErrorMessage(state.error),
               key: const ValueKey('settings-error-banner'),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF991B1B),
+                color: context.colors.errorText,
               ),
             ),
           ),
@@ -425,13 +427,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Container(
                 width: 56,
                 height: 56,
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryLight,
+                decoration: BoxDecoration(
+                  color: context.colors.primaryLight,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.person_rounded,
-                  color: AppColors.primary,
+                  color: context.colors.primary,
                   size: 34,
                 ),
               ),
@@ -443,18 +445,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     Text(
                       me.displayName,
                       key: const ValueKey('profile-display-name'),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Mục tiêu: ${_formatGoal(me.profile?.goal)}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -497,12 +499,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
         // Vùng đang đau / chấn thương (ẩn nếu rỗng)
         if (me.activeInjuries.isNotEmpty) ...[
-          const Text(
+          Text(
             'Vùng đang đau / chấn thương',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -512,7 +514,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             child: Column(
               children: [
                 for (int i = 0; i < me.activeInjuries.length; i++) ...[
-                  if (i > 0) const Divider(height: 1, color: AppColors.border),
+                  if (i > 0) Divider(height: 1, color: context.colors.border),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Row(
@@ -523,10 +525,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             key: ValueKey(
                               'injury-label-${me.activeInjuries[i].bodyArea}',
                             ),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
+                              color: context.colors.textPrimary,
                             ),
                           ),
                         ),
@@ -540,7 +542,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             me.activeInjuries[i],
                           ),
                           style: TextButton.styleFrom(
-                            foregroundColor: AppColors.primary,
+                            foregroundColor: context.colors.primary,
                             textStyle: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
@@ -559,12 +561,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ],
 
         // 1. Tên hiển thị
-        const Text(
+        Text(
           'Tên hiển thị',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -576,10 +578,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           decoration: InputDecoration(
             hintText: 'Nhập tên của bạn...',
             filled: true,
-            fillColor: AppColors.surface,
+            fillColor: context.colors.surface,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppColors.border),
+              borderSide: BorderSide(color: context.colors.border),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -590,18 +592,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         const SizedBox(height: 20),
 
         // Mục tiêu: đạt rồi thì đổi mục tiêu mới, calo tính lại từ hôm nay
-        const Text(
+        Text(
           'Mục tiêu',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 4),
-        const Text(
+        Text(
           'Đổi mục tiêu thì mục tiêu calo tính lại từ hôm nay, kế hoạch tập theo mục tiêu mới từ tuần sau.',
-          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
         ),
         const SizedBox(height: 8),
         Wrap(
@@ -615,17 +617,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   label: Text(_formatGoal(g)),
                   selected: isSelected,
                   showCheckmark: false,
-                  selectedColor: AppColors.primaryLight,
-                  backgroundColor: AppColors.surface,
+                  selectedColor: context.colors.primaryLight,
+                  backgroundColor: context.colors.surface,
                   side: BorderSide(
-                    color: isSelected ? AppColors.primary : AppColors.border,
+                    color: isSelected ? context.colors.primary : context.colors.border,
                   ),
                   labelStyle: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: isSelected
-                        ? AppColors.primary
-                        : AppColors.textPrimary,
+                        ? context.colors.primary
+                        : context.colors.textPrimary,
                   ),
                   onSelected: (_) => _selectGoal(g),
                 );
@@ -635,12 +637,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         const SizedBox(height: 20),
 
         // 2. Phong cách coach
-        const Text(
+        Text(
           'Phong cách Coach',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -668,12 +670,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         const SizedBox(height: 20),
 
         // 3. Thời lượng mỗi buổi tập
-        const Text(
+        Text(
           'Thời lượng mỗi buổi tập',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -692,27 +694,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         const SizedBox(height: 20),
 
         // 4. Lịch rảnh trong tuần
-        const Text(
+        Text(
           'Lịch rảnh trong tuần',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 4),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.primaryLight.withValues(alpha: 0.6),
+            color: context.colors.primaryLight.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Row(
+          child: Row(
             children: [
               Icon(
                 Icons.info_outline_rounded,
                 size: 16,
-                color: AppColors.primary,
+                color: context.colors.primary,
               ),
               SizedBox(width: 8),
               Expanded(
@@ -721,7 +723,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
+                    color: context.colors.primary,
                   ),
                 ),
               ),
@@ -731,12 +733,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         const SizedBox(height: 10),
         _buildWeekdaySelector(),
         const SizedBox(height: 12),
-        const Text(
+        Text(
           'Giờ tập',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -749,13 +751,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         const SizedBox(height: 20),
 
+        // Giao diện: theo hệ thống / sáng / tối (lưu trên máy)
+        Text(
+          'Giao diện',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: context.colors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(child: _buildThemeChip(ThemeMode.system, 'Theo hệ thống')),
+            const SizedBox(width: 6),
+            Expanded(child: _buildThemeChip(ThemeMode.light, 'Sáng')),
+            const SizedBox(width: 6),
+            Expanded(child: _buildThemeChip(ThemeMode.dark, 'Tối')),
+          ],
+        ),
+        const SizedBox(height: 20),
+
         // 5. Cài đặt thông báo
-        const Text(
+        Text(
           'Cài đặt thông báo',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -768,15 +791,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   'Bật thông báo nhắc tập',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
-                subtitle: const Text(
+                subtitle: Text(
                   'Nhắc trước giờ tập đã hẹn',
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
                 value: _notificationsEnabled,
-                activeThumbColor: AppColors.primary,
+                activeThumbColor: context.colors.primary,
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) async {
                   if (val) {
@@ -810,21 +833,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   );
                 },
               ),
-              const Divider(color: AppColors.border, height: 1),
+              Divider(color: context.colors.border, height: 1),
               SwitchListTile(
                 title: const Text(
                   'Giờ yên lặng (22:00 – 07:00)',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
-                subtitle: const Text(
+                subtitle: Text(
                   'Không gửi thông báo trong thời gian này',
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
                 value: _quietHoursEnabled,
-                activeThumbColor: AppColors.primary,
+                activeThumbColor: context.colors.primary,
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) {
                   final old = _quietHoursEnabled;
@@ -840,12 +863,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   );
                 },
               ),
-              const Divider(color: AppColors.border, height: 1),
+              Divider(color: context.colors.border, height: 1),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -861,7 +884,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             'Nhắc tập, nhắc tập bù, tin buddy…',
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                             ),
                           ),
                         ],
@@ -870,7 +893,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     IconButton(
                       key: const ValueKey('settings-max-per-day-minus'),
                       icon: const Icon(Icons.remove_circle_outline_rounded),
-                      color: AppColors.primary,
+                      color: context.colors.primary,
                       onPressed: _maxPerDay > 1
                           ? () => _updateMaxPerDay(_maxPerDay - 1)
                           : null,
@@ -886,7 +909,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     IconButton(
                       key: const ValueKey('settings-max-per-day-plus'),
                       icon: const Icon(Icons.add_circle_outline_rounded),
-                      color: AppColors.primary,
+                      color: context.colors.primary,
                       onPressed: _maxPerDay < 5
                           ? () => _updateMaxPerDay(_maxPerDay + 1)
                           : null,
@@ -894,22 +917,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ],
                 ),
               ),
-              const Divider(color: AppColors.border, height: 1),
+              Divider(color: context.colors.border, height: 1),
               SwitchListTile(
                 key: const ValueKey('settings-water-reminder'),
                 title: const Text(
                   'Nhắc uống nước',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
-                subtitle: const Text(
+                subtitle: Text(
                   'Trưa và chiều nếu bạn uống chưa đủ. Tối đa 2 lần/ngày, không tính vào số thông báo ở trên',
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
                 value: _waterReminder,
-                activeThumbColor: AppColors.primary,
+                activeThumbColor: context.colors.primary,
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) {
                   final old = _waterReminder;
@@ -928,12 +951,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         const SizedBox(height: 20),
 
         // 6. Chia sẻ với buddy
-        const Text(
+        Text(
           'Chia sẻ với bạn đồng hành (Buddy)',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -947,7 +970,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
                 value: _shareWeight,
-                activeThumbColor: AppColors.primary,
+                activeThumbColor: context.colors.primary,
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) {
                   final old = _shareWeight;
@@ -960,14 +983,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   );
                 },
               ),
-              const Divider(color: AppColors.border, height: 1),
+              Divider(color: context.colors.border, height: 1),
               SwitchListTile(
                 title: const Text(
                   'Số đo cơ thể',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
                 value: _shareMeasurements,
-                activeThumbColor: AppColors.primary,
+                activeThumbColor: context.colors.primary,
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) {
                   final old = _shareMeasurements;
@@ -980,14 +1003,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   );
                 },
               ),
-              const Divider(color: AppColors.border, height: 1),
+              Divider(color: context.colors.border, height: 1),
               SwitchListTile(
                 title: const Text(
                   'Ảnh chụp tiến độ',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
                 value: _sharePhotos,
-                activeThumbColor: AppColors.primary,
+                activeThumbColor: context.colors.primary,
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) {
                   final old = _sharePhotos;
@@ -1000,14 +1023,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   );
                 },
               ),
-              const Divider(color: AppColors.border, height: 1),
+              Divider(color: context.colors.border, height: 1),
               SwitchListTile(
                 title: const Text(
                   'Lượng calo đã nạp hôm nay',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
                 value: _shareMeals,
-                activeThumbColor: AppColors.primary,
+                activeThumbColor: context.colors.primary,
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) {
                   final old = _shareMeals;
@@ -1054,7 +1077,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        const Divider(color: AppColors.border, height: 1),
+        Divider(color: context.colors.border, height: 1),
         const SizedBox(height: 12),
 
         // Xoá tài khoản (tách khỏi các cài đặt khác)
@@ -1084,11 +1107,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           child: TextButton(
             key: const ValueKey('privacy-policy-link'),
             onPressed: () => _openPrivacyPolicy(context),
-            child: const Text(
+            child: Text(
               'Chính sách quyền riêng tư',
               style: TextStyle(
                 fontSize: 12,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 decoration: TextDecoration.underline,
               ),
             ),
@@ -1134,26 +1157,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Nơi tập & dụng cụ',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 4),
-        const Text(
+        Text(
           'Lịch tuần này giữ nguyên, tuần sau xếp theo dụng cụ mới.',
-          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
         ),
         const SizedBox(height: 10),
-        const Text(
+        Text(
           'Nơi tập',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -1189,15 +1212,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             key: const ValueKey('gym-equipment-note'),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.primaryLight,
+              color: context.colors.primaryLight,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: context.colors.border),
             ),
-            child: const Row(
+            child: Row(
               children: [
                 Icon(
                   Icons.fitness_center_rounded,
-                  color: AppColors.primary,
+                  color: context.colors.primary,
                   size: 20,
                 ),
                 SizedBox(width: 10),
@@ -1207,7 +1230,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
+                      color: context.colors.primary,
                     ),
                   ),
                 ),
@@ -1217,8 +1240,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ] else ...[
           const SizedBox(height: 14),
           RichText(
-            text: const TextSpan(
-              style: TextStyle(fontSize: 14, color: AppColors.textPrimary),
+            text: TextSpan(
+              style: TextStyle(fontSize: 14, color: context.colors.textPrimary),
               children: [
                 TextSpan(
                   text: AppStrings.equipmentLabel,
@@ -1228,7 +1251,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   text: AppStrings.equipmentMultipleHint,
                   style: TextStyle(
                     fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],
@@ -1321,10 +1344,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : AppColors.surface,
+                  color: isSelected ? context.colors.buttonFill : context.colors.surface,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: isSelected ? AppColors.primary : AppColors.border,
+                    color: isSelected ? context.colors.buttonFill : context.colors.border,
                   ),
                 ),
                 alignment: Alignment.center,
@@ -1333,7 +1356,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: isSelected ? Colors.white : AppColors.textPrimary,
+                    color: isSelected ? Colors.white : context.colors.textPrimary,
                   ),
                 ),
               ),
@@ -1370,15 +1393,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           label: Text('$title · $time'),
           selected: isSelected,
           showCheckmark: false,
-          selectedColor: AppColors.primaryLight,
-          backgroundColor: AppColors.surface,
+          selectedColor: context.colors.primaryLight,
+          backgroundColor: context.colors.surface,
           side: BorderSide(
-            color: isSelected ? AppColors.primary : AppColors.border,
+            color: isSelected ? context.colors.primary : context.colors.border,
           ),
           labelStyle: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w700,
-            color: isSelected ? AppColors.primary : AppColors.textPrimary,
+            color: isSelected ? context.colors.primary : context.colors.textPrimary,
           ),
           onSelected: (_) {
             setState(() => _slot = value);
@@ -1400,20 +1423,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.colors.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: context.colors.border),
         ),
         child: Column(
           children: [
-            Icon(icon, color: AppColors.primary, size: 22),
+            Icon(icon, color: context.colors.primary, size: 22),
             const SizedBox(height: 4),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
           ],
@@ -1440,7 +1463,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               isSelected
                   ? Icons.radio_button_checked_rounded
                   : Icons.radio_button_unchecked_rounded,
-              color: isSelected ? AppColors.primary : AppColors.textSecondary,
+              color: isSelected ? context.colors.primary : context.colors.textSecondary,
               size: 20,
             ),
             const SizedBox(width: 12),
@@ -1454,22 +1477,52 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: isSelected
-                          ? AppColors.primary
-                          : AppColors.textPrimary,
+                          ? context.colors.primary
+                          : context.colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     desc,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThemeChip(ThemeMode mode, String label) {
+    final isSelected = ref.watch(themeModeProvider) == mode;
+    return InkWell(
+      key: ValueKey('theme-${mode.name}'),
+      onTap: () => ref.read(themeModeProvider.notifier).set(mode),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? context.colors.primaryLight : context.colors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? context.colors.primary : context.colors.border,
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: isSelected ? context.colors.primary : context.colors.textPrimary,
+          ),
         ),
       ),
     );
@@ -1483,10 +1536,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryLight : AppColors.surface,
+          color: isSelected ? context.colors.primaryLight : context.colors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
+            color: isSelected ? context.colors.primary : context.colors.border,
             width: isSelected ? 1.5 : 1.0,
           ),
         ),
@@ -1496,7 +1549,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w700,
-            color: isSelected ? AppColors.primary : AppColors.textPrimary,
+            color: isSelected ? context.colors.primary : context.colors.textPrimary,
           ),
         ),
       ),
@@ -1555,22 +1608,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             key: const ValueKey('settings-auto-camera'),
             title: const Text('Tự mở camera khi bắt đầu hiệp',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-            subtitle: const Text(
+            subtitle: Text(
                 'Bài đếm được bằng camera sẽ mở camera ngay, không cần bấm "Đếm bằng camera"',
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                style: TextStyle(fontSize: 12, color: context.colors.textSecondary)),
             value: ref.watch(autoCameraProvider),
-            activeThumbColor: AppColors.primary,
+            activeThumbColor: context.colors.primary,
             contentPadding: EdgeInsets.zero,
             onChanged: (v) => ref.read(autoCameraProvider.notifier).set(v),
           ),
         ),
         const SizedBox(height: 20),
-        const Text(
+        Text(
           'Giọng đọc khi tập',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -1585,27 +1638,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   'Giọng đọc khi tập',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
-                subtitle: const Text(
+                subtitle: Text(
                   'Đếm số lần, đếm lùi, nhắc tư thế và động viên khi tập',
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
                 value: voiceSettings.enabled,
-                activeThumbColor: AppColors.primary,
+                activeThumbColor: context.colors.primary,
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) => voiceNotifier.setEnabled(val),
               ),
               if (voiceSettings.enabled) ...[
-                const Divider(color: AppColors.border, height: 1),
+                Divider(color: context.colors.border, height: 1),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   'Giọng huấn luyện viên',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -1645,14 +1698,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ],
                 ),
                 const SizedBox(height: 14),
-                const Divider(color: AppColors.border, height: 1),
+                Divider(color: context.colors.border, height: 1),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   'Phong cách giọng',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -1691,14 +1744,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   const SizedBox(height: 6),
                 ],
                 const SizedBox(height: 8),
-                const Divider(color: AppColors.border, height: 1),
+                Divider(color: context.colors.border, height: 1),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   'Tốc độ đọc',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -1713,19 +1766,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           label: Text(speed.labelVi),
                           selected: isSelected,
                           showCheckmark: false,
-                          selectedColor: AppColors.primaryLight,
-                          backgroundColor: AppColors.surface,
+                          selectedColor: context.colors.primaryLight,
+                          backgroundColor: context.colors.surface,
                           side: BorderSide(
                             color: isSelected
-                                ? AppColors.primary
-                                : AppColors.border,
+                                ? context.colors.primary
+                                : context.colors.border,
                           ),
                           labelStyle: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: isSelected
-                                ? AppColors.primary
-                                : AppColors.textPrimary,
+                                ? context.colors.primary
+                                : context.colors.textPrimary,
                           ),
                           onSelected: (_) => voiceNotifier.setSpeed(speed),
                         ),
@@ -1734,7 +1787,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   }).toList(),
                 ),
                 const SizedBox(height: 12),
-                const Divider(color: AppColors.border, height: 1),
+                Divider(color: context.colors.border, height: 1),
                 const SizedBox(height: 4),
                 SwitchListTile(
                   key: const ValueKey('settings-voice-start-tip'),
@@ -1742,15 +1795,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     'Đọc mẹo kỹ thuật đầu bài',
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                   ),
-                  subtitle: const Text(
+                  subtitle: Text(
                     'Đọc điểm kỹ thuật quan trọng khi chuyển sang bài mới',
                     style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                   value: voiceSettings.readStartTip,
-                  activeThumbColor: AppColors.primary,
+                  activeThumbColor: context.colors.primary,
                   contentPadding: EdgeInsets.zero,
                   onChanged: (val) => voiceNotifier.setReadStartTip(val),
                 ),
@@ -1760,17 +1813,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     'Điều khiển bằng giọng nói (thử nghiệm)',
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                   ),
-                  subtitle: const Text(
+                  subtitle: Text(
                     'Khi đếm bằng camera: vẫy tay hoặc khi coach hỏi, nói "bỏ bài", '
                     '"tập tiếp", "tạm dừng", "xong hiệp". Cần quyền micro; máy dùng '
                     'dịch vụ nhận dạng giọng nói của Google, chỉ nghe vài giây sau mỗi lần hỏi.',
                     style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                   value: voiceSettings.voiceCommands,
-                  activeThumbColor: AppColors.primary,
+                  activeThumbColor: context.colors.primary,
                   contentPadding: EdgeInsets.zero,
                   onChanged: (val) => _setVoiceCommands(val),
                 ),
@@ -1795,11 +1848,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Container(
       decoration: BoxDecoration(
         color: isSelected
-            ? AppColors.primaryLight.withValues(alpha: 0.5)
+            ? context.colors.primaryLight.withValues(alpha: 0.5)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isSelected ? AppColors.primary : AppColors.border,
+          color: isSelected ? context.colors.primary : context.colors.border,
           width: 1,
         ),
       ),
@@ -1819,8 +1872,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ? Icons.radio_button_checked_rounded
                         : Icons.radio_button_off_rounded,
                     color: isSelected
-                        ? AppColors.primary
-                        : AppColors.textSecondary,
+                        ? context.colors.primary
+                        : context.colors.textSecondary,
                     size: 22,
                   ),
                   const SizedBox(width: 10),
@@ -1835,16 +1888,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             fontWeight: isSelected
                                 ? FontWeight.w800
                                 : FontWeight.w600,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                         if (desc.isNotEmpty) ...[
                           const SizedBox(height: 2),
                           Text(
                             desc,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                             ),
                           ),
                         ],
@@ -1857,7 +1910,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     child: IconButton(
                       key: ValueKey('preview-voice-$id'),
                       icon: const Icon(Icons.play_circle_fill_rounded),
-                      color: AppColors.primary,
+                      color: context.colors.primary,
                       iconSize: 30,
                       tooltip: 'Nghe thử',
                       onPressed: onPreview,
@@ -1872,10 +1925,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
               child: Text(
                 hint,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
                   fontStyle: FontStyle.italic,
-                  color: AppColors.primary,
+                  color: context.colors.primary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1895,11 +1948,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Container(
       decoration: BoxDecoration(
         color: isSelected
-            ? AppColors.primaryLight.withValues(alpha: 0.5)
+            ? context.colors.primaryLight.withValues(alpha: 0.5)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isSelected ? AppColors.primary : AppColors.border,
+          color: isSelected ? context.colors.primary : context.colors.border,
           width: isSelected ? 1.5 : 1,
         ),
       ),
@@ -1916,7 +1969,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ? Icons.record_voice_over_rounded
                     : Icons.mic_external_on_rounded,
                 size: 20,
-                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                color: isSelected ? context.colors.primary : context.colors.textSecondary,
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -1929,16 +1982,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: isSelected
-                            ? AppColors.primary
-                            : AppColors.textPrimary,
+                            ? context.colors.primary
+                            : context.colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -1947,10 +2000,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
               ),
               if (isSelected)
-                const Icon(
+                Icon(
                   Icons.check_circle_rounded,
                   size: 16,
-                  color: AppColors.primary,
+                  color: context.colors.primary,
                 ),
             ],
           ),
@@ -1999,15 +2052,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final shouldProceed = await showDialog<bool>(
       context: context,
       builder: (dialogCtx) => AlertDialog(
-        title: const Text(
+        title: Text(
           'Xoá tài khoản?',
           style: TextStyle(
             fontWeight: FontWeight.w800,
             fontSize: 18,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -2022,7 +2075,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               'Không thể hoàn tác.',
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 height: 1.4,
               ),
             ),
@@ -2092,7 +2145,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             key: ValueKey('injury-confirm-recovered-${injury.bodyArea}'),
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: context.colors.buttonFill,
               foregroundColor: Colors.white,
             ),
             child: const Text('Đã khỏi'),
@@ -2194,23 +2247,23 @@ class _DeleteAccountConfirmDialogState
     return PopScope(
       canPop: !_isDeleting,
       child: AlertDialog(
-        title: const Text(
+        title: Text(
           'Xác nhận xoá vĩnh viễn',
           style: TextStyle(
             fontWeight: FontWeight.w800,
             fontSize: 18,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Để xác nhận, vui lòng gõ chữ XOÁ vào ô bên dưới:',
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
             const SizedBox(height: 12),
@@ -2226,7 +2279,7 @@ class _DeleteAccountConfirmDialogState
             ),
             if (_isDeleting) ...[
               const SizedBox(height: 16),
-              const Center(
+              Center(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -2243,7 +2296,7 @@ class _DeleteAccountConfirmDialogState
                       'Đang xoá tài khoản...',
                       style: TextStyle(
                         fontSize: 13,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],

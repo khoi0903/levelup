@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
@@ -57,26 +57,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // App branding header
-                  const Center(
+                  Center(
                     child: Text(
                       'LevelUp',
                       style: TextStyle(
                         fontSize: 34,
                         fontWeight: FontWeight.w900,
-                        color: AppColors.primary,
+                        color: context.colors.primary,
                         letterSpacing: -0.5,
                       ),
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const Center(
+                  Center(
                     child: Text(
                       'Đồng hành rèn luyện & duy trì thói quen',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ),
@@ -87,17 +87,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFDCFCE7),
+                        color: context.colors.successBg,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF86EFAC)),
+                        border: Border.all(color: context.colors.successBorder),
                       ),
                       child: Text(
                         authState.successMessage!,
                         key: const ValueKey('login-success-banner'),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF166534),
+                          color: context.colors.successText,
                         ),
                       ),
                     ),
@@ -109,17 +109,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFEE2E2),
+                        color: context.colors.errorBg,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFFCA5A5)),
+                        border: Border.all(color: context.colors.errorBorder),
                       ),
                       child: Text(
                         authState.errorMessage!,
                         key: const ValueKey('login-error-banner'),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF991B1B),
+                          color: context.colors.errorText,
                         ),
                       ),
                     ),
@@ -141,19 +141,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // Divider "hoặc"
                   Row(
                     children: [
-                      const Expanded(child: Divider(color: AppColors.border, height: 1)),
+                      Expanded(child: Divider(color: context.colors.border, height: 1)),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 14),
                         child: Text(
                           _isSignUp ? 'hoặc đăng ký bằng email' : 'hoặc đăng nhập bằng email',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                           ),
                         ),
                       ),
-                      const Expanded(child: Divider(color: AppColors.border, height: 1)),
+                      Expanded(child: Divider(color: context.colors.border, height: 1)),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -166,12 +166,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       children: [
                         // Tên hiển thị (chỉ hiện khi Đăng ký)
                         if (_isSignUp) ...[
-                          const Text(
+                          Text(
                             'Tên hiển thị',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                              color: context.colors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -188,12 +188,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ],
 
                         // Email field
-                        const Text(
+                        Text(
                           'Email',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -213,23 +213,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
+                            Text(
                               'Mật khẩu',
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
+                                color: context.colors.textPrimary,
                               ),
                             ),
                             if (!_isSignUp)
                               GestureDetector(
                                 onTap: () => _showForgotPasswordModal(context, authNotifier),
-                                child: const Text(
+                                child: Text(
                                   'Quên mật khẩu?',
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
-                                    color: AppColors.primary,
+                                    color: context.colors.primary,
                                   ),
                                 ),
                               ),
@@ -249,7 +249,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     ? Icons.visibility_off_outlined
                                     : Icons.visibility_outlined,
                                 size: 20,
-                                color: AppColors.textSecondary,
+                                color: context.colors.textSecondary,
                               ),
                               onPressed: () {
                                 setState(() {
@@ -306,9 +306,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         _isSignUp
                             ? 'Đã có tài khoản?'
                             : 'Chưa có tài khoản?',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -322,10 +322,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         },
                         child: Text(
                           _isSignUp ? 'Đăng nhập' : 'Đăng ký ngay',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
+                            color: context.colors.primary,
                           ),
                         ),
                       ),
@@ -351,9 +351,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       child: Container(
         height: 52,
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.colors.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.border, width: 1.2),
+          border: Border.all(color: context.colors.border, width: 1.2),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
@@ -384,12 +384,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
             const SizedBox(width: 12),
-            const Text(
+            Text(
               'Tiếp tục với Google',
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
           ],
@@ -405,22 +405,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }) {
     return InputDecoration(
       hintText: hintText,
-      hintStyle: const TextStyle(color: Colors.black38, fontSize: 14),
+      hintStyle: TextStyle(color: context.colors.textSecondary.withValues(alpha: 0.7), fontSize: 14),
       filled: true,
-      fillColor: const Color(0xFFF9FAFB),
-      prefixIcon: Icon(prefixIcon, color: AppColors.textSecondary, size: 20),
+      fillColor: context.colors.mutedBg,
+      prefixIcon: Icon(prefixIcon, color: context.colors.textSecondary, size: 20),
       suffixIcon: suffixIcon,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: context.colors.border),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: context.colors.border),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        borderSide: BorderSide(color: context.colors.primary, width: 1.5),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     );
@@ -448,18 +448,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
+              Text(
                 'Quên mật khẩu?',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
+              Text(
                 'Nhập địa chỉ email tài khoản của bạn để nhận liên kết đặt lại mật khẩu.',
-                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
               ),
               const SizedBox(height: 16),
               TextField(

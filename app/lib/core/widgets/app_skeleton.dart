@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
+import '../constants/app_palette.dart';
 import '../widgets/glass_card.dart';
 
 /// Khung placeholder cơ bản cho trạng thái đang tải (skeleton).
@@ -51,7 +51,7 @@ class _AppSkeletonBoxState extends State<AppSkeletonBox>
           width: widget.width,
           height: widget.height,
           decoration: BoxDecoration(
-            color: AppColors.placeholder.withValues(alpha: _animation.value),
+            color: context.colors.placeholder.withValues(alpha: _animation.value),
             borderRadius: BorderRadius.circular(widget.borderRadius),
           ),
         );
@@ -179,11 +179,11 @@ class ReloadingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!isReloading) return const SizedBox.shrink();
-    return const SizedBox(
+    return SizedBox(
       height: 3,
       child: LinearProgressIndicator(
         minHeight: 3,
-        color: AppColors.primary,
+        color: context.colors.primary,
         backgroundColor: Colors.transparent,
       ),
     );

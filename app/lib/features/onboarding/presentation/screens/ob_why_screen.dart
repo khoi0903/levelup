@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
@@ -57,22 +58,22 @@ class _ObWhyScreenState extends ConsumerState<ObWhyScreen> {
               children: [
                 const OnboardingHeader(currentStep: 5),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   AppStrings.whyTitle,
                   style: TextStyle(
                     fontSize: 26,
                     height: 1.25,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   AppStrings.whySubtitle,
                   style: TextStyle(
                     fontSize: 15,
                     height: 1.5,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -97,10 +98,10 @@ class _ObWhyScreenState extends ConsumerState<ObWhyScreen> {
                         ),
                         const SizedBox(height: 20),
                         RichText(
-                          text: const TextSpan(
+                          text: TextSpan(
                             style: TextStyle(
                               fontSize: 14,
-                              color: AppColors.textPrimary,
+                              color: context.colors.textPrimary,
                             ),
                             children: [
                               TextSpan(
@@ -111,7 +112,7 @@ class _ObWhyScreenState extends ConsumerState<ObWhyScreen> {
                                 text: AppStrings.whyCustomOptional,
                                 style: TextStyle(
                                   fontWeight: FontWeight.w500,
-                                  color: AppColors.textSecondary,
+                                  color: context.colors.textSecondary,
                                 ),
                               ),
                             ],
@@ -125,18 +126,18 @@ class _ObWhyScreenState extends ConsumerState<ObWhyScreen> {
                             controller: _whyController,
                             maxLines: 3,
                             onChanged: (val) => controller.setMotivationText(val),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 15,
                               height: 1.5,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.textPrimary,
+                              color: context.colors.textPrimary,
                             ),
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               border: InputBorder.none,
                               contentPadding: EdgeInsets.symmetric(vertical: 10),
                               hintText: AppStrings.whyCustomDefault,
                               hintStyle: TextStyle(
-                                color: AppColors.textSecondary,
+                                color: context.colors.textSecondary,
                                 fontSize: 15,
                               ),
                             ),
@@ -155,30 +156,30 @@ class _ObWhyScreenState extends ConsumerState<ObWhyScreen> {
                                 height: 36,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: AppColors.primaryLight,
-                                  border: Border.all(color: AppColors.border, width: 1.0),
+                                  color: context.colors.primaryLight,
+                                  border: Border.all(color: context.colors.border, width: 1.0),
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.chat_bubble_outline_rounded,
                                   size: 18,
-                                  color: AppColors.accent,
+                                  color: context.colors.accent,
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: RichText(
-                                  text: const TextSpan(
+                                  text: TextSpan(
                                     style: TextStyle(
                                       fontSize: 14,
                                       height: 1.5,
-                                      color: AppColors.textSecondary,
+                                      color: context.colors.textSecondary,
                                     ),
                                     children: [
                                       TextSpan(text: AppStrings.coachExamplePrefix),
                                       TextSpan(
                                         text: AppStrings.coachExampleQuote,
                                         style: TextStyle(
-                                          color: AppColors.textPrimary,
+                                          color: context.colors.textPrimary,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),

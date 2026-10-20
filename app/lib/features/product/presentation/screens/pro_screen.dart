@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../nutrition/presentation/widgets/nutrition_widgets.dart';
@@ -174,10 +174,10 @@ class _ProScreenState extends ConsumerState<ProScreen> {
           if (isPro) ...[
             Text(
               'Pro đến $expiresAtStr',
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 16,
-                color: AppColors.primary,
+                color: context.colors.primary,
               ),
             ),
             const SizedBox(height: 12),
@@ -207,11 +207,11 @@ class _ProScreenState extends ConsumerState<ProScreen> {
               onPressed: busy ? null : () => _handlePurchase(context),
             ),
             const SizedBox(height: 10),
-            const Text(
+            Text(
               'Tự gia hạn, huỷ bất kỳ lúc nào trong Google Play → Gói thuê bao',
               style: TextStyle(
                 fontSize: 12,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),

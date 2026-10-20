@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/api/api_exceptions.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
@@ -106,21 +106,21 @@ class _ObCoachScreenState extends ConsumerState<ObCoachScreen> {
               children: [
                 const OnboardingHeader(currentStep: 6),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   AppStrings.coachTitle,
                   style: TextStyle(
                     fontSize: 26,
                     height: 1.25,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   AppStrings.coachSubtitle,
                   style: TextStyle(
                     fontSize: 15,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -148,10 +148,10 @@ class _ObCoachScreenState extends ConsumerState<ObCoachScreen> {
                               children: [
                                 Text(
                                   item.$2,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
+                                    color: context.colors.textPrimary,
                                   ),
                                 ),
                                 GlassRadio(isSelected: isSelected),
@@ -165,8 +165,8 @@ class _ObCoachScreenState extends ConsumerState<ObCoachScreen> {
                               ),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? AppColors.surface
-                                    : AppColors.background,
+                                    ? context.colors.surface
+                                    : context.colors.background,
                                 borderRadius: const BorderRadius.only(
                                   topLeft: Radius.circular(14),
                                   topRight: Radius.circular(14),
@@ -174,16 +174,16 @@ class _ObCoachScreenState extends ConsumerState<ObCoachScreen> {
                                   bottomLeft: Radius.circular(4),
                                 ),
                                 border: Border.all(
-                                  color: AppColors.border,
+                                  color: context.colors.border,
                                   width: 1.0,
                                 ),
                               ),
                               child: Text(
                                 item.$3,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
                                   height: 1.5,
-                                  color: AppColors.textSecondary,
+                                  color: context.colors.textSecondary,
                                 ),
                               ),
                             ),

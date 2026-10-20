@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../controllers/demo_controller.dart';
@@ -55,12 +56,12 @@ class DemoScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Giả lập Demo',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         backgroundColor: Colors.transparent,
@@ -82,23 +83,23 @@ class DemoScreen extends ConsumerWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: AppColors.primaryLight,
+                        color: context.colors.primaryLight,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.developer_mode_rounded,
-                        color: AppColors.primary,
+                        color: context.colors.primary,
                         size: 20,
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'Chế độ giả lập phục vụ trình diễn và kiểm thử nhanh các kịch bản.',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                     ),
@@ -114,13 +115,13 @@ class DemoScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: state.isError
-                        ? const Color(0xFFFEF2F2)
-                        : const Color(0xFFF0FDF4),
+                        ? context.colors.errorBg
+                        : context.colors.successBg,
                     borderRadius: BorderRadius.circular(AppColors.radiusCard),
                     border: Border.all(
                       color: state.isError
-                          ? const Color(0xFFFCA5A5)
-                          : const Color(0xFF86EFAC),
+                          ? context.colors.errorBorder
+                          : context.colors.successBorder,
                       width: 1.2,
                     ),
                   ),
@@ -143,8 +144,8 @@ class DemoScreen extends ConsumerWidget {
                             fontSize: 13.5,
                             fontWeight: FontWeight.w600,
                             color: state.isError
-                                ? const Color(0xFF991B1B)
-                                : const Color(0xFF166534),
+                                ? context.colors.errorText
+                                : context.colors.successText,
                           ),
                         ),
                       ),
@@ -177,24 +178,24 @@ class DemoScreen extends ConsumerWidget {
                           height: 44,
                           decoration: BoxDecoration(
                             color: isRunning
-                                ? AppColors.primaryLight
-                                : const Color(0xFFF1F5F9),
+                                ? context.colors.primaryLight
+                                : context.colors.mutedBg,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: isRunning
-                              ? const Center(
+                              ? Center(
                                   child: SizedBox(
                                     width: 20,
                                     height: 20,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2.2,
                                       valueColor: AlwaysStoppedAnimation<Color>(
-                                        AppColors.primary,
+                                        context.colors.primary,
                                       ),
                                     ),
                                   ),
                                 )
-                              : Icon(icon, color: AppColors.primary, size: 22),
+                              : Icon(icon, color: context.colors.primary, size: 22),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -203,18 +204,18 @@ class DemoScreen extends ConsumerWidget {
                             children: [
                               Text(
                                 title,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
+                                  color: context.colors.textPrimary,
                                 ),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 subtitle,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
-                                  color: AppColors.textSecondary,
+                                  color: context.colors.textSecondary,
                                 ),
                               ),
                             ],
@@ -222,18 +223,18 @@ class DemoScreen extends ConsumerWidget {
                         ),
                         const SizedBox(width: 8),
                         if (isRunning)
-                          const Text(
+                          Text(
                             'Đang chạy...',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
+                              color: context.colors.primary,
                             ),
                           )
                         else
-                          const Icon(
+                          Icon(
                             Icons.play_circle_fill_rounded,
-                            color: AppColors.primary,
+                            color: context.colors.primary,
                             size: 24,
                           ),
                       ],

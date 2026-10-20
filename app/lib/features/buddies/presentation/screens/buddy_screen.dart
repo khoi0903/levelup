@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
@@ -35,12 +36,12 @@ class _BuddyScreenState extends ConsumerState<BuddyScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Bạn đồng hành (Buddy)',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         backgroundColor: Colors.transparent,
@@ -53,9 +54,9 @@ class _BuddyScreenState extends ConsumerState<BuddyScreen> {
             data: (today) => today != null
                 ? _buildPairedView(context, today, buddyState, notifier)
                 : _buildUnpairedView(context, buddyState, notifier),
-            loading: () => const Center(
+            loading: () => Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                valueColor: AlwaysStoppedAnimation<Color>(context.colors.primary),
               ),
             ),
             error: (err, _) => _buildUnpairedView(context, buddyState, notifier),
@@ -82,17 +83,17 @@ class _BuddyScreenState extends ConsumerState<BuddyScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: const Color(0xFFDCFCE7),
+              color: context.colors.successBg,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFF86EFAC), width: 1),
+              border: Border.all(color: context.colors.successBorder, width: 1),
             ),
             child: Text(
               state.actionSuccessMessage!,
               key: const ValueKey('buddy-success-banner'),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF166534),
+                color: context.colors.successText,
               ),
             ),
           ),
@@ -103,17 +104,17 @@ class _BuddyScreenState extends ConsumerState<BuddyScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: const Color(0xFFFEE2E2),
+              color: context.colors.errorBg,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFFCA5A5), width: 1),
+              border: Border.all(color: context.colors.errorBorder, width: 1),
             ),
             child: Text(
               mapErrorMessage(state.error),
               key: const ValueKey('buddy-error-banner'),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF991B1B),
+                color: context.colors.errorText,
               ),
             ),
           ),
@@ -132,11 +133,11 @@ class _BuddyScreenState extends ConsumerState<BuddyScreen> {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
+                      color: context.colors.primaryLight,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.border, width: 1),
+                      border: Border.all(color: context.colors.border, width: 1),
                     ),
-                    child: const Icon(Icons.person, color: AppColors.primary, size: 28),
+                    child: Icon(Icons.person, color: context.colors.primary, size: 28),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -146,24 +147,24 @@ class _BuddyScreenState extends ConsumerState<BuddyScreen> {
                         Text(
                           buddy.displayName,
                           key: const ValueKey('buddy-name-text'),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w800,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Row(
                           children: [
-                            const Icon(Icons.local_fire_department_rounded,
-                                size: 16, color: AppColors.primary),
+                            Icon(Icons.local_fire_department_rounded,
+                                size: 16, color: context.colors.primary),
                             const SizedBox(width: 4),
                             Text(
                               'Streak ${buddy.streakWeeks} tuần',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: AppColors.accentLink,
+                                color: context.colors.accentLink,
                               ),
                             ),
                           ],
@@ -175,25 +176,25 @@ class _BuddyScreenState extends ConsumerState<BuddyScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              const Divider(color: AppColors.border, height: 1),
+              Divider(color: context.colors.border, height: 1),
               const SizedBox(height: 14),
 
               // Trạng thái hôm nay
-              const Text(
+              Text(
                 'Hôm nay của bạn ấy:',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 _formatBuddyTodayStatus(buddy),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
 
@@ -201,9 +202,9 @@ class _BuddyScreenState extends ConsumerState<BuddyScreen> {
                 const SizedBox(height: 12),
                 Text(
                   'Tiến độ tuần: ${buddy.week!.completedSessions}/${buddy.week!.targetSessions} buổi',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],
@@ -213,7 +214,7 @@ class _BuddyScreenState extends ConsumerState<BuddyScreen> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryLight,
+                    color: context.colors.primaryLight,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Row(
@@ -222,7 +223,7 @@ class _BuddyScreenState extends ConsumerState<BuddyScreen> {
                         Expanded(
                           child: Text(
                             'Cân nặng: ${today.shared!.weightKg} kg',
-                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                            style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
                           ),
                         ),
                       ],
@@ -230,7 +231,7 @@ class _BuddyScreenState extends ConsumerState<BuddyScreen> {
                         Expanded(
                           child: Text(
                             'Đã nạp: ${today.shared!.mealsKcalToday} kcal',
-                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                            style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
                           ),
                         ),
                       ],
@@ -297,23 +298,23 @@ class _BuddyScreenState extends ConsumerState<BuddyScreen> {
 
     switch (status) {
       case 'done':
-        bg = const Color(0xFFDCFCE7);
-        fg = const Color(0xFF166534);
+        bg = context.colors.successBg;
+        fg = context.colors.successText;
         text = 'Đã tập';
         break;
       case 'planned':
-        bg = AppColors.primaryLight;
-        fg = AppColors.primary;
+        bg = context.colors.primaryLight;
+        fg = context.colors.primary;
         text = 'Chờ tập';
         break;
       case 'rest':
-        bg = const Color(0xFFF3F4F6);
+        bg = context.colors.mutedBg;
         fg = Colors.grey;
         text = 'Nghỉ';
         break;
       default:
-        bg = const Color(0xFFF3F4F6);
-        fg = AppColors.textSecondary;
+        bg = context.colors.mutedBg;
+        fg = context.colors.textSecondary;
         text = 'Chưa lên lịch';
     }
 
@@ -386,17 +387,17 @@ class _BuddyScreenState extends ConsumerState<BuddyScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: const Color(0xFFFEE2E2),
+              color: context.colors.errorBg,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFFCA5A5), width: 1),
+              border: Border.all(color: context.colors.errorBorder, width: 1),
             ),
             child: Text(
               mapErrorMessage(state.error),
               key: const ValueKey('buddy-unpaired-error'),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF991B1B),
+                color: context.colors.errorText,
               ),
             ),
           ),
@@ -407,15 +408,15 @@ class _BuddyScreenState extends ConsumerState<BuddyScreen> {
         GlassCard(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
           child: Column(
-            children: const [
-              Icon(Icons.people_outline_rounded, size: 48, color: AppColors.primary),
+            children: [
+              Icon(Icons.people_outline_rounded, size: 48, color: context.colors.primary),
               SizedBox(height: 10),
               Text(
                 'Tập luyện cùng bạn bè',
                 style: TextStyle(
                   fontSize: 19,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               SizedBox(height: 6),
@@ -425,7 +426,7 @@ class _BuddyScreenState extends ConsumerState<BuddyScreen> {
                 style: TextStyle(
                   fontSize: 13,
                   height: 1.45,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
             ],
@@ -439,44 +440,44 @@ class _BuddyScreenState extends ConsumerState<BuddyScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
+              Text(
                 'Mời một người bạn',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Tạo mã mời gửi qua Zalo / Messenger để bạn bè cùng ghép cặp.',
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
               ),
               const SizedBox(height: 12),
               if (state.currentInvite != null) ...[
                 Container(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryLight,
+                    color: context.colors.primaryLight,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.primary, width: 1.5),
+                    border: Border.all(color: context.colors.primary, width: 1.5),
                   ),
                   child: Column(
                     children: [
                       Text(
                         state.currentInvite!.code,
                         key: const ValueKey('buddy-invite-code-text'),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 4,
-                          color: AppColors.primary,
+                          color: context.colors.primary,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
+                      Text(
                         'Mã có hiệu lực trong 7 ngày',
-                        style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                        style: TextStyle(fontSize: 11, color: context.colors.textSecondary),
                       ),
                     ],
                   ),
@@ -513,18 +514,18 @@ class _BuddyScreenState extends ConsumerState<BuddyScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
+              Text(
                 'Bạn có mã từ bạn bè?',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Nhập mã 6 ký tự để ghép cặp với bạn đồng hành ngay lập tức.',
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -532,12 +533,12 @@ class _BuddyScreenState extends ConsumerState<BuddyScreen> {
                 textCapitalization: TextCapitalization.characters,
                 decoration: InputDecoration(
                   hintText: 'Ví dụ: LV8899',
-                  hintStyle: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                  hintStyle: TextStyle(fontSize: 14, color: context.colors.textSecondary),
                   filled: true,
-                  fillColor: AppColors.surface,
+                  fillColor: context.colors.surface,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.border),
+                    borderSide: BorderSide(color: context.colors.border),
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),

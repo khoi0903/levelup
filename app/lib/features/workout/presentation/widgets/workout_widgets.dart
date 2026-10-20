@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/voice/voice_provider.dart';
 export 'exercise_image.dart';
 
@@ -31,18 +32,18 @@ class WorkoutIconButton extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: context.colors.surface,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-              boxShadow: const [
+              border: Border.all(color: context.colors.border),
+              boxShadow: [
                 BoxShadow(
-                  color: AppColors.cardNormalShadow,
+                  color: context.colors.cardNormalShadow,
                   blurRadius: 10,
                   offset: Offset(0, 2),
                 ),
               ],
             ),
-            child: Icon(icon, color: AppColors.textPrimary, size: 22),
+            child: Icon(icon, color: context.colors.textPrimary, size: 22),
           ),
         ),
       ),
@@ -94,19 +95,19 @@ class WorkoutHeader extends StatelessWidget {
                     title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   if (subtitle != null)
                     Text(
                       subtitle!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                 ],
@@ -123,16 +124,16 @@ class WorkoutHeader extends StatelessWidget {
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: context.colors.surface,
                   borderRadius: BorderRadius.circular(AppColors.radiusPill),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: context.colors.border),
                 ),
                 child: Text(
                   stepLabel!,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ),
@@ -164,8 +165,8 @@ class WorkoutProgressBar extends StatelessWidget {
       child: LinearProgressIndicator(
         value: progress.clamp(0.0, 1.0),
         minHeight: height,
-        backgroundColor: AppColors.progressTrack,
-        valueColor: const AlwaysStoppedAnimation(AppColors.progressFill),
+        backgroundColor: context.colors.progressTrack,
+        valueColor: AlwaysStoppedAnimation(context.colors.progressFill),
       ),
     );
   }
@@ -193,12 +194,12 @@ class CounterCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(AppColors.radiusCard - 6),
-        border: Border.all(color: AppColors.cardNormalBorder),
-        boxShadow: const [
+        border: Border.all(color: context.colors.cardNormalBorder),
+        boxShadow: [
           BoxShadow(
-            color: AppColors.cardNormalShadow,
+            color: context.colors.cardNormalShadow,
             blurRadius: 14,
             offset: Offset(0, 4),
           ),
@@ -209,10 +210,10 @@ class CounterCard extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 8),
@@ -228,10 +229,10 @@ class CounterCard extends StatelessWidget {
                   value,
                   key: valueKey,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
               ),
@@ -261,7 +262,7 @@ class _RoundButton extends StatelessWidget {
       button: true,
       label: tooltip,
       child: Material(
-        color: AppColors.primaryLight,
+        color: context.colors.primaryLight,
         borderRadius: BorderRadius.circular(10),
         child: InkWell(
           onTap: onTap,
@@ -271,14 +272,14 @@ class _RoundButton extends StatelessWidget {
             height: 36,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: context.colors.border),
             ),
             child: Icon(
               icon,
               size: 20,
               color: onTap == null
-                  ? AppColors.textSecondary.withValues(alpha: 0.4)
-                  : AppColors.primary,
+                  ? context.colors.textSecondary.withValues(alpha: 0.4)
+                  : context.colors.primary,
             ),
           ),
         ),
@@ -299,24 +300,24 @@ class TipBox extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight,
+        color: context.colors.primaryLight,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.colors.border),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 18, color: AppColors.primary),
+            Icon(icon, size: 18, color: context.colors.primary),
             const SizedBox(width: 10),
           ],
           Expanded(
             child: DefaultTextStyle.merge(
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 height: 1.45,
                 fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
               child: child,
             ),
@@ -346,26 +347,26 @@ class ErrorBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight,
+        color: context.colors.primaryLight,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.primary),
+        border: Border.all(color: context.colors.primary),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.cloud_off_rounded,
             size: 20,
-            color: AppColors.primary,
+            color: context.colors.primary,
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 height: 1.4,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
           ),
@@ -428,12 +429,12 @@ class VoiceMuteButton extends ConsumerWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: context.colors.surface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border),
-                boxShadow: const [
+                border: Border.all(color: context.colors.border),
+                boxShadow: [
                   BoxShadow(
-                    color: AppColors.cardNormalShadow,
+                    color: context.colors.cardNormalShadow,
                     blurRadius: 10,
                     offset: Offset(0, 2),
                   ),
@@ -441,7 +442,7 @@ class VoiceMuteButton extends ConsumerWidget {
               ),
               child: Icon(
                 isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-                color: isMuted ? AppColors.textSecondary : AppColors.primary,
+                color: isMuted ? context.colors.textSecondary : context.colors.primary,
                 size: 22,
               ),
             ),

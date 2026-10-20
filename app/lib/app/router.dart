@@ -7,7 +7,7 @@ import '../features/product/presentation/screens/admin_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../core/constants/app_colors.dart';
+import '../core/constants/app_palette.dart';
 import '../core/widgets/error_view.dart';
 import '../core/widgets/gradient_background.dart';
 import '../features/nutrition/domain/models/nutrition_models.dart';
@@ -49,12 +49,12 @@ GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
   initialLocation: initialLocation,
   errorBuilder: (context, state) => Scaffold(
     appBar: AppBar(
-      title: const Text(
+      title: Text(
         'Không tìm thấy trang',
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w800,
-          color: AppColors.textPrimary,
+          color: context.colors.textPrimary,
         ),
       ),
       backgroundColor: Colors.transparent,

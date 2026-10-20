@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/api/api_exceptions.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/error_messages.dart';
 import '../../../../core/utils/fast_cache.dart';
@@ -218,7 +219,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
               ReloadingIndicator(isReloading: isReloading),
               Expanded(
                 child: RefreshIndicator(
-                  color: AppColors.primary,
+                  color: context.colors.primary,
                   onRefresh: () async {
                     await triggerSyncPendingWorkoutDrafts(ref);
                     ref.read(healthConnectControllerProvider.notifier).refreshTodayData();
@@ -251,20 +252,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                             children: [
                               Text(
                                 dateText,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
-                                  color: AppColors.textSecondary,
+                                  color: context.colors.textSecondary,
                                 ),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 '${greetingFor(DateTime.now())}, $displayName',
                                 key: const ValueKey('home-greeting-text'),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w800,
-                                  color: AppColors.textPrimary,
+                                  color: context.colors.textPrimary,
                                 ),
                               ),
                             ],
@@ -281,17 +282,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                           height: 38,
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           decoration: BoxDecoration(
-                            color: AppColors.surface,
+                            color: context.colors.surface,
                             borderRadius: BorderRadius.circular(
                               AppColors.radiusPill,
                             ),
                             border: Border.all(
-                              color: AppColors.border,
+                              color: context.colors.border,
                               width: 1.0,
                             ),
-                            boxShadow: const [
+                            boxShadow: [
                               BoxShadow(
-                                color: AppColors.cardNormalShadow,
+                                color: context.colors.cardNormalShadow,
                                 blurRadius: 10,
                                 offset: Offset(0, 2),
                               ),
@@ -299,19 +300,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                           ),
                           child: Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.local_fire_department,
                                 size: 18,
-                                color: AppColors.primary,
+                                color: context.colors.primary,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 '$streakWeeks tuần',
                                 key: const ValueKey('home-streak-badge'),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.accentLink,
+                                  color: context.colors.accentLink,
                                 ),
                               ),
                             ],
@@ -347,21 +348,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
+                            Text(
                               AppStrings.thisWeekTitle,
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
+                                color: context.colors.textPrimary,
                               ),
                             ),
                             Text(
                               '$currentSessionsCount/$totalTarget buổi',
                               key: const ValueKey('home-week-sessions'),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: AppColors.textSecondary,
+                                color: context.colors.textSecondary,
                               ),
                             ),
                           ],
@@ -374,12 +375,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                         ),
                         const SizedBox(height: 10),
                         // Lịch chỉ để nhắc: tập ngày nào (≥ 5 phút) cũng cộng vào chỉ tiêu tuần
-                        const Text(
+                        Text(
                           'Tập thêm từ 5 phút vào ngày khác cũng được tính',
                           key: ValueKey('home-week-hint'),
                           style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                           ),
                         ),
                       ],
@@ -438,22 +439,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
       key: const ValueKey('home-active-draft-card'),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFFEFF6FF),
+        color: context.colors.infoBg,
         borderRadius: BorderRadius.circular(AppColors.radiusCard),
-        border: Border.all(color: const Color(0xFFBFDBFE), width: 1),
+        border: Border.all(color: context.colors.infoBorder, width: 1),
       ),
       child: Row(
         children: [
           Container(
             width: 38,
             height: 38,
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: context.colors.surface,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.play_circle_outline_rounded,
-              color: AppColors.primary,
+              color: context.colors.primary,
               size: 22,
             ),
           ),
@@ -465,18 +466,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                 Text(
                   'Bạn đang tập dở $sessionTitle',
                   key: const ValueKey('home-active-draft-title'),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'Hiệp ${state.setNumber} · ${state.currentItem?.nameVi ?? 'Bài tập'}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],
@@ -497,12 +498,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
               ref.read(activeWorkoutProvider.notifier).clear();
               ref.invalidate(activeWorkoutDraftProvider);
             },
-            child: const Text(
+            child: Text(
               'Bỏ',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ),
@@ -510,7 +511,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
           FilledButton(
             key: const ValueKey('home-active-draft-continue-button'),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: context.colors.buttonFill,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -543,27 +544,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFFEFF6FF),
+          color: context.colors.infoBg,
           borderRadius: BorderRadius.circular(AppColors.radiusCard),
-          border: Border.all(color: const Color(0xFFBFDBFE), width: 1),
+          border: Border.all(color: context.colors.infoBorder, width: 1),
         ),
         child: Row(
           children: [
             Container(
               width: 38,
               height: 38,
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: context.colors.surface,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.wb_sunny_rounded,
-                color: Color(0xFF2563EB),
+                color: context.colors.infoAccent,
                 size: 22,
               ),
             ),
             const SizedBox(width: 12),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -572,18 +573,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF1E3A8A),
+                      color: context.colors.infoText,
                     ),
                   ),
                   SizedBox(height: 2),
                   Text(
                     'Để coach điều chỉnh khối lượng tập phù hợp',
-                    style: TextStyle(fontSize: 12, color: Color(0xFF3B82F6)),
+                    style: TextStyle(fontSize: 12, color: context.colors.infoAccent),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: Color(0xFF2563EB)),
+            Icon(Icons.chevron_right_rounded, color: context.colors.infoAccent),
           ],
         ),
       ),
@@ -619,19 +620,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
           Text(
             '${_capitalizeFirst(followUp.label)} hôm nay sao rồi?',
             key: ValueKey('pain-title-${followUp.bodyArea}'),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             'Báo đau ${followUp.days} ngày trước',
             key: ValueKey('pain-subtitle-${followUp.bodyArea}'),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 12),
@@ -703,24 +704,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
         height: 38,
         decoration: BoxDecoration(
           color: anySending
-              ? AppColors.surface.withValues(alpha: 0.5)
-              : AppColors.surface,
+              ? context.colors.surface.withValues(alpha: 0.5)
+              : context.colors.surface,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: anySending
-                ? AppColors.border.withValues(alpha: 0.5)
-                : AppColors.border,
+                ? context.colors.border.withValues(alpha: 0.5)
+                : context.colors.border,
             width: 1,
           ),
         ),
         alignment: Alignment.center,
         child: isSending
-            ? const SizedBox(
+            ? SizedBox(
                 width: 14,
                 height: 14,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: AppColors.primary,
+                  color: context.colors.primary,
                 ),
               )
             : Text(
@@ -729,8 +730,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: anySending
-                      ? AppColors.textSecondary.withValues(alpha: 0.5)
-                      : AppColors.textPrimary,
+                      ? context.colors.textSecondary.withValues(alpha: 0.5)
+                      : context.colors.textPrimary,
                 ),
               ),
       ),
@@ -746,7 +747,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
       key: ValueKey('pain-followup-card-${followUp.bodyArea}'),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBEB),
+        color: context.colors.warningBg,
         borderRadius: BorderRadius.circular(AppColors.radiusCard),
         border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
         boxShadow: const [
@@ -771,10 +772,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
               Expanded(
                 child: Text(
                   '${_capitalizeFirst(followUp.label)} cần chú ý',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
               ),
@@ -783,10 +784,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
           const SizedBox(height: 8),
           Text(
             response.message,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 12),
@@ -831,19 +832,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
       borderRadius: AppColors.radiusCard,
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.check_circle_rounded,
-            color: AppColors.primary,
+            color: context.colors.primary,
             size: 22,
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               response.message,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
           ),
@@ -951,15 +952,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
           Container(
             height: 100,
             decoration: BoxDecoration(
-              color: AppColors.placeholder,
+              color: context.colors.placeholder,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border, width: 1.0),
+              border: Border.all(color: context.colors.border, width: 1.0),
             ),
-            child: const Center(
+            child: Center(
               child: Icon(
                 Icons.fitness_center_rounded,
                 size: 38,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ),
@@ -968,20 +969,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
             todaySession != null && todaySession.scheduledTime.isNotEmpty
                 ? '${_sessionDayLabel(todaySession.scheduledDate)} · ${todaySession.scheduledTime}'
                 : AppStrings.todayWorkoutHeader,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w700,
-              color: AppColors.accentLink,
+              color: context.colors.accentLink,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             todaySession?.title ?? AppStrings.todayWorkoutTitle,
             key: const ValueKey('home-today-workout-title'),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 2),
@@ -989,10 +990,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
             todaySession != null
                 ? '${todaySession.durationMin} phút · ${todaySession.items.length} động tác'
                 : AppStrings.todayWorkoutMeta,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
           if (todaySession != null && todaySession.items.isNotEmpty) ...[
@@ -1001,9 +1002,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
               todaySession.items
                   .map((i) => i.nameVi ?? i.exerciseId)
                   .join(' · '),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -1016,18 +1017,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: AppColors.primaryLight,
+                color: context.colors.primaryLight,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border, width: 1.0),
+                border: Border.all(color: context.colors.border, width: 1.0),
               ),
               child: Text(
                 _formatAdjustedReason(todaySession!.adjustedReason!),
                 key: const ValueKey('home-adjusted-reason-text'),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   height: 1.45,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
             ),
@@ -1076,13 +1077,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
               child: TextButton(
                 onPressed: () =>
                     context.push('/skip-report?sessionId=${todaySession.id}'),
-                child: const Text(
+                child: Text(
                   'Không tập được hôm nay?',
                   key: ValueKey('home-skip-report-button'),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                     decoration: TextDecoration.underline,
                   ),
                 ),
@@ -1222,13 +1223,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
               height: 36,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primaryLight,
-                border: Border.all(color: AppColors.border, width: 1.0),
+                color: context.colors.primaryLight,
+                border: Border.all(color: context.colors.border, width: 1.0),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.person,
                 size: 20,
-                color: AppColors.primary,
+                color: context.colors.primary,
               ),
             ),
             const SizedBox(width: 12),
@@ -1238,10 +1239,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                 children: [
                   Text(
                     '${buddy.displayName} · Streak ${buddy.streakWeeks} tuần',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   Text(
@@ -1250,9 +1251,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                         : (buddy.isPlanned
                               ? 'Dự kiến tập lúc ${buddy.scheduledTime ?? "hôm nay"}'
                               : 'Nghỉ hôm nay'),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
@@ -1281,12 +1282,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: actions.cheered
-                      ? AppColors.accentLink
-                      : AppColors.primary,
+                      ? context.colors.primaryDark
+                      : context.colors.buttonFill,
                   borderRadius: BorderRadius.circular(AppColors.radiusPill),
-                  boxShadow: const [
+                  boxShadow: [
                     BoxShadow(
-                      color: AppColors.btnShadow,
+                      color: context.colors.btnShadow,
                       blurRadius: 8,
                       offset: Offset(0, 3),
                     ),
@@ -1316,13 +1317,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
         borderRadius: AppColors.radiusCard,
         child: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.people_outline_rounded,
-              color: AppColors.primary,
+              color: context.colors.primary,
               size: 24,
             ),
             const SizedBox(width: 12),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1331,22 +1332,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   Text(
                     'Mời bạn bè để cùng nhắc nhở và giữ thói quen lâu hơn.',
                     style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ],
         ),
@@ -1460,20 +1461,20 @@ class _WeekDayDot extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: status == _DayStatus.completed
-                ? AppColors.primary
-                : AppColors.surface,
+                ? context.colors.buttonFill
+                : context.colors.surface,
             border: status == _DayStatus.today
-                ? Border.all(color: AppColors.primary, width: 2.0)
+                ? Border.all(color: context.colors.primary, width: 2.0)
                 : Border.all(
                     color: status == _DayStatus.completed
-                        ? AppColors.primary
-                        : AppColors.border,
+                        ? context.colors.buttonFill
+                        : context.colors.border,
                     width: 1.0,
                   ),
             boxShadow: status == _DayStatus.completed
-                ? const [
+                ? [
                     BoxShadow(
-                      color: AppColors.btnShadow,
+                      color: context.colors.btnShadow,
                       blurRadius: 6,
                       offset: Offset(0, 2),
                     ),
@@ -1487,9 +1488,9 @@ class _WeekDayDot extends StatelessWidget {
                         child: Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppColors.primary,
+                            color: context.colors.primary,
                           ),
                         ),
                       )
@@ -1504,8 +1505,8 @@ class _WeekDayDot extends StatelessWidget {
                 ? FontWeight.w700
                 : FontWeight.w500,
             color: status == _DayStatus.today
-                ? AppColors.accentLink
-                : AppColors.textSecondary,
+                ? context.colors.accentLink
+                : context.colors.textSecondary,
           ),
         ),
       ],

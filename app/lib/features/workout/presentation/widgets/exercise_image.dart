@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 
 /// Widget hiển thị ảnh mẫu bài tập với cơ chế dự phòng 3 tầng:
 /// 1. [thumbnailUrl] nếu có → ảnh từ mạng (lỗi thì rơi xuống tầng 2).
@@ -79,12 +79,12 @@ class ExerciseImage extends StatelessWidget {
     return Container(
       width: width,
       height: height,
-      color: AppColors.placeholder,
+      color: context.colors.placeholder,
       alignment: Alignment.center,
       child: Icon(
         Icons.fitness_center_rounded,
         size: (height != null && height! < 50) ? 22 : 36,
-        color: AppColors.textSecondary.withValues(alpha: 0.7),
+        color: context.colors.textSecondary.withValues(alpha: 0.7),
       ),
     );
   }

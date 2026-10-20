@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
@@ -105,12 +105,12 @@ class _WorkoutFinishScreenState extends ConsumerState<WorkoutFinishScreen> {
                         progress: 1,
                       ),
                       const SizedBox(height: 20),
-                      const Text(
+                      Text(
                         'Buổi tập vừa rồi như thế nào?',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -136,8 +136,8 @@ class _WorkoutFinishScreenState extends ConsumerState<WorkoutFinishScreen> {
                                     fontSize: 15,
                                     fontWeight: FontWeight.w800,
                                     color: _rpe == i
-                                        ? AppColors.primary
-                                        : AppColors.textPrimary,
+                                        ? context.colors.primary
+                                        : context.colors.textPrimary,
                                   ),
                                 ),
                               ),
@@ -157,29 +157,29 @@ class _WorkoutFinishScreenState extends ConsumerState<WorkoutFinishScreen> {
                             Text(
                               '$_rpe · $title',
                               key: const ValueKey('rpe-label'),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w800,
-                                color: AppColors.textPrimary,
+                                color: context.colors.textPrimary,
                               ),
                             ),
                             Text(
                               detail,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
-                                color: AppColors.textSecondary,
+                                color: context.colors.textSecondary,
                               ),
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 18),
-                      const Text(
+                      Text(
                         'Có chỗ nào đau không?',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -205,12 +205,12 @@ class _WorkoutFinishScreenState extends ConsumerState<WorkoutFinishScreen> {
                       ),
                       if (_pain.isNotEmpty) ...[
                         const SizedBox(height: 12),
-                        const Text(
+                        Text(
                           'Cảm giác đau như thế nào?',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -236,33 +236,33 @@ class _WorkoutFinishScreenState extends ConsumerState<WorkoutFinishScreen> {
                         ),
                         if (_painType == 'soreness') ...[
                           const SizedBox(height: 8),
-                          const Text(
+                          Text(
                             'Mỏi sau tập là bình thường. Giãn cơ, uống đủ nước nhé.',
                             key: ValueKey('pain-hint-soreness'),
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                             ),
                           ),
                         ] else if (_painType == 'sharp') ...[
                           const SizedBox(height: 8),
-                          const Text(
+                          Text(
                             'Coach sẽ đổi bài tránh vùng này và hỏi thăm bạn ngày mai. Đau kéo dài thì nên đi khám.',
                             key: ValueKey('pain-hint-sharp'),
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                             ),
                           ),
                         ],
                       ],
                       const SizedBox(height: 18),
-                      const Text(
+                      Text(
                         'Ghi chú cho coach',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -274,17 +274,17 @@ class _WorkoutFinishScreenState extends ConsumerState<WorkoutFinishScreen> {
                         decoration: InputDecoration(
                           hintText: 'Không bắt buộc',
                           filled: true,
-                          fillColor: AppColors.surface,
+                          fillColor: context.colors.surface,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppColors.border,
+                            borderSide: BorderSide(
+                              color: context.colors.border,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppColors.border,
+                            borderSide: BorderSide(
+                              color: context.colors.border,
                             ),
                           ),
                         ),

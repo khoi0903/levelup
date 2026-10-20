@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/api/api_exceptions.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/widgets/gradient_background.dart';
 
 String nutritionError(Object error) {
@@ -46,10 +46,10 @@ class FeatureScaffold extends StatelessWidget {
   final List<Widget>? actions;
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: AppColors.background,
+    backgroundColor: context.colors.background,
     appBar: AppBar(
       title: Text(title),
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       actions: actions,
     ),
     body: GradientBackground(
@@ -117,8 +117,8 @@ class MacroRow extends StatelessWidget {
           value: target == null || target! <= 0
               ? 0
               : (value / target!).clamp(0, 1),
-          color: AppColors.progressFill,
-          backgroundColor: AppColors.progressTrack,
+          color: context.colors.progressFill,
+          backgroundColor: context.colors.progressTrack,
           borderRadius: BorderRadius.circular(8),
         ),
       ],

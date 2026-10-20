@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/empty_view.dart';
 import '../../../../core/widgets/error_view.dart';
@@ -25,12 +25,12 @@ class ReviewScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Tổng kết tuần',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         backgroundColor: Colors.transparent,
@@ -42,9 +42,9 @@ class ReviewScreen extends ConsumerWidget {
           child: reviewAsync.when(
             data: (review) =>
                 _buildContent(context, ref, review, decisionState, decisionNotifier),
-            loading: () => const Center(
+            loading: () => Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                valueColor: AlwaysStoppedAnimation<Color>(context.colors.primary),
               ),
             ),
             error: (err, _) {
@@ -86,17 +86,17 @@ class ReviewScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFFEE2E2),
+              color: context.colors.errorBg,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFFCA5A5), width: 1),
+              border: Border.all(color: context.colors.errorBorder, width: 1),
             ),
             child: Text(
               mapErrorMessage(decisionState.error),
               key: const ValueKey('review-error-banner'),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF991B1B),
+                color: context.colors.errorText,
               ),
             ),
           ),
@@ -111,33 +111,33 @@ class ReviewScreen extends ConsumerWidget {
             children: [
               Text(
                 'Tuần bắt đầu ${review.weekStart}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
               const SizedBox(height: 6),
               Text(
                 'Hoàn thành ${review.sessionsDone}/${review.sessionsTarget} buổi (${review.completionPct}%)',
                 key: const ValueKey('review-completion-text'),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  _buildStatItem('Tổng thời gian', '${review.totalMinutes} phút'),
+                  _buildStatItem(context, 'Tổng thời gian', '${review.totalMinutes} phút'),
                   if (review.avgRpe != null) ...[
                     const SizedBox(width: 16),
-                    _buildStatItem('Độ mệt trung bình', 'RPE ${review.avgRpe!.toStringAsFixed(1)}/10'),
+                    _buildStatItem(context, 'Độ mệt trung bình', 'RPE ${review.avgRpe!.toStringAsFixed(1)}/10'),
                   ],
                   if (review.weightChangeKg != null) ...[
                     const SizedBox(width: 16),
-                    _buildStatItem(
+                    _buildStatItem(context, 
                       'Cân nặng',
                       '${review.weightChangeKg! > 0 ? '+' : ''}${review.weightChangeKg} kg',
                     ),
@@ -156,16 +156,16 @@ class ReviewScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.emoji_events_rounded, color: AppColors.primary, size: 20),
+                    Icon(Icons.emoji_events_rounded, color: context.colors.primary, size: 20),
                     SizedBox(width: 8),
                     Text(
                       'Điểm sáng tuần qua',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                   ],
@@ -175,10 +175,10 @@ class ReviewScreen extends ConsumerWidget {
                   Text(
                     review.win!,
                     key: const ValueKey('review-win-text'),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                 ],
@@ -186,13 +186,13 @@ class ReviewScreen extends ConsumerWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      const Icon(Icons.check_circle_outline_rounded,
-                          size: 16, color: AppColors.primary),
+                      Icon(Icons.check_circle_outline_rounded,
+                          size: 16, color: context.colors.primary),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           w.label,
-                          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                          style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
                         ),
                       ),
                     ],
@@ -211,16 +211,16 @@ class ReviewScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.lightbulb_outline_rounded, color: AppColors.primary, size: 20),
+                    Icon(Icons.lightbulb_outline_rounded, color: context.colors.primary, size: 20),
                     SizedBox(width: 8),
                     Text(
                       'Gợi ý từ Coach',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                   ],
@@ -229,10 +229,10 @@ class ReviewScreen extends ConsumerWidget {
                 Text(
                   review.improvement!,
                   key: const ValueKey('review-improvement-text'),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     height: 1.45,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],
@@ -248,16 +248,16 @@ class ReviewScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.auto_awesome_rounded, color: AppColors.primary, size: 20),
+                  Icon(Icons.auto_awesome_rounded, color: context.colors.primary, size: 20),
                   SizedBox(width: 8),
                   Text(
                     'Đề xuất kế hoạch tuần tới',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                 ],
@@ -269,11 +269,11 @@ class ReviewScreen extends ConsumerWidget {
                         ? 'Tăng nhẹ số buổi hoặc thời lượng để tiếp tục bứt phá.'
                         : 'Duy trì nhịp độ hiện tại để củng cố thói quen.'),
                 key: const ValueKey('review-next-week-summary'),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   height: 1.45,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.accentLink,
+                  color: context.colors.accentLink,
                 ),
               ),
             ],
@@ -305,14 +305,14 @@ class ReviewScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFFDCFCE7),
+              color: context.colors.successBg,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFF86EFAC)),
+              border: Border.all(color: context.colors.successBorder),
             ),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.check_circle_rounded, color: Color(0xFF166534), size: 20),
+                Icon(Icons.check_circle_rounded, color: context.colors.successText, size: 20),
                 SizedBox(width: 8),
                 Text(
                   'Đã xác nhận kế hoạch tuần tới!',
@@ -320,7 +320,7 @@ class ReviewScreen extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF166534),
+                    color: context.colors.successText,
                   ),
                 ),
               ],
@@ -336,21 +336,21 @@ class ReviewScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatItem(String label, String value) {
+  Widget _buildStatItem(BuildContext context, String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 11, color: context.colors.textSecondary),
         ),
         const SizedBox(height: 2),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
       ],
@@ -380,12 +380,12 @@ class ReviewScreen extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
+                  Text(
                     'Điều chỉnh kế hoạch tuần tới',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 16),

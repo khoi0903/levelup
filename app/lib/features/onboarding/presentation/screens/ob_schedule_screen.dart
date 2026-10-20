@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
@@ -74,13 +75,13 @@ class ObScheduleScreen extends ConsumerWidget {
               children: [
                 const OnboardingHeader(currentStep: 4),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   AppStrings.scheduleTitle,
                   style: TextStyle(
                     fontSize: 26,
                     height: 1.25,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -91,12 +92,12 @@ class ObScheduleScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // 1. Ngày trong tuần
-                        const Text(
+                        Text(
                           AppStrings.daysOfWeekLabel,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -124,8 +125,8 @@ class ObScheduleScreen extends ConsumerWidget {
                                             ? FontWeight.w700
                                             : FontWeight.w500,
                                         color: isSelected
-                                            ? AppColors.accentLink
-                                            : AppColors.textPrimary,
+                                            ? context.colors.accentLink
+                                            : context.colors.textPrimary,
                                       ),
                                     ),
                                   ),
@@ -137,12 +138,12 @@ class ObScheduleScreen extends ConsumerWidget {
                         const SizedBox(height: 20),
 
                         // 2. Khung giờ thường tập
-                        const Text(
+                        Text(
                           AppStrings.timeSlotLabel,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -169,18 +170,18 @@ class ObScheduleScreen extends ConsumerWidget {
                                 children: [
                                   Text(
                                     slot.$2,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary,
+                                      color: context.colors.textPrimary,
                                     ),
                                   ),
                                   const SizedBox(height: 3),
                                   Text(
                                     slot.$3,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 13,
-                                      color: AppColors.textSecondary,
+                                      color: context.colors.textSecondary,
                                     ),
                                   ),
                                 ],
@@ -191,12 +192,12 @@ class ObScheduleScreen extends ConsumerWidget {
                         const SizedBox(height: 20),
 
                         // 3. Mỗi buổi bao lâu
-                        const Text(
+                        Text(
                           AppStrings.durationLabel,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -225,8 +226,8 @@ class ObScheduleScreen extends ConsumerWidget {
                                             ? FontWeight.w700
                                             : FontWeight.w500,
                                         color: isSelected
-                                            ? AppColors.accentLink
-                                            : AppColors.textPrimary,
+                                            ? context.colors.accentLink
+                                            : context.colors.textPrimary,
                                       ),
                                     ),
                                   ),
@@ -247,20 +248,20 @@ class ObScheduleScreen extends ConsumerWidget {
                           borderRadius: AppColors.radiusButton,
                           child: Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.lightbulb_outline_rounded,
-                                color: AppColors.accent,
+                                color: context.colors.accent,
                                 size: 24,
                               ),
                               const SizedBox(width: 12),
                               Expanded(
-                                child: const Text(
+                                child: Text(
                                   AppStrings.scheduleTip,
                                   style: TextStyle(
                                     fontSize: 14,
                                     height: 1.5,
                                     fontWeight: FontWeight.w600,
-                                    color: AppColors.textPrimary,
+                                    color: context.colors.textPrimary,
                                   ),
                                 ),
                               ),

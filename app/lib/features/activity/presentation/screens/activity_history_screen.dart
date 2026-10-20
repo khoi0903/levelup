@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../health_connect/domain/models/health_connect_state.dart';
 import '../../../health_connect/presentation/controllers/health_connect_controller.dart';
@@ -103,9 +103,9 @@ class _HistoryBody extends StatelessWidget {
                     ? 'Chưa có dữ liệu. Kết nối Health Connect ở Trang chủ để ghi nhận bước chân.'
                     : 'Trung bình $avgSteps bước/ngày (các ngày có bước chân)',
                 key: const ValueKey('activity-average'),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
             ],
@@ -113,12 +113,12 @@ class _HistoryBody extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         for (final d in newestFirst) _DayRow(day: d),
-        const Padding(
+        Padding(
           padding: EdgeInsets.only(top: 8),
           child: Text(
             'Calo = buổi tập trong app + đi lại, vận động khác (không tính trùng lúc tập). '
             'Dùng nhiều điện thoại thì lấy số lớn nhất. Chỉ để tham khảo.',
-            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 11, color: context.colors.textSecondary),
           ),
         ),
       ],
@@ -148,9 +148,9 @@ class _StepsChart extends StatelessWidget {
                     d.steps >= 1000
                         ? '${(d.steps / 1000).toStringAsFixed(1)}k'
                         : '${d.steps}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 10,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -159,17 +159,17 @@ class _StepsChart extends StatelessWidget {
                     height: 90 * d.steps / maxSteps + 2,
                     decoration: BoxDecoration(
                       color: d.steps >= 10000
-                          ? AppColors.primary
-                          : AppColors.progressFill.withValues(alpha: 0.55),
+                          ? context.colors.primary
+                          : context.colors.progressFill.withValues(alpha: 0.55),
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     activityDayLabel(d.localDate).split(' ').first,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
@@ -209,16 +209,16 @@ class _DayRow extends StatelessWidget {
                 children: [
                   Text(
                     '${day.steps} bước',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   Text(
                     detail,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
@@ -226,9 +226,9 @@ class _DayRow extends StatelessWidget {
             ),
             Text(
               '${day.totalBurnedKcal} kcal',
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w700,
-                color: AppColors.primary,
+                color: context.colors.primary,
               ),
             ),
           ],

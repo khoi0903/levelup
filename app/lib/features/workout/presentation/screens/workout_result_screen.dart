@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/voice/voice_models.dart';
 import '../../../../core/voice/voice_provider.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -114,10 +114,10 @@ class _WorkoutResultScreenState extends ConsumerState<WorkoutResultScreen> {
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.emoji_events_rounded,
                         size: 56,
-                        color: AppColors.primary,
+                        color: context.colors.primary,
                       ),
                       const SizedBox(height: 8),
                       if (isExtra) ...[
@@ -129,28 +129,28 @@ class _WorkoutResultScreenState extends ConsumerState<WorkoutResultScreen> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryLight,
+                              color: context.colors.primaryLight,
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Buổi tập thêm',
                               key: ValueKey('result-extra-badge'),
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.primary,
+                                color: context.colors.primary,
                               ),
                             ),
                           ),
                         ),
                       ],
-                      const Text(
+                      Text(
                         'Xong buổi tập!',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -158,9 +158,9 @@ class _WorkoutResultScreenState extends ConsumerState<WorkoutResultScreen> {
                         'Bạn đã tập ${formatDurationVi(result.durationSec)}',
                         key: const ValueKey('result-duration'),
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                       if (result.kcalBurned > 0) ...[
@@ -177,18 +177,18 @@ class _WorkoutResultScreenState extends ConsumerState<WorkoutResultScreen> {
                             Text(
                               'Đốt khoảng ${result.kcalBurned} kcal',
                               key: const ValueKey('result-kcal-burned'),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
+                                color: context.colors.textPrimary,
                               ),
                             ),
                             const SizedBox(width: 4),
-                            const Text(
+                            Text(
                               'ước tính',
                               style: TextStyle(
                                 fontSize: 11,
-                                color: AppColors.textSecondary,
+                                color: context.colors.textSecondary,
                               ),
                             ),
                           ],
@@ -226,14 +226,14 @@ class _WorkoutResultScreenState extends ConsumerState<WorkoutResultScreen> {
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFEF3C7),
+                            color: context.colors.warningBg,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: const Color(0xFFFDE68A),
+                              color: context.colors.warningBorder,
                               width: 1.5,
                             ),
                           ),
-                          child: const Row(
+                          child: Row(
                             children: [
                               Icon(
                                 Icons.celebration_rounded,
@@ -250,7 +250,7 @@ class _WorkoutResultScreenState extends ConsumerState<WorkoutResultScreen> {
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF92400E),
+                                    color: context.colors.warningText,
                                   ),
                                 ),
                               ),
@@ -281,9 +281,9 @@ class _WorkoutResultScreenState extends ConsumerState<WorkoutResultScreen> {
                     children: [
                       SecondaryButton(
                         label: 'Tập thêm',
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.add_rounded,
-                          color: AppColors.primary,
+                          color: context.colors.primary,
                         ),
                         onPressed: () {
                           ref.invalidate(homePlanProvider);
@@ -323,10 +323,10 @@ class _SectionTitle extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: 8),
     child: Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 17,
         fontWeight: FontWeight.w800,
-        color: AppColors.textPrimary,
+        color: context.colors.textPrimary,
       ),
     ),
   );
@@ -346,23 +346,23 @@ class _WeekCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Tuần này',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
               ),
               Text(
                 '${week.completedSessions}/${week.targetSessions} buổi',
                 key: const ValueKey('week-progress'),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
             ],
@@ -374,16 +374,16 @@ class _WeekCard extends StatelessWidget {
           ),
           if (week.achieved) ...[
             const SizedBox(height: 10),
-            const Row(
+            Row(
               children: [
-                Icon(Icons.celebration_rounded, color: AppColors.primary),
+                Icon(Icons.celebration_rounded, color: context.colors.primary),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'Đạt mục tiêu tuần! Streak của bạn được giữ vững.',
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      color: AppColors.accentLink,
+                      color: context.colors.accentLink,
                     ),
                   ),
                 ),
@@ -393,9 +393,9 @@ class _WeekCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Còn ${week.targetSessions - week.completedSessions} buổi nữa là đạt mục tiêu tuần.',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ],
@@ -418,7 +418,7 @@ class _RecordTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(
           children: [
-            const Icon(Icons.trending_up_rounded, color: AppColors.primary),
+            Icon(Icons.trending_up_rounded, color: context.colors.primary),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -426,9 +426,9 @@ class _RecordTile extends StatelessWidget {
                 children: [
                   Text(
                     record.nameVi ?? 'Bài tập',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   Text(
@@ -436,9 +436,9 @@ class _RecordTile extends StatelessWidget {
                         ? record.metricLabelVi
                         : '${record.metricLabelVi} · trước: '
                               '${PersonalRecord.formatValue(record.metric, previous)}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
@@ -446,10 +446,10 @@ class _RecordTile extends StatelessWidget {
             ),
             Text(
               PersonalRecord.formatValue(record.metric, record.value),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
-                color: AppColors.primary,
+                color: context.colors.primary,
               ),
             ),
           ],
@@ -472,9 +472,9 @@ class _AchievementTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.military_tech_rounded,
-              color: AppColors.primary,
+              color: context.colors.primary,
               size: 28,
             ),
             const SizedBox(width: 12),
@@ -484,17 +484,17 @@ class _AchievementTile extends StatelessWidget {
                 children: [
                   Text(
                     achievement.nameVi,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   if (achievement.descriptionVi != null)
                     Text(
                       achievement.descriptionVi!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                 ],

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../constants/app_colors.dart';
+import '../constants/app_palette.dart';
 
 /// Dòng nhắc ngay trên nút "Tiếp tục" khi nút bị khóa: nói rõ còn thiếu hoặc sai gì,
 /// để người dùng không phải đoán vì sao bấm không được.
@@ -17,20 +17,20 @@ class MissingHint extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.info_outline_rounded,
             size: 16,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
           const SizedBox(width: 6),
           Expanded(
             child: Text(
               text,
               key: const ValueKey('onboarding-missing-hint'),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ),

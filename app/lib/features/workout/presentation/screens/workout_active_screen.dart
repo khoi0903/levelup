@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
@@ -467,10 +467,10 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
                   Expanded(
                     child: Text(
                       item.nameVi,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                   ),
@@ -480,17 +480,17 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
                     TextButton.icon(
                       key: const ValueKey('swap-exercise-active-btn'),
                       onPressed: () => _openSwapSheet(s, item),
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.swap_horiz_rounded,
                         size: 16,
-                        color: AppColors.primary,
+                        color: context.colors.primary,
                       ),
-                      label: const Text(
+                      label: Text(
                         'Đổi bài này',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.primary,
+                          color: context.colors.primary,
                         ),
                       ),
                       style: TextButton.styleFrom(
@@ -510,10 +510,10 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
               Text(
                 'Hiệp ${s.setNumber}/${item.sets} · $target',
                 key: const ValueKey('workout-set-meta'),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
               const SizedBox(height: 14),
@@ -588,9 +588,9 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
                 Text(
                   'Nghỉ ${item.restSec} giây sau hiệp này',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],
@@ -617,9 +617,9 @@ class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen>
                     Expanded(
                       child: PrimaryButton(
                         label: 'Đếm bằng camera',
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.videocam_rounded,
-                          color: AppColors.surface,
+                          color: context.colors.surface,
                           size: 20,
                         ),
                         onPressed: () => _countWithCamera(s),
@@ -709,10 +709,10 @@ class _GuideCardState extends State<_GuideCard> {
               text,
               maxLines: _expanded ? null : 2,
               overflow: _expanded ? null : TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 height: 1.45,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
             Align(
@@ -751,30 +751,30 @@ class _DurationInput extends StatelessWidget {
     return AppCard(
       child: Column(
         children: [
-          const Text(
+          Text(
             'Thời gian giữ',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             formatClock(seconds),
             key: const ValueKey('duration-clock'),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 44,
               fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
               fontFeatures: [FontFeature.tabularFigures()],
             ),
           ),
           Text(
             'Mục tiêu ${formatClock(targetSec)}',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 10),
@@ -833,30 +833,30 @@ class _RestView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const Spacer(),
-          const Text(
+          Text(
             'Nghỉ ngơi giữa hiệp',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             'Hít thở đều và uống nước',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 14, color: context.colors.textSecondary),
           ),
           const SizedBox(height: 24),
           Text(
             formatClock(seconds),
             key: const ValueKey('rest-clock'),
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 64,
               fontWeight: FontWeight.w800,
-              color: AppColors.primary,
+              color: context.colors.primary,
               fontFeatures: [FontFeature.tabularFigures()],
             ),
           ),
@@ -881,18 +881,18 @@ class _RestView extends StatelessWidget {
                     children: [
                       Text(
                         'Tiếp theo: ${next.nameVi}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         'Hiệp $setNumber/${next.sets}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                     ],

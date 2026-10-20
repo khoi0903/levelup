@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../constants/app_palette.dart';
 
 class SelectionChip extends StatelessWidget {
   final String label;
@@ -20,16 +21,16 @@ class SelectionChip extends StatelessWidget {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: isSelected ? AppColors.cardSelectedBg : AppColors.surface,
+        color: isSelected ? context.colors.cardSelectedBg : context.colors.surface,
         borderRadius: BorderRadius.circular(AppColors.radiusPill),
         border: Border.all(
-          color: isSelected ? AppColors.cardSelectedBorder : AppColors.border,
+          color: isSelected ? context.colors.cardSelectedBorder : context.colors.border,
           width: isSelected ? 1.5 : 1.0,
         ),
         boxShadow: isSelected
-            ? const [
+            ? [
                 BoxShadow(
-                  color: AppColors.cardSelectedShadow,
+                  color: context.colors.cardSelectedShadow,
                   blurRadius: 12,
                   offset: Offset(0, 4),
                 ),
@@ -49,7 +50,7 @@ class SelectionChip extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? AppColors.accentLink : AppColors.textSecondary,
+                  color: isSelected ? context.colors.accentLink : context.colors.textSecondary,
                 ),
               ),
             ),

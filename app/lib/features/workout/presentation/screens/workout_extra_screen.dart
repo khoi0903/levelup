@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
@@ -183,7 +183,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                           tooltip: 'Quay lại',
                         ),
                         const SizedBox(width: 12),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -192,7 +192,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w800,
-                                  color: AppColors.textPrimary,
+                                  color: context.colors.textPrimary,
                                 ),
                               ),
                               SizedBox(height: 2),
@@ -200,7 +200,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                                 'Chọn buổi gợi ý hoặc tự chọn bài tập',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: AppColors.textSecondary,
+                                  color: context.colors.textSecondary,
                                 ),
                               ),
                             ],
@@ -218,19 +218,19 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                         key: const ValueKey('pain-reminder-banner'),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.placeholder,
+                          color: context.colors.placeholder,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.border),
+                          border: Border.all(color: context.colors.border),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Bạn đang đau $painLabel. Nghỉ cũng là một phần của tập luyện; nếu vẫn muốn tập, mình đã bỏ bài tác động vào vùng này.',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
-                                color: AppColors.textPrimary,
+                                color: context.colors.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 10),
@@ -242,17 +242,17 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                                     onPressed: () => _tabController.animateTo(1),
                                     style: OutlinedButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(vertical: 8),
-                                      side: const BorderSide(color: AppColors.primary),
+                                      side: BorderSide(color: context.colors.primary),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                     ),
-                                    child: const Text(
+                                    child: Text(
                                       'Tập phần khác',
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w700,
-                                        color: AppColors.primary,
+                                        color: context.colors.primary,
                                       ),
                                     ),
                                   ),
@@ -274,7 +274,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                                       );
                                     },
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primary,
+                                      backgroundColor: context.colors.buttonFill,
                                       foregroundColor: Colors.white,
                                       elevation: 0,
                                       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -315,15 +315,15 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                     child: Container(
                       height: 44,
                       decoration: BoxDecoration(
-                        color: AppColors.placeholder,
+                        color: context.colors.placeholder,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: TabBar(
                         controller: _tabController,
                         labelColor: Colors.white,
-                        unselectedLabelColor: AppColors.textSecondary,
+                        unselectedLabelColor: context.colors.textSecondary,
                         indicator: BoxDecoration(
-                          color: AppColors.primary,
+                          color: context.colors.buttonFill,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         indicatorSize: TabBarIndicatorSize.tab,
@@ -433,12 +433,12 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: const Text(
+                  child: Text(
                     'Check-in',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
+                      color: context.colors.primary,
                     ),
                   ),
                 ),
@@ -455,18 +455,18 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
         ],
 
         // Tiêu đề phần gợi ý
-        const Text(
+        Text(
           'Gợi ý nhanh theo nhóm cơ',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 4),
-        const Text(
+        Text(
           'Đã lọc theo nơi tập và dụng cụ của bạn',
-          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
         ),
         const SizedBox(height: 12),
 
@@ -523,8 +523,8 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
           type: SuggestedWorkoutType.fullBody,
           subtitle: '4 bài tập · $effectiveDuration phút · Cân bằng toàn bộ cơ thể',
           icon: Icons.accessibility_new_rounded,
-          iconColor: AppColors.primary,
-          bgColor: AppColors.primaryLight,
+          iconColor: context.colors.primary,
+          bgColor: context.colors.primaryLight,
           safeExercises: safeExercises,
           location: location,
           equipment: equipment,
@@ -592,20 +592,20 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
         onSelected: enabled
             ? (_) => setState(() => _selectedDuration = minutes)
             : null,
-        selectedColor: AppColors.primaryLight,
-        backgroundColor: AppColors.surface,
-        disabledColor: AppColors.placeholder.withValues(alpha: 0.3),
+        selectedColor: context.colors.primaryLight,
+        backgroundColor: context.colors.surface,
+        disabledColor: context.colors.placeholder.withValues(alpha: 0.3),
         labelStyle: TextStyle(
           fontSize: 12,
           fontWeight: selected && enabled ? FontWeight.w700 : FontWeight.w500,
           color: !enabled
-              ? AppColors.textSecondary.withValues(alpha: 0.4)
-              : (selected ? AppColors.primary : AppColors.textSecondary),
+              ? context.colors.textSecondary.withValues(alpha: 0.4)
+              : (selected ? context.colors.primary : context.colors.textSecondary),
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
           side: BorderSide(
-            color: selected && enabled ? AppColors.primary : AppColors.border,
+            color: selected && enabled ? context.colors.primary : context.colors.border,
             width: 1.0,
           ),
         ),
@@ -628,12 +628,12 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
+                  color: context.colors.primaryLight,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.replay_rounded,
-                  color: AppColors.primary,
+                  color: context.colors.primary,
                   size: 22,
                 ),
               ),
@@ -642,19 +642,19 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Tập lại buổi hôm nay',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                     Text(
                       '${todaySession.title} · ${todaySession.durationMin} phút · ${todaySession.items.length} bài',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -665,9 +665,9 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
           const SizedBox(height: 12),
           PrimaryButton(
             label: 'Tập lại buổi này',
-            icon: const Icon(
+            icon: Icon(
               Icons.play_arrow_rounded,
-              color: AppColors.surface,
+              color: context.colors.surface,
               size: 20,
             ),
             height: 44,
@@ -734,27 +734,27 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                 children: [
                   Text(
                     displayTitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               size: 24,
             ),
           ],
@@ -839,15 +839,15 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
             height: 44,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: context.colors.surface,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border, width: 1.0),
+              border: Border.all(color: context.colors.border, width: 1.0),
             ),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.search_rounded,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -856,11 +856,11 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                     controller: _searchController,
                     onChanged: (val) =>
                         setState(() => _searchQuery = val.trim()),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Tìm bài tập (không dấu)...',
                       hintStyle: TextStyle(
                         fontSize: 14,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                       border: InputBorder.none,
                       isDense: true,
@@ -873,9 +873,9 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                       _searchController.clear();
                       setState(() => _searchQuery = '');
                     },
-                    child: const Icon(
+                    child: Icon(
                       Icons.cancel_rounded,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       size: 18,
                     ),
                   ),
@@ -906,10 +906,10 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
         // Danh sách bài
         Expanded(
           child: filtered.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
                     'Không tìm thấy bài tập phù hợp.',
-                    style: TextStyle(color: AppColors.textSecondary),
+                    style: TextStyle(color: context.colors.textSecondary),
                   ),
                 )
               : ListView.builder(
@@ -953,10 +953,10 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
         // Nút "Bắt đầu (n bài)" cố định ở đáy
         Container(
           padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
+          decoration: BoxDecoration(
+            color: context.colors.surface,
             border: Border(
-              top: BorderSide(color: AppColors.border, width: 1.0),
+              top: BorderSide(color: context.colors.border, width: 1.0),
             ),
           ),
           child: PrimaryButton(
@@ -964,9 +964,9 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
             label: selectedCount == 0
                 ? 'Chọn ít nhất 1 bài tập'
                 : 'Bắt đầu ($selectedCount bài)',
-            icon: const Icon(
+            icon: Icon(
               Icons.play_arrow_rounded,
-              color: AppColors.surface,
+              color: context.colors.surface,
             ),
             onPressed: selectedCount == 0
                 ? null
@@ -1007,18 +1007,18 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
         label: Text(label),
         selected: isSelected,
         onSelected: (_) => setState(() => _selectedMuscleFilter = key),
-        selectedColor: AppColors.primaryLight,
-        checkmarkColor: AppColors.primary,
+        selectedColor: context.colors.primaryLight,
+        checkmarkColor: context.colors.primary,
         labelStyle: TextStyle(
           fontSize: 12,
           fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-          color: isSelected ? AppColors.primary : AppColors.textSecondary,
+          color: isSelected ? context.colors.primary : context.colors.textSecondary,
         ),
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.colors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
           side: BorderSide(
-            color: isSelected ? AppColors.primary : AppColors.border,
+            color: isSelected ? context.colors.primary : context.colors.border,
             width: 1.0,
           ),
         ),
@@ -1074,10 +1074,10 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                             ? Icons.check_box_rounded
                             : Icons.check_box_outline_blank_rounded),
                     color: isContraindicated
-                        ? AppColors.textSecondary.withValues(alpha: 0.35)
+                        ? context.colors.textSecondary.withValues(alpha: 0.35)
                         : (isSelected
-                            ? AppColors.primary
-                            : AppColors.textSecondary),
+                            ? context.colors.primary
+                            : context.colors.textSecondary),
                     size: 24,
                   ),
                   const SizedBox(width: 10),
@@ -1097,10 +1097,10 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                       children: [
                         Text(
                           exercise.nameVi,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -1110,17 +1110,17 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                               isDuration
                                   ? 'Tính theo thời gian'
                                   : 'Tính theo lần',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.textSecondary,
+                                color: context.colors.textSecondary,
                               ),
                             ),
                             if (hasCamera) ...[
                               const SizedBox(width: 8),
-                              const Icon(
+                              Icon(
                                 Icons.videocam_outlined,
                                 size: 16,
-                                color: AppColors.primary,
+                                color: context.colors.primary,
                               ),
                             ],
                           ],
@@ -1153,16 +1153,16 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryLight,
+                              color: context.colors.primaryLight,
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: AppColors.border),
+                              border: Border.all(color: context.colors.border),
                             ),
                             child: Text(
                               missingEquipmentLabel,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: AppColors.primary,
+                                color: context.colors.primary,
                               ),
                             ),
                           ),
@@ -1176,19 +1176,19 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
 
             // Controls chỉnh hiệp và lần/giây khi đã tích chọn
             if (isSelected && !isContraindicated) ...[
-              const Divider(height: 16, color: AppColors.border),
+              Divider(height: 16, color: context.colors.border),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   // Hiệp
                   Row(
                     children: [
-                      const Text(
+                      Text(
                         'Hiệp: ',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                       _stepperButton(
@@ -1237,10 +1237,10 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
                     children: [
                       Text(
                         isDuration ? 'Giây: ' : 'Lần: ',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                       _stepperButton(
@@ -1328,11 +1328,11 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
         width: 28,
         height: 28,
         decoration: BoxDecoration(
-          color: AppColors.placeholder,
+          color: context.colors.placeholder,
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: AppColors.border, width: 1.0),
+          border: Border.all(color: context.colors.border, width: 1.0),
         ),
-        child: Icon(icon, size: 16, color: AppColors.textPrimary),
+        child: Icon(icon, size: 16, color: context.colors.textPrimary),
       ),
     );
   }

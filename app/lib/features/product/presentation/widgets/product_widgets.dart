@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/api/api_exceptions.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../users/presentation/controllers/user_controller.dart';
@@ -37,9 +37,9 @@ class ProductProfileCards extends ConsumerWidget {
       children: [
         GlassCard(
           child: ListTile(
-            leading: const Icon(
+            leading: Icon(
               Icons.workspace_premium_outlined,
-              color: AppColors.primary,
+              color: context.colors.primary,
             ),
             title: const Text('LevelUp Pro'),
             subtitle: Text(
@@ -55,9 +55,9 @@ class ProductProfileCards extends ConsumerWidget {
         if (me.productConfig.referralEnabled) ...[
           GlassCard(
             child: ListTile(
-              leading: const Icon(
+              leading: Icon(
                 Icons.group_add_outlined,
-                color: AppColors.primary,
+                color: context.colors.primary,
               ),
               title: const Text('Mời bạn, nhận Pro'),
               subtitle: const Text('Cùng tập buổi đầu để nhận thưởng'),

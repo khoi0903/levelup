@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_palette.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
@@ -94,30 +95,30 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
               children: [
                 const OnboardingHeader(currentStep: 1),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   AppStrings.goalTitle,
                   style: TextStyle(
                     fontSize: 28,
                     height: 1.25,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
+                Text(
                   AppStrings.goalSubtitle,
                   style: TextStyle(
                     fontSize: 15,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'Tên hiển thị của bạn',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -130,19 +131,19 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
                   child: TextField(
                     controller: _nameController,
                     onChanged: (val) => controller.setDisplayName(val),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontWeight: FontWeight.w600,
                     ),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(vertical: 12),
                       border: InputBorder.none,
                       hintText: 'Nhập tên của bạn (vd: Minh)',
                       hintStyle: TextStyle(
                         fontSize: 15,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ),
@@ -172,18 +173,18 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
                                 children: [
                                   Text(
                                     item.$2,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 17,
                                       fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary,
+                                      color: context.colors.textPrimary,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     item.$3,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 14,
-                                      color: AppColors.textSecondary,
+                                      color: context.colors.textSecondary,
                                     ),
                                   ),
                                 ],
@@ -221,9 +222,9 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
                       Text(
                         'Đang đăng nhập: $userEmail · ',
                         key: const ValueKey('ob-logged-in-email-text'),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                       InkWell(
@@ -234,12 +235,12 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
                             context.go('/login');
                           }
                         },
-                        child: const Text(
+                        child: Text(
                           'Đổi tài khoản',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.accentLink,
+                            color: context.colors.accentLink,
                           ),
                         ),
                       ),
@@ -250,11 +251,11 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
                     alignment: WrapAlignment.center,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      const Text(
+                      Text(
                         AppStrings.alreadyHaveAccount,
                         style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                       InkWell(
@@ -263,12 +264,12 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
                             context.go('/login');
                           }
                         },
-                        child: const Text(
+                        child: Text(
                           AppStrings.logIn,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.accentLink,
+                            color: context.colors.accentLink,
                           ),
                         ),
                       ),
