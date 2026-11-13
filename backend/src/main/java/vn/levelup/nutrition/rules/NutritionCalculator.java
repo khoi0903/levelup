@@ -17,16 +17,29 @@ public final class NutritionCalculator {
 
     private NutritionCalculator() {}
 
-    public static User.NutritionTarget compute(String gender, Integer birthYear, double heightCm,
-                                               double weightKg, String goal, LocalDate today) {
-        int age = birthYear == null ? DEFAULT_AGE : Math.max(14, today.getYear() - birthYear);
+    /** Tuổi dùng trong công thức: chưa biết năm sinh thì 25, không dưới 14. */
+    public static int age(Integer birthYear, LocalDate today) {
+        return birthYear == null ? DEFAULT_AGE : Math.max(14, today.getYear() - birthYear);
+    }
+
+    /** BMR Mifflin-St Jeor (kcal/ngày). */
+    public static double bmr(String gender, int age, double heightCm, double weightKg) {
         double base = 10 * weightKg + 6.25 * heightCm - 5 * age;
-        double bmr = switch (gender == null ? "other" : gender) {
+        return switch (gender == null ? "other" : gender) {
             case "male" -> base + 5;
             case "female" -> base - 161;
             default -> base - 78;           // trung bình hai công thức
         };
-        double tdee = bmr * ACTIVITY_LIGHT;
+    }
+
+    /** TDEE = BMR × mức vận động nhẹ. */
+    public static double tdee(double bmr) {
+        return bmr * ACTIVITY_LIGHT;
+    }
+
+    public static User.NutritionTarget compute(String gender, Integer birthYear, double heightCm,
+                                               double weightKg, String goal, LocalDate today) {
+        double tdee = tdee(bmr(gender, age(birthYear, today), heightCm, weightKg));
 
         double kcal = switch (goal) {
             case "lose_fat" -> tdee - Math.min(500, tdee * 0.2);   // thâm hụt vừa phải

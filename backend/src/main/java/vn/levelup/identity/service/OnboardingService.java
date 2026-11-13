@@ -65,7 +65,8 @@ public class OnboardingService {
 
         User.Profile profile = new User.Profile(r.goal(), r.gender(), r.birthYear(), r.heightCm(), r.weightKg(),
             r.goalWeightKg(), r.experience(), r.location(), r.sessionMinutes(), r.coachStyle(),
-            r.motivationReasons(), r.motivationText(), equipment, now);
+            r.motivationReasons(), r.motivationText(), equipment, now, r.bodyFatPct(),
+            r.focusMuscles() == null ? null : r.focusMuscles().stream().distinct().toList());
         User.NutritionTarget target = NutritionCalculator.compute(
             r.gender(), r.birthYear(), r.heightCm(), r.weightKg(), r.goal(), today);
 

@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -117,6 +118,22 @@ public class MeasurementService {
                 .with(Sort.by(Sort.Direction.ASC, "measuredOn")), Document.class, "body_measurements")
             .stream().map(MeasurementService::view).toList();
         return new MeasurementDtos.ListResponse(days, items);
+    }
+
+    /** Cân nặng mới nhất đã ghi. */
+    public Optional<Double> latestWeightKg(String userId) {
+        return latest(userId, "weightKg");
+    }
+
+    public Optional<Double> latestBodyFatPct(String userId) {
+        return latest(userId, "bodyFatPct");
+    }
+
+    private Optional<Double> latest(String userId, String field) {
+        Document d = mongo.findOne(Query.query(Criteria.where("userId").is(new ObjectId(userId))
+                .and(field).exists(true)).with(Sort.by(Sort.Direction.DESC, "measuredOn")).limit(1),
+            Document.class, "body_measurements");
+        return d == null ? Optional.empty() : Optional.ofNullable(number(d, field));
     }
 
     private Set<String> ownedAchievements(ObjectId userId) {

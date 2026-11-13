@@ -53,7 +53,9 @@ public record User(
         List<String> motivationReasons,
         String motivationText,
         List<String> equipment,
-        Instant onboardingCompletedAt
+        Instant onboardingCompletedAt,
+        Integer bodyFatPct,          // 5–50, người dùng tự chọn; số đo thật nằm ở body_measurements
+        List<String> focusMuscles    // chest | back | shoulders | arms | abs | glutes | legs
     ) {}
 
     /**
