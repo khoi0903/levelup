@@ -72,6 +72,51 @@ Future<void> tapVisible(WidgetTester tester, Finder finder) async {
 }
 
 void main() {
+  testWidgets('lưu bữa xong hiện popup câu nhận xét rồi về màn Dinh dưỡng', (
+    tester,
+  ) async {
+    final repo = FakeNutritionRepository()
+      ..saveComment = const MealComment(
+        situation: 'nhieu_tinh_bot',
+        text: 'Cơm trắng đúng chuẩn năng lượng. Bữa sau thêm chút đạm nhé.',
+      );
+    await pumpNutrition(tester, repo, route: '/nutrition/add');
+    await tapVisible(tester, find.text('+ Thêm món qua tìm kiếm'));
+    await tester.enterText(find.byType(TextField), 'com trang');
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pumpAndSettle();
+    await tapVisible(tester, find.text('Cơm trắng'));
+    await tapVisible(tester, find.text('Lưu bữa ăn'));
+    expect(find.text('Nhiều tinh bột'), findsOneWidget);
+    expect(
+      find.text('Cơm trắng đúng chuẩn năng lượng. Bữa sau thêm chút đạm nhé.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Đã hiểu'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('meal-comment-text')), findsNothing);
+    expect(find.text('Dinh dưỡng'), findsWidgets);
+  });
+
+  test('NutritionToday đọc comment, bỏ qua comment rỗng', () {
+    final withComment = NutritionToday.fromJson({
+      'localDate': '2026-11-13',
+      'comment': {'situation': 'gan_du', 'text': 'Gần chạm mục tiêu rồi.'},
+    });
+    expect(withComment.comment?.situation, 'gan_du');
+    expect(
+      NutritionToday.fromJson({'localDate': '2026-11-13', 'comment': null}).comment,
+      isNull,
+    );
+    expect(
+      NutritionToday.fromJson({
+        'localDate': '2026-11-13',
+        'comment': {'situation': 'gan_du', 'text': ''},
+      }).comment,
+      isNull,
+    );
+  });
+
   testWidgets('today, macros, empty meals and +250 ml refresh', (tester) async {
     final repo = FakeNutritionRepository();
     await pumpNutrition(tester, repo);

@@ -441,6 +441,9 @@ coll("meal_logs", {
                                 carbsG: { bsonType: "number" }, fatG: { bsonType: "number" },
                                 aiSuggested: { bsonType: "bool" }, userEdited: { bsonType: "bool" },
                                 aiEstimated: { bsonType: "bool" } } } },
+                // Câu nhận xét đã hiện sau khi lưu (chỉ số câu mo/ket trong docs/content/meal-comments.json)
+                comment: { bsonType: "object", properties: { situation: { bsonType: "string" },
+                  style: { bsonType: "string" }, mo: { bsonType: "int" }, ket: { bsonType: "int" } } },
                 createdAt: { bsonType: "date" }, updatedAt: { bsonType: "date" } }
 });
 dbx.meal_logs.createIndex({ userId: 1, localDate: 1 });

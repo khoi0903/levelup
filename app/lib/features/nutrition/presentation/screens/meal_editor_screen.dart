@@ -10,6 +10,7 @@ import '../../../../core/widgets/primary_button.dart';
 import '../../data/photo/meal_photo.dart';
 import '../../domain/models/nutrition_models.dart';
 import '../controllers/nutrition_controller.dart';
+import '../widgets/meal_comment_dialog.dart';
 import '../widgets/nutrition_widgets.dart';
 import 'food_search_screen.dart';
 
@@ -130,7 +131,7 @@ class _MealEditorScreenState extends ConsumerState<MealEditorScreen> {
       photoError = false;
     });
     try {
-      await ref
+      final today = await ref
           .read(nutritionRepositoryProvider)
           .saveMeal(
             MealRequest(
@@ -142,6 +143,13 @@ class _MealEditorScreenState extends ConsumerState<MealEditorScreen> {
           );
       if (!mounted) return;
       ref.invalidate(nutritionTodayProvider);
+      final comment = today.comment;
+      if (comment != null) {
+        // Tắt vòng quay của nút Lưu trong lúc đọc popup
+        setState(() => busy = false);
+        await showMealCommentDialog(context, comment);
+        if (!mounted) return;
+      }
       context.go('/nutrition');
     } catch (e) {
       if (mounted) setState(() => error = e);

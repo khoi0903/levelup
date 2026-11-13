@@ -72,6 +72,7 @@ public final class MealDtos {
      * steps, activeKcal: từ Health Connect (0 khi chưa kết nối). totalBurnedKcal = burnedKcal + calo vận động
      * ngoài giờ tập (NutritionRules.totalBurnedKcal; app cũ chưa gửi phần trùng giờ tập thì max như trước),
      * cũng chỉ để xem: mục tiêu ăn không tăng theo vận động.
+     * comment: câu nhận xét bữa vừa lưu, chỉ có ở phản hồi POST /meals (GET /nutrition/today luôn null).
      */
     public record TodayView(
         String localDate,
@@ -84,6 +85,20 @@ public final class MealDtos {
         int burnedKcal,
         int steps,
         int activeKcal,
-        int totalBurnedKcal
-    ) {}
+        int totalBurnedKcal,
+        MealComment comment
+    ) {
+        /** Kèm câu nhận xét bữa vừa lưu (chỉ có trong phản hồi POST /meals). */
+        public TodayView withComment(MealComment c) {
+            return new TodayView(localDate, target, consumed, remaining, waterMl, meals, suggestion, burnedKcal,
+                steps, activeKcal, totalBurnedKcal, c);
+        }
+    }
+
+    /**
+     * Câu nhận xét bữa vừa lưu theo phong cách coach (docs/content/meal-comments.json).
+     * situation: vuot_ngay | gan_du | an_qua_it | an_khuya | bua_nang | nhieu_beo | nhieu_tinh_bot | nhieu_dam
+     * | an_vat | bua_sang | bua_nhe | can_bang.
+     */
+    public record MealComment(String situation, String text) {}
 }
