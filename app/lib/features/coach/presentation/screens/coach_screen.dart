@@ -2,6 +2,7 @@ import '../../../product/presentation/widgets/product_widgets.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_palette.dart';
 import '../../../../core/utils/error_messages.dart';
@@ -124,7 +125,10 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                   decoration: BoxDecoration(
                     color: context.colors.errorBg,
                     border: Border(
-                      bottom: BorderSide(color: context.colors.errorBorder, width: 1),
+                      bottom: BorderSide(
+                        color: context.colors.errorBorder,
+                        width: 1,
+                      ),
                     ),
                   ),
                   child: Row(
@@ -339,7 +343,9 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                     vertical: 11,
                   ),
                   decoration: BoxDecoration(
-                    color: isUser ? context.colors.buttonFill : context.colors.surface,
+                    color: isUser
+                        ? context.colors.buttonFill
+                        : context.colors.surface,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(16),
                       topRight: const Radius.circular(16),
@@ -384,12 +390,56 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
     );
   }
 
+  /// Thẻ hỏi lý do bỏ buổi: mở màn chọn Bận / Mệt / Đau / Chán / Quên.
+  Widget _buildSkipReasonsCard(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 40),
+      child: GlassCard(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.help_outline_rounded,
+                  size: 18,
+                  color: context.colors.primary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Điều gì cản trở bạn?',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: context.colors.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            PrimaryButton(
+              label: 'Chọn lý do',
+              height: 38,
+              onPressed: () => context.push('/skip-report'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildActionCard(
     BuildContext context,
     CoachMessageView msg,
     CoachCardView card,
     CoachChatNotifier notifier,
   ) {
+    if (card.isSkipReasons) {
+      return _buildSkipReasonsCard(context);
+    }
     return Padding(
       padding: const EdgeInsets.only(left: 40),
       child: GlassCard(
@@ -408,7 +458,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    card.change ?? 'Đề xuất điều chỉnh buổi tập',
+                    card.title,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -475,7 +525,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
             const SizedBox(height: 10),
             if (card.isProposed) ...[
               PrimaryButton(
-                label: 'Dùng buổi này',
+                label: card.applyLabel,
                 height: 38,
                 onPressed: () async {
                   final ok = await notifier.applyAction(msg.id);

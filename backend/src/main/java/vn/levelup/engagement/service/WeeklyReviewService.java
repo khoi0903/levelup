@@ -145,7 +145,7 @@ public class WeeklyReviewService implements WeekClosedListener {
         ReviewTexts.Facts facts = new ReviewTexts.Facts(user.displayName(), style, done, target, totalMinutes,
             avgRpe, recommendation, prLabels, weightChange, kcalByDay.size(), avgKcal, sessions.size(), nextMinutes);
         Optional<ReviewTexts.Texts> fromAi = askAi(facts);
-        ReviewTexts.Texts texts = fromAi.orElseGet(() -> ReviewTexts.fallback(facts));
+        ReviewTexts.Texts texts = ReviewTexts.choose(facts, fromAi);
 
         ObjectId reviewId = new ObjectId();
         ObjectId planId = new ObjectId();

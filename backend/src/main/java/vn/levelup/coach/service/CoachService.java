@@ -136,6 +136,11 @@ public class CoachService {
         }
 
         Set<String> injuries = withInjury(ctx.injuries(), p.injury());
+        if (p.action() != null && "swap_exercise".equals(p.action().change()) && p.injury() == null
+                && !CoachRules.asksToSwap(message)) {
+            log.info("Bỏ đề xuất đổi bài người dùng không xin, user {}", userId);
+            p = p.withAction(null);
+        }
         if (p.action() != null) {
             Optional<String> error = CoachRules.validateAction(p.action(), plan, byId, ctx.location(),
                 ctx.equipment(), injuries);

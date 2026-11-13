@@ -39,6 +39,7 @@ public final class ReviewTexts {
              "improve": "1 điều cải thiện cho tuần sau, 1 câu, nhẹ nhàng, khả thi",
              "nextWeekSummary": "tóm tắt kế hoạch tuần sau đúng theo đề xuất hệ thống đã quyết, 1–2 câu"}
             Không bịa số liệu ngoài dữ liệu được cung cấp. Không đổi đề xuất tăng/giữ/giảm của hệ thống.
+            Tuần 0 buổi: không khen "nghỉ ngơi" hay điều không xảy ra, không mỉa mai; gợi ý bắt đầu lại bằng 1 buổi ngắn.
             """.formatted(tone);
     }
 
@@ -91,6 +92,16 @@ public final class ReviewTexts {
 
     private static String text(Object o) {
         return o instanceof String s && !s.isBlank() && s.length() <= MAX_LEN ? s.trim() : null;
+    }
+
+    /**
+     * Chọn lời tổng kết: tuần 0 buổi thì luôn dùng câu "chiến thắng" mẫu (AI hay khen "nghỉ ngơi trọn vẹn",
+     * đọc như mỉa mai), phần còn lại giữ của AI.
+     */
+    public static Texts choose(Facts f, Optional<Texts> fromAi) {
+        Texts rules = fallback(f);
+        return fromAi.map(t -> f.done() == 0 ? new Texts(rules.win(), t.improve(), t.nextWeekSummary()) : t)
+            .orElse(rules);
     }
 
     /** Câu mẫu khi không có AI. */

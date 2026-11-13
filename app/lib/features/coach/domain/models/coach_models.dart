@@ -4,10 +4,7 @@ class CoachInjuryView {
   final String bodyArea;
   final String? note;
 
-  const CoachInjuryView({
-    required this.bodyArea,
-    this.note,
-  });
+  const CoachInjuryView({required this.bodyArea, this.note});
 
   factory CoachInjuryView.fromJson(Map<String, dynamic> json) {
     return CoachInjuryView(
@@ -17,9 +14,9 @@ class CoachInjuryView {
   }
 
   Map<String, dynamic> toJson() => {
-        'bodyArea': bodyArea,
-        if (note != null) 'note': note,
-      };
+    'bodyArea': bodyArea,
+    if (note != null) 'note': note,
+  };
 }
 
 class CoachCardView {
@@ -53,6 +50,33 @@ class CoachCardView {
 
   bool get isProposed => status == 'proposed';
   bool get isApplied => status == 'applied';
+
+  /// Thẻ hỏi lý do bỏ buổi (backend gửi khi lỡ 2 buổi), không phải đề xuất sửa buổi.
+  bool get isSkipReasons => type == 'skip_reasons';
+
+  /// Tiêu đề thẻ bằng tiếng Việt, không hiện mã kỹ thuật (light, swap_exercise...).
+  String get title {
+    if (type == 'add_injury') return 'Ghi nhận vùng đau';
+    return switch (change) {
+      'light' => 'Buổi nhẹ hơn',
+      'quick5' => 'Bản 5 phút',
+      'swap_exercise' => 'Đổi bài',
+      'rest' => 'Nghỉ buổi này',
+      _ => 'Đề xuất điều chỉnh buổi tập',
+    };
+  }
+
+  /// Chữ trên nút đồng ý, khớp với loại đề xuất.
+  String get applyLabel {
+    if (type == 'add_injury') return 'Ghi nhận';
+    return switch (change) {
+      'light' => 'Dùng buổi nhẹ hơn',
+      'quick5' => 'Dùng bản 5 phút',
+      'swap_exercise' => 'Đổi bài này',
+      'rest' => 'Nghỉ buổi này',
+      _ => 'Dùng buổi này',
+    };
+  }
 
   CoachCardView copyWith({String? status}) {
     return CoachCardView(
@@ -93,19 +117,19 @@ class CoachCardView {
   }
 
   Map<String, dynamic> toJson() => {
-        if (type != null) 'type': type,
-        'status': status,
-        if (planId != null) 'planId': planId,
-        if (sessionId != null) 'sessionId': sessionId,
-        if (change != null) 'change': change,
-        if (fromExerciseId != null) 'fromExerciseId': fromExerciseId,
-        if (fromExerciseName != null) 'fromExerciseName': fromExerciseName,
-        if (toExerciseId != null) 'toExerciseId': toExerciseId,
-        if (toExerciseName != null) 'toExerciseName': toExerciseName,
-        if (reason != null) 'reason': reason,
-        if (injury != null) 'injury': injury!.toJson(),
-        if (preview != null) 'preview': preview!.toJson(),
-      };
+    if (type != null) 'type': type,
+    'status': status,
+    if (planId != null) 'planId': planId,
+    if (sessionId != null) 'sessionId': sessionId,
+    if (change != null) 'change': change,
+    if (fromExerciseId != null) 'fromExerciseId': fromExerciseId,
+    if (fromExerciseName != null) 'fromExerciseName': fromExerciseName,
+    if (toExerciseId != null) 'toExerciseId': toExerciseId,
+    if (toExerciseName != null) 'toExerciseName': toExerciseName,
+    if (reason != null) 'reason': reason,
+    if (injury != null) 'injury': injury!.toJson(),
+    if (preview != null) 'preview': preview!.toJson(),
+  };
 }
 
 class CoachMessageView {
@@ -152,12 +176,12 @@ class CoachMessageView {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'role': role,
-        'content': content,
-        if (createdAt != null) 'createdAt': createdAt!.toIso8601String(),
-        if (card != null) 'card': card!.toJson(),
-      };
+    'id': id,
+    'role': role,
+    'content': content,
+    if (createdAt != null) 'createdAt': createdAt!.toIso8601String(),
+    if (card != null) 'card': card!.toJson(),
+  };
 }
 
 class SendCoachResponse {
@@ -175,7 +199,9 @@ class SendCoachResponse {
 
   factory SendCoachResponse.fromJson(Map<String, dynamic> json) {
     return SendCoachResponse(
-      userMessage: CoachMessageView.fromJson(json['userMessage'] as Map<String, dynamic>),
+      userMessage: CoachMessageView.fromJson(
+        json['userMessage'] as Map<String, dynamic>,
+      ),
       reply: CoachMessageView.fromJson(json['reply'] as Map<String, dynamic>),
       remainingToday: (json['remainingToday'] as num?)?.toInt() ?? 0,
       source: json['source']?.toString() ?? 'rules',
@@ -183,11 +209,11 @@ class SendCoachResponse {
   }
 
   Map<String, dynamic> toJson() => {
-        'userMessage': userMessage.toJson(),
-        'reply': reply.toJson(),
-        'remainingToday': remainingToday,
-        'source': source,
-      };
+    'userMessage': userMessage.toJson(),
+    'reply': reply.toJson(),
+    'remainingToday': remainingToday,
+    'source': source,
+  };
 }
 
 class CoachHistoryResponse {
@@ -205,7 +231,8 @@ class CoachHistoryResponse {
 
   factory CoachHistoryResponse.fromJson(Map<String, dynamic> json) {
     return CoachHistoryResponse(
-      messages: (json['messages'] as List<dynamic>?)
+      messages:
+          (json['messages'] as List<dynamic>?)
               ?.map((e) => CoachMessageView.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
@@ -215,7 +242,7 @@ class CoachHistoryResponse {
   }
 
   Map<String, dynamic> toJson() => {
-        'messages': messages.map((m) => m.toJson()).toList(),
-        if (nextBefore != null) 'nextBefore': nextBefore,
-      };
+    'messages': messages.map((m) => m.toJson()).toList(),
+    if (nextBefore != null) 'nextBefore': nextBefore,
+  };
 }
