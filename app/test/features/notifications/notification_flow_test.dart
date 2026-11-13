@@ -336,7 +336,7 @@ void main() {
     testWidgets(
       'Bật lại khi chưa có quyền và bị từ chối -> hiện SnackBar hướng dẫn',
       (tester) async {
-        tester.view.physicalSize = const Size(800, 2400);
+        tester.view.physicalSize = const Size(800, 3400);
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() {
           tester.view.resetPhysicalSize();

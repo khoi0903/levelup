@@ -151,28 +151,35 @@ class _MusclesWeekCardState extends ConsumerState<MusclesWeekCard> {
                             ),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: Text(
-                                kMuscleLabels[m] ?? m,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: (data.sets[m] ?? 0) > 0
-                                      ? c.textPrimary
-                                      : c.textSecondary,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              (data.sets[m] ?? 0) > 0
-                                  ? '${data.sets[m]} hiệp'
-                                  : 'Tuần này chưa tập',
-                              key: ValueKey('muscles-week-$m'),
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: (data.sets[m] ?? 0) > 0
-                                    ? c.primary
-                                    : c.textSecondary,
+                              child: Wrap(
+                                spacing: 8,
+                                alignment: WrapAlignment.spaceBetween,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  Text(
+                                    kMuscleLabels[m] ?? m,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: (data.sets[m] ?? 0) > 0
+                                          ? c.textPrimary
+                                          : c.textSecondary,
+                                    ),
+                                  ),
+                                  Text(
+                                    (data.sets[m] ?? 0) > 0
+                                        ? '${data.sets[m]} hiệp'
+                                        : 'Tuần này chưa tập',
+                                    key: ValueKey('muscles-week-$m'),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: (data.sets[m] ?? 0) > 0
+                                          ? c.primary
+                                          : c.textSecondary,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],

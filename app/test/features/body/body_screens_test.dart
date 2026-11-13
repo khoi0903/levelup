@@ -432,7 +432,7 @@ void main() {
       expect(value('body-edit-size').data, '170 cm · 68 kg');
       // Tỉ lệ mỡ đang là số ước tính nên coi như chưa chọn vóc dáng
       expect(value('body-edit-shape').data, 'Chưa chọn');
-      expect(value('body-edit-focus').data, 'Ngực, Bụng');
+      expect(value('body-edit-focus').data, 'Bụng, Ngực');
 
       // Chiều cao, cân nặng
       await tester.tap(find.byKey(const ValueKey('body-edit-size')));
