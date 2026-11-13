@@ -15,6 +15,7 @@ import '../../domain/models/workout_session_state.dart';
 import '../controllers/workout_controller.dart';
 import '../widgets/swap_exercise_sheet.dart';
 import '../widgets/workout_widgets.dart';
+import '../../../../core/tutorial/tutorial.dart';
 
 /// Tổng quan buổi tập: danh sách bài với số hiệp/lần, nút "Bắt đầu".
 /// [sessionId] null thì lấy buổi kế tiếp trong kế hoạch.
@@ -30,6 +31,7 @@ class WorkoutStartScreen extends ConsumerStatefulWidget {
 
 class _WorkoutStartScreenState extends ConsumerState<WorkoutStartScreen> {
   bool _hasCheckedResume = false;
+  final _tutorialSwapKey = GlobalKey();
 
   void _close(BuildContext context) {
     if (context.canPop()) {
@@ -180,9 +182,21 @@ class _WorkoutStartScreenState extends ConsumerState<WorkoutStartScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              ReloadingIndicator(isReloading: isReloading),
+              // Hướng dẫn lần đầu cho nút "Đổi" (chỉ hiện khi buổi còn đổi bài được)
+              TutorialGate(
+                id: 'workout_start',
+                steps: [
+                  TutorialStep(
+                    key: _tutorialSwapKey,
+                    title: 'Đổi bài',
+                    text: 'Không hợp bài nào thì bấm Đổi để chọn bài khác cùng nhóm cơ.',
+                  ),
+                ],
+                child: ReloadingIndicator(isReloading: isReloading),
+              ),
               Expanded(
                 child: _Overview(
+                  swapTutorialKey: _tutorialSwapKey,
                   setup: setup,
                   args: args,
                   onClose: () => _close(context),
@@ -214,12 +228,14 @@ class _WorkoutStartScreenState extends ConsumerState<WorkoutStartScreen> {
 
 class _Overview extends ConsumerWidget {
   const _Overview({
+    this.swapTutorialKey,
     required this.setup,
     required this.args,
     required this.onClose,
     required this.onStart,
   });
 
+  final Key? swapTutorialKey;
   final WorkoutSetup setup;
   final WorkoutSetupArgs args;
   final VoidCallback onClose;
@@ -288,6 +304,7 @@ class _Overview extends ConsumerWidget {
               ],
               for (var i = 0; i < setup.items.length; i++) ...[
                 _ExerciseRow(
+                  swapKey: i == 0 ? swapTutorialKey : null,
                   index: i + 1,
                   item: setup.items[i],
                   onSwap: !canSwap
@@ -393,11 +410,13 @@ class _Overview extends ConsumerWidget {
 
 class _ExerciseRow extends StatelessWidget {
   const _ExerciseRow({
+    this.swapKey,
     required this.index,
     required this.item,
     required this.onSwap,
   });
 
+  final Key? swapKey;
   final int index;
   final WorkoutPlanItem item;
 
@@ -488,7 +507,9 @@ class _ExerciseRow extends StatelessWidget {
             const SizedBox(width: 6),
           ],
           if (onSwap != null)
-            TextButton.icon(
+            KeyedSubtree(
+              key: swapKey,
+              child: TextButton.icon(
               key: ValueKey('swap-btn-${item.exerciseId}'),
               onPressed: onSwap,
               icon: Icon(
@@ -509,6 +530,7 @@ class _ExerciseRow extends StatelessWidget {
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
+            ),
             ),
         ],
       ),

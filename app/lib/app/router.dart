@@ -100,6 +100,10 @@ GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
         initialFoods: state.extra is List<Food>
             ? state.extra! as List<Food>
             : const [],
+        // "Ghi món bằng câu": kết quả AI tách từ câu, lưu như bữa nhận diện
+        initialRecognition: state.extra is Recognition
+            ? state.extra! as Recognition
+            : null,
       ),
     ),
     GoRoute(

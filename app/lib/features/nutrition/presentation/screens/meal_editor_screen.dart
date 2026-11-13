@@ -10,7 +10,9 @@ import '../../../../core/widgets/primary_button.dart';
 import '../../data/photo/meal_photo.dart';
 import '../../domain/models/nutrition_models.dart';
 import '../controllers/nutrition_controller.dart';
+import '../widgets/food_detail_sheet.dart';
 import '../widgets/meal_comment_dialog.dart';
+import '../widgets/meal_quick_widgets.dart';
 import '../widgets/nutrition_widgets.dart';
 import 'food_search_screen.dart';
 
@@ -20,10 +22,14 @@ class MealEditorScreen extends ConsumerStatefulWidget {
     this.photoMode = false,
     this.meal = 'lunch',
     this.initialFoods = const [],
+    this.initialRecognition,
   });
   final bool photoMode;
   final String meal;
   final List<Food> initialFoods;
+
+  /// Kết quả "Ghi món bằng câu" (POST /meals/parse): điền sẵn như chế độ ảnh, lưu kèm recognitionId.
+  final Recognition? initialRecognition;
   @override
   ConsumerState<MealEditorScreen> createState() => _MealEditorScreenState();
 }
@@ -43,7 +49,29 @@ class _MealEditorScreenState extends ConsumerState<MealEditorScreen> {
     super.initState();
     meal = mealLabels.containsKey(widget.meal) ? widget.meal : 'lunch';
     items = widget.initialFoods.map(MealItem.fromFood).toList();
+    if (widget.initialRecognition case final parsed?) {
+      recognitionId = parsed.recognitionId;
+      items = parsed.items;
+    }
   }
+
+  void addPopular(Food food) {
+    if (busy || items.length >= 30) return;
+    setState(() => items = [...items, MealItem.fromFood(food)]);
+  }
+
+  void setGrams(int i, double grams) => setState(() {
+    items = [...items]..[i] = items[i].withGrams(grams);
+    generation++;
+  });
+
+  void showDetail(MealItem item) => showFoodDetailSheet(
+    context,
+    name: item.name,
+    macros: item.macros,
+    grams: item.grams,
+    servingDesc: item.servingDesc,
+  );
 
   Future<void> pick(MealPhotoSource source) async {
     if (busy) return;
@@ -164,7 +192,9 @@ class _MealEditorScreenState extends ConsumerState<MealEditorScreen> {
         .where((e) => e.valid)
         .fold(const Macros(), (a, b) => a + b.macros);
     return FeatureScaffold(
-      title: widget.photoMode && !manualFallback
+      title:
+          (widget.photoMode && !manualFallback) ||
+              widget.initialRecognition != null
           ? 'Kiểm tra lại món ăn'
           : 'Thêm món thủ công',
       child: ListView(
@@ -274,9 +304,15 @@ class _MealEditorScreenState extends ConsumerState<MealEditorScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: Text(
-                            items[i].name,
-                            style: Theme.of(context).textTheme.titleMedium,
+                          child: InkWell(
+                            key: ValueKey('item-detail-$i'),
+                            onTap: items[i].valid
+                                ? () => showDetail(items[i])
+                                : null,
+                            child: Text(
+                              items[i].name,
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
                           ),
                         ),
                         IconButton(
@@ -300,6 +336,12 @@ class _MealEditorScreenState extends ConsumerState<MealEditorScreen> {
                         child: const Text('Tìm món thay thế'),
                       ),
                     ] else ...[
+                      PortionChips(
+                        item: items[i],
+                        enabled: !busy,
+                        onGrams: (grams) => setGrams(i, grams),
+                      ),
+                      const SizedBox(height: 8),
                       TextFormField(
                         key: ValueKey('grams-$generation-$i'),
                         initialValue: '${items[i].grams}',
@@ -357,6 +399,11 @@ class _MealEditorScreenState extends ConsumerState<MealEditorScreen> {
             child: const Text('+ Thêm món qua tìm kiếm'),
           ),
           const SizedBox(height: 14),
+          PopularFoodChips(
+            meal: meal,
+            enabled: !busy && items.length < 30,
+            onAdd: addPopular,
+          ),
           AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

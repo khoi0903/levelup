@@ -9,7 +9,9 @@ import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../domain/models/nutrition_models.dart';
 import '../controllers/nutrition_controller.dart';
+import '../widgets/meal_quick_widgets.dart';
 import '../widgets/nutrition_widgets.dart';
+import '../../../../core/tutorial/tutorial.dart';
 import '../../../../core/utils/date_labels.dart';
 
 class NutritionScreen extends ConsumerStatefulWidget {
@@ -20,6 +22,7 @@ class NutritionScreen extends ConsumerStatefulWidget {
 
 class _NutritionScreenState extends ConsumerState<NutritionScreen> {
   bool addingWater = false;
+  final _photoKey = GlobalKey(), _textKey = GlobalKey(), _waterKey = GlobalKey();
   Object? waterError;
   Future<void> addWater() async {
     if (addingWater) return;
@@ -61,7 +64,26 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
 
     final isReloading = nutritionAsync.isLoading && today != null;
 
-    return FeatureScaffold(
+    return TutorialGate(
+      id: 'nutrition',
+      steps: [
+        TutorialStep(
+          key: _photoKey,
+          title: 'Chụp món ăn',
+          text: 'Chụp một tấm, AI nhận ra món và tính calo. Bạn kiểm tra lại rồi lưu.',
+        ),
+        TutorialStep(
+          key: _textKey,
+          title: 'Ghi món bằng câu',
+          text: 'Gõ hoặc bấm micro để nói, ví dụ "1 tô phở bò và 1 ly cà phê sữa".',
+        ),
+        TutorialStep(
+          key: _waterKey,
+          title: 'Uống nước',
+          text: 'Chạm một ly để ghi 250 ml. Đủ 8 ly là khoảng 2 lít mỗi ngày.',
+        ),
+      ],
+      child: FeatureScaffold(
       title: 'Dinh dưỡng',
       actions: [
         IconButton(
@@ -97,13 +119,20 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                         AppCard(child: _Summary(today)),
                         const SizedBox(height: 14),
                         AppCard(
+                          key: _waterKey,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'Nước • ${today.waterMl} ml${today.target == null ? '' : ' / ${today.target!.waterMl} ml'}',
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 8),
+                              WaterGlasses(
+                                waterMl: today.waterMl,
+                                busy: addingWater,
+                                onAdd: addWater,
+                              ),
+                              const SizedBox(height: 8),
                               PrimaryButton(
                                 label: '+250 ml',
                                 onPressed: addWater,
@@ -119,6 +148,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                         ),
                         const SizedBox(height: 14),
                         PrimaryButton(
+                          key: _photoKey,
                           label: 'Chụp món ăn',
                           onPressed: () => context.push('/nutrition/photo'),
                         ),
@@ -127,6 +157,16 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                           child: const Text('Thêm món thủ công'),
                         ),
                         const SizedBox(height: 8),
+                        AppCard(
+                          key: _textKey,
+                          child: QuickMealLogCard(
+                            onParsed: (result, meal) => context.push(
+                              '/nutrition/add?meal=$meal',
+                              extra: result,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
                         AppCard(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,6 +254,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                 ),
               ],
             ),
+      ),
     );
   }
 }

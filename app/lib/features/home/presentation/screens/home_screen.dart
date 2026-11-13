@@ -29,6 +29,7 @@ import '../../../health_connect/presentation/controllers/health_connect_controll
 import '../../../health_connect/presentation/widgets/health_connect_card.dart';
 import '../controllers/home_controller.dart';
 import '../../../../core/utils/date_labels.dart';
+import '../../../../core/tutorial/tutorial.dart';
 
 /// Màn hình Trang chủ (Home) - hoàn toàn kết nối API, bỏ dữ liệu giả.
 class HomeScreen extends ConsumerStatefulWidget {
@@ -40,6 +41,10 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObserver {
   final List<DateTime> _tapTimestamps = [];
+  // Hướng dẫn lần đầu: nút Bắt đầu, check-in năng lượng, vòng tuần
+  final _tutorialStartKey = GlobalKey();
+  final _tutorialCheckinKey = GlobalKey();
+  final _tutorialWeekKey = GlobalKey();
 
   final Set<String> _dismissedFollowUps = {};
   final Map<String, String> _sendingFollowUps = {};
@@ -335,11 +340,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   ],
 
                   // Card Check-in sáng
-                  _buildCheckinCard(context),
+                  TutorialGate(
+                    id: 'home',
+                    steps: [
+                      TutorialStep(
+                        key: _tutorialStartKey,
+                        title: 'Bắt đầu buổi tập',
+                        text: 'Bấm đây để vào buổi hôm nay. Tập từ 5 phút là được tính vào chỉ tiêu tuần.',
+                      ),
+                      TutorialStep(
+                        key: _tutorialCheckinKey,
+                        title: 'Check-in năng lượng',
+                        text: 'Cho Coach biết hôm nay bạn thấy thế nào để buổi tập được chỉnh cho vừa sức.',
+                      ),
+                      TutorialStep(
+                        key: _tutorialWeekKey,
+                        title: 'Tuần này',
+                        text: 'Số buổi đã tập so với chỉ tiêu tuần. Đủ chỉ tiêu là giữ được chuỗi tuần.',
+                      ),
+                    ],
+                    child: KeyedSubtree(
+                      key: _tutorialCheckinKey,
+                      child: _buildCheckinCard(context),
+                    ),
+                  ),
                   const SizedBox(height: 14),
 
                   // Card Tuần này
                   GlassCard(
+                    key: _tutorialWeekKey,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 14,
@@ -1040,6 +1069,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
             children: [
               Expanded(
                 child: PrimaryButton(
+                  key: _tutorialStartKey,
                   label: todayDone
                       ? 'Tập thêm'
                       : (hasIncompleteWorkout

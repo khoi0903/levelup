@@ -37,6 +37,12 @@ class FakeNutritionRepository implements NutritionRepository {
   MealPhoto? sentPhoto;
   String? lastQuery;
   int waterCalls = 0, saveCalls = 0;
+
+  /// Ghi món bằng câu và món phổ biến (mặc định không có món phổ biến).
+  Object? parseError, popularError;
+  Recognition? parsed;
+  String? parsedText, parsedMeal, popularMeal;
+  List<Food> popularFoods = const [];
   @override
   Future<NutritionToday> today() async {
     if (todayError != null) throw todayError!;
@@ -59,6 +65,25 @@ class FakeNutritionRepository implements NutritionRepository {
           recognitionId: '000000000000000000000002',
           items: foods.map(MealItem.fromFood).toList(),
         );
+  }
+
+  @override
+  Future<Recognition> parseText(String text, String meal) async {
+    parsedText = text;
+    parsedMeal = meal;
+    if (parseError != null) throw parseError!;
+    return parsed ??
+        Recognition(
+          recognitionId: '000000000000000000000003',
+          items: foods.map(MealItem.fromFood).toList(),
+        );
+  }
+
+  @override
+  Future<List<Food>> popular(String meal, {int limit = 8}) async {
+    popularMeal = meal;
+    if (popularError != null) throw popularError!;
+    return popularFoods.take(limit).toList();
   }
 
   @override
