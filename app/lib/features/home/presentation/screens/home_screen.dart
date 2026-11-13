@@ -28,6 +28,7 @@ import '../../../workout/domain/models/workout_session_state.dart';
 import '../../../health_connect/presentation/controllers/health_connect_controller.dart';
 import '../../../health_connect/presentation/widgets/health_connect_card.dart';
 import '../controllers/home_controller.dart';
+import '../../../../core/utils/date_labels.dart';
 
 /// Màn hình Trang chủ (Home) - hoàn toàn kết nối API, bỏ dữ liệu giả.
 class HomeScreen extends ConsumerStatefulWidget {
@@ -183,7 +184,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
     final displayName = me?.displayName ?? '';
     final streakWeeks =
         streakAsync.valueOrNull?.currentWeeks ?? me?.streak?.currentWeeks ?? 0;
-    final dateText = me?.localDate ?? _currentDateString();
+    final meDate = me?.localDate;
+    final dateText = meDate != null ? viDayLabel(meDate) : _currentDateString();
 
     // Hôm nay theo máy chủ (/me.localDate), không theo giờ điện thoại: chỉnh giờ máy không mở được buổi khác.
     // Chưa tải /me thì tạm dùng đồng hồ của app.
