@@ -82,12 +82,15 @@ const routes = [
   '/login',
   '/onboarding/goal',
   '/onboarding/body',
+  '/onboarding/shape',
+  '/onboarding/focus',
   '/onboarding/training',
   '/onboarding/schedule',
   '/onboarding/why',
   '/onboarding/coach',
   '/onboarding/plan',
   '/onboarding/notify',
+  '/onboarding/commit',
   '/onboarding/start',
 ];
 

@@ -259,7 +259,7 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
                   onPressed: isBodyValid
                       ? () {
                           _syncState();
-                          context.push('/onboarding/training');
+                          context.push('/onboarding/shape');
                         }
                       : null,
                 ),

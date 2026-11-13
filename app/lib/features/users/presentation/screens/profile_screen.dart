@@ -27,6 +27,7 @@ import '../../../../core/voice/voice_models.dart';
 import '../../../../core/voice/voice_provider.dart';
 import '../../../home/presentation/controllers/home_controller.dart';
 import '../../../workout/data/camera/auto_camera_setting.dart';
+import '../../../body/presentation/widgets/body_profile_section.dart';
 import '../controllers/user_controller.dart';
 import '../../domain/models/me_response.dart';
 import '../../domain/models/settings_request.dart';
@@ -495,6 +496,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ],
         ),
+        const SizedBox(height: 12),
+        const BodyProfileCards(),
         const SizedBox(height: 20),
 
         // Vùng đang đau / chấn thương (ẩn nếu rỗng)
@@ -589,6 +592,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
         ),
+        const SizedBox(height: 20),
+
+        // Cơ thể: chiều cao, cân nặng, vóc dáng, nhóm cơ ưu tiên, xem lại hướng dẫn
+        BodySettingsCard(me: me),
         const SizedBox(height: 20),
 
         // Mục tiêu: đạt rồi thì đổi mục tiêu mới, calo tính lại từ hôm nay

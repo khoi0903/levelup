@@ -67,7 +67,26 @@ class OnboardingController extends StateNotifier<OnboardingState> {
       coachStyle: state.coachStyle,
       buddyInvited: state.buddyInvited,
       pushEnabled: state.pushEnabled,
+      bodyFatPct: state.bodyFatPct,
+      focusMuscles: state.focusMuscles,
     );
+  }
+
+  /// Vóc dáng đã chọn (tỉ lệ mỡ %), null = bỏ qua.
+  void setBodyFatPct(int? pct) {
+    state = pct == null
+        ? state.copyWith(clearBodyFatPct: true)
+        : state.copyWith(bodyFatPct: pct);
+  }
+
+  void toggleFocusMuscle(String muscle) {
+    final list = List<String>.from(state.focusMuscles);
+    if (!list.remove(muscle)) list.add(muscle);
+    state = state.copyWith(focusMuscles: list);
+  }
+
+  void clearFocusMuscles() {
+    state = state.copyWith(focusMuscles: const []);
   }
 
   void updateTraining({
