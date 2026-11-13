@@ -139,7 +139,7 @@ class AppStrings {
   static const String notifyPoint1 = 'Nhắc 30 phút trước giờ tập bạn chọn';
   static const String notifyPoint2 = 'Tối đa 2 thông báo mỗi ngày';
   static const String notifyPoint3 = 'Không làm phiền từ 22:00 đến 7:00';
-  static const String btnEnableNotification = 'Bật thông báo';
+  static const String btnEnableNotification = 'Bật nhắc nhở';
 
   // OB-Start
   static const String startReady = 'MỌI THỨ ĐÃ SẴN SÀNG';

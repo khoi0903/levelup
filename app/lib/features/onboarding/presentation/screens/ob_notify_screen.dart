@@ -8,6 +8,7 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
+import '../../../../core/widgets/secondary_button.dart';
 import '../../../notifications/presentation/controllers/notifications_controller.dart';
 import '../controllers/onboarding_controller.dart';
 
@@ -31,7 +32,7 @@ class ObNotifyScreen extends ConsumerWidget {
                   child: TextButton(
                     onPressed: () {
                       controller.setPushEnabled(false);
-                      context.push('/onboarding/start');
+                      context.push('/onboarding/commit');
                     },
                     style: TextButton.styleFrom(
                       foregroundColor: context.colors.textSecondary,
@@ -106,7 +107,7 @@ class ObNotifyScreen extends ConsumerWidget {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            AppStrings.notifyMockTitle1,
+                                            'LevelUp',
                                             style: TextStyle(
                                               fontSize: 13,
                                               fontWeight: FontWeight.w700,
@@ -115,7 +116,10 @@ class ObNotifyScreen extends ConsumerWidget {
                                           ),
                                           SizedBox(height: 2),
                                           Text(
-                                            AppStrings.notifyMockBody1,
+                                            'Tới giờ tập rồi! Buổi 10 phút hôm nay đã sẵn sàng 💪',
+                                            key: const ValueKey(
+                                              'notify-preview-body',
+                                            ),
                                             style: TextStyle(
                                               fontSize: 14,
                                               height: 1.45,
@@ -239,8 +243,17 @@ class ObNotifyScreen extends ConsumerWidget {
                     final granted = await pushService.requestPermission();
                     controller.setPushEnabled(granted);
                     if (context.mounted) {
-                      context.push('/onboarding/start');
+                      context.push('/onboarding/commit');
                     }
+                  },
+                ),
+                const SizedBox(height: 10),
+                SecondaryButton(
+                  key: const ValueKey('notify-later'),
+                  label: 'Để sau',
+                  onPressed: () {
+                    controller.setPushEnabled(false);
+                    context.push('/onboarding/commit');
                   },
                 ),
               ],

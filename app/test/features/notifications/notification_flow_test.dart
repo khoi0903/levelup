@@ -273,7 +273,7 @@ void main() {
               builder: (context, state) => const ObNotifyScreen(),
             ),
             GoRoute(
-              path: '/onboarding/start',
+              path: '/onboarding/commit',
               builder: (context, state) => const SizedBox(),
             ),
           ],
@@ -287,7 +287,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final enableBtn = find.text('Bật thông báo');
+        final enableBtn = find.text('Bật nhắc nhở');
         expect(enableBtn, findsOneWidget);
 
         await tester.tap(enableBtn);
@@ -309,7 +309,7 @@ void main() {
               builder: (context, state) => const ObNotifyScreen(),
             ),
             GoRoute(
-              path: '/onboarding/start',
+              path: '/onboarding/commit',
               builder: (context, state) => const SizedBox(),
             ),
           ],
@@ -323,7 +323,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final enableBtn = find.text('Bật thông báo');
+        final enableBtn = find.text('Bật nhắc nhở');
         await tester.tap(enableBtn);
         await tester.pumpAndSettle();
 

@@ -9,6 +9,8 @@ import '../../../../core/widgets/onboarding_header.dart';
 import '../../../../core/widgets/missing_hint.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/selection_chip.dart';
+import '../../../body/domain/models/body_shape.dart';
+import '../../../body/presentation/widgets/body_figure.dart';
 import '../../domain/models/onboarding_models.dart';
 import '../controllers/onboarding_controller.dart';
 
@@ -40,13 +42,11 @@ class ObTrainingScreen extends ConsumerWidget {
       (Equipment.pullup_bar, AppStrings.equipmentPullupBar),
     ];
 
-    final injuryOptions = [
-      (null, AppStrings.injuryNone),
-      (BodyArea.lower_back, AppStrings.injuryLowerBack),
-      (BodyArea.knee, AppStrings.injuryKnee),
-      (BodyArea.shoulder, AppStrings.injuryShoulder),
-      (BodyArea.other, AppStrings.injuryOther),
-    ];
+    final bodyShape = BodyShape.from(
+      bmi: computeBmi(state.heightCm, state.startWeightKg),
+      bodyFatPct: state.bodyFatPct,
+      female: state.gender == Gender.female,
+    );
 
     final String? missing = state.experience == null
         ? 'Chọn mức kinh nghiệm tập của bạn'
@@ -186,27 +186,23 @@ class ObTrainingScreen extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: injuryOptions.map((item) {
-                            final isNone = item.$1 == null;
-                            final isSelected = isNone
-                                ? state.injuries.isEmpty
-                                : state.injuries.contains(item.$1);
-
-                            return SelectionChip(
-                              label: item.$2,
-                              isSelected: isSelected,
-                              onTap: () {
-                                if (isNone) {
-                                  controller.clearInjuries();
-                                } else {
-                                  controller.toggleInjury(item.$1!);
-                                }
-                              },
-                            );
-                          }).toList(),
+                        Text(
+                          'Chạm vào chỗ đang đau trên hình, hoặc chọn bên dưới.',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: context.colors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Center(
+                          child: PainMapPicker(
+                            shape: bodyShape,
+                            selected: {for (final i in state.injuries) i.name},
+                            onToggle: (id) => controller.toggleInjury(
+                              BodyArea.values.byName(id),
+                            ),
+                            onClear: controller.clearInjuries,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(

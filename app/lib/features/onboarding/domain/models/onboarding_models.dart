@@ -79,6 +79,12 @@ class OnboardingState {
   final bool buddyInvited;
   final bool pushEnabled;
 
+  /// Tỉ lệ mỡ cơ thể (%) theo vóc dáng đã chọn, null nếu bỏ qua.
+  final int? bodyFatPct;
+
+  /// Nhóm cơ muốn cải thiện: chest, back, shoulders, arms, abs, glutes, legs.
+  final List<String> focusMuscles;
+
   const OnboardingState({
     this.displayName = '',
     this.goal,
@@ -99,6 +105,8 @@ class OnboardingState {
     this.coachStyle,
     this.buddyInvited = false,
     this.pushEnabled = true,
+    this.bodyFatPct,
+    this.focusMuscles = const [],
   });
 
   OnboardingState copyWith({
@@ -121,6 +129,9 @@ class OnboardingState {
     CoachStyle? coachStyle,
     bool? buddyInvited,
     bool? pushEnabled,
+    int? bodyFatPct,
+    bool clearBodyFatPct = false,
+    List<String>? focusMuscles,
   }) {
     return OnboardingState(
       displayName: displayName ?? this.displayName,
@@ -142,6 +153,8 @@ class OnboardingState {
       coachStyle: coachStyle ?? this.coachStyle,
       buddyInvited: buddyInvited ?? this.buddyInvited,
       pushEnabled: pushEnabled ?? this.pushEnabled,
+      bodyFatPct: clearBodyFatPct ? null : (bodyFatPct ?? this.bodyFatPct),
+      focusMuscles: focusMuscles ?? this.focusMuscles,
     );
   }
 
@@ -201,6 +214,8 @@ class OnboardingState {
       if (motivationText.trim().isNotEmpty) 'motivationText': motivationText.trim(),
       'coachStyle': coachStyle!.name,
       'timezone': 'Asia/Ho_Chi_Minh',
+      if (bodyFatPct != null) 'bodyFatPct': bodyFatPct!.clamp(5, 50),
+      if (focusMuscles.isNotEmpty) 'focusMuscles': focusMuscles,
     };
   }
 }
