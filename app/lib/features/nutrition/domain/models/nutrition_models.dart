@@ -79,9 +79,15 @@ class MealItem {
     this.kcalMin,
     this.kcalMax,
     this.estimated = false,
+    this.servingDesc = '',
+    this.servingGrams,
   });
   final String name;
   final String? foodId;
+
+  /// Khẩu phần quen dùng của món (vd "1 tô", 550 g) để chọn nhanh ½, 1, 1½, 2 phần.
+  final String servingDesc;
+  final double? servingGrams;
   final double grams, baseGrams;
   final Macros? baseMacros;
   final double? kcalMin, kcalMax;
@@ -104,6 +110,8 @@ class MealItem {
     kcalMin: kcalMin,
     kcalMax: kcalMax,
     estimated: estimated,
+    servingDesc: servingDesc,
+    servingGrams: servingGrams,
   );
   factory MealItem.fromFood(Food food) => MealItem(
     name: food.nameVi,
@@ -111,6 +119,8 @@ class MealItem {
     grams: food.servingGrams,
     baseGrams: food.servingGrams,
     baseMacros: food.macros,
+    servingDesc: food.servingDesc,
+    servingGrams: food.servingGrams > 0 ? food.servingGrams : null,
   );
   factory MealItem.fromRecognition(Map<String, dynamic> j) {
     final matched = j['matched'] == true;
@@ -124,6 +134,8 @@ class MealItem {
       kcalMin: (j['kcalMin'] as num?)?.toDouble(),
       kcalMax: (j['kcalMax'] as num?)?.toDouble(),
       estimated: estimated,
+      servingDesc: j['servingDesc'] as String? ?? '',
+      servingGrams: (j['servingGrams'] as num?)?.toDouble(),
     );
   }
   Map<String, dynamic> toJson() => {
@@ -146,7 +158,7 @@ class Recognition {
   final List<MealItem> items;
   factory Recognition.fromJson(Map<String, dynamic> j) => Recognition(
     recognitionId: j['recognitionId'] as String,
-    cached: j['cached'] as bool,
+    cached: j['cached'] as bool? ?? false,
     items: (j['items'] as List)
         .map((e) => MealItem.fromRecognition(e))
         .toList(),

@@ -14,6 +14,7 @@ import '../../../home/presentation/controllers/home_controller.dart';
 import '../controllers/coach_controller.dart';
 import '../../../users/presentation/controllers/user_controller.dart';
 import '../../domain/models/coach_models.dart';
+import '../../../../core/tutorial/tutorial.dart';
 
 /// Màn hình Chat với AI Coach (Tab Coach).
 class CoachScreen extends ConsumerStatefulWidget {
@@ -25,6 +26,7 @@ class CoachScreen extends ConsumerStatefulWidget {
 
 class _CoachScreenState extends ConsumerState<CoachScreen> {
   final _textController = TextEditingController();
+  final _tutorialInputKey = GlobalKey();
   final _scrollController = ScrollController();
 
   @override
@@ -222,7 +224,20 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                         },
                       ),
               ),
-              _buildInputBar(state),
+              TutorialGate(
+                id: 'coach',
+                steps: [
+                  TutorialStep(
+                    key: _tutorialInputKey,
+                    title: 'Nhắn cho Coach',
+                    text: 'Hỏi về bài tập, ăn uống hay nhờ đổi lịch. Coach trả lời theo dữ liệu của bạn.',
+                  ),
+                ],
+                child: KeyedSubtree(
+                  key: _tutorialInputKey,
+                  child: _buildInputBar(state),
+                ),
+              ),
             ],
           ),
         ),
