@@ -233,4 +233,14 @@ class CoachRulesTest {
         assertNotNull(CoachRules.normalizeKey("Đau vai phải"));
         assertEquals("dau vai phai", CoachRules.normalizeKey("Đau vai phải!"));
     }
+
+    @Test
+    void asksToSwapChiKhiNguoiDungXinDoiBai() {
+        assertTrue(CoachRules.asksToSwap("Mình không thích bài Squat không tạ, gợi ý bài khác"));
+        assertTrue(CoachRules.asksToSwap("doi bai plank giup minh"));
+        assertTrue(CoachRules.asksToSwap("Đổi sang bài nhẹ hơn được không"));
+        assertFalse(CoachRules.asksToSwap("Hom nay toi nen tap gi"));
+        assertFalse(CoachRules.asksToSwap("Hôm nay tôi thấy hơi mệt"));
+        assertFalse(CoachRules.asksToSwap(null));
+    }
 }

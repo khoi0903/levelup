@@ -10,6 +10,7 @@ import '../../../../core/widgets/primary_button.dart';
 import '../../domain/models/nutrition_models.dart';
 import '../controllers/nutrition_controller.dart';
 import '../widgets/nutrition_widgets.dart';
+import '../../../../core/utils/date_labels.dart';
 
 class NutritionScreen extends ConsumerStatefulWidget {
   const NutritionScreen({super.key});
@@ -42,7 +43,10 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
     final nutritionAsync = ref.watch(nutritionTodayProvider);
     final today = nutritionAsync.valueOrNull;
 
-    ref.listen<AsyncValue<NutritionToday>>(nutritionTodayProvider, (prev, next) {
+    ref.listen<AsyncValue<NutritionToday>>(nutritionTodayProvider, (
+      prev,
+      next,
+    ) {
       if (next.hasError && today != null && next.error != prev?.error) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
@@ -68,11 +72,11 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
       ],
       child: today == null
           ? (nutritionAsync.hasError
-              ? FeatureError(
-                  error: nutritionAsync.error!,
-                  retry: () => ref.invalidate(nutritionTodayProvider),
-                )
-              : const NutritionScreenSkeleton())
+                ? FeatureError(
+                    error: nutritionAsync.error!,
+                    retry: () => ref.invalidate(nutritionTodayProvider),
+                  )
+                : const NutritionScreenSkeleton())
           : Column(
               children: [
                 ReloadingIndicator(isReloading: isReloading),
@@ -85,123 +89,132 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                       padding: const EdgeInsets.all(16),
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
-                Text(
-                  'Hôm nay • ${today.localDate}',
-                  style: TextStyle(color: context.colors.textSecondary),
-                ),
-                const SizedBox(height: 14),
-                AppCard(child: _Summary(today)),
-                const SizedBox(height: 14),
-                AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Nước • ${today.waterMl} ml${today.target == null ? '' : ' / ${today.target!.waterMl} ml'}',
-                      ),
-                      const SizedBox(height: 12),
-                      PrimaryButton(
-                        label: '+250 ml',
-                        onPressed: addWater,
-                        isLoading: addingWater,
-                      ),
-                      if (waterError != null)
-                        FeatureError(error: waterError!, retry: addWater),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 14),
-                PrimaryButton(
-                  label: 'Chụp món ăn',
-                  onPressed: () => context.push('/nutrition/photo'),
-                ),
-                TextButton(
-                  onPressed: () => context.push('/nutrition/add'),
-                  child: const Text('Thêm món thủ công'),
-                ),
-                const SizedBox(height: 8),
-                AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Các bữa hôm nay',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      for (final entry in mealLabels.entries) ...[
-                        const SizedBox(height: 10),
-                        Builder(
-                          builder: (context) {
-                            final meals = today.meals
-                                .where((m) => m.meal == entry.key)
-                                .toList();
-                            return ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              title: Text(entry.value),
-                              subtitle: Text(
-                                meals.isEmpty
-                                    ? 'Chưa có bữa ăn'
-                                    : meals.expand((m) => m.names).join(', '),
-                              ),
-                              trailing: meals.isEmpty
-                                  ? IconButton(
-                                      tooltip: 'Thêm bữa ${entry.value}',
-                                      onPressed: () => context.push(
-                                        '/nutrition/add?meal=${entry.key}',
-                                      ),
-                                      icon: const Icon(Icons.add),
-                                    )
-                                  : Text(
-                                      '${meals.fold<double>(0, (s, m) => s + m.macros.kcal).round()} kcal',
-                                    ),
-                            );
-                          },
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                if (today.suggestion case final suggestion?) ...[
-                  const SizedBox(height: 14),
-                  AppCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
                         Text(
-                          'Gợi ý bữa tối',
-                          style: Theme.of(context).textTheme.titleMedium,
+                          'Hôm nay • ${viDayLabel(today.localDate)}',
+                          style: TextStyle(color: context.colors.textSecondary),
                         ),
-                        const SizedBox(height: 10),
-                        Text(suggestion.message),
-                        for (final food in suggestion.foods)
-                          Text(
-                            '${food.nameVi} • ${food.macros.kcal.round()} kcal',
+                        const SizedBox(height: 14),
+                        AppCard(child: _Summary(today)),
+                        const SizedBox(height: 14),
+                        AppCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Nước • ${today.waterMl} ml${today.target == null ? '' : ' / ${today.target!.waterMl} ml'}',
+                              ),
+                              const SizedBox(height: 12),
+                              PrimaryButton(
+                                label: '+250 ml',
+                                onPressed: addWater,
+                                isLoading: addingWater,
+                              ),
+                              if (waterError != null)
+                                FeatureError(
+                                  error: waterError!,
+                                  retry: addWater,
+                                ),
+                            ],
                           ),
-                        const SizedBox(height: 12),
+                        ),
+                        const SizedBox(height: 14),
                         PrimaryButton(
-                          label: 'Kiểm tra và thêm bữa tối',
-                          onPressed: () => context.push(
-                            '/nutrition/add?meal=dinner',
-                            extra: suggestion.foods,
-                          ),
+                          label: 'Chụp món ăn',
+                          onPressed: () => context.push('/nutrition/photo'),
                         ),
                         TextButton(
-                          onPressed: () =>
-                              context.push('/nutrition/add?meal=dinner'),
-                          child: const Text('Xem lựa chọn khác'),
+                          onPressed: () => context.push('/nutrition/add'),
+                          child: const Text('Thêm món thủ công'),
                         ),
+                        const SizedBox(height: 8),
+                        AppCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Các bữa hôm nay',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              for (final entry in mealLabels.entries) ...[
+                                const SizedBox(height: 10),
+                                Builder(
+                                  builder: (context) {
+                                    final meals = today.meals
+                                        .where((m) => m.meal == entry.key)
+                                        .toList();
+                                    return ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      title: Text(entry.value),
+                                      subtitle: Text(
+                                        meals.isEmpty
+                                            ? 'Chưa có bữa ăn'
+                                            : meals
+                                                  .expand((m) => m.names)
+                                                  .join(', '),
+                                      ),
+                                      trailing: meals.isEmpty
+                                          ? IconButton(
+                                              tooltip:
+                                                  'Thêm bữa ${entry.value}',
+                                              onPressed: () => context.push(
+                                                '/nutrition/add?meal=${entry.key}',
+                                              ),
+                                              icon: const Icon(Icons.add),
+                                            )
+                                          : Text(
+                                              '${meals.fold<double>(0, (s, m) => s + m.macros.kcal).round()} kcal',
+                                            ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        if (today.suggestion case final suggestion?) ...[
+                          const SizedBox(height: 14),
+                          AppCard(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Gợi ý bữa tối',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium,
+                                ),
+                                const SizedBox(height: 10),
+                                Text(suggestion.message),
+                                for (final food in suggestion.foods)
+                                  Text(
+                                    '${food.nameVi} • ${food.macros.kcal.round()} kcal',
+                                  ),
+                                const SizedBox(height: 12),
+                                PrimaryButton(
+                                  label: 'Kiểm tra và thêm bữa tối',
+                                  onPressed: () => context.push(
+                                    '/nutrition/add?meal=dinner',
+                                    extra: suggestion.foods,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () => context.push(
+                                    '/nutrition/add?meal=dinner',
+                                  ),
+                                  child: const Text('Xem lựa chọn khác'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 24),
                       ],
                     ),
                   ),
-                ],
-                const SizedBox(height: 24),
+                ),
               ],
             ),
-          ),
-        ),
-      ],
-    ),
-  );
+    );
   }
 }
 
@@ -306,10 +319,7 @@ class _Summary extends StatelessWidget {
           Text(
             'Calo vận động chỉ để tham khảo, mục tiêu ăn giữ nguyên',
             key: ValueKey('nutrition-activity-note'),
-            style: TextStyle(
-              fontSize: 11,
-              color: context.colors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 11, color: context.colors.textSecondary),
           ),
           const SizedBox(height: 4),
         ],

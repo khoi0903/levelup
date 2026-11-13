@@ -172,6 +172,18 @@ public final class CoachRules {
         return Intent.OTHER;
     }
 
+    /**
+     * Người dùng có tự xin đổi bài không (có dấu hoặc không dấu). AI chỉ được đề xuất swap_exercise khi có câu này
+     * hoặc khi báo đau, để coach không tự đoán "bạn không thích bài X".
+     */
+    public static boolean asksToSwap(String text) {
+        String t = lower(text);
+        String plain = normalizeKey(text == null ? "" : text);
+        return has(t, "đổi", "thay bài", "thay thế", "thay động tác", "bài khác", "động tác khác", "không thích",
+                "ko thích", "k thích", "chẳng thích", "ghét", "chán bài")
+            || has(plain, "doi bai", "doi sang", "bai khac", "khong thich", "ko thich", "ghet", "thay bai");
+    }
+
     /** Vùng đau trong câu, khớp enum bodyArea. Kiểm tra cụm dài trước ("cổ tay" trước "cổ"). */
     public static String bodyArea(String text) {
         String t = lower(text);

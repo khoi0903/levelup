@@ -49,6 +49,10 @@ public final class CoachPrompts {
             Bỏ hẳn các trường tùy chọn khi không dùng. Người dùng báo đau ở đâu thì điền "injury"
             và đề xuất buổi an toàn hơn (swap_exercise sang bài an toàn, hoặc light, hoặc rest).
             Mệt: light. Bận: quick5. Ốm: rest. Chỉ dùng id có trong dữ liệu ở trên.
+            Chỉ dùng swap_exercise khi tin nhắn mới nhất của người dùng xin đổi bài, nói không thích một bài cụ thể,
+            hoặc báo đau. Không tự đoán người dùng không thích bài nào.
+            Gọi người dùng đúng theo "Tên" ở trên, kể cả khi lịch sử hay trí nhớ dùng tên khác.
+            Chỉ ghi "memory" điều người dùng tự nói ra, không ghi điều bạn suy đoán.
             """.formatted(STYLE.getOrDefault(style, STYLE.get("supportive")), userData);
     }
 

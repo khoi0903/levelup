@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/constants/app_palette.dart';
 import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/empty_view.dart';
@@ -12,6 +13,7 @@ import '../../../../core/widgets/secondary_button.dart';
 import '../../../home/presentation/controllers/home_controller.dart';
 import '../controllers/review_controller.dart';
 import '../../domain/models/review_models.dart';
+import '../../../../core/utils/date_labels.dart';
 
 /// Màn hình Tổng kết tuần & Kế hoạch tuần tới (F6).
 class ReviewScreen extends ConsumerWidget {
@@ -21,7 +23,9 @@ class ReviewScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final reviewAsync = ref.watch(latestReviewFutureProvider);
     final decisionState = ref.watch(reviewDecisionControllerProvider);
-    final decisionNotifier = ref.read(reviewDecisionControllerProvider.notifier);
+    final decisionNotifier = ref.read(
+      reviewDecisionControllerProvider.notifier,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -40,11 +44,18 @@ class ReviewScreen extends ConsumerWidget {
       body: GradientBackground(
         child: SafeArea(
           child: reviewAsync.when(
-            data: (review) =>
-                _buildContent(context, ref, review, decisionState, decisionNotifier),
+            data: (review) => _buildContent(
+              context,
+              ref,
+              review,
+              decisionState,
+              decisionNotifier,
+            ),
             loading: () => Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(context.colors.primary),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  context.colors.primary,
+                ),
               ),
             ),
             error: (err, _) {
@@ -54,8 +65,7 @@ class ReviewScreen extends ConsumerWidget {
                 return EmptyView(
                   icon: Icons.calendar_today_rounded,
                   title: 'Chưa có tổng kết tuần',
-                  subtitle:
-                      'Hệ thống sẽ tự động tổng kết sau khi bạn kết thúc tuần tập luyện.',
+                  subtitle: 'Hệ thống sẽ tự động tổng kết sau khi bạn kết thúc tuần tập luyện.',
                   actionLabel: 'Về trang chủ',
                   onAction: () => context.go('/home'),
                 );
@@ -110,7 +120,7 @@ class ReviewScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Tuần bắt đầu ${review.weekStart}',
+                'Tuần ${viWeekRange(review.weekStart)}',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -130,14 +140,23 @@ class ReviewScreen extends ConsumerWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  _buildStatItem(context, 'Tổng thời gian', '${review.totalMinutes} phút'),
+                  _buildStatItem(
+                    context,
+                    'Tổng thời gian',
+                    '${review.totalMinutes} phút',
+                  ),
                   if (review.avgRpe != null) ...[
                     const SizedBox(width: 16),
-                    _buildStatItem(context, 'Độ mệt trung bình', 'RPE ${review.avgRpe!.toStringAsFixed(1)}/10'),
+                    _buildStatItem(
+                      context,
+                      'Độ mệt trung bình',
+                      'RPE ${review.avgRpe!.toStringAsFixed(1)}/10',
+                    ),
                   ],
                   if (review.weightChangeKg != null) ...[
                     const SizedBox(width: 16),
-                    _buildStatItem(context, 
+                    _buildStatItem(
+                      context,
                       'Cân nặng',
                       '${review.weightChangeKg! > 0 ? '+' : ''}${review.weightChangeKg} kg',
                     ),
@@ -158,7 +177,11 @@ class ReviewScreen extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.emoji_events_rounded, color: context.colors.primary, size: 20),
+                    Icon(
+                      Icons.emoji_events_rounded,
+                      color: context.colors.primary,
+                      size: 20,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       'Điểm sáng tuần qua',
@@ -186,13 +209,19 @@ class ReviewScreen extends ConsumerWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      Icon(Icons.check_circle_outline_rounded,
-                          size: 16, color: context.colors.primary),
+                      Icon(
+                        Icons.check_circle_outline_rounded,
+                        size: 16,
+                        color: context.colors.primary,
+                      ),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           w.label,
-                          style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: context.colors.textSecondary,
+                          ),
                         ),
                       ),
                     ],
@@ -213,7 +242,11 @@ class ReviewScreen extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.lightbulb_outline_rounded, color: context.colors.primary, size: 20),
+                    Icon(
+                      Icons.lightbulb_outline_rounded,
+                      color: context.colors.primary,
+                      size: 20,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       'Gợi ý từ Coach',
@@ -250,7 +283,11 @@ class ReviewScreen extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  Icon(Icons.auto_awesome_rounded, color: context.colors.primary, size: 20),
+                  Icon(
+                    Icons.auto_awesome_rounded,
+                    color: context.colors.primary,
+                    size: 20,
+                  ),
                   SizedBox(width: 8),
                   Text(
                     'Đề xuất kế hoạch tuần tới',
@@ -284,7 +321,9 @@ class ReviewScreen extends ConsumerWidget {
         // Action decisions
         if (review.isPending && decisionState.activePlan == null) ...[
           PrimaryButton(
-            label: decisionState.isSubmitting ? 'Đang xác nhận...' : 'Đồng ý kế hoạch đề xuất',
+            label: decisionState.isSubmitting
+                ? 'Đang xác nhận...'
+                : 'Đồng ý kế hoạch đề xuất',
             onPressed: decisionState.isSubmitting
                 ? null
                 : () async {
@@ -299,7 +338,12 @@ class ReviewScreen extends ConsumerWidget {
             label: 'Tự điều chỉnh số buổi & thời gian',
             onPressed: decisionState.isSubmitting
                 ? null
-                : () => _showAdjustDialog(context, review.id, decisionNotifier, ref),
+                : () => _showAdjustDialog(
+                    context,
+                    review.id,
+                    decisionNotifier,
+                    ref,
+                  ),
           ),
         ] else ...[
           Container(
@@ -312,7 +356,11 @@ class ReviewScreen extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.check_circle_rounded, color: context.colors.successText, size: 20),
+                Icon(
+                  Icons.check_circle_rounded,
+                  color: context.colors.successText,
+                  size: 20,
+                ),
                 SizedBox(width: 8),
                 Text(
                   'Đã xác nhận kế hoạch tuần tới!',
@@ -400,15 +448,22 @@ class ReviewScreen extends ConsumerWidget {
                         children: [
                           IconButton(
                             icon: const Icon(Icons.remove_circle_outline),
-                            onPressed: sessions > 1 ? () => setState(() => sessions--) : null,
+                            onPressed: sessions > 1
+                                ? () => setState(() => sessions--)
+                                : null,
                           ),
                           Text(
                             '$sessions buổi',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                           IconButton(
                             icon: const Icon(Icons.add_circle_outline),
-                            onPressed: sessions < 7 ? () => setState(() => sessions++) : null,
+                            onPressed: sessions < 7
+                                ? () => setState(() => sessions++)
+                                : null,
                           ),
                         ],
                       ),
@@ -425,15 +480,22 @@ class ReviewScreen extends ConsumerWidget {
                         children: [
                           IconButton(
                             icon: const Icon(Icons.remove_circle_outline),
-                            onPressed: minutes > 5 ? () => setState(() => minutes -= 5) : null,
+                            onPressed: minutes > 5
+                                ? () => setState(() => minutes -= 5)
+                                : null,
                           ),
                           Text(
                             '$minutes phút',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                           IconButton(
                             icon: const Icon(Icons.add_circle_outline),
-                            onPressed: minutes < 60 ? () => setState(() => minutes += 5) : null,
+                            onPressed: minutes < 60
+                                ? () => setState(() => minutes += 5)
+                                : null,
                           ),
                         ],
                       ),

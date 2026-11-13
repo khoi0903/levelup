@@ -1,6 +1,7 @@
 package vn.levelup.engagement;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -178,7 +179,9 @@ class ReviewFlowTest {
 
         DocumentContext latest = call(get("/reviews/latest").header("Authorization", token), 200);
         assertEquals("ai", latest.read("$.source"));
-        assertEquals("Bạn đã bắt đầu 🎉", latest.read("$.win"));
+        // Tuần 0 buổi: câu chiến thắng luôn lấy câu mẫu (AI hay khen "nghỉ ngơi" nghe như mỉa mai), phần khác giữ của AI
+        assertNotEquals("Bạn đã bắt đầu 🎉", latest.read("$.win"));
+        assertEquals("Thêm một buổi nhé", latest.read("$.improvement"));
         assertEquals("decrease", latest.read("$.recommendation"));          // chưa tập buổi nào
 
         DocumentContext plan = call(post("/reviews/" + latest.read("$.id") + "/decision")

@@ -201,6 +201,27 @@ class CoachFlowTest {
     }
 
     @Test
+    void ai_tu_de_xuat_doi_bai_khi_nguoi_dung_khong_xin_thi_bo_the() throws Exception {
+        onboard();
+        Map<String, Object> session = nextSession();
+        List<String> inSession = itemIds(session);
+        String to = exercises.findByIsActiveTrue().stream()
+            .filter(e -> SafeSessions.isSafe(e, "home", Set.of(), Set.of()))
+            .map(Exercise::id).filter(id -> !inSession.contains(id)).findFirst().orElseThrow();
+        String json = """
+            {"reply":"Hôm nay tập buổi nhẹ nhé","action":{"type":"adjust_session","sessionId":"%s",
+             "change":"swap_exercise","fromExerciseId":"%s","toExerciseId":"%s","reason":"Bạn không thích bài này"}}"""
+            .formatted(session.get("id"), inSession.get(0), to);
+        when(ai.available()).thenReturn(true);
+        when(ai.complete(anyString(), anyList(), anyInt())).thenReturn(json);
+
+        DocumentContext r = chat("Hom nay toi nen tap gi", 200);
+        assertEquals("Hôm nay tập buổi nhẹ nhé", r.read("$.reply.content"));
+        assertNull(r.read("$.reply.card"));
+        assertEquals(inSession, itemIds(nextSession()));
+    }
+
+    @Test
     void bai_dich_khong_ton_tai_bi_tu_choi() throws Exception {
         onboard();
         Map<String, Object> session = nextSession();
