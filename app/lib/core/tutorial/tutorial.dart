@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 import 'dart:math' as math;
 
@@ -142,10 +143,24 @@ class _TutorialOverlayState extends State<_TutorialOverlay> {
   int index = -1;
   Rect? hole;
 
+  /// Màn bên dưới có thể còn đang tải dữ liệu và xê dịch sau khi đo: đo lại định kỳ để khung sáng bám đúng.
+  Timer? _follow;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _go(0));
+    _follow = Timer.periodic(const Duration(milliseconds: 250), (_) {
+      if (!mounted || index < 0) return;
+      final rect = _rectOf(widget.steps[index].key);
+      if (rect != null && rect != hole) setState(() => hole = rect);
+    });
+  }
+
+  @override
+  void dispose() {
+    _follow?.cancel();
+    super.dispose();
   }
 
   Future<void> _go(int next) async {

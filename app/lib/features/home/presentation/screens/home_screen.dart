@@ -1090,8 +1090,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
               SecondaryButton(
                 label: AppStrings.btnOnly5Min,
                 height: 48,
+                // Hôm nay không còn buổi trong lịch: vào Tập thêm với mức 5 phút chọn sẵn
                 onPressed: todayDone
-                    ? null
+                    ? () => context.push('/workout/extra?minutes=5')
                     : () => _handleStartWorkout(
                         context,
                         ref,

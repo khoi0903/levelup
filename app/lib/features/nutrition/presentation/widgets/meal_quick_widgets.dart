@@ -154,10 +154,28 @@ class _QuickMealLogCardState extends ConsumerState<QuickMealLogCard> {
           textInputAction: TextInputAction.send,
           onChanged: (_) => setState(() {}),
           onSubmitted: (_) => send(),
+          textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
-            labelText: 'Bạn đã ăn gì?',
-            hintText: 'VD: 1 tô phở bò và 1 ly cà phê sữa',
+            // Ô bo tròn, chữ nằm giữa ô (nhãn nổi + gạch dưới làm chữ trông lơ lửng trên đường kẻ)
+            hintText: 'Bạn đã ăn gì? VD: 1 tô phở bò và 1 ly cà phê sữa',
+            hintMaxLines: 2,
             counterText: '',
+            filled: true,
+            fillColor: colors.background,
+            isDense: true,
+            contentPadding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: colors.primaryLight),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: colors.primaryLight),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: colors.primary, width: 1.5),
+            ),
             suffixIcon: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -240,19 +258,66 @@ class PopularFoodChips extends ConsumerWidget {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 6),
-          Wrap(
-            spacing: 8,
-            children: [
-              for (final food in foods)
-                ActionChip(
-                  key: ValueKey('popular-${food.foodId}'),
-                  avatar: const Icon(Icons.add, size: 18),
-                  label: Text(
-                    '${food.nameVi} • ${food.macros.kcal.round()} kcal',
+          // Một hàng vuốt ngang, thẻ nhỏ: tên món + kcal (không chiếm cả màn hình)
+          SizedBox(
+            height: 64,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: foods.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
+              itemBuilder: (context, i) {
+                final food = foods[i];
+                final colors = context.colors;
+                return Material(
+                  color: colors.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: BorderSide(color: colors.primaryLight),
                   ),
-                  onPressed: enabled ? () => onAdd(food) : null,
-                ),
-            ],
+                  child: InkWell(
+                    key: ValueKey('popular-${food.foodId}'),
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: enabled ? () => onAdd(food) : null,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 8, 12, 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.add, size: 18, color: colors.primary),
+                          const SizedBox(width: 6),
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 150),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  food.nameVi,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: colors.textPrimary,
+                                  ),
+                                ),
+                                Text(
+                                  '${food.macros.kcal.round()} kcal',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: colors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),

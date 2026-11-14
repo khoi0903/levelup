@@ -338,7 +338,9 @@ GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
     GoRoute(
       path: '/workout/extra',
       name: 'workout_extra',
-      builder: (context, state) => const WorkoutExtraScreen(),
+      builder: (context, state) => WorkoutExtraScreen(
+        initialMinutes: int.tryParse(state.uri.queryParameters['minutes'] ?? ''),
+      ),
     ),
     GoRoute(
       path: '/workout/:sessionId',
