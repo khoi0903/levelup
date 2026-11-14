@@ -19,6 +19,7 @@ import 'package:fitness_app/features/users/presentation/controllers/user_control
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 
 void _tall(WidgetTester tester) {
@@ -482,9 +483,10 @@ void main() {
         'focusMuscles': ['abs', 'legs'],
       });
 
-      // Xem lại hướng dẫn
+      // Xem lại hướng dẫn (replayTutorials xoá cờ trong shared_preferences)
+      SharedPreferences.setMockInitialValues({});
       await tester.tap(find.byKey(const ValueKey('replay-tutorials')));
-      await tester.pump();
+      await tester.pumpAndSettle();
       expect(
         find.text('Hướng dẫn sẽ hiện lại khi bạn mở từng màn hình.'),
         findsOneWidget,

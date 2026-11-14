@@ -69,7 +69,8 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('tab-nutrition')));
       await tester.pumpAndSettle();
       // Tab Dinh dưỡng mở màn thật (tiêu đề + nhãn tab cùng chữ)
-      expect(find.text('Thêm món thủ công'), findsOneWidget);
+      // Đầu màn luôn có dòng ngày (các khối bên dưới có thể nằm ngoài màn hình test)
+      expect(find.textContaining('Hôm nay •'), findsOneWidget);
 
       // Tap Tôi tab (Profile)
       await tester.tap(find.byKey(const ValueKey('tab-profile')));
