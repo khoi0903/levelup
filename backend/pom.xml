@@ -106,6 +106,7 @@
 				<targetPath>content</targetPath>
 				<includes>
 					<include>coach-messages.json</include>
+					<include>meal-comments.json</include>
 				</includes>
 			</resource>
 		</resources>

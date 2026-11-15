@@ -14,6 +14,8 @@ import java.util.Map;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -28,6 +30,7 @@ import vn.levelup.identity.model.User;
 import vn.levelup.nutrition.dto.MealDtos;
 import vn.levelup.nutrition.dto.RecognitionDtos;
 import vn.levelup.nutrition.model.Food;
+import vn.levelup.nutrition.rules.MealComments;
 import vn.levelup.nutrition.rules.NutritionRules;
 import vn.levelup.nutrition.rules.RecognitionParser;
 import vn.levelup.nutrition.rules.VietText;
@@ -46,14 +49,18 @@ public class NutritionService {
     private final Clock clock;
     private final ActivityService activity;
     private final FoodCandidateService candidates;
+    private final MealCommentService comments;
+
+    private static final Logger log = LoggerFactory.getLogger(NutritionService.class);
 
     public NutritionService(MongoTemplate mongo, FoodCatalog foods, Clock clock, ActivityService activity,
-                            FoodCandidateService candidates) {
+                            FoodCandidateService candidates, MealCommentService comments) {
         this.mongo = mongo;
         this.foods = foods;
         this.clock = clock;
         this.activity = activity;
         this.candidates = candidates;
+        this.comments = comments;
     }
 
     /** Lưu một bữa. Số liệu tính lại ở server; trả về tổng kết hôm nay kèm gợi ý nếu thiếu đạm. */
@@ -137,7 +144,46 @@ public class NutritionService {
                 candidates.recordSaved(userId, item.getString("name"), ((Number) item.get("grams")).doubleValue());
             }
         }
-        return today(user);
+        MealDtos.TodayView view = today(user);
+        return view.localDate().equals(localDate.toString()) ? view.withComment(comment(user, meal, eatenAt, view))
+            : view;
+    }
+
+    /** Câu nhận xét bữa vừa lưu; lỗi thì bỏ qua (không làm hỏng việc lưu bữa). */
+    private MealDtos.MealComment comment(User user, Document meal, Instant eatenAt, MealDtos.TodayView view) {
+        try {
+            String gender = user.profile() == null ? null : user.profile().gender();
+            String style = user.profile() == null ? null : user.profile().coachStyle();
+            int mealKcal = meal.getInteger("kcal");
+            Integer target = view.target() == null ? null : view.target().kcal();
+            int dayAfter = view.consumed().kcal();
+            int floor = NutritionRules.kcalFloor(gender);
+            MealComments.Input input = new MealComments.Input(meal.getString("meal"),
+                eatenAt.atZone(LocalDates.zone(user.timezone())).getHour(), mealKcal,
+                ((Number) meal.get("proteinG")).doubleValue(), ((Number) meal.get("carbsG")).doubleValue(),
+                ((Number) meal.get("fatG")).doubleValue(), target, dayAfter, floor);
+            String name = user.displayName() == null || user.displayName().isBlank() ? "bạn"
+                : user.displayName().trim();
+            Map<String, String> vars = new HashMap<>();
+            vars.put("ten", name);
+            vars.put("mon", mainDish(meal));
+            vars.put("kcal", String.valueOf(mealKcal));
+            vars.put("con_lai", target == null ? "" : String.valueOf(Math.max(0, target - dayAfter)));
+            vars.put("vuot", target == null ? "" : String.valueOf(Math.max(0, dayAfter - target)));
+            vars.put("thieu", String.valueOf(Math.max(0, floor - dayAfter)));
+            return comments.comment(new ObjectId(user.id()), meal.getObjectId("_id"), style, input, vars)
+                .orElse(null);
+        } catch (RuntimeException e) {
+            log.warn("Không tạo được câu nhận xét bữa ăn: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /** Món nhiều calo nhất trong bữa (tên hiển thị). */
+    private static String mainDish(Document meal) {
+        return meal.getList("items", Document.class, List.of()).stream()
+            .max(java.util.Comparator.comparingDouble(i -> ((Number) i.get("kcal")).doubleValue()))
+            .map(i -> i.getString("name")).orElse("món này");
     }
 
     /**
@@ -201,7 +247,7 @@ public class NutritionService {
         ActivityService.Activity a = activity.today(userId, today).orElse(new ActivityService.Activity(0, 0, null));
         return new MealDtos.TodayView(today.toString(), target, consumed, remaining, waterMl(userId, today),
             meals, suggestion, burned, a.steps(), a.activeKcal(),
-            NutritionRules.totalBurnedKcal(burned, a.activeKcal(), a.activeKcalInWorkouts()));
+            NutritionRules.totalBurnedKcal(burned, a.activeKcal(), a.activeKcalInWorkouts()), null);
     }
 
     private MealDtos.Suggestion suggestion(LocalTime localTime, MealDtos.Totals remaining) {

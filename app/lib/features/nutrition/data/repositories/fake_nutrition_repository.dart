@@ -29,6 +29,9 @@ class FakeNutritionRepository implements NutritionRepository {
   NutritionToday current;
   final List<Food> foods;
   Object? todayError, searchError, recognitionError, saveError, waterError;
+
+  /// Câu nhận xét trả kèm khi lưu bữa (null = backend không gửi).
+  MealComment? saveComment;
   Recognition? recognition;
   MealRequest? savedRequest;
   MealPhoto? sentPhoto;
@@ -89,7 +92,21 @@ class FakeNutritionRepository implements NutritionRepository {
       activeKcal: current.activeKcal,
       totalBurnedKcal: current.totalBurnedKcal,
     );
-    return current;
+    final comment = saveComment;
+    if (comment == null) return current;
+    return NutritionToday(
+      localDate: current.localDate,
+      target: current.target,
+      consumed: current.consumed,
+      remaining: current.remaining,
+      waterMl: current.waterMl,
+      meals: current.meals,
+      burnedKcal: current.burnedKcal,
+      steps: current.steps,
+      activeKcal: current.activeKcal,
+      totalBurnedKcal: current.totalBurnedKcal,
+      comment: comment,
+    );
   }
 
   @override

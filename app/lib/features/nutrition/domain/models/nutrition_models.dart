@@ -209,6 +209,19 @@ class DinnerSuggestion {
   );
 }
 
+/// Câu nhận xét bữa vừa lưu theo phong cách coach (chỉ có trong phản hồi lưu bữa).
+class MealComment {
+  const MealComment({required this.situation, required this.text});
+
+  final String situation;
+  final String text;
+
+  factory MealComment.fromJson(Map<String, dynamic> j) => MealComment(
+    situation: j['situation'] as String? ?? 'can_bang',
+    text: j['text'] as String? ?? '',
+  );
+}
+
 class NutritionToday {
   const NutritionToday({
     required this.localDate,
@@ -222,6 +235,7 @@ class NutritionToday {
     this.steps = 0,
     this.activeKcal = 0,
     int? totalBurnedKcal,
+    this.comment,
   }) : totalBurnedKcal = totalBurnedKcal ?? (burnedKcal > 0 ? burnedKcal : 0);
 
   final String localDate;
@@ -235,6 +249,7 @@ class NutritionToday {
   final int steps;
   final int activeKcal;
   final int totalBurnedKcal;
+  final MealComment? comment;
 
   NutritionToday withWater(int value) => NutritionToday(
     localDate: localDate,
@@ -266,6 +281,10 @@ class NutritionToday {
     totalBurnedKcal: (j['totalBurnedKcal'] as num?)?.toInt() ??
         (j['burnedKcal'] as num?)?.toInt() ??
         0,
+    comment: j['comment'] is Map<String, dynamic> &&
+            (j['comment']['text'] as String?)?.isNotEmpty == true
+        ? MealComment.fromJson(j['comment'] as Map<String, dynamic>)
+        : null,
   );
 }
 

@@ -353,4 +353,32 @@ class NutritionFlowTest {
         assertEquals(0, call(get("/foods/search").param("q", "  ").header("Authorization", token), 200)
             .<Integer>read("$.length()"));
     }
+
+    @Test
+    void luu_bua_tra_cau_nhan_xet_theo_phong_cach_va_khong_lap() throws Exception {
+        onboard();
+        String body = """
+            {"meal":"snack","method":"manual",
+             "items":[{"name":"Sữa chua tự làm","portionGrams":100,"kcal":120,"proteinG":5,"carbsG":15,"fatG":3}]}""";
+        java.util.Set<String> texts = new java.util.HashSet<>();
+        java.util.Set<Integer> mos = new java.util.HashSet<>();
+        for (int n = 0; n < 5; n++) {
+            DocumentContext r = postJson("/meals", body, 200);
+            String text = r.read("$.comment.text");
+            assertNotNull(text);
+            assertTrue(!text.contains("{"), "còn chỗ trống chưa điền: " + text);
+            texts.add(text);
+        }
+        // 5 bữa giống hệt nhau vẫn ra 5 câu khác nhau, câu "mo" không lặp
+        assertEquals(5, texts.size());
+        for (Document m : mongo.find(Query.query(Criteria.where("userId").is(currentUser().getObjectId("_id"))),
+                Document.class, "meal_logs")) {
+            Document c = m.get("comment", Document.class);
+            assertEquals("supportive", c.getString("style"));
+            mos.add(c.getInteger("mo"));
+        }
+        assertEquals(5, mos.size());
+        // Xem lại hôm nay: không kèm câu nhận xét
+        assertNull(call(get("/nutrition/today").header("Authorization", token), 200).read("$.comment"));
+    }
 }

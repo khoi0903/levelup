@@ -1,0 +1,894 @@
+{
+  "_ghi_chu": "Câu nhận xét sau khi lưu bữa: ghép 1 câu 'mo' + 1 câu 'ket' theo tình huống và phong cách. Chỗ trống: {ten} {mon} {kcal} {con_lai} {vuot} {thieu}. Backend tránh lặp câu đã dùng ở 20 bữa gần nhất.",
+  "situations": {
+    "vuot_ngay": {
+      "strict": {
+        "mo": [
+          "Hôm nay đã vượt mục tiêu {vuot} kcal.",
+          "Sau {mon}, tổng calo hôm nay đã quá chỉ tiêu.",
+          "Đã vượt {vuot} kcal so với mục tiêu ngày. Ghi nhận.",
+          "{mon} đưa tổng ngày qua mức. Không sao, chỉ cần điều chỉnh.",
+          "Hôm nay dư {vuot} kcal, {ten}. Một ngày vượt không làm hỏng cả tuần.",
+          "Mục tiêu ngày đã vượt. Ghi đủ dữ liệu là việc đúng.",
+          "Bữa này {kcal} kcal, đẩy tổng ngày qua ngưỡng.",
+          "Vượt mục tiêu hôm nay. Bình tĩnh, cả tuần mới là thước đo.",
+          "Quá mức ngày {vuot} kcal. Ghi lại trung thực là điểm cộng.",
+          "Hôm nay đã chạm và vượt chỉ tiêu calo, {ten}.",
+          "Calo hôm nay quá kế hoạch. Một ngày lệch là chuyện bình thường."
+        ],
+        "ket": [
+          "Đi bộ nhẹ 15–20 phút sau bữa.",
+          "Uống đủ nước, bữa sau ưu tiên rau.",
+          "Ngày mai ăn đúng kế hoạch, không cần bù.",
+          "Không bỏ bữa để bù. Ngày mai cân lại bình thường.",
+          "Bữa tiếp theo: thêm rau, giảm đồ chiên.",
+          "Giữ lịch tập như cũ, không cần tập ép thêm.",
+          "Ngủ đủ giấc tối nay, sáng mai bắt đầu lại.",
+          "Tập trung vào cả tuần, không phải một ngày."
+        ]
+      },
+      "supportive": {
+        "mo": [
+          "Hôm nay dư {vuot} kcal một chút thôi, không sao đâu bạn.",
+          "Một ngày vượt mục tiêu chẳng làm hỏng hành trình của bạn đâu, {ten} ơi.",
+          "Mình thấy bạn vẫn ghi lại bữa {mon}, vậy là rất đáng khen rồi.",
+          "Vượt chỉ tiêu hôm nay là chuyện ai cũng từng gặp, bạn đừng lo nhé.",
+          "Bạn vẫn kiên trì ghi chép dù hôm nay ăn nhiều hơn dự định, mình quý điều đó.",
+          "Tổng hôm nay hơi quá mục tiêu, nhưng cả tuần mới là điều quan trọng.",
+          "Ăn ngon miệng một hôm cũng là cách chăm sóc bản thân mà, {ten}.",
+          "Bữa {kcal} kcal này làm ngày hơi dư, mình cùng cân lại nhẹ nhàng nhé.",
+          "Hôm nay vượt mức một chút, nhưng bạn vẫn đang đi đúng hướng.",
+          "Mình ghi nhận rồi, một ngày dư calo không nói lên điều gì cả."
+        ],
+        "ket": [
+          "Nếu tiện, đi bộ nhẹ một vòng cho thư thái nhé 🚶",
+          "Uống thêm vài cốc nước và nghỉ ngơi thật tốt nha.",
+          "Bữa sau mình thêm nhiều rau xanh là ổn thôi 🥗",
+          "Ngày mai cứ ăn uống bình thường, không cần bù đâu.",
+          "Đừng bỏ bữa để bù nhé, cơ thể cần năng lượng đều đặn.",
+          "Tối nay ngủ sớm một chút, mai mình bắt đầu lại thật tươi 🌙",
+          "Giữ nhịp tập quen thuộc là đủ, bạn làm tốt rồi.",
+          "Nhìn cả tuần thôi, bạn vẫn đang tiến bộ đó 💪"
+        ]
+      },
+      "funny": {
+        "mo": [
+          "Calo hôm nay vừa sút bóng vọt xà, dư {vuot} kcal, nhưng trận đấu còn dài.",
+          "{mon} ngon quá nên đồng hồ calo chạy hơi lố, chuyện thường ở huyện.",
+          "Ngân sách calo hôm nay đã chi vượt {vuot} kcal, kế toán xin ghi sổ.",
+          "Mẹ nấu ngon hay quán ruột đỉnh mà calo hôm nay tràn khung thế này?",
+          "Chỉ tiêu ngày đã về đích rồi còn chạy thêm vài vòng ăn mừng, {ten} ạ.",
+          "Bữa {kcal} kcal này như bàn thắng phút bù giờ, đưa tổng ngày qua mục tiêu.",
+          "Calo hôm nay bật chế độ overtime, dư {vuot} kcal, mai xử tiếp.",
+          "Thanh năng lượng hôm nay đầy tràn, nhưng game vẫn chưa over đâu nha.",
+          "Sổ calo hôm nay hơi lố tay, nhưng một ngày thôi mà, chill đi {ten}.",
+          "Calo hôm nay như ly trà sữa full topping: hơi dư, nhưng đời vẫn đẹp."
+        ],
+        "ket": [
+          "Làm vài vòng đi bộ quanh xóm, vừa tiêu hoá vừa ngắm phố 🚶",
+          "Nạp nước lọc như nạp mana, bữa sau cho rau lên sân nhiều hơn.",
+          "Mai reset như ván game mới, ăn bình thường, không cần cày bù.",
+          "Đừng bỏ bữa để bù nha, cơ thể đâu phải ví điện tử để trừ nợ.",
+          "Bữa sau gọi thêm đĩa rau luộc, cho rau đá chính một trận 🥬",
+          "Đi ngủ sớm, để cơ thể tự họp tổng kết ca đêm.",
+          "Một trận lố không đổi được cả mùa giải, cứ đá tiếp thôi ⚽",
+          "Tản bộ nhẹ sau ăn, coi như dắt bữa ăn đi dạo."
+        ]
+      }
+    },
+    "gan_du": {
+      "strict": {
+        "mo": [
+          "Gần chạm mục tiêu ngày, còn {con_lai} kcal.",
+          "{mon} đưa tổng ngày sát chỉ tiêu. Kiểm soát tốt.",
+          "Còn {con_lai} kcal là đủ mục tiêu hôm nay.",
+          "Hôm nay bám sát kế hoạch calo, {ten}.",
+          "Tổng ngày đã gần đủ. Phân bổ hợp lý.",
+          "Bữa này {kcal} kcal, đưa ngày về sát mục tiêu.",
+          "Sắp đạt chỉ tiêu calo. Đúng hướng.",
+          "Ngày hôm nay gần như khớp kế hoạch.",
+          "Chỉ còn {con_lai} kcal trước khi chạm mức ngày, {ten}.",
+          "Đã ăn gần đủ nhu cầu hôm nay. Ghi nhận."
+        ],
+        "ket": [
+          "Nếu đói, chọn món nhẹ: sữa chua hoặc trái cây.",
+          "Uống nước trước khi quyết định ăn thêm.",
+          "Ăn thêm thì ưu tiên đạm nạc hoặc rau.",
+          "Hạn chế đồ uống có đường phần còn lại của ngày.",
+          "Giữ cách phân bổ này cho ngày mai.",
+          "Không cần ăn cố cho đủ, nghe theo cảm giác no.",
+          "Tối nay ngủ đúng giờ để giữ nhịp.",
+          "Ghi đủ các bữa còn lại để số liệu chính xác."
+        ]
+      },
+      "supportive": {
+        "mo": [
+          "Bạn gần chạm mục tiêu hôm nay rồi, chỉ còn {con_lai} kcal thôi.",
+          "Hôm nay bạn cân đối calo khéo ghê, {ten} ơi.",
+          "Bữa {mon} vừa vặn quá, ngày của bạn gần như tròn trịa rồi.",
+          "Mình thấy bạn đang giữ nhịp ăn uống rất đều, gần đủ mục tiêu luôn.",
+          "Còn {con_lai} kcal nữa là trọn vẹn ngày hôm nay, giỏi lắm.",
+          "Bạn phân bổ bữa ăn hôm nay hợp lý thật đấy.",
+          "Ngày hôm nay của bạn đang về đích rất đẹp, {ten} à.",
+          "Thêm {kcal} kcal từ bữa này, bạn đã gần đủ năng lượng cho cả ngày.",
+          "Mình vui vì hôm nay bạn ăn đủ mà không quá tay.",
+          "Gần đủ chỉ tiêu rồi, bạn đang chăm sóc bản thân rất tốt."
+        ],
+        "ket": [
+          "Nếu còn đói, một hộp sữa chua là lựa chọn dễ thương nha 🍓",
+          "Nhớ uống đủ nước trong phần còn lại của ngày nhé.",
+          "Cứ lắng nghe cơ thể, no rồi thì nghỉ thôi.",
+          "Giữ nhịp này cho ngày mai nữa nha, bạn làm được mà ✨",
+          "Muốn ăn thêm thì chọn trái cây hoặc rau, nhẹ bụng hơn.",
+          "Tối nay thư giãn và ngủ ngon nhé 🌙",
+          "Đừng quên ghi lại nếu bạn ăn thêm gì nha.",
+          "Bạn đang làm rất tốt, cứ từ từ mà tiến."
+        ]
+      },
+      "funny": {
+        "mo": [
+          "Calo hôm nay đang đứng ở chấm phạt đền, còn {con_lai} kcal là vào lưới.",
+          "{mon} đưa ngày hôm nay lên gần full pin, chỉ thiếu chút xíu.",
+          "Kế toán calo báo cáo: sổ gần khớp, quỹ còn {con_lai} kcal.",
+          "Hôm nay ăn chuẩn như mẹ đong gạo, không thiếu không thừa.",
+          "Thanh tiến độ calo sắp 100%, đúng kiểu nộp bài kịp deadline.",
+          "Bữa {kcal} kcal này như đường chuyền quyết định, ngày sắp về đích.",
+          "Calo hôm nay căn đẹp như xếp hình Tetris ăn trọn hàng, {ten} ơi.",
+          "Gần đủ chỉ tiêu rồi, đúng kiểu đi chợ mang vừa khít tiền.",
+          "Calo hôm nay vào form như đội bóng phủi chiều cuối tuần.",
+          "Còn {con_lai} kcal thôi, ví calo sắp tiêu khéo tới cuối tháng."
+        ],
+        "ket": [
+          "Lỡ đói thì quả chuối là phao cứu sinh gọn nhẹ 🍌",
+          "Uống cốc nước trước, nhiều khi bụng chỉ đang nhắn tin nhầm.",
+          "Ăn thêm thì chọn đồ nhẹ, đừng gọi cả nồi lẩu nha.",
+          "Mai copy y chang công thức hôm nay, khỏi nghĩ.",
+          "No rồi thì chốt đơn, đừng order thêm topping.",
+          "Đi ngủ đúng giờ, để mai còn đá tiếp hiệp hai 😴",
+          "Trà sữa tối nay xin phép để dành cho dịp khác.",
+          "Ăn gì thêm nhớ khai báo, sổ calo không thích bị nợ."
+        ]
+      }
+    },
+    "an_qua_it": {
+      "strict": {
+        "mo": [
+          "Hôm nay ăn chưa đủ, còn thiếu {thieu} kcal.",
+          "Tổng ngày đang dưới mức an toàn, {ten}.",
+          "Năng lượng hôm nay thấp so với nhu cầu tối thiểu.",
+          "Còn {thieu} kcal mới đạt mức tối thiểu cho ngày.",
+          "Ăn quá ít không giúp tiến nhanh hơn. Cần bổ sung.",
+          "Đã tới tối nhưng lượng ăn vẫn thiếu {thieu} kcal.",
+          "Cơ thể cần đủ năng lượng để tập và hồi phục, {ten}.",
+          "Bữa {mon} chưa đủ bù cho cả ngày. Cần ăn thêm.",
+          "Mức calo hôm nay quá thấp. Ăn đủ là bắt buộc.",
+          "Thiếu năng lượng sẽ ảnh hưởng buổi tập ngày mai."
+        ],
+        "ket": [
+          "Thêm một bữa phụ: sữa, trứng hoặc bánh mì.",
+          "Ăn thêm cơm và đạm cho đủ năng lượng.",
+          "Một cốc sữa và quả chuối là cách bổ sung nhanh.",
+          "Ăn đủ bữa mỗi ngày, không bỏ bữa.",
+          "Ngày mai chia đều ba bữa chính.",
+          "Chuẩn bị sẵn đồ ăn nhẹ lành mạnh để không bị thiếu.",
+          "Ăn đủ là một phần của kế hoạch tập.",
+          "Bổ sung ngay tối nay, đừng để bụng đói đi ngủ."
+        ]
+      },
+      "supportive": {
+        "mo": [
+          "Hôm nay bạn ăn hơi ít, còn thiếu khoảng {thieu} kcal đó.",
+          "Cơ thể bạn cần thêm năng lượng cho hôm nay nữa nè, {ten} ơi.",
+          "Mình thấy hôm nay bạn chưa ăn đủ, mình hơi lo cho bạn đó.",
+          "Ăn đủ cũng quan trọng như tập đều, bạn đừng quên nha.",
+          "Bữa {mon} ngon đó, nhưng cả ngày vẫn còn thiếu {thieu} kcal.",
+          "Ăn quá ít không giúp bạn tiến nhanh hơn đâu, mình hứa đó.",
+          "Bạn xứng đáng được ăn no và đủ chất mỗi ngày, {ten} à.",
+          "Năng lượng hôm nay hơi thấp, mình cùng bổ sung thêm nhé.",
+          "Có thể hôm nay bận quá nên bạn ăn chưa đủ, không sao đâu.",
+          "Cơ thể bạn đã làm việc cả ngày rồi, nó cần được nạp thêm."
+        ],
+        "ket": [
+          "Thêm một ly sữa ấm và ít bánh là vừa đẹp nha 🥛",
+          "Ăn thêm chút cơm với trứng hoặc đậu phụ nhé.",
+          "Một quả chuối và hộp sữa chua cũng giúp nhiều lắm.",
+          "Mai nhớ ăn đủ ba bữa chính nha, mình nhắc đó 💛",
+          "Đừng để bụng đói đi ngủ nhé, ăn nhẹ một chút thôi.",
+          "Chuẩn bị sẵn đồ ăn vặt lành mạnh để lúc bận vẫn có cái ăn.",
+          "Ăn đủ để mai tập có sức, bạn nhé.",
+          "Chăm cho bữa ăn cũng là chăm cho chính mình đó 🌱"
+        ]
+      },
+      "funny": {
+        "mo": [
+          "Bình xăng hôm nay mới đổ lưng lửng, còn thiếu {thieu} kcal.",
+          "Pin cơ thể đang báo đỏ rồi {ten} ơi, cần cắm sạc gấp.",
+          "Hôm nay ăn ít như khách vào quán chỉ gọi cốc trà đá.",
+          "Mẹ mà biết hôm nay ăn chừng này chắc xới thêm hai bát.",
+          "Cơ bắp vừa gửi đơn khiếu nại: thiếu khẩu phần {thieu} kcal.",
+          "{mon} mới là màn khởi động, trận chính còn chưa đá mà.",
+          "Nhân vật game không bơm máu thì sao đánh boss được nhỉ?",
+          "Ví calo hôm nay còn dư nhiều quá, mạnh dạn tiêu thêm đi.",
+          "Cơ thể chạy deadline cả ngày mà lương mới trả có nửa tháng.",
+          "Bụng đang chạy chế độ tiết kiệm pin hơi lâu rồi đó, {ten}."
+        ],
+        "ket": [
+          "Làm thêm ly sữa với ổ bánh mì, nạp máu kịp trước khi ngủ 🥖",
+          "Cơm thêm bát nữa, trứng thêm quả nữa, đúng chuẩn mẹ dặn.",
+          "Quả chuối là power-up rẻ nhất mà hiệu quả nhất.",
+          "Mai ăn đủ ba bữa, đừng để bụng phải biểu tình.",
+          "Đi ngủ bụng đói là bug, fix bằng một bữa nhẹ.",
+          "Để sẵn hộp sữa chua trong tủ lạnh, coi như quỹ dự phòng.",
+          "Ăn đủ thì mai tập mới có sức sút xa ⚽",
+          "Bổ sung ngay, đừng để cơ thể phải xin tạm ứng."
+        ]
+      }
+    },
+    "an_khuya": {
+      "strict": {
+        "mo": [
+          "Ăn khuya {kcal} kcal. Ghi nhận.",
+          "Bữa muộn này khá nặng, {ten}.",
+          "Ăn {mon} sau 21 giờ, lượng calo đáng kể.",
+          "Bữa khuya lớn có thể ảnh hưởng giấc ngủ.",
+          "Đã ghi bữa khuya. Cần để ý thói quen này.",
+          "Ăn nhiều về đêm thường khiến sáng hôm sau nặng bụng.",
+          "Bữa khuya hôm nay {kcal} kcal, {ten}.",
+          "Bữa ăn muộn, khẩu phần lớn. Lưu ý.",
+          "Ăn khuya không sai, nhưng khẩu phần này hơi lớn.",
+          "Đói muộn thường là dấu hiệu ban ngày ăn chưa đủ."
+        ],
+        "ket": [
+          "Chờ khoảng một tiếng rồi hãy nằm ngủ.",
+          "Uống ít nước, tránh đồ uống có caffeine.",
+          "Ngày mai ăn tối đủ no để bớt đói khuya.",
+          "Lần sau chọn món nhẹ: sữa, trái cây, cháo.",
+          "Sáng mai ăn sáng bình thường, không bỏ bữa.",
+          "Chuẩn bị sẵn đồ ăn nhẹ cho những tối thức muộn.",
+          "Đi lại nhẹ trong nhà vài phút trước khi ngủ.",
+          "Cố định giờ ngủ để hạn chế đói đêm."
+        ]
+      },
+      "supportive": {
+        "mo": [
+          "Thức khuya mà đói là chuyện thường, mình hiểu mà.",
+          "Bữa khuya {kcal} kcal này hơi nhiều chút đó, {ten} ơi.",
+          "Bạn vẫn nhớ ghi lại bữa khuya, mình thấy quý lắm.",
+          "Chắc hôm nay bạn bận rộn lắm nên giờ này mới ăn {mon}.",
+          "Ăn muộn một chút cũng không sao, miễn bạn thấy dễ chịu.",
+          "Bữa khuya này khá đầy đặn, mình chỉ hơi lo cho giấc ngủ của bạn.",
+          "Làm việc tới khuya vất vả rồi {ten}, ăn chút cho ấm bụng cũng được.",
+          "Mình thấy bạn ăn khá nhiều vào buổi tối muộn hôm nay.",
+          "Bụng đói lúc nửa đêm thì khó ngủ thật, bạn ăn là đúng.",
+          "Ghi nhận bữa khuya rồi nhé, cảm ơn bạn đã ghi chép trung thực."
+        ],
+        "ket": [
+          "Đợi một lúc cho tiêu bớt rồi hãy đi ngủ nha 🌙",
+          "Lần sau thử cháo hoặc sữa ấm, nhẹ bụng hơn đó.",
+          "Mai ăn tối no hơn chút để đêm đỡ đói nhé.",
+          "Uống vài ngụm nước ấm rồi nghỉ ngơi thôi.",
+          "Sáng mai vẫn ăn sáng đầy đủ nha, đừng bỏ bữa.",
+          "Cố gắng ngủ sớm hơn một chút, cơ thể sẽ cảm ơn bạn 💤",
+          "Để sẵn trái cây trong nhà cho những đêm thức muộn nhé.",
+          "Không sao đâu, mai mình lại bắt đầu nhẹ nhàng."
+        ]
+      },
+      "funny": {
+        "mo": [
+          "Ca đêm của dạ dày đã chính thức bắt đầu với {mon}.",
+          "Trận khuya ở quán vỉa hè hả {ten}, {kcal} kcal đó nha.",
+          "Giờ này mà ăn, đúng kiểu ôn thi nước rút cùng mì gói.",
+          "Bữa khuya {kcal} kcal: dạ dày vừa nhận thông báo tăng ca.",
+          "Cú đêm đi săn thành công, chiến lợi phẩm khá to.",
+          "{mon} lúc nửa đêm ngon thật, như phim chiếu khung giờ vàng.",
+          "Đêm khuya, phố vắng, chỉ còn bạn và một bữa thịnh soạn.",
+          "Deadline thức khuya thì được, mà dạ dày cũng đòi chia KPI.",
+          "Bữa khuya này hoành tráng như tiệc mừng bàn thắng phút 90.",
+          "Giờ này mà ăn là bao tử phải trực đêm rồi đó, {ten}."
+        ],
+        "ket": [
+          "Ngồi chơi chút cho bụng xử lý xong rồi hẵng lên giường 😴",
+          "Lần sau gọi cháo thay vì combo full topping nha.",
+          "Mai ăn tối no hơn, đỡ phải đi tuần đêm quanh tủ lạnh.",
+          "Uống ngụm nước ấm, tắt màn hình, đi ngủ thôi.",
+          "Sáng mai vẫn ăn sáng nha, đừng cho bữa sáng nghỉ phép.",
+          "Để sẵn ít trái cây, cú đêm cũng cần thực đơn nhẹ.",
+          "Đặt báo thức đi ngủ, không chỉ báo thức dậy ⏰",
+          "Đi vài vòng trong phòng, coi như tiễn bữa khuya về nhà."
+        ]
+      }
+    },
+    "bua_nang": {
+      "strict": {
+        "mo": [
+          "Bữa này {kcal} kcal, chiếm phần lớn chỉ tiêu ngày.",
+          "Bữa nặng, {ten}. Còn {con_lai} kcal cho phần còn lại.",
+          "{mon} là bữa lớn. Các bữa sau cần nhẹ hơn.",
+          "Gần nửa mục tiêu ngày dồn vào một bữa.",
+          "Khẩu phần lớn. Vẫn trong giới hạn ngày.",
+          "Còn {con_lai} kcal. Đủ cho một bữa nhẹ.",
+          "Bữa ăn nặng, nhưng ngày chưa vượt mức.",
+          "Phân bổ hôm nay đang dồn vào bữa này, {ten}.",
+          "Ghi nhận bữa lớn. Cần cân lại ở bữa kế.",
+          "Bữa này nhiều năng lượng, đủ cho một buổi tập dài."
+        ],
+        "ket": [
+          "Bữa sau: nhiều rau, đạm nạc, ít dầu mỡ.",
+          "Đi bộ nhẹ sau ăn giúp dễ tiêu.",
+          "Không cần bỏ bữa sau, chỉ cần ăn nhẹ.",
+          "Uống nước thay đồ uống ngọt trong ngày.",
+          "Lần sau chia khẩu phần thành hai bữa.",
+          "Có lịch tập hôm nay thì giữ nguyên.",
+          "Ăn chậm ở bữa kế để nhận biết cảm giác no.",
+          "Ưu tiên canh và rau ở bữa tiếp theo."
+        ]
+      },
+      "supportive": {
+        "mo": [
+          "Bữa {mon} này đầy đặn ghê, bạn ăn có ngon miệng không?",
+          "Bữa này khá lớn, nhưng hôm nay vẫn còn {con_lai} kcal nha {ten}.",
+          "Bạn vừa nạp {kcal} kcal, đủ năng lượng cho cả buổi rồi.",
+          "Bữa nặng một chút cũng không sao, ngày của bạn vẫn trong tầm kiểm soát.",
+          "Mình thấy bữa này hơi nhiều, mình cùng nhẹ nhàng ở bữa sau nhé.",
+          "Bữa lớn nhưng chưa vượt mục tiêu, bạn vẫn ổn lắm.",
+          "Còn {con_lai} kcal cho hôm nay, vẫn thoải mái mà {ten}.",
+          "Có những bữa mình ăn nhiều hơn, chuyện bình thường thôi.",
+          "Bạn vẫn ghi đầy đủ bữa lớn này, rất đáng khen.",
+          "Bữa ăn thịnh soạn, mong là bạn đã thưởng thức trọn vẹn."
+        ],
+        "ket": [
+          "Bữa sau mình ăn nhẹ với nhiều rau là cân bằng ngay 🥗",
+          "Đi dạo vài phút sau ăn cho dễ chịu nha.",
+          "Không cần nhịn bữa sau đâu, chỉ cần ăn nhẹ hơn thôi.",
+          "Uống thêm nước lọc thay cho nước ngọt nhé.",
+          "Lần sau thử chia nhỏ khẩu phần, bụng sẽ nhẹ nhàng hơn.",
+          "Ăn chậm lại một chút ở bữa sau, cơ thể sẽ báo no đúng lúc 😊",
+          "Bạn vẫn đang làm tốt, cứ giữ nhịp nhé.",
+          "Bữa tới thêm bát canh rau cho ấm bụng nha."
+        ]
+      },
+      "funny": {
+        "mo": [
+          "{mon} ra sân với đội hình mạnh nhất: {kcal} kcal.",
+          "Bữa này đúng chuẩn cỗ đám giỗ, ăn một bữa no cả buổi.",
+          "Vừa chốt combo siêu to khổng lồ, ví calo còn {con_lai} kcal.",
+          "Bữa ăn này hoành tráng như lễ ra quân đầu mùa giải.",
+          "Mẹ mà thấy chắc khen: ăn thế mới có sức làm việc.",
+          "Một bữa gánh gần nửa ngày, đúng kiểu đồng đội carry cả team.",
+          "Còn {con_lai} kcal, vẫn còn quỹ cho hiệp hai nhẹ nhàng.",
+          "Bữa lớn như nạp thẻ game gói khủng, xài từ từ nhé.",
+          "Bữa này no tới mức dạ dày phải bật chế độ làm thêm giờ, {ten} ơi.",
+          "Bàn ăn vừa diễn ra một trận cầu đỉnh cao, kết quả đã ghi sổ."
+        ],
+        "ket": [
+          "Bữa sau cho rau đá chính, đồ chiên ngồi dự bị 🥬",
+          "Đi bộ một vòng, tiễn bữa ăn về đích an toàn.",
+          "Bữa sau ăn nhẹ thôi, không cần cấm vận cả ngày.",
+          "Nước lọc là đồ uống chính hãng, trà sữa để cuối tuần.",
+          "Lần sau gọi suất vừa, đỡ phải gói mang về.",
+          "Ăn chậm như xem phim quay chậm, bụng kịp báo no.",
+          "Canh rau bữa sau là thủ môn bắt dính mọi cú sút calo 🧤",
+          "Giữ lịch tập như cũ, không cần cày bù đâu."
+        ]
+      }
+    },
+    "nhieu_beo": {
+      "strict": {
+        "mo": [
+          "{mon} có tỷ lệ chất béo cao.",
+          "Bữa này phần lớn calo đến từ dầu mỡ.",
+          "Đồ chiên rán chiếm ưu thế trong bữa, {ten}.",
+          "Chất béo chiếm phần lớn năng lượng của bữa {kcal} kcal.",
+          "Bữa nhiều dầu mỡ. Cần cân bằng ở bữa sau.",
+          "Món chiên ngon nhưng calo dồn hết vào chất béo.",
+          "Bữa này nặng dầu mỡ, {ten}.",
+          "Lượng chất béo cao hơn mức cân đối.",
+          "Bữa giàu chất béo, ít rau. Cần điều chỉnh.",
+          "Món nhiều dầu như {mon} nên để thỉnh thoảng mới ăn."
+        ],
+        "ket": [
+          "Bữa sau chọn món luộc, hấp hoặc nướng.",
+          "Thêm rau xanh để cân lại bữa.",
+          "Uống nước lọc hoặc trà không đường.",
+          "Lần sau thấm bớt dầu trước khi ăn.",
+          "Ưu tiên cá, ức gà, đậu phụ ở bữa tới.",
+          "Giới hạn đồ chiên còn vài lần mỗi tuần.",
+          "Đi bộ nhẹ sau bữa để dễ tiêu.",
+          "Khi tự nấu, dùng ít dầu hơn."
+        ]
+      },
+      "supportive": {
+        "mo": [
+          "{mon} thơm giòn thì ai cưỡng lại được, mình hiểu mà.",
+          "Bữa này hơi nhiều dầu mỡ một chút đó bạn.",
+          "Phần lớn năng lượng bữa này đến từ chất béo đó, {ten} ơi.",
+          "Thỉnh thoảng ăn đồ chiên cho vui miệng cũng được mà.",
+          "Mình thấy bữa này đậm dầu, mình cân lại ở bữa sau là ổn.",
+          "Bữa {kcal} kcal này khá giàu dầu mỡ, nhưng bạn vẫn ghi lại rất chăm.",
+          "Món chiên ngon thật, chỉ là hơi nặng bụng chút thôi.",
+          "Mình chỉ nhắc nhẹ là bữa này nhiều chất béo nha {ten}.",
+          "Ăn ngon là quyền của bạn, mình chỉ góp ý nhỏ về dầu mỡ thôi.",
+          "Bữa này đậm vị, chất béo hơi nhiều so với bình thường."
+        ],
+        "ket": [
+          "Bữa sau thử món hấp hoặc luộc cho nhẹ nhàng nha.",
+          "Thêm một đĩa rau xanh là cân bằng hơn hẳn 🥦",
+          "Uống trà không đường giúp miệng đỡ ngấy đó.",
+          "Lần sau dùng giấy thấm bớt dầu nhé, mẹo nhỏ mà hiệu quả.",
+          "Đổi sang cá hoặc ức gà ở bữa tới nha.",
+          "Đi dạo một chút cho bụng dễ chịu hơn 🚶",
+          "Món chiên để dành cho dịp đặc biệt thì càng ngon.",
+          "Nấu ở nhà thì thử nồi chiên không dầu xem sao nha."
+        ]
+      },
+      "funny": {
+        "mo": [
+          "{mon} giòn rụm, dầu mỡ đứng đầu bảng xếp hạng bữa này.",
+          "Chất béo vừa giành quyền kiểm soát bóng trong bữa ăn.",
+          "Chảo dầu hôm nay làm việc hết công suất rồi.",
+          "Đĩa này bóng dầu như mặt chảo vừa tráng, {ten} ơi.",
+          "Đồ chiên lên ngôi, rau xanh đang ngồi ghế dự bị.",
+          "Bữa {kcal} kcal mà chất béo ôm gần trọn, đúng là ông trùm.",
+          "Quán chiên rán chắc đang cảm ơn {ten} vì đã ủng hộ.",
+          "Dầu mỡ vừa đi tour thành công qua đĩa ăn hôm nay.",
+          "Bữa này giòn tan như tiếng vỗ tay trên khán đài.",
+          "Món nhiều dầu như {mon} đúng là đặc sản của mọi buổi tụ tập."
+        ],
+        "ket": [
+          "Bữa sau gọi món luộc, cho chảo dầu nghỉ phép.",
+          "Đĩa rau muống luộc sẽ là trọng tài công minh 🥬",
+          "Trà đá không đường, combo rửa ngấy kinh điển.",
+          "Lần sau lót giấy thấm dầu, mẹo gia truyền của các mẹ.",
+          "Bữa tới cho cá hấp lên sân thay đồ chiên.",
+          "Đồ chiên là ngôi sao khách mời, đừng cho đá chính mỗi ngày.",
+          "Dạo bộ vài vòng, coi như hồi phục sau trận cầu.",
+          "Nồi chiên không dầu là vũ khí bí mật đáng thử 🍟"
+        ]
+      }
+    },
+    "nhieu_tinh_bot": {
+      "strict": {
+        "mo": [
+          "Bữa này chủ yếu là tinh bột, ít đạm.",
+          "{mon} nhiều tinh bột, thiếu đạm.",
+          "Phần lớn calo đến từ cơm, bún hoặc bánh.",
+          "Thiếu đạm trong bữa {kcal} kcal này.",
+          "Tinh bột chiếm ưu thế. Cần bổ sung protein.",
+          "Bữa này dễ đói lại sớm vì ít đạm.",
+          "Tỷ lệ đạm trong bữa quá thấp, {ten}.",
+          "Nhiều tinh bột, ít rau, ít đạm.",
+          "Đồ uống ngọt và tinh bột chiếm phần lớn bữa.",
+          "Bữa này đủ năng lượng nhưng chưa cân đối."
+        ],
+        "ket": [
+          "Bữa sau thêm trứng, thịt nạc hoặc đậu phụ.",
+          "Giảm nửa phần cơm, tăng phần rau.",
+          "Thay nước ngọt bằng nước lọc.",
+          "Thêm một hộp sữa chua không đường để bổ sung đạm.",
+          "Mỗi bữa nên có một nguồn đạm rõ ràng.",
+          "Ưu tiên gạo lứt hoặc bánh mì nguyên cám khi có thể.",
+          "Ăn rau trước, tinh bột sau.",
+          "Bữa tới cân lại: nửa đĩa rau, một phần đạm."
+        ]
+      },
+      "supportive": {
+        "mo": [
+          "Bữa {mon} này nhiều tinh bột, hơi thiếu đạm một chút nha.",
+          "Bữa này chủ yếu là cơm, bún hoặc bánh đó {ten} ơi.",
+          "Tinh bột cho bạn năng lượng, chỉ là đạm hơi ít thôi.",
+          "Mình thấy bữa này thiếu chút protein để no lâu hơn.",
+          "Bữa {kcal} kcal này phần lớn là tinh bột, mình góp ý nhẹ thôi.",
+          "Ăn cơm là thói quen thân thuộc, mình chỉ muốn thêm chút đạm cho bạn.",
+          "Bữa này ngon miệng nhưng hơi lệch về tinh bột, {ten} à.",
+          "Cơ bắp của bạn sẽ vui hơn nếu bữa này có thêm đạm đó.",
+          "Bữa này đủ năng lượng rồi, chỉ cần cân lại chút xíu.",
+          "Đồ ngọt và tinh bột chiếm nhiều, không sao, mình điều chỉnh dần."
+        ],
+        "ket": [
+          "Bữa sau thêm quả trứng hoặc miếng thịt nạc nha 🍳",
+          "Bớt chút cơm, thêm chút rau là vừa đẹp.",
+          "Thử uống nước lọc thay nước ngọt xem sao nhé.",
+          "Một hộp sữa chua cũng là cách thêm đạm dễ thương.",
+          "Mỗi bữa có chút đạm là bạn sẽ no lâu hơn đó.",
+          "Đậu phụ rẻ mà nhiều đạm, thử thêm vào bữa tới nhé 💛",
+          "Ăn rau trước rồi mới ăn cơm, mẹo nhỏ mà hữu ích.",
+          "Từng chút thay đổi thôi, bạn đang làm tốt rồi."
+        ]
+      },
+      "funny": {
+        "mo": [
+          "Bữa này đội tinh bột đá sân nhà, đạm chưa kịp ra sân.",
+          "{mon} toàn tinh bột, chắc đạm bị kẹt xe chưa tới.",
+          "Bữa này cơm đông như chợ Tết, đạm thì vắng như trưa hè, {ten} ơi.",
+          "Tinh bột chiếm sóng toàn bộ bữa {kcal} kcal.",
+          "Đĩa này đúng kiểu sinh viên cuối tháng: cơm là chính.",
+          "Cơm, bún, bánh họp lớp đông đủ, chỉ thiếu bạn đạm.",
+          "Cơ bắp chờ đạm như chờ shipper, mà shipper chưa tới.",
+          "Bữa này nhiều tinh bột như mì gói mùa ôn thi.",
+          "Đội hình bữa này thiếu tiền đạo đạm rồi, {ten}.",
+          "Trà sữa với cơm cùng góp mặt, đạm thì xin vắng có phép."
+        ],
+        "ket": [
+          "Bữa sau gọi thêm quả trứng ốp la, cho đạm có suất 🍳",
+          "Xới bớt nửa bát cơm, nhường chỗ cho rau.",
+          "Nước lọc là đồ uống không bao giờ trễ deadline.",
+          "Hộp sữa chua là tiền đạo đạm dự bị chất lượng.",
+          "Đậu phụ rẻ, ngon, nhiều đạm, đúng chuẩn hàng quốc dân.",
+          "Mỗi bữa nhớ mời đạm tới chơi, đừng để nó cô đơn.",
+          "Rau ăn trước, cơm ăn sau, như xếp hàng đúng lượt.",
+          "Thêm vài miếng thịt nạc, cơ bắp sẽ nhận được tin nhắn 💪"
+        ]
+      }
+    },
+    "nhieu_dam": {
+      "strict": {
+        "mo": [
+          "Bữa giàu đạm. Tốt cho cơ bắp.",
+          "{mon} cung cấp lượng protein tốt.",
+          "Bữa này đạm đạt chuẩn, {ten}.",
+          "Đạm cao, phù hợp cho hồi phục sau tập.",
+          "Bữa {kcal} kcal, phần lớn đến từ đạm. Tốt.",
+          "Lựa chọn đúng cho mục tiêu tăng cơ.",
+          "Còn {con_lai} kcal. Bữa này đã đóng góp nhiều đạm.",
+          "Giữ mức đạm này ở các bữa chính, {ten}.",
+          "Đạm đầy đủ giúp no lâu hơn.",
+          "Bữa này nghiêng về protein. Đúng hướng."
+        ],
+        "ket": [
+          "Thêm rau để bổ sung chất xơ.",
+          "Uống đủ nước trong ngày.",
+          "Kết hợp với buổi tập sức mạnh để tận dụng đạm.",
+          "Phân bổ đạm đều cho các bữa trong ngày.",
+          "Bữa sau thêm tinh bột tốt như khoai, gạo lứt.",
+          "Đổi nguồn đạm: cá, trứng, đậu, thịt nạc.",
+          "Duy trì thói quen này đều đặn.",
+          "Ngủ đủ để cơ bắp phục hồi."
+        ]
+      },
+      "supportive": {
+        "mo": [
+          "Bữa này nhiều đạm quá, cơ bắp của bạn sẽ vui lắm đó.",
+          "{mon} là lựa chọn giàu protein tuyệt vời, {ten} ơi.",
+          "Mình thích bữa này ghê, đạm đầy đủ mà vẫn ngon.",
+          "Bạn chọn món rất khéo, đạm cao giúp hồi phục tốt.",
+          "Bữa {kcal} kcal nhiều đạm, đúng hướng luôn.",
+          "Còn {con_lai} kcal và bạn đã nạp đạm rất tốt, {ten} à.",
+          "Bạn đang chăm sóc cơ bắp của mình chu đáo thật.",
+          "Đạm đầy đủ thế này thì buổi tập tới chắc khoẻ lắm.",
+          "Mình thấy bạn ngày càng chọn món thông minh hơn.",
+          "Bữa này giúp bạn no lâu, đỡ thèm vặt nữa đó."
+        ],
+        "ket": [
+          "Thêm chút rau xanh cho đủ chất xơ nha 🥦",
+          "Nhớ uống đủ nước trong ngày nhé.",
+          "Kết hợp với buổi tập là hiệu quả lắm đó 💪",
+          "Chia đạm đều cho các bữa là tuyệt nhất.",
+          "Bữa sau có thể thêm khoai hoặc gạo lứt cho đủ năng lượng.",
+          "Đổi món đạm thường xuyên để ăn không bị chán nha.",
+          "Cứ giữ thói quen này, mình tin bạn.",
+          "Ngủ ngon để cơ bắp phục hồi tốt nhé 🌙"
+        ]
+      },
+      "funny": {
+        "mo": [
+          "Đạm vừa lập hat-trick trong bữa {mon}.",
+          "Cơ bắp vừa nhận được kiện hàng hoả tốc rồi {ten} ơi.",
+          "Bữa này đông đạm như phòng gym lúc 6 giờ chiều.",
+          "Protein ra sân đông đủ, đội hình toàn ngôi sao.",
+          "Bữa {kcal} kcal toàn hàng xịn cho cơ bắp, chất lượng cao.",
+          "Cơ bắp đang mở tiệc ăn mừng vì bữa này đó.",
+          "Còn {con_lai} kcal, mà đạm đã gánh team cực mạnh.",
+          "{mon} đúng là món khoái khẩu của hội gymer.",
+          "Bữa này như nạp gói buff sức mạnh trong game.",
+          "Đạm hôm nay lên level, mẹ mà biết chắc gật gù, {ten} ạ."
+        ],
+        "ket": [
+          "Thêm đĩa rau để đội hình có cả hậu vệ chất xơ 🥬",
+          "Uống nước đều, cơ bắp cũng biết khát.",
+          "Đi tập thôi, đạm đã sẵn sàng làm việc 💪",
+          "Chia đạm đều các bữa, đừng dồn hết vào một trận.",
+          "Bữa sau mời khoai lang vào đội, tiếp sức cho hàng tiền vệ.",
+          "Đổi món luân phiên: cá, trứng, đậu, như xoay tua đội hình.",
+          "Giữ phong độ này cả mùa giải nhé.",
+          "Ngủ đủ, cơ bắp mới có giờ làm bài tập về nhà 😴"
+        ]
+      }
+    },
+    "an_vat": {
+      "strict": {
+        "mo": [
+          "Bữa phụ {kcal} kcal. Ghi nhận.",
+          "Đã ghi món ăn vặt, {ten}.",
+          "Ăn vặt {mon}. Còn {con_lai} kcal hôm nay.",
+          "Bữa phụ nhỏ, không ảnh hưởng lớn tới kế hoạch.",
+          "Đồ ăn vặt dễ cộng dồn calo. Theo dõi kỹ.",
+          "Ghi đủ cả bữa phụ là thói quen đúng.",
+          "Ăn vặt vẫn trong giới hạn hôm nay, {ten}.",
+          "Món vặt ghi nhận. Chú ý số lần ăn vặt trong ngày.",
+          "Bữa phụ hợp lý nếu đang đói giữa hai bữa chính.",
+          "Còn {con_lai} kcal sau món ăn vặt này."
+        ],
+        "ket": [
+          "Lần sau ưu tiên trái cây, sữa chua, hạt.",
+          "Ăn vặt từ đĩa nhỏ, không ăn thẳng từ gói.",
+          "Uống nước trước khi ăn vặt.",
+          "Giới hạn ăn vặt một đến hai lần mỗi ngày.",
+          "Tránh ăn vặt sát giờ bữa chính.",
+          "Chọn đồ uống không đường đi kèm.",
+          "Để đồ ăn vặt lành mạnh trong tầm tay.",
+          "Ghi lại mỗi lần ăn vặt để thấy rõ thói quen."
+        ]
+      },
+      "supportive": {
+        "mo": [
+          "Một chút ăn vặt cho vui miệng, mình thấy ổn mà.",
+          "Món {mon} nhỏ xinh này đã được ghi lại rồi nha {ten}.",
+          "Bạn còn {con_lai} kcal cho hôm nay, vẫn thoải mái lắm.",
+          "Ăn vặt khi đói giữa buổi là chuyện bình thường thôi.",
+          "Mình vui vì bạn ghi cả những món ăn vặt nhỏ.",
+          "Bữa phụ {kcal} kcal này giúp bạn có thêm năng lượng đó.",
+          "Thưởng cho mình chút đồ ăn vặt cũng được mà, {ten}.",
+          "Món ăn vặt này vẫn nằm trong kế hoạch của bạn.",
+          "Ăn chút gì đó giữa buổi giúp bạn tỉnh táo hơn.",
+          "Bạn theo dõi rất kỹ, kể cả bữa phụ, giỏi ghê."
+        ],
+        "ket": [
+          "Lần sau thử trái cây hoặc hạt xem sao nha 🍎",
+          "Ăn vặt từ đĩa nhỏ giúp mình dễ kiểm soát hơn đó.",
+          "Uống cốc nước trước khi ăn vặt nhé.",
+          "Một hai lần ăn vặt mỗi ngày là vừa đẹp.",
+          "Để dành bụng cho bữa chính sắp tới nha 😊",
+          "Chọn đồ uống không đường đi kèm sẽ nhẹ nhàng hơn.",
+          "Để sẵn đồ ăn vặt lành mạnh ở bàn làm việc nhé.",
+          "Cứ ghi lại đều đặn thế này là tuyệt lắm."
+        ]
+      },
+      "funny": {
+        "mo": [
+          "Bữa phụ {mon} xuất hiện như cầu thủ dự bị vào sân.",
+          "Vừa ghé quán vặt hả {ten}, sổ calo còn {con_lai} kcal.",
+          "Ăn vặt giữa giờ, đúng tinh thần giải lao giữa hai hiệp.",
+          "Món vặt {kcal} kcal: nhỏ mà có võ.",
+          "Tiếng sột soạt bao bì đã được hệ thống ghi nhận.",
+          "Bữa phụ nhanh gọn như nạp card điện thoại, {ten} ơi.",
+          "Đồ ăn vặt: người bạn đồng hành của mọi deadline.",
+          "Còn {con_lai} kcal, quỹ ăn vặt vẫn chưa cháy túi.",
+          "Món vặt vừa được duyệt, hồ sơ calo đầy đủ.",
+          "Giờ ra chơi của dạ dày đã chính thức bắt đầu."
+        ],
+        "ket": [
+          "Lần sau thử trái cây, món vặt chính hãng của thiên nhiên 🍊",
+          "Đổ ra đĩa nhỏ, đừng ăn cả gói như cày phim marathon.",
+          "Uống ngụm nước trước, nhiều khi chỉ là khát giả làm đói.",
+          "Ăn vặt một hai lần thôi, đừng mở cả chuỗi cửa hàng.",
+          "Chừa bụng cho bữa chính, đừng để món chính bị thất nghiệp.",
+          "Trà sữa đi kèm thì xin chọn ít đường nha.",
+          "Hũ hạt trên bàn làm việc là vệ sĩ chống đói đáng tin.",
+          "Khai báo đầy đủ thế này, sổ calo khen ngoan 📒"
+        ]
+      }
+    },
+    "bua_sang": {
+      "strict": {
+        "mo": [
+          "Đã ghi bữa sáng. Khởi đầu đúng.",
+          "Bữa sáng {kcal} kcal. Hợp lý, {ten}.",
+          "{mon} cho buổi sáng, đủ năng lượng bắt đầu ngày.",
+          "Không bỏ bữa sáng là thói quen tốt.",
+          "Còn {con_lai} kcal cho phần còn lại của ngày.",
+          "Bữa sáng ghi nhận. Ngày bắt đầu đúng kế hoạch.",
+          "Ăn sáng đều đặn giúp ổn định năng lượng, {ten}.",
+          "Bữa sáng vừa đủ, không quá nặng.",
+          "Nạp năng lượng buổi sáng xong. Tiếp tục.",
+          "Ăn sáng tốt giúp hạn chế ăn quá nhiều vào bữa trưa."
+        ],
+        "ket": [
+          "Bổ sung thêm đạm vào bữa sáng nếu có thể.",
+          "Uống một cốc nước sau bữa.",
+          "Lên kế hoạch bữa trưa từ bây giờ.",
+          "Hạn chế cà phê nhiều đường.",
+          "Giữ giờ ăn sáng cố định mỗi ngày.",
+          "Thêm trái cây để có chất xơ.",
+          "Có lịch tập sáng thì để bụng nghỉ một lúc rồi hãy tập.",
+          "Đứng dậy vận động nhẹ giữa buổi sáng."
+        ]
+      },
+      "supportive": {
+        "mo": [
+          "Chào buổi sáng! Bạn đã ăn sáng rồi, tuyệt quá.",
+          "Bữa sáng {mon} nghe ngon ghê, {ten} ơi.",
+          "Một bữa sáng đàng hoàng là món quà cho cả ngày đó.",
+          "Bạn bắt đầu ngày mới thật chu đáo, mình vui lắm.",
+          "Còn {con_lai} kcal cho hôm nay, bạn có cả ngày thoải mái.",
+          "Ăn sáng đều đặn thế này, mình thấy bạn chăm bản thân tốt lắm.",
+          "Bữa sáng {kcal} kcal giúp bạn có năng lượng cả buổi, {ten} à.",
+          "Không bỏ bữa sáng là bạn đã thắng một bước rồi.",
+          "Bữa sáng ấm bụng, ngày mới chắc suôn sẻ lắm.",
+          "Mình thấy bạn ghi bữa sáng từ sớm, chăm chỉ ghê."
+        ],
+        "ket": [
+          "Nhớ uống thêm một cốc nước nữa nhé 💧",
+          "Chúc bạn một ngày làm việc thật suôn sẻ ☀️",
+          "Bữa trưa thêm nhiều rau xanh là hoàn hảo.",
+          "Cà phê sáng thì mình chọn ít đường nha.",
+          "Ăn sáng cùng giờ mỗi ngày sẽ giúp cơ thể quen nhịp.",
+          "Lần sau thêm chút trái cây vào bữa sáng nhé 🍌",
+          "Có lịch tập thì nghỉ một lúc sau ăn rồi hãy tập nha.",
+          "Đứng dậy vận động nhẹ giữa buổi cho tỉnh táo nhé."
+        ]
+      },
+      "funny": {
+        "mo": [
+          "Bữa sáng {mon} vừa bấm nút khởi động cho ngày mới.",
+          "Nạp nhiên liệu buổi sáng xong, sẵn sàng xuất phát rồi {ten} ơi.",
+          "Ăn sáng rồi mới đi làm, đúng chuẩn lời mẹ dặn.",
+          "Bữa sáng {kcal} kcal: tiếng còi khai cuộc đã vang lên.",
+          "Còn {con_lai} kcal, cả ngày dài phía trước như trang giấy trắng.",
+          "Bữa sáng xong, dạ dày vừa chấm công đúng giờ.",
+          "Không bỏ bữa sáng, năng lượng full vạch như điện thoại vừa sạc.",
+          "Sáng nay ăn đàng hoàng thế này thì deadline cũng phải nể, {ten}.",
+          "Bữa sáng như màn khởi động trước trận, không thể thiếu.",
+          "Chưa ăn sáng là chưa mở app cuộc sống, giờ thì mở rồi."
+        ],
+        "ket": [
+          "Một cốc nước nữa cho máy chạy êm 💧",
+          "Trưa nay cho rau lên đĩa nhiều hơn chút.",
+          "Cà phê sữa đá thì dặn chị bán bớt đường thôi nha.",
+          "Ăn sáng đúng giờ mỗi ngày, như điểm danh không trễ.",
+          "Lần sau thêm quả chuối, combo sáng thêm phần xịn 🍌",
+          "Có lịch tập thì để bữa sáng ổn định chỗ ngồi rồi hãy chạy.",
+          "Giữa buổi đứng dậy vươn vai, đừng hoá tượng trước màn hình.",
+          "Chúc một ngày không bug, không trễ deadline ☀️"
+        ]
+      }
+    },
+    "bua_nhe": {
+      "strict": {
+        "mo": [
+          "Bữa nhẹ {kcal} kcal. Còn {con_lai} kcal hôm nay.",
+          "Bữa này khá ít năng lượng, {ten}.",
+          "{mon} là bữa nhẹ. Đảm bảo các bữa khác đủ chất.",
+          "Bữa nhỏ. Ghi nhận.",
+          "Bữa nhẹ phù hợp nếu chưa quá đói.",
+          "Còn {con_lai} kcal. Đủ chỗ cho một bữa chính đầy đặn.",
+          "Bữa này chưa đủ cho một bữa chính, {ten}.",
+          "Năng lượng bữa này thấp. Đừng để thiếu cả ngày.",
+          "Bữa nhẹ ổn, miễn tổng ngày đạt mức tối thiểu.",
+          "Ăn nhẹ, khó no lâu."
+        ],
+        "ket": [
+          "Bữa sau ăn đầy đủ: tinh bột, đạm, rau.",
+          "Nếu đói sớm, bổ sung sữa hoặc trứng.",
+          "Đừng để tổng ngày quá thấp.",
+          "Thêm một nguồn đạm vào bữa kế.",
+          "Uống nước nhưng không thay thế bữa ăn.",
+          "Chuẩn bị bữa phụ lành mạnh cho buổi chiều.",
+          "Có lịch tập thì ăn đủ trước buổi tập.",
+          "Ăn đúng giờ các bữa chính."
+        ]
+      },
+      "supportive": {
+        "mo": [
+          "Bữa này nhẹ nhàng ghê, bạn còn {con_lai} kcal cho hôm nay đó.",
+          "{mon} là bữa nhẹ, nhớ ăn đủ ở bữa sau nha {ten}.",
+          "Bữa nhỏ xinh {kcal} kcal, đủ lót dạ rồi.",
+          "Mình thấy bữa này hơi ít, bạn đã thấy no chưa?",
+          "Ăn nhẹ một chút cũng được, miễn cả ngày đủ năng lượng.",
+          "Còn {con_lai} kcal nên bạn cứ ăn thoải mái bữa sau nhé, {ten}.",
+          "Bữa nhẹ hợp khi bạn chưa đói lắm, mình hiểu mà.",
+          "Bạn vẫn ghi đều đặn cả bữa nhỏ, mình thích điều đó.",
+          "Một bữa thanh đạm cũng dễ chịu, nhưng đừng để mình bị đói nha.",
+          "Bữa này nhẹ bụng, chắc bạn đang bận lắm nhỉ."
+        ],
+        "ket": [
+          "Bữa sau nhớ ăn đủ cơm, đạm và rau nha 🍚",
+          "Nếu đói sớm thì ăn thêm hộp sữa chua nhé.",
+          "Đừng để cả ngày ăn quá ít, cơ thể cần năng lượng đó.",
+          "Thêm quả trứng vào bữa sau là tuyệt.",
+          "Mang theo ít trái cây phòng khi đói buổi chiều nha 🍎",
+          "Ăn đủ trước khi tập để có sức nhé.",
+          "Ăn đúng giờ các bữa chính giúp bạn dễ chịu hơn.",
+          "Lắng nghe cơ thể, đói thì cứ ăn thêm nha 💛"
+        ]
+      },
+      "funny": {
+        "mo": [
+          "Bữa này nhẹ như lông hồng, {kcal} kcal thôi.",
+          "{mon} mới là phần khai vị, món chính đâu rồi?",
+          "Bữa này chỉ đủ khởi động, chưa vào trận chính đâu {ten} ơi.",
+          "Còn {con_lai} kcal, quỹ calo hôm nay còn rủng rỉnh.",
+          "Bữa nhẹ như cốc trà đá vỉa hè, mát mà chưa no.",
+          "Ăn kiểu này mẹ mà thấy là xới thêm bát nữa liền.",
+          "Bữa mini như gói data một ngày, dùng tạm thôi.",
+          "Còn {con_lai} kcal, sân vẫn trống chờ bữa chính ra quân, {ten}.",
+          "Đĩa này nhẹ đến mức bụng còn chưa kịp chào hỏi.",
+          "Bữa nhẹ ghi nhận, giống trailer hơn là phim chính."
+        ],
+        "ket": [
+          "Bữa sau nhớ đủ cơm, đạm, rau, đừng chơi bản demo 🍚",
+          "Đói sớm thì sữa chua là đồng đội cứu nguy.",
+          "Đừng để cả ngày chạy chế độ tiết kiệm pin.",
+          "Bữa tới thêm quả trứng, nâng cấp từ bản lite lên bản pro.",
+          "Mang theo quả chuối, phòng khi bụng réo giữa cuộc họp 🍌",
+          "Có lịch tập thì nạp đủ trước, không ai đánh boss bằng tay không.",
+          "Ăn đúng giờ, đừng để dạ dày phải nhắc deadline.",
+          "Bụng réo thì cứ ăn, không cần xin phép ai."
+        ]
+      }
+    },
+    "can_bang": {
+      "strict": {
+        "mo": [
+          "Bữa ăn cân đối. Tốt.",
+          "Bữa này đủ tinh bột, đạm và rau, {ten}.",
+          "{mon} phù hợp kế hoạch.",
+          "Bữa {kcal} kcal, phân bổ hợp lý.",
+          "Còn {con_lai} kcal. Đúng tiến độ.",
+          "Đây là kiểu bữa nên lặp lại.",
+          "Kiểm soát khẩu phần tốt, {ten}.",
+          "Bữa ăn đạt chuẩn, không cần điều chỉnh.",
+          "Cân bằng dinh dưỡng ổn định. Tiếp tục.",
+          "Ghi nhận bữa ăn đúng kế hoạch."
+        ],
+        "ket": [
+          "Giữ cấu trúc này cho các bữa sau.",
+          "Mang theo bình nước, uống đều trong ngày.",
+          "Đừng quên buổi tập theo lịch.",
+          "Ăn chậm, nhai kỹ.",
+          "Duy trì giờ ăn ổn định.",
+          "Đa dạng các loại rau trong tuần.",
+          "Vận động nhẹ sau bữa nếu có thời gian.",
+          "Ghi đủ các bữa còn lại."
+        ]
+      },
+      "supportive": {
+        "mo": [
+          "Bữa này cân đối quá, mình thích lắm.",
+          "{mon} là lựa chọn rất hợp lý đó {ten}.",
+          "Bạn ăn uống khéo ghê, đủ chất mà vừa vặn.",
+          "Bữa {kcal} kcal nhẹ nhàng, đúng kế hoạch luôn.",
+          "Còn {con_lai} kcal, bạn đang đi đúng nhịp.",
+          "Mình thấy bạn ngày càng biết cách chọn món.",
+          "Bữa này đủ tinh bột, đạm và rau, tuyệt vời lắm {ten} ơi.",
+          "Một bữa ăn trọn vẹn, cơ thể bạn sẽ cảm ơn đó.",
+          "Bạn đang xây dựng thói quen ăn uống tốt từng ngày.",
+          "Mình chẳng có gì để góp ý cả, bữa này ổn lắm."
+        ],
+        "ket": [
+          "Cứ giữ phong độ này nhé 💪",
+          "Nhớ uống đủ nước nha 💧",
+          "Đừng quên buổi tập theo lịch nhé, mình chờ bạn.",
+          "Ăn chậm, thưởng thức trọn vẹn từng miếng nha.",
+          "Ăn đúng giờ thế này là tuyệt lắm.",
+          "Đổi món rau trong tuần cho đỡ chán nhé 🥗",
+          "Đi dạo nhẹ sau ăn nếu bạn có thời gian nha.",
+          "Bạn đang làm rất tốt, mình tự hào về bạn ✨"
+        ]
+      },
+      "funny": {
+        "mo": [
+          "Đội hình bữa này chuẩn 4-4-2: cơm, đạm, rau đủ cả.",
+          "{mon} cân đối như mâm cơm mẹ nấu ngày thường.",
+          "Bữa này đẹp như bảng điểm toàn A, {ten} ơi.",
+          "Bữa {kcal} kcal, không thừa không thiếu, đúng gu.",
+          "Còn {con_lai} kcal, ví calo đang chi tiêu rất khoa học.",
+          "Bữa ăn này đủ điều kiện lên sách giáo khoa dinh dưỡng.",
+          "Tinh bột, đạm, rau hoà thuận như họp lớp không ai cãi nhau.",
+          "Bữa này chuẩn chỉnh như code chạy một lần là pass, {ten}.",
+          "Đĩa ăn hôm nay chia đều như anh em chia tiền cà phê.",
+          "Bữa này cân bằng đến mức trọng tài cũng không thổi phạt."
+        ],
+        "ket": [
+          "Giữ nguyên đội hình cho trận sau nhé ⚽",
+          "Nước lọc nhớ uống đều, đừng đợi khát mới tìm.",
+          "Ăn xong rồi thì lịch tập đang đợi đó nha.",
+          "Nhai chậm như xem phim hay, đừng tua nhanh.",
+          "Ăn đúng giờ, dạ dày chấm công không trễ.",
+          "Tuần này đổi món rau như đổi playlist cho đỡ chán 🎧",
+          "Dạo bộ vài vòng sau ăn, coi như đá thêm hiệp phụ.",
+          "Cứ thế mà phát huy, sổ calo sẽ trao huy chương 🏅"
+        ]
+      }
+    }
+  }
+}
