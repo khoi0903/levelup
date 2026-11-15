@@ -3,6 +3,7 @@ package vn.levelup.nutrition;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -141,6 +142,7 @@ class BodyFlowTest extends FlowTestBase {
         assertNotNull(body.read("$.carbsG"));
         assertNotNull(body.read("$.fatG"));
         assertNotNull(body.read("$.waterMl"));
+        assertNull(body.read("$.waistCm"));
 
         // 2. Cài đặt: cân nặng ghi vào số đo hôm nay, giữ mốc ban đầu, thêm mốc calo mới
         DocumentContext me = patchMe("""
@@ -171,6 +173,13 @@ class BodyFlowTest extends FlowTestBase {
         // số đo tỉ lệ mỡ thật thắng số tự chọn
         postJson("/measurements", "{\"bodyFatPct\":21.4}", 200);
         assertEquals(21, getJson("/me/body", 200).<Integer>read("$.bodyFatPct"));
+
+        // số đo vòng mới nhất để app vẽ hình sát người thật
+        postJson("/measurements", "{\"waistCm\":82,\"hipCm\":95}", 200);
+        DocumentContext circ = getJson("/me/body", 200);
+        assertEquals(82.0, circ.<Double>read("$.waistCm"));
+        assertEquals(95.0, circ.<Double>read("$.hipCm"));
+        assertNull(circ.read("$.chestCm"));
 
         // 3. Giá trị sai
         patchMe("{\"bodyFatPct\":60}", 400);

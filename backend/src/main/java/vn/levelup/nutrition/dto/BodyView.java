@@ -8,6 +8,7 @@ import java.util.List;
  * bmiCategory: underweight | normal | overweight | obese (ngưỡng châu Á 18.5 / 23 / 25).
  * bodyFatPct: số đo mới nhất, không có thì số tự chọn trong hồ sơ, không có nữa thì ước tính
  * (bodyFatEstimated = true). targetKcal, macro, waterMl: mục tiêu đang áp dụng, giống GET /nutrition/today.
+ * waistCm, hipCm, chestCm, armCm: số đo vòng mới nhất (null nếu chưa đo) để app vẽ hình sát người thật hơn.
  */
 public record BodyView(
     String gender,
@@ -25,5 +26,9 @@ public record BodyView(
     Integer carbsG,
     Integer fatG,
     Integer waterMl,
-    List<String> focusMuscles
+    List<String> focusMuscles,
+    Double waistCm,
+    Double hipCm,
+    Double chestCm,
+    Double armCm
 ) {}

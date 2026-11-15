@@ -50,8 +50,10 @@ public class BodyService {
         }
         NutritionRules.Target t = NutritionRules.effectiveTarget(user.nutritionTargets(), today, gender);
         List<String> focus = p == null || p.focusMuscles() == null ? List.of() : p.focusMuscles();
+        var circ = measurements.latestCircumferences(user.id());
         return new BodyView(gender, age, height, weight, bmi, BodyRules.bmiCategory(bmi), fat.pct(),
             fat.estimated(), bmr, tdee, t == null ? null : t.kcal(), t == null ? null : t.proteinG(),
-            t == null ? null : t.carbsG(), t == null ? null : t.fatG(), t == null ? null : t.waterMl(), focus);
+            t == null ? null : t.carbsG(), t == null ? null : t.fatG(), t == null ? null : t.waterMl(), focus,
+            circ.get("waistCm"), circ.get("hipCm"), circ.get("chestCm"), circ.get("armCm"));
     }
 }
