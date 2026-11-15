@@ -35,8 +35,17 @@ class BodyGeometry {
   /// Nét tách các múi cơ trong cùng một mảng (múi bụng, rãnh sống lưng...).
   final List<Path> creases = [];
 
+  /// Nét tách rất mờ (bụng phẳng của hình nữ).
+  final List<Path> softCreases = [];
+
   /// Nét phụ không thuộc nhóm cơ nào (xương đòn, xương bánh chè).
   final List<Path> details = [];
+
+  /// Tóc nằm sau thân (vẽ trước thân người). Chỉ có ở hình nữ, không bắt chạm.
+  final List<Path> hairBehind = [];
+
+  /// Tóc nằm trên đầu (vẽ sau cùng, trước điểm đau). Chỉ có ở hình nữ.
+  final List<Path> hair = [];
 
   /// Tâm các điểm đau theo tên vùng.
   final Map<String, List<Offset>> painSpots = {};
@@ -180,14 +189,21 @@ class BodyGeometry {
 
   void _build() {
     final s = shape;
-    final a = s.arm;
-    final sh = s.shoulder, ch = s.chest, h = s.hip, th = s.thigh;
-    // Nữ: eo thắt hơn một chút so với số đo gốc.
-    final w = s.female ? s.waist * 0.93 : s.waist;
+    final fem = s.female;
+    // Nữ: tay thon hơn, eo thắt hơn, hông và đùi đầy hơn một chút. Các hệ số
+    // nhân cố định nên mọi bề rộng vẫn tăng đều theo BMI và tỉ lệ mỡ.
+    final a = fem ? s.arm * 0.90 : s.arm;
+    final sh = fem ? s.shoulder * 0.97 : s.shoulder;
+    final ch = s.chest;
+    final h = fem ? s.hip * 1.03 : s.hip;
+    final th = fem ? s.thigh * 1.05 : s.thigh;
+    final w = fem ? s.waist * 0.89 : s.waist;
     final front = side == BodySide.front;
+    // Nữ: vai xuôi và tròn hơn (hạ thấp các mốc vai một chút).
+    final sy = fem ? 0.005 : 0.0;
 
     // ---- Mốc giải phẫu (nửa bên phải hình, x dương) ----
-    final nw = 0.015 + a * 0.30; // nửa bề rộng cổ
+    final nw = fem ? 0.012 + a * 0.28 : 0.015 + a * 0.30; // nửa bề rộng cổ
     final jx = sh - a * 0.3; // khớp vai
     final wx = math.max(jx + 0.040, h + a + 0.016); // cổ tay
     final ex = (jx + wx) / 2 + 0.006; // khuỷu
@@ -202,9 +218,9 @@ class BodyGeometry {
     final torsoXs = [
       ch * 0.97,
       ch,
-      ch + (w - ch) * 0.6,
+      ch + (w - ch) * (fem ? 0.70 : 0.6),
       w,
-      w + (h - w) * 0.55,
+      w + (h - w) * (fem ? 0.64 : 0.55),
       h,
       hipLow,
     ];
@@ -236,20 +252,30 @@ class BodyGeometry {
     final armpit = Offset(torsoX(0.243), 0.243);
     final seg1 = <Offset>[
       const Offset(0, 0.012),
-      const Offset(0.026, 0.017),
-      const Offset(0.043, 0.036),
-      const Offset(0.050, 0.064),
-      const Offset(0.048, 0.088),
-      const Offset(0.041, 0.109),
-      const Offset(0.031, 0.124),
+      if (fem) ...const [
+        // Mặt nữ: gò má hẹp hơn, cằm thon.
+        Offset(0.025, 0.017),
+        Offset(0.041, 0.036),
+        Offset(0.047, 0.064),
+        Offset(0.045, 0.088),
+        Offset(0.037, 0.109),
+        Offset(0.026, 0.125),
+      ] else ...const [
+        Offset(0.026, 0.017),
+        Offset(0.043, 0.036),
+        Offset(0.050, 0.064),
+        Offset(0.048, 0.088),
+        Offset(0.041, 0.109),
+        Offset(0.031, 0.124),
+      ],
       Offset(nw + 0.001, 0.133),
       Offset(nw, 0.148),
-      Offset(nw + 0.007, 0.159),
-      Offset(nw + 0.026, 0.167),
-      Offset((nw + jx) / 2 + 0.012, 0.1735),
-      Offset(jx - a * 0.2, 0.179),
-      Offset(jx + a * 0.5, 0.186),
-      Offset(jx + a * 0.93, 0.206),
+      Offset(nw + 0.007, 0.159 + sy * 0.4),
+      Offset(nw + 0.026, 0.167 + sy),
+      Offset((nw + jx) / 2 + 0.012, 0.1735 + sy),
+      Offset(jx - a * 0.2, 0.179 + sy),
+      Offset(jx + a * 0.5, 0.186 + sy),
+      Offset(jx + a * 0.93, 0.206 + sy * 0.6),
       for (final y in const [0.232, 0.265, 0.300, 0.335, 0.372, 0.420])
         Offset(armOut(y), y),
       Offset(wx + a * 0.50, 0.468),
@@ -299,14 +325,14 @@ class BodyGeometry {
     // ---- Vùng cơ ----
     // Cơ delta (chỏm vai), giống nhau ở hai mặt.
     final deltoid = _blob([
-      Offset(jx - a * 0.85, 0.190),
-      Offset(jx + a * 0.10, 0.188),
-      Offset(jx + a * 0.72, 0.200),
+      Offset(jx - a * 0.85, 0.190 + sy),
+      Offset(jx + a * 0.10, 0.188 + sy),
+      Offset(jx + a * 0.72, 0.200 + sy),
       Offset(armOut(0.232) - 0.005, 0.232),
       Offset(armX(0.256) + a * 0.55, 0.256),
       Offset(armX(0.266) + a * 0.05, 0.266),
       Offset(math.max(armX(0.240) - a * 0.60, armIn(0.240) + 0.003), 0.240),
-      Offset(jx - a * 1.0, 0.212),
+      Offset(jx - a * 1.0, 0.212 + sy),
     ]);
     muscles['shoulders'] = _both([deltoid]);
 
@@ -329,51 +355,62 @@ class BodyGeometry {
         armX(0.240) - a * 0.60 - 0.008,
         torsoX(0.240) - 0.004,
       );
-      final pec = _blob([
-        const Offset(0.006, 0.200),
-        Offset(sh * 0.45, 0.193),
-        Offset(jx - a * 1.12, 0.197),
-        Offset(jx - a * 1.15, 0.216),
-        Offset(pecOuter, 0.240),
-        Offset(ch * 0.80, 0.262),
-        Offset(ch * 0.45, 0.274),
-        const Offset(0.012, 0.268),
-        const Offset(0.006, 0.235),
-      ]);
-      muscles['chest'] = _both([pec]);
-
-      // Bụng: cơ thẳng bụng (6 múi) + cơ chéo hai bên.
-      final aw = (w * 0.50).clamp(0.030, 0.058);
-      final rectus = _symBlob([
-        const Offset(0, 0.284),
-        Offset(aw * 0.8, 0.286),
-        Offset(aw, 0.300),
-        Offset(aw, 0.400),
-        Offset(aw * 0.82, 0.438),
-        Offset(aw * 0.40, 0.466),
-        const Offset(0, 0.478),
-      ]);
-      final oblique = _blob([
-        Offset(aw + 0.009, 0.297),
-        Offset(math.max(torsoX(0.292) - 0.008, aw + 0.014), 0.291),
-        Offset(math.max(torsoX(0.335) - 0.007, aw + 0.015), 0.335),
-        Offset(math.max(torsoX(0.385) - 0.007, aw + 0.015), 0.385),
-        Offset(math.max(torsoX(0.435) - 0.009, aw + 0.014), 0.435),
-        Offset(aw * 0.82 + 0.012, 0.458),
-        Offset(aw + 0.009, 0.400),
-      ]);
-      muscles['abs'] = _both([oblique], [rectus]);
-      creases.add(_line(const [Offset(0, 0.290), Offset(0, 0.470)]));
-      for (final y in const [0.320, 0.358, 0.398]) {
-        creases.add(
-          _line([
-            Offset(-aw, y + 0.004),
-            Offset(-aw * 0.5, y + 0.001),
-            Offset(0, y),
-            Offset(aw * 0.5, y + 0.001),
-            Offset(aw, y + 0.004),
-          ]),
+      if (fem) {
+        _buildFemaleFront(
+          ch: ch,
+          w: w,
+          jx: jx,
+          a: a,
+          pecOuter: pecOuter,
+          torsoX: torsoX,
         );
+      } else {
+        final pec = _blob([
+          const Offset(0.006, 0.200),
+          Offset(sh * 0.45, 0.193),
+          Offset(jx - a * 1.12, 0.197),
+          Offset(jx - a * 1.15, 0.216),
+          Offset(pecOuter, 0.240),
+          Offset(ch * 0.80, 0.262),
+          Offset(ch * 0.45, 0.274),
+          const Offset(0.012, 0.268),
+          const Offset(0.006, 0.235),
+        ]);
+        muscles['chest'] = _both([pec]);
+
+        // Bụng: cơ thẳng bụng (6 múi) + cơ chéo hai bên.
+        final aw = (w * 0.50).clamp(0.030, 0.058);
+        final rectus = _symBlob([
+          const Offset(0, 0.284),
+          Offset(aw * 0.8, 0.286),
+          Offset(aw, 0.300),
+          Offset(aw, 0.400),
+          Offset(aw * 0.82, 0.438),
+          Offset(aw * 0.40, 0.466),
+          const Offset(0, 0.478),
+        ]);
+        final oblique = _blob([
+          Offset(aw + 0.009, 0.297),
+          Offset(math.max(torsoX(0.292) - 0.008, aw + 0.014), 0.291),
+          Offset(math.max(torsoX(0.335) - 0.007, aw + 0.015), 0.335),
+          Offset(math.max(torsoX(0.385) - 0.007, aw + 0.015), 0.385),
+          Offset(math.max(torsoX(0.435) - 0.009, aw + 0.014), 0.435),
+          Offset(aw * 0.82 + 0.012, 0.458),
+          Offset(aw + 0.009, 0.400),
+        ]);
+        muscles['abs'] = _both([oblique], [rectus]);
+        creases.add(_line(const [Offset(0, 0.290), Offset(0, 0.470)]));
+        for (final y in const [0.320, 0.358, 0.398]) {
+          creases.add(
+            _line([
+              Offset(-aw, y + 0.004),
+              Offset(-aw * 0.5, y + 0.001),
+              Offset(0, y),
+              Offset(aw * 0.5, y + 0.001),
+              Offset(aw, y + 0.004),
+            ]),
+          );
+        }
       }
 
       // Chân: tứ đầu (3 múi) + cơ chày trước và mép trong bắp chân.
@@ -402,9 +439,9 @@ class BodyGeometry {
 
       // Nét phụ: xương đòn, xương bánh chè.
       final clavicle = _line([
-        Offset(0.010, 0.189),
-        Offset(sh * 0.45, 0.184),
-        Offset(jx - a * 1.1, 0.187),
+        Offset(0.010, 0.189 + sy * 0.4),
+        Offset(sh * 0.45, 0.184 + sy),
+        Offset(jx - a * 1.1, 0.187 + sy),
       ]);
       final kneeR = legR(kneeY) * 0.42;
       final kneecap = Path()
@@ -425,24 +462,36 @@ class BodyGeometry {
       final trap = _symBlob([
         const Offset(0, 0.138),
         Offset(nw * 0.8, 0.142),
-        Offset(nw + 0.016, 0.170),
-        Offset((nw + jx) / 2 + 0.006, 0.180),
-        Offset(jx - a * 1.05, 0.186),
-        Offset(jx - a * 1.10, 0.200),
+        Offset(nw + 0.016, 0.170 + sy),
+        Offset((nw + jx) / 2 + 0.006, 0.180 + sy),
+        Offset(jx - a * 1.05, 0.186 + sy),
+        Offset(jx - a * 1.10, 0.200 + sy),
         Offset(sh * 0.42, 0.232),
         Offset(sh * 0.20, 0.290),
         const Offset(0, 0.345),
       ]);
-      final lat = _blob([
-        Offset(sh * 0.42 + 0.012, 0.241),
-        Offset(jx - a * 1.05, 0.217),
-        Offset(torsoX(0.248) - 0.007, 0.248),
-        Offset(torsoX(0.300) - 0.006, 0.300),
-        Offset(torsoX(0.360) - 0.007, 0.360),
-        Offset(w * 0.62, 0.412),
-        const Offset(0.012, 0.372),
-        Offset(sh * 0.20 + 0.014, 0.300),
-      ]);
+      final lat = fem
+          ? _blob([
+              // Nữ: cơ xô mềm, thấp và bo tròn hơn.
+              Offset(sh * 0.42 + 0.015, 0.252),
+              Offset(jx - a * 1.20, 0.232),
+              Offset(torsoX(0.258) - 0.009, 0.258),
+              Offset(torsoX(0.302) - 0.008, 0.302),
+              Offset(torsoX(0.350) - 0.009, 0.350),
+              Offset(w * 0.58, 0.396),
+              const Offset(0.017, 0.364),
+              Offset(sh * 0.20 + 0.017, 0.306),
+            ])
+          : _blob([
+              Offset(sh * 0.42 + 0.012, 0.241),
+              Offset(jx - a * 1.05, 0.217),
+              Offset(torsoX(0.248) - 0.007, 0.248),
+              Offset(torsoX(0.300) - 0.006, 0.300),
+              Offset(torsoX(0.360) - 0.007, 0.360),
+              Offset(w * 0.62, 0.412),
+              const Offset(0.012, 0.372),
+              Offset(sh * 0.20 + 0.014, 0.300),
+            ]);
       final lowerBack = _symBlob([
         const Offset(0, 0.388),
         Offset(w * 0.32, 0.402),
@@ -453,15 +502,27 @@ class BodyGeometry {
       muscles['back'] = _both([lat], [trap, lowerBack]);
       creases.add(_line(const [Offset(0, 0.150), Offset(0, 0.440)]));
 
-      final glute = _blob([
-        const Offset(0.005, 0.462),
-        Offset(h * 0.5, 0.450),
-        Offset(h - 0.010, 0.470),
-        Offset(hipLow - 0.008, 0.505),
-        Offset(legC(0.535) + th * 0.55, 0.536),
-        Offset(math.max(legC(0.542) - th * 0.1, 0.020), 0.543),
-        const Offset(0.006, 0.520),
-      ]);
+      final glute = fem
+          ? _blob([
+              // Nữ: mông tròn và đầy hơn.
+              const Offset(0.005, 0.456),
+              Offset(h * 0.50, 0.444),
+              Offset(h - 0.009, 0.466),
+              Offset(hipLow - 0.006, 0.502),
+              Offset(legC(0.538) + th * 0.60, 0.540),
+              Offset(legC(0.552), 0.553),
+              Offset(math.max(legC(0.546) - th * 0.50, 0.016), 0.546),
+              const Offset(0.005, 0.516),
+            ])
+          : _blob([
+              const Offset(0.005, 0.462),
+              Offset(h * 0.5, 0.450),
+              Offset(h - 0.010, 0.470),
+              Offset(hipLow - 0.008, 0.505),
+              Offset(legC(0.535) + th * 0.55, 0.536),
+              Offset(math.max(legC(0.542) - th * 0.1, 0.020), 0.543),
+              const Offset(0.006, 0.520),
+            ]);
       muscles['glutes'] = _both([glute]);
 
       // Chân: gân kheo (2 múi) + bụng chân (2 múi).
@@ -473,6 +534,8 @@ class BodyGeometry {
       ]);
     }
 
+    if (fem) _buildHair(front);
+
     // ---- Điểm đau ----
     List<Offset> both(Offset p) => [p, _flip(p)];
     painSpots['neck'] = const [Offset(0, 0.142)];
@@ -482,6 +545,148 @@ class BodyGeometry {
     painSpots['hip'] = both(Offset(math.max(h - 0.02, 0.05), 0.478));
     painSpots['knee'] = both(Offset(kneeX, kneeY));
     painSpots['ankle'] = both(Offset(kneeX, ankleY));
+  }
+
+  /// Ngực và bụng của hình nữ: đường cong ngực mềm (vẫn là nhóm `chest`),
+  /// bụng phẳng một mảng với nét rất mờ, cơ chéo thon.
+  void _buildFemaleFront({
+    required double ch,
+    required double w,
+    required double jx,
+    required double a,
+    required double pecOuter,
+    required double Function(double y) torsoX,
+  }) {
+    final bx = math.min(ch * 0.90, torsoX(0.260) - 0.005);
+    final bust = _blob([
+      const Offset(0.011, 0.222),
+      Offset(ch * 0.36, 0.208),
+      Offset(math.min(jx - a * 1.35, pecOuter + 0.004), 0.207),
+      Offset(pecOuter - 0.001, 0.234),
+      Offset(bx, 0.258),
+      Offset(bx - ch * 0.14, 0.277),
+      Offset(ch * 0.50, 0.286),
+      Offset(ch * 0.24 + 0.004, 0.279),
+      const Offset(0.009, 0.256),
+    ]);
+    muscles['chest'] = _both([bust]);
+
+    final aw = (w * 0.50).clamp(0.028, 0.054);
+    final panel = _symBlob([
+      const Offset(0, 0.298),
+      Offset(aw * 0.72, 0.300),
+      Offset(aw, 0.318),
+      Offset(aw * 0.94, 0.396),
+      Offset(aw * 0.78, 0.440),
+      Offset(aw * 0.38, 0.468),
+      const Offset(0, 0.480),
+    ]);
+    final oblique = _blob([
+      Offset(aw + 0.011, 0.314),
+      Offset(math.max(torsoX(0.306) - 0.010, aw + 0.015), 0.306),
+      Offset(math.max(torsoX(0.340) - 0.008, aw + 0.016), 0.340),
+      Offset(math.max(torsoX(0.385) - 0.008, aw + 0.016), 0.385),
+      Offset(math.max(torsoX(0.430) - 0.011, aw + 0.015), 0.430),
+      Offset(aw * 0.80 + 0.013, 0.452),
+      Offset(aw * 0.94 + 0.010, 0.398),
+    ]);
+    muscles['abs'] = _both([oblique], [panel]);
+    softCreases.add(_line(const [Offset(0, 0.312), Offset(0, 0.400)]));
+    for (final y in const [0.338, 0.374]) {
+      softCreases.add(
+        _line([
+          Offset(-aw * 0.42, y + 0.002),
+          Offset(0, y),
+          Offset(aw * 0.42, y + 0.002),
+        ]),
+      );
+    }
+    // Rốn.
+    details.add(
+      Path()..addOval(
+        Rect.fromCenter(
+          center: const Offset(0, 0.418),
+          width: 0.007,
+          height: 0.010,
+        ),
+      ),
+    );
+  }
+
+  /// Tóc của hình nữ: mặt trước là mái tóc ôm đầu + đuôi tóc lệch một bên phía
+  /// sau; mặt sau là tóc phủ kín đầu + đuôi ngựa giữa gáy.
+  void _buildHair(bool front) {
+    if (front) {
+      hairBehind
+        ..add(
+          _symBlob(const [
+            Offset(0, 0.004),
+            Offset(0.030, 0.009),
+            Offset(0.049, 0.031),
+            Offset(0.054, 0.062),
+            Offset(0.052, 0.090),
+            Offset(0.045, 0.108),
+            Offset(0, 0.116),
+          ]),
+        )
+        ..add(
+          _blob(const [
+            Offset(0.036, 0.022),
+            Offset(0.058, 0.026),
+            Offset(0.072, 0.052),
+            Offset(0.074, 0.096),
+            Offset(0.066, 0.140),
+            Offset(0.054, 0.168),
+            Offset(0.047, 0.150),
+            Offset(0.050, 0.110),
+            Offset(0.046, 0.070),
+          ]),
+        );
+      hair.add(
+        _blob(const [
+          Offset(-0.050, 0.074),
+          Offset(-0.053, 0.050),
+          Offset(-0.045, 0.026),
+          Offset(-0.026, 0.009),
+          Offset(0, 0.004),
+          Offset(0.026, 0.009),
+          Offset(0.045, 0.026),
+          Offset(0.053, 0.050),
+          Offset(0.050, 0.074),
+          Offset(0.043, 0.056),
+          Offset(0.028, 0.041),
+          Offset(0.006, 0.034),
+          Offset(-0.016, 0.038),
+          Offset(-0.034, 0.050),
+          Offset(-0.044, 0.064),
+        ]),
+      );
+    } else {
+      hair
+        ..add(
+          _symBlob(const [
+            Offset(0, 0.004),
+            Offset(0.030, 0.009),
+            Offset(0.049, 0.031),
+            Offset(0.054, 0.062),
+            Offset(0.051, 0.090),
+            Offset(0.041, 0.110),
+            Offset(0.024, 0.123),
+            Offset(0, 0.128),
+          ]),
+        )
+        ..add(
+          _symBlob(const [
+            Offset(0, 0.046),
+            Offset(0.010, 0.052),
+            Offset(0.012, 0.068),
+            Offset(0.018, 0.100),
+            Offset(0.017, 0.142),
+            Offset(0.009, 0.180),
+            Offset(0, 0.196),
+          ]),
+        );
+    }
   }
 
   /// Nhóm cơ tại điểm [p] (toạ độ chuẩn hoá), null nếu không trúng.

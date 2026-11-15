@@ -76,6 +76,9 @@ class BodyFigure extends StatelessWidget {
               lineColor: c.isDark
                   ? const Color(0xFF687390)
                   : const Color(0xFFA9B4CC),
+              hairColor: c.isDark
+                  ? const Color(0xFF8490AE)
+                  : const Color(0xFF8D99B8),
               activeColor: c.buttonFill,
               painColor: c.errorText,
               outlineColor: c.surface,
@@ -112,8 +115,10 @@ class BodyFigurePainter extends CustomPainter {
     required this.painColor,
     required this.outlineColor,
     Color? lineColor,
+    Color? hairColor,
     this.dark = false,
-  }) : lineColor = lineColor ?? regionColor;
+  }) : lineColor = lineColor ?? regionColor,
+       hairColor = hairColor ?? lineColor ?? regionColor;
 
   final BodyGeometry geometry;
   final BodyFigureMode mode;
@@ -128,6 +133,9 @@ class BodyFigurePainter extends CustomPainter {
 
   /// Màu nét viền thân và nét phụ.
   final Color lineColor;
+
+  /// Màu tóc (hình nữ).
+  final Color hairColor;
   final Color activeColor;
   final Color painColor;
 
@@ -174,6 +182,32 @@ class BodyFigurePainter extends CustomPainter {
       BodyGeometry.aspect / 2,
       1,
     );
+
+    // 0. Tóc nằm sau thân (hình nữ).
+    void drawHair(List<Path> parts) {
+      for (final part in parts) {
+        canvas.drawPath(
+          part,
+          Paint()
+            ..isAntiAlias = true
+            ..shader = _vertical(
+              part.getBounds(),
+              Color.lerp(hairColor, _white, dark ? 0.10 : 0.16)!,
+              Color.lerp(hairColor, _black, dark ? 0.10 : 0.06)!,
+            ),
+        );
+        canvas.drawPath(
+          part,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeJoin = StrokeJoin.round
+            ..strokeWidth = px(0.0030, 0.7)
+            ..color = Color.lerp(hairColor, _black, dark ? 0.25 : 0.12)!,
+        );
+      }
+    }
+
+    drawHair(geometry.hairBehind);
 
     // 1. Thân người: nền chuyển sắc nhẹ + bóng mép trong tạo khối.
     final body = geometry.silhouette;
@@ -261,6 +295,14 @@ class BodyFigurePainter extends CustomPainter {
     for (final path in geometry.creases) {
       canvas.drawPath(path, crease);
     }
+    final softCrease = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = px(0.0030, 0.6)
+      ..color = Color.lerp(baseTop, baseBottom, 0.4)!.withValues(alpha: 0.45);
+    for (final path in geometry.softCreases) {
+      canvas.drawPath(path, softCrease);
+    }
     final line = Paint()
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
@@ -280,6 +322,9 @@ class BodyFigurePainter extends CustomPainter {
     for (final part in body) {
       canvas.drawPath(part, outline);
     }
+
+    // Tóc phủ trên đầu (hình nữ).
+    drawHair(geometry.hair);
 
     // 5. Điểm đau.
     if (mode == BodyFigureMode.selectPain) {
@@ -330,6 +375,7 @@ class BodyFigurePainter extends CustomPainter {
       old.baseColor != baseColor ||
       old.regionColor != regionColor ||
       old.lineColor != lineColor ||
+      old.hairColor != hairColor ||
       old.activeColor != activeColor ||
       old.painColor != painColor ||
       old.outlineColor != outlineColor;
