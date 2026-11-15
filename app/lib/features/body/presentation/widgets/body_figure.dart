@@ -68,14 +68,18 @@ class BodyFigure extends StatelessWidget {
               selected: selected,
               heat: heat,
               baseColor: c.isDark
-                  ? const Color(0xFF3A4152)
-                  : const Color(0xFFDDE2EE),
+                  ? const Color(0xFF3B4254)
+                  : const Color(0xFFE1E5EF),
               regionColor: c.isDark
-                  ? const Color(0xFF4A5266)
-                  : const Color(0xFFCBD2E2),
+                  ? const Color(0xFF525B73)
+                  : const Color(0xFFC6CEDF),
+              lineColor: c.isDark
+                  ? const Color(0xFF687390)
+                  : const Color(0xFFA9B4CC),
               activeColor: c.buttonFill,
               painColor: c.errorText,
               outlineColor: c.surface,
+              dark: c.isDark,
             ),
           );
           if (!interactive) return paint;
@@ -107,56 +111,177 @@ class BodyFigurePainter extends CustomPainter {
     required this.activeColor,
     required this.painColor,
     required this.outlineColor,
-  });
+    Color? lineColor,
+    this.dark = false,
+  }) : lineColor = lineColor ?? regionColor;
 
   final BodyGeometry geometry;
   final BodyFigureMode mode;
   final Set<String> selected;
   final Map<String, double> heat;
+
+  /// Màu nền thân người.
   final Color baseColor;
+
+  /// Màu mảng cơ khi chưa chọn.
   final Color regionColor;
+
+  /// Màu nét viền thân và nét phụ.
+  final Color lineColor;
   final Color activeColor;
   final Color painColor;
+
+  /// Màu nền thẻ phía sau (dùng cho chấm điểm đau chưa chọn).
   final Color outlineColor;
+  final bool dark;
+
+  static const Color _white = Color(0xFFFFFFFF);
+  static const Color _black = Color(0xFF000000);
+
+  static Shader _vertical(Rect r, Color top, Color bottom) => LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [top, bottom],
+  ).createShader(r);
+
+  /// Mức tô 0..1 của một nhóm cơ theo chế độ hiện tại.
+  double _level(String id) {
+    switch (mode) {
+      case BodyFigureMode.heat:
+        final v = (heat[id] ?? 0).clamp(0.0, 1.0).toDouble();
+        return v <= 0 ? 0 : 0.35 + 0.65 * v;
+      case BodyFigureMode.selectMuscles:
+        return selected.contains(id) ? 1 : 0;
+      case BodyFigureMode.display:
+      case BodyFigureMode.selectPain:
+        return 0;
+    }
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
     final scale = BodyGeometry.scaleFor(size);
+    if (scale <= 0) return;
     canvas.save();
     canvas.translate(size.width / 2, (size.height - scale) / 2);
     canvas.scale(scale);
 
-    final base = Paint()
-      ..color = baseColor
-      ..isAntiAlias = true;
-    for (final part in geometry.silhouette) {
-      canvas.drawPath(part, base);
+    // Bề dày nét không nhỏ hơn [minPx] điểm ảnh để hình thu nhỏ vẫn rõ.
+    double px(double v, double minPx) => v > minPx / scale ? v : minPx / scale;
+    const frame = Rect.fromLTRB(
+      -BodyGeometry.aspect / 2,
+      0,
+      BodyGeometry.aspect / 2,
+      1,
+    );
+
+    // 1. Thân người: nền chuyển sắc nhẹ + bóng mép trong tạo khối.
+    final body = geometry.silhouette;
+    final baseTop = Color.lerp(baseColor, _white, dark ? 0.06 : 0.35)!;
+    final baseBottom = Color.lerp(baseColor, _black, dark ? 0.12 : 0.05)!;
+    final fill = Paint()
+      ..isAntiAlias = true
+      ..shader = _vertical(frame, baseTop, baseBottom);
+    for (final part in body) {
+      canvas.drawPath(part, fill);
+    }
+    for (final part in body) {
+      canvas.save();
+      canvas.clipPath(part);
+      canvas.drawPath(
+        part,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 0.030
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.011)
+          ..color = (dark ? _black : lineColor).withValues(
+            alpha: dark ? 0.30 : 0.38,
+          ),
+      );
+      canvas.restore();
     }
 
-    if (mode == BodyFigureMode.selectMuscles || mode == BodyFigureMode.heat) {
-      final gap = Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 0.006
-        ..color = outlineColor.withValues(alpha: 0.9);
-      geometry.muscles.forEach((id, path) {
-        final Color color;
-        if (mode == BodyFigureMode.heat) {
-          final v = (heat[id] ?? 0).clamp(0.0, 1.0);
-          color = v <= 0
-              ? regionColor.withValues(alpha: 0.45)
-              : Color.lerp(
-                  activeColor.withValues(alpha: 0.35),
-                  activeColor,
-                  v,
-                )!;
-        } else {
-          color = selected.contains(id) ? activeColor : regionColor;
-        }
-        canvas.drawPath(path, Paint()..color = color);
-        canvas.drawPath(path, gap);
-      });
+    // 2. Mảng cơ.
+    final quiet =
+        mode == BodyFigureMode.display || mode == BodyFigureMode.selectPain;
+    final idleTop = Color.lerp(regionColor, baseColor, quiet ? 0.50 : 0.18)!;
+    final idleBottom = Color.lerp(
+      regionColor,
+      dark ? _black : lineColor,
+      quiet ? 0.0 : 0.22,
+    )!;
+    final levels = {for (final id in geometry.muscles.keys) id: _level(id)};
+
+    // Quầng sáng dưới các mảng đang chọn / đã tập.
+    geometry.muscles.forEach((id, path) {
+      final v = levels[id]!;
+      if (v <= 0) return;
+      canvas.drawPath(
+        path,
+        Paint()
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.012)
+          ..color = activeColor.withValues(alpha: 0.42 * v),
+      );
+    });
+    geometry.muscles.forEach((id, path) {
+      final v = levels[id]!;
+      final Color top, bottom;
+      if (v <= 0) {
+        top = idleTop;
+        bottom = idleBottom;
+      } else {
+        final strong = Color.lerp(idleBottom, activeColor, v)!;
+        top = Color.lerp(strong, _white, 0.20)!;
+        bottom = Color.lerp(strong, _black, 0.06)!;
+      }
+      canvas.drawPath(
+        path,
+        Paint()
+          ..isAntiAlias = true
+          ..shader = _vertical(path.getBounds(), top, bottom),
+      );
+      // Viền sáng mảnh quanh mỗi mảng cơ cho cảm giác nổi khối.
+      canvas.drawPath(
+        path,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = px(0.0022, 0.5)
+          ..color = (v > 0 ? _white : baseTop).withValues(
+            alpha: v > 0 ? 0.28 : (dark ? 0.25 : 0.65),
+          ),
+      );
+    });
+
+    // 3. Nét tách múi cơ và nét phụ.
+    final crease = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = px(0.0048, 0.8)
+      ..color = Color.lerp(baseTop, baseBottom, 0.4)!;
+    for (final path in geometry.creases) {
+      canvas.drawPath(path, crease);
+    }
+    final line = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = px(0.0030, 0.7)
+      ..color = lineColor.withValues(alpha: 0.75);
+    for (final path in geometry.details) {
+      canvas.drawPath(path, line);
     }
 
+    // 4. Viền thân liền nét.
+    final outline = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = px(0.0036, 0.9)
+      ..color = lineColor;
+    for (final part in body) {
+      canvas.drawPath(part, outline);
+    }
+
+    // 5. Điểm đau.
     if (mode == BodyFigureMode.selectPain) {
       geometry.painSpots.forEach((id, centers) {
         final on = selected.contains(id);
@@ -164,22 +289,30 @@ class BodyFigurePainter extends CustomPainter {
           if (on) {
             canvas.drawCircle(
               center,
-              BodyGeometry.painRadius * 1.5,
-              Paint()..color = painColor.withValues(alpha: 0.22),
+              BodyGeometry.painRadius * 1.55,
+              Paint()
+                ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.006)
+                ..color = painColor.withValues(alpha: 0.30),
             );
           }
           canvas.drawCircle(
             center,
             BodyGeometry.painRadius,
-            Paint()..color = on ? painColor : outlineColor,
+            Paint()
+              ..color = on ? painColor : outlineColor.withValues(alpha: 0.92),
           );
           canvas.drawCircle(
             center,
             BodyGeometry.painRadius,
             Paint()
               ..style = PaintingStyle.stroke
-              ..strokeWidth = 0.006
-              ..color = on ? painColor : regionColor,
+              ..strokeWidth = px(0.0055, 1)
+              ..color = on ? painColor : lineColor,
+          );
+          canvas.drawCircle(
+            center,
+            BodyGeometry.painRadius * 0.34,
+            Paint()..color = on ? _white : lineColor,
           );
         }
       });
@@ -195,7 +328,11 @@ class BodyFigurePainter extends CustomPainter {
       old.selected != selected ||
       old.heat != heat ||
       old.baseColor != baseColor ||
-      old.activeColor != activeColor;
+      old.regionColor != regionColor ||
+      old.lineColor != lineColor ||
+      old.activeColor != activeColor ||
+      old.painColor != painColor ||
+      old.outlineColor != outlineColor;
 }
 
 /// Nút đổi "Mặt trước" / "Mặt sau".
