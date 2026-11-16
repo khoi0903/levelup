@@ -116,9 +116,9 @@ class _MusclesWeekCardState extends ConsumerState<MusclesWeekCard> {
                 height: 220,
                 child: Opacity(
                   opacity: data.isEmpty ? 0.6 : 1,
-                  child: BodyFigure(
+                  child: AnatomyMap(
                     key: const ValueKey('muscles-week-figure'),
-                    shape: shape,
+                    female: shape.female,
                     side: _side,
                     mode: BodyFigureMode.heat,
                     heat: data.heat,

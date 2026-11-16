@@ -255,7 +255,7 @@ void main() {
           ),
         ),
       );
-      BodyFigure figure() => tester.widget<BodyFigure>(
+      AnatomyMap figure() => tester.widget<AnatomyMap>(
         find.byKey(const ValueKey('muscle-map-figure')),
       );
       expect(figure().side, BodySide.front);
@@ -339,6 +339,91 @@ void main() {
       expect(find.byType(BodyFigure), findsNWidgets(5));
       await tester.tap(find.byKey(const ValueKey('body-shape-32')));
       expect(picked, 32);
+    });
+  });
+
+  group('AnatomyMap (bản đồ cơ chi tiết)', () {
+    test('mỗi mặt có đủ nhóm cơ, chạm cơ con nào cũng ra đúng nhóm', () {
+      for (final female in [false, true]) {
+        final front = AnatomyArt.of(female: female, side: BodySide.front);
+        final back = AnatomyArt.of(female: female, side: BodySide.back);
+        expect(front.groups, {'chest', 'shoulders', 'arms', 'abs', 'legs'});
+        expect(back.groups, {'back', 'shoulders', 'arms', 'glutes', 'legs'});
+        expect(
+          identical(front, AnatomyArt.of(female: female, side: BodySide.front)),
+          isTrue,
+          reason: 'hình chỉ dựng một lần',
+        );
+        for (final art in [front, back]) {
+          for (final part in art.parts) {
+            final b = part.bounds;
+            expect(b.top, greaterThanOrEqualTo(0));
+            expect(b.bottom, lessThanOrEqualTo(1));
+            expect(b.left, greaterThanOrEqualTo(-AnatomyArt.aspect / 2));
+            expect(b.right, lessThanOrEqualTo(AnatomyArt.aspect / 2));
+          }
+          final ob = art.outline.getBounds();
+          expect(ob.left, greaterThanOrEqualTo(-AnatomyArt.aspect / 2));
+          expect(ob.right, lessThanOrEqualTo(AnatomyArt.aspect / 2));
+          for (final area in kPainAreas) {
+            final spots = art.painSpots[area]!;
+            expect(spots, isNotEmpty, reason: area);
+            for (final s in spots) {
+              expect(art.painAt(s), area);
+            }
+          }
+          expect(art.painAt(const Offset(0.25, 0.02)), isNull);
+          expect(art.muscleAt(const Offset(0.25, 0.02)), isNull);
+        }
+        // Tâm của từng cơ gốc thuộc về nhóm của nó.
+        String? at(AnatomyArt art, String slug) => art.muscleAt(
+          art.parts.firstWhere((p) => p.slug == slug).bounds.center,
+        );
+        expect(at(front, 'abs'), 'abs');
+        expect(at(back, 'gluteal'), 'glutes');
+        // Khe giữa hai bên vẫn bắt được nhóm gần nhất.
+        expect(front.muscleAt(const Offset(0, 0.26)), 'chest');
+        expect(front.muscleAt(const Offset(0, 0.36)), 'abs');
+        expect(back.muscleAt(const Offset(0, 0.28)), 'back');
+      }
+    });
+
+    testWidgets('chạm vào ngực chọn nhóm ngực, heat không nhận chạm', (
+      tester,
+    ) async {
+      final taps = <String>[];
+      for (final mode in [BodyFigureMode.selectMuscles, BodyFigureMode.heat]) {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: Scaffold(
+              body: Center(
+                child: SizedBox(
+                  height: 400,
+                  child: AnatomyMap(
+                    female: false,
+                    mode: mode,
+                    selected: const {'legs'},
+                    heat: const {'legs': 1, 'abs': 0.4},
+                    onToggle: taps.add,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        final box = tester.renderObject<RenderBox>(find.byType(AnatomyMap));
+        final art = AnatomyArt.of(female: false, side: BodySide.front);
+        final chest = art.parts.firstWhere((p) => p.slug == 'chest');
+        // Mảng ngực gồm hai bên; lấy điểm giữa nửa trái.
+        final p = Offset(
+          chest.bounds.left + chest.bounds.width * 0.25,
+          chest.bounds.center.dy,
+        );
+        await tester.tapAt(box.localToGlobal(AnatomyArt.toLocal(p, box.size)));
+        expect(tester.takeException(), isNull);
+      }
+      expect(taps, ['chest']);
     });
   });
 

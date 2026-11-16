@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_palette.dart';
 import '../../domain/models/body_shape.dart';
+import 'anatomy_map.dart';
 import 'body_geometry.dart';
 
+export 'anatomy_map.dart' show AnatomyArt, AnatomyMap;
 export 'body_geometry.dart' show BodySide, BodyGeometry;
 
 enum BodyFigureMode {
@@ -437,7 +439,8 @@ class BodySideToggle extends StatelessWidget {
   }
 }
 
-/// Bản đồ cơ có nút đổi mặt và hàng chip (chọn được cả khi khó chạm vào hình).
+/// Bản đồ cơ chi tiết có nút đổi mặt và hàng chip (chọn được cả khi khó chạm
+/// vào hình). Nam/nữ lấy theo [shape].
 class MuscleMapPicker extends StatefulWidget {
   const MuscleMapPicker({
     super.key,
@@ -470,9 +473,9 @@ class _MuscleMapPickerState extends State<MuscleMapPicker> {
         const SizedBox(height: 12),
         SizedBox(
           height: widget.figureHeight,
-          child: BodyFigure(
+          child: AnatomyMap(
             key: const ValueKey('muscle-map-figure'),
-            shape: widget.shape,
+            female: widget.shape.female,
             side: _side,
             mode: BodyFigureMode.selectMuscles,
             selected: widget.selected,
@@ -529,9 +532,9 @@ class _PainMapPickerState extends State<PainMapPicker> {
         const SizedBox(height: 12),
         SizedBox(
           height: widget.figureHeight,
-          child: BodyFigure(
+          child: AnatomyMap(
             key: const ValueKey('pain-map-figure'),
-            shape: widget.shape,
+            female: widget.shape.female,
             side: _side,
             mode: BodyFigureMode.selectPain,
             selected: widget.selected,

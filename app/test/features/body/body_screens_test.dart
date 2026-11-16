@@ -204,15 +204,13 @@ void main() {
 
       // Chạm thẳng vào điểm gối trên hình
       final figureFinder = find.byKey(const ValueKey('pain-map-figure'));
-      final figure = tester.widget<BodyFigure>(figureFinder);
+      final figure = tester.widget<AnatomyMap>(figureFinder);
       final box = tester.renderObject<RenderBox>(figureFinder);
-      final knee = BodyGeometry(
-        figure.shape,
-        BodySide.front,
+      final knee = AnatomyArt.of(
+        female: figure.female,
+        side: BodySide.front,
       ).painSpots['knee']!.first;
-      await tester.tapAt(
-        box.localToGlobal(BodyGeometry.toLocal(knee, box.size)),
-      );
+      await tester.tapAt(box.localToGlobal(AnatomyArt.toLocal(knee, box.size)));
       await tester.pumpAndSettle();
       expect(
         c.read(onboardingControllerProvider).injuries,
@@ -392,7 +390,7 @@ void main() {
       expect(row('legs').data, '12 hiệp');
       expect(row('chest').data, '6 hiệp');
       expect(find.byKey(const ValueKey('muscles-week-back')), findsNothing);
-      final figure = tester.widget<BodyFigure>(
+      final figure = tester.widget<AnatomyMap>(
         find.byKey(const ValueKey('muscles-week-figure')),
       );
       expect(figure.mode, BodyFigureMode.heat);
