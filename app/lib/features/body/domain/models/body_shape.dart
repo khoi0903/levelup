@@ -78,6 +78,8 @@ class BodyShape {
     required this.hip,
     required this.thigh,
     required this.arm,
+    this.softness = 0,
+    this.belly = 0,
   });
 
   static const double minBmi = 16, maxBmi = 38;
@@ -91,20 +93,38 @@ class BodyShape {
   final double thigh;
   final double arm;
 
+  /// Độ mềm của nét cơ theo tỉ lệ mỡ: 0 = múi cơ rõ, 1 = không còn thấy múi.
+  final double softness;
+
+  /// Mức mỡ thừa dồn về bụng, hông, mặt: 0 = không có, 1 = nhiều nhất.
+  /// Tăng đều theo cả BMI và tỉ lệ mỡ.
+  final double belly;
+
   factory BodyShape.from({double? bmi, num? bodyFatPct, bool female = false}) {
     final b = (bmi == null || bmi.isNaN ? 22.0 : bmi).clamp(minBmi, maxBmi);
     final estimatedFat = 1.2 * b + 0.23 * 30 - (female ? 0 : 10.8) - 5.4;
     final f = (bodyFatPct?.toDouble() ?? estimatedFat).clamp(minFat, maxFat);
     final tb = (b - minBmi) / (maxBmi - minBmi);
     final tf = (f - minFat) / (maxFat - minFat);
+    // Mỡ thừa: chỉ xuất hiện khi BMI trên 23 hoặc tỉ lệ mỡ trên mức thường,
+    // nên vóc dáng gầy / bình thường giữ nguyên.
+    final gb = ((b - 23) / 15).clamp(0.0, 1.0);
+    final gf = ((f - (female ? 28 : 20)) / 20).clamp(0.0, 1.0);
+    final g = (gb * (0.3 + 0.7 * gf) + 0.3 * gf) / 1.3;
+    final soft = ((f - (female ? 26 : 16)) / (female ? 12 : 14)).clamp(
+      0.0,
+      1.0,
+    );
     return BodyShape(
       female: female,
-      shoulder: (female ? 0.100 : 0.114) + 0.030 * tb + 0.012 * tf,
-      chest: (female ? 0.078 : 0.086) + 0.034 * tb + 0.020 * tf,
-      waist: (female ? 0.054 : 0.062) + 0.040 * tb + 0.045 * tf,
-      hip: (female ? 0.088 : 0.080) + 0.034 * tb + 0.030 * tf,
-      thigh: (female ? 0.044 : 0.042) + 0.017 * tb + 0.012 * tf,
-      arm: (female ? 0.020 : 0.023) + 0.009 * tb + 0.008 * tf,
+      shoulder: (female ? 0.100 : 0.114) + 0.030 * tb + 0.012 * tf + 0.004 * g,
+      chest: (female ? 0.078 : 0.086) + 0.034 * tb + 0.020 * tf + 0.008 * g,
+      waist: (female ? 0.054 : 0.062) + 0.040 * tb + 0.045 * tf + 0.022 * g,
+      hip: (female ? 0.088 : 0.080) + 0.034 * tb + 0.030 * tf + 0.008 * g,
+      thigh: (female ? 0.044 : 0.042) + 0.017 * tb + 0.012 * tf + 0.007 * g,
+      arm: (female ? 0.020 : 0.023) + 0.009 * tb + 0.008 * tf + 0.004 * g,
+      softness: soft,
+      belly: g,
     );
   }
 }

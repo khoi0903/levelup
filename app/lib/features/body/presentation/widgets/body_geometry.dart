@@ -38,6 +38,13 @@ class BodyGeometry {
   /// Nét tách rất mờ (bụng phẳng của hình nữ).
   final List<Path> softCreases = [];
 
+  /// Nếp mỡ mềm (đường cong dưới bụng, dưới ngực, nếp eo sau lưng). Chỉ có khi
+  /// [BodyShape.belly] > 0; độ đậm do bên vẽ quyết định theo mức mỡ.
+  final List<Path> fatLines = [];
+
+  /// Khối bụng tròn (mặt trước) để đánh sáng tạo cảm giác bụng nhô ra.
+  Path? bellyShade;
+
   /// Nét phụ không thuộc nhóm cơ nào (xương đòn, xương bánh chè).
   final List<Path> details = [];
 
@@ -192,21 +199,23 @@ class BodyGeometry {
     final fem = s.female;
     // Nữ: tay thon hơn, eo thắt hơn, hông và đùi đầy hơn một chút. Các hệ số
     // nhân cố định nên mọi bề rộng vẫn tăng đều theo BMI và tỉ lệ mỡ.
+    // g: mức mỡ thừa 0..1. Nam dồn về bụng (bụng tròn nhô quá hông); nữ dồn
+    // về bụng dưới, hông và đùi.
+    final g = s.belly;
     final a = fem ? s.arm * 0.90 : s.arm;
     final sh = fem ? s.shoulder * 0.97 : s.shoulder;
     final ch = s.chest;
-    final h = fem ? s.hip * 1.03 : s.hip;
-    final th = fem ? s.thigh * 1.05 : s.thigh;
-    final w = fem ? s.waist * 0.89 : s.waist;
+    final h = fem ? s.hip * 1.03 + g * 0.006 : s.hip;
+    final th = fem ? s.thigh * 1.05 + g * 0.003 : s.thigh;
+    final w = fem ? s.waist * (0.89 + 0.05 * g) : s.waist;
     final front = side == BodySide.front;
     // Nữ: vai xuôi và tròn hơn (hạ thấp các mốc vai một chút).
     final sy = fem ? 0.005 : 0.0;
 
     // ---- Mốc giải phẫu (nửa bên phải hình, x dương) ----
-    final nw = fem ? 0.012 + a * 0.28 : 0.015 + a * 0.30; // nửa bề rộng cổ
+    // Nửa bề rộng cổ (cổ đầy hơn khi nhiều mỡ).
+    final nw = (fem ? 0.012 + a * 0.28 : 0.015 + a * 0.30) + g * 0.007;
     final jx = sh - a * 0.3; // khớp vai
-    final wx = math.max(jx + 0.040, h + a + 0.016); // cổ tay
-    final ex = (jx + wx) / 2 + 0.006; // khuỷu
     const jy = 0.195, ey = 0.335, wy = 0.470;
 
     final legX = math.max(h - th, th * 0.92); // tâm đùi trên
@@ -214,30 +223,74 @@ class BodyGeometry {
     const kneeY = 0.715, ankleY = 0.925;
     final hipLow = legX + th;
 
+    // Sườn: khi có mỡ thừa, bụng phình ra ở ngang rốn (y = 0.420) vượt quá
+    // đường hông rồi thu lại về hông, tạo đường cong mềm hai bên eo.
     const torsoYs = [0.240, 0.272, 0.320, 0.375, 0.420, 0.468, 0.505];
+    final bulge = g * (fem ? 0.009 : 0.015);
+    final flank = w + (h - w) * (fem ? 0.64 : 0.55);
+    final bellyX =
+        flank +
+        math.max(0.0, w + bulge - flank) * (g * 2.5).clamp(0.0, 1.0).toDouble();
+    final hipX = h + math.max(0.0, bellyX - h) * (fem ? 0.45 : 0.18);
     final torsoXs = [
       ch * 0.97,
       ch,
-      ch + (w - ch) * (fem ? 0.70 : 0.6),
-      w,
-      w + (h - w) * (fem ? 0.64 : 0.55),
-      h,
+      ch + (w - ch) * (fem ? 0.70 : 0.6) + bulge * 0.25,
+      w + bulge * 0.55,
+      bellyX,
+      hipX,
       hipLow,
     ];
     double torsoX(double y) => _table(y, torsoYs, torsoXs);
 
+    const armYs = [0.195, 0.232, 0.265, 0.300, 0.335, 0.372, 0.420, 0.470];
+    // Bắp tay trên đầy hơn khi nhiều mỡ.
+    final armKs = [
+      1.0,
+      1.0,
+      0.90 + 0.08 * g,
+      0.88 + 0.10 * g,
+      0.76 + 0.08 * g,
+      0.84 + 0.03 * g,
+      0.70,
+      0.50,
+    ];
+    double armR(double y) => a * _table(y, armYs, armKs);
+    // Tay buông ngoài thân: khuỷu và cổ tay bị đẩy ra khi bụng to để tay không
+    // đè lên bụng. Bắp tay được áp nhẹ vào sườn (mép trong bị chặn ở armIn)
+    // để hình to nhất vẫn nằm gọn trong khung.
+    final wx0 = math.max(jx + 0.040, h + a + 0.016);
+    var ex = (jx + wx0) / 2 + 0.006; // khuỷu
+    for (final y in const [ey, 0.372]) {
+      ex = math.max(ex, torsoX(y) + armR(y) * 0.7 + 0.004);
+    }
+    var wx = wx0; // cổ tay
+    for (final y in const [0.400, 0.420, 0.445]) {
+      final need = torsoX(y) + armR(y) * 0.8 + 0.004;
+      wx = math.max(wx, ex + (need - ex) * (wy - ey) / (y - ey));
+    }
+    // Bàn tay không to theo mỡ như bắp tay.
+    final ha = math.min(a, 0.034);
     const armAxisYs = [jy, ey, wy];
     final armAxisXs = [jx, ex, wx];
-    const armYs = [0.195, 0.232, 0.265, 0.300, 0.335, 0.372, 0.420, 0.470];
-    const armKs = [1.0, 1.0, 0.90, 0.88, 0.76, 0.84, 0.70, 0.50];
     double armX(double y) => _table(y, armAxisYs, armAxisXs);
-    double armR(double y) => a * _table(y, armYs, armKs);
     double armOut(double y) => armX(y) + armR(y);
     // Tay không lấn vào thân: mép trong luôn nằm ngoài sườn.
     double armIn(double y) => math.max(armX(y) - armR(y), torsoX(y) + 0.003);
 
     const legYs = [0.505, 0.56, 0.62, 0.67, 0.715, 0.75, 0.80, 0.87, 0.925];
-    const legKs = [1.0, 0.93, 0.82, 0.71, 0.60, 0.57, 0.64, 0.47, 0.33];
+    // Đùi trên đầy hơn khi nhiều mỡ (hai đùi chạm nhau dài hơn).
+    final legKs = [
+      1.0,
+      0.93 + 0.04 * g,
+      0.82 + 0.05 * g,
+      0.71 + 0.03 * g,
+      0.60,
+      0.57,
+      0.64,
+      0.47,
+      0.33,
+    ];
     double legC(double y) =>
         _table(y, const [0.505, kneeY], [legX, kneeX]); // tâm chân
     double legR(double y) => th * _table(y, legYs, legKs);
@@ -252,21 +305,22 @@ class BodyGeometry {
     final armpit = Offset(torsoX(0.243), 0.243);
     final seg1 = <Offset>[
       const Offset(0, 0.012),
-      if (fem) ...const [
+      // Má và hàm đầy dần theo mỡ thừa.
+      if (fem) ...[
         // Mặt nữ: gò má hẹp hơn, cằm thon.
-        Offset(0.025, 0.017),
-        Offset(0.041, 0.036),
-        Offset(0.047, 0.064),
-        Offset(0.045, 0.088),
-        Offset(0.037, 0.109),
-        Offset(0.026, 0.125),
-      ] else ...const [
-        Offset(0.026, 0.017),
-        Offset(0.043, 0.036),
-        Offset(0.050, 0.064),
-        Offset(0.048, 0.088),
-        Offset(0.041, 0.109),
-        Offset(0.031, 0.124),
+        const Offset(0.025, 0.017),
+        const Offset(0.041, 0.036),
+        Offset(0.047 + g * 0.002, 0.064),
+        Offset(0.045 + g * 0.004, 0.088),
+        Offset(0.037 + g * 0.007, 0.109),
+        Offset(0.026 + g * 0.008, 0.125),
+      ] else ...[
+        const Offset(0.026, 0.017),
+        const Offset(0.043, 0.036),
+        Offset(0.050 + g * 0.002, 0.064),
+        Offset(0.048 + g * 0.005, 0.088),
+        Offset(0.041 + g * 0.008, 0.109),
+        Offset(0.031 + g * 0.009, 0.124),
       ],
       Offset(nw + 0.001, 0.133),
       Offset(nw, 0.148),
@@ -278,15 +332,15 @@ class BodyGeometry {
       Offset(jx + a * 0.93, 0.206 + sy * 0.6),
       for (final y in const [0.232, 0.265, 0.300, 0.335, 0.372, 0.420])
         Offset(armOut(y), y),
-      Offset(wx + a * 0.50, 0.468),
-      Offset(wx + a * 0.62 + 0.002, 0.490),
-      Offset(wx + a * 0.66 + 0.003, 0.512),
-      Offset(wx + a * 0.45 + 0.002, 0.532),
-      Offset(wx + a * 0.05, 0.540),
-      Offset(wx - a * 0.35, 0.530),
-      Offset(wx - a * 0.62, 0.508),
-      Offset(wx - a * 0.66 - 0.002, 0.487),
-      Offset(wx - a * 0.50, 0.468),
+      Offset(wx + ha * 0.50, 0.468),
+      Offset(wx + ha * 0.62 + 0.002, 0.490),
+      Offset(wx + ha * 0.66 + 0.003, 0.512),
+      Offset(wx + ha * 0.45 + 0.002, 0.532),
+      Offset(wx + ha * 0.05, 0.540),
+      Offset(wx - ha * 0.35, 0.530),
+      Offset(wx - ha * 0.62, 0.508),
+      Offset(wx - ha * 0.66 - 0.002, 0.487),
+      Offset(wx - ha * 0.50, 0.468),
       for (final y in const [0.420, 0.372, 0.335, 0.300, 0.268])
         Offset(armIn(y), y),
       armpit,
@@ -363,43 +417,49 @@ class BodyGeometry {
           a: a,
           pecOuter: pecOuter,
           torsoX: torsoX,
+          g: g,
+          bellyX: bellyX,
         );
       } else {
+        // Ngực chảy tròn và mềm hơn khi nhiều mỡ.
+        final d = g * 0.012;
         final pec = _blob([
           const Offset(0.006, 0.200),
           Offset(sh * 0.45, 0.193),
           Offset(jx - a * 1.12, 0.197),
           Offset(jx - a * 1.15, 0.216),
-          Offset(pecOuter, 0.240),
-          Offset(ch * 0.80, 0.262),
-          Offset(ch * 0.45, 0.274),
-          const Offset(0.012, 0.268),
+          Offset(pecOuter, 0.240 + d * 0.4),
+          Offset(ch * (0.80 + 0.04 * g), 0.262 + d),
+          Offset(ch * 0.45, 0.274 + d * 1.25),
+          Offset(0.012, 0.268 + d),
           const Offset(0.006, 0.235),
         ]);
         muscles['chest'] = _both([pec]);
 
-        // Bụng: cơ thẳng bụng (6 múi) + cơ chéo hai bên.
-        final aw = (w * 0.50).clamp(0.030, 0.058);
+        // Bụng: cơ thẳng bụng (6 múi) + cơ chéo hai bên. Khi có mỡ thừa, mảng
+        // bụng nở tròn theo khối bụng.
+        final ay = d * 1.25;
+        final aw = (w * 0.50).clamp(0.030, 0.058 + g * 0.030).toDouble();
         final rectus = _symBlob([
-          const Offset(0, 0.284),
-          Offset(aw * 0.8, 0.286),
-          Offset(aw, 0.300),
-          Offset(aw, 0.400),
-          Offset(aw * 0.82, 0.438),
-          Offset(aw * 0.40, 0.466),
+          Offset(0, 0.284 + ay),
+          Offset(aw * 0.8, 0.286 + ay),
+          Offset(aw, 0.300 + ay),
+          Offset(aw * (1 + 0.06 * g), 0.400),
+          Offset(aw * (0.82 + 0.10 * g), 0.438 + g * 0.006),
+          Offset(aw * (0.40 + 0.08 * g), 0.466 + g * 0.004),
           const Offset(0, 0.478),
         ]);
         final oblique = _blob([
-          Offset(aw + 0.009, 0.297),
-          Offset(math.max(torsoX(0.292) - 0.008, aw + 0.014), 0.291),
+          Offset(aw + 0.009, 0.297 + ay),
+          Offset(math.max(torsoX(0.292) - 0.008, aw + 0.014), 0.291 + ay),
           Offset(math.max(torsoX(0.335) - 0.007, aw + 0.015), 0.335),
           Offset(math.max(torsoX(0.385) - 0.007, aw + 0.015), 0.385),
           Offset(math.max(torsoX(0.435) - 0.009, aw + 0.014), 0.435),
-          Offset(aw * 0.82 + 0.012, 0.458),
-          Offset(aw + 0.009, 0.400),
+          Offset(aw * (0.82 + 0.10 * g) + 0.012, 0.458),
+          Offset(aw * (1 + 0.06 * g) + 0.009, 0.400),
         ]);
         muscles['abs'] = _both([oblique], [rectus]);
-        creases.add(_line(const [Offset(0, 0.290), Offset(0, 0.470)]));
+        creases.add(_line([Offset(0, 0.290 + ay), const Offset(0, 0.470)]));
         for (final y in const [0.320, 0.358, 0.398]) {
           creases.add(
             _line([
@@ -410,6 +470,19 @@ class BodyGeometry {
               Offset(aw, y + 0.004),
             ]),
           );
+        }
+        if (g > 0) {
+          // Nếp dưới ngực mềm.
+          final fold = _line([
+            Offset(0.016, 0.270 + d),
+            Offset(ch * 0.45, 0.2775 + d * 1.25),
+            Offset(ch * (0.80 + 0.04 * g), 0.265 + d),
+            Offset(pecOuter + 0.002, 0.246 + d * 0.4),
+          ]);
+          fatLines
+            ..add(fold)
+            ..add(_mirror(fold));
+          _buildBelly(bellyX: bellyX, cy: 0.404, low: 0.462, navelY: 0.428);
         }
       }
 
@@ -524,6 +597,18 @@ class BodyGeometry {
               const Offset(0.006, 0.520),
             ]);
       muscles['glutes'] = _both([glute]);
+      if (g > 0) {
+        // Nếp eo sau lưng (mỡ hai bên hông).
+        final fy = fem ? 0.405 : 0.392;
+        final fold = _line([
+          Offset(torsoX(fy - 0.012) - 0.006, fy - 0.012),
+          Offset(torsoX(fy) * 0.80, fy + 0.006),
+          Offset(torsoX(fy) * 0.52, fy + 0.002),
+        ]);
+        fatLines
+          ..add(fold)
+          ..add(_mirror(fold));
+      }
 
       // Chân: gân kheo (2 múi) + bụng chân (2 múi).
       muscles['legs'] = _both([
@@ -556,6 +641,8 @@ class BodyGeometry {
     required double a,
     required double pecOuter,
     required double Function(double y) torsoX,
+    required double g,
+    required double bellyX,
   }) {
     final bx = math.min(ch * 0.90, torsoX(0.260) - 0.005);
     final bust = _blob([
@@ -571,14 +658,15 @@ class BodyGeometry {
     ]);
     muscles['chest'] = _both([bust]);
 
-    final aw = (w * 0.50).clamp(0.028, 0.054);
+    // Bụng nở tròn dần về phía bụng dưới khi có mỡ thừa.
+    final aw = (w * 0.50).clamp(0.028, 0.054 + g * 0.030).toDouble();
     final panel = _symBlob([
       const Offset(0, 0.298),
       Offset(aw * 0.72, 0.300),
       Offset(aw, 0.318),
-      Offset(aw * 0.94, 0.396),
-      Offset(aw * 0.78, 0.440),
-      Offset(aw * 0.38, 0.468),
+      Offset(aw * (0.94 + 0.10 * g), 0.396),
+      Offset(aw * (0.78 + 0.18 * g), 0.440 + g * 0.006),
+      Offset(aw * (0.38 + 0.12 * g), 0.468 + g * 0.004),
       const Offset(0, 0.480),
     ]);
     final oblique = _blob([
@@ -587,8 +675,8 @@ class BodyGeometry {
       Offset(math.max(torsoX(0.340) - 0.008, aw + 0.016), 0.340),
       Offset(math.max(torsoX(0.385) - 0.008, aw + 0.016), 0.385),
       Offset(math.max(torsoX(0.430) - 0.011, aw + 0.015), 0.430),
-      Offset(aw * 0.80 + 0.013, 0.452),
-      Offset(aw * 0.94 + 0.010, 0.398),
+      Offset(aw * (0.80 + 0.18 * g) + 0.013, 0.452),
+      Offset(aw * (0.94 + 0.10 * g) + 0.010, 0.398),
     ]);
     muscles['abs'] = _both([oblique], [panel]);
     softCreases.add(_line(const [Offset(0, 0.312), Offset(0, 0.400)]));
@@ -611,6 +699,46 @@ class BodyGeometry {
         ),
       ),
     );
+    if (g > 0) _buildBelly(bellyX: bellyX, cy: 0.418, low: 0.470);
+  }
+
+  /// Khối bụng tròn: vùng đánh sáng, đường cong dưới bụng và rốn (hình nam).
+  void _buildBelly({
+    required double bellyX,
+    required double cy,
+    required double low,
+    double? navelY,
+  }) {
+    final rx = bellyX * 0.80;
+    bellyShade = Path()
+      ..addOval(
+        Rect.fromCenter(
+          center: Offset(0, cy),
+          width: rx * 2,
+          height: (low - cy) * 2 + 0.012,
+        ),
+      );
+    final bx = bellyX * 0.66;
+    fatLines.add(
+      _line([
+        Offset(-bx, low - 0.024),
+        Offset(-bx * 0.62, low - 0.006),
+        Offset(0, low),
+        Offset(bx * 0.62, low - 0.006),
+        Offset(bx, low - 0.024),
+      ]),
+    );
+    if (navelY != null) {
+      fatLines.add(
+        Path()..addOval(
+          Rect.fromCenter(
+            center: Offset(0, navelY),
+            width: 0.008,
+            height: 0.010,
+          ),
+        ),
+      );
+    }
   }
 
   /// Tóc của hình nữ: mặt trước là mái tóc ôm đầu + đuôi tóc lệch một bên phía

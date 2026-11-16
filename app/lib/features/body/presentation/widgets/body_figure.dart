@@ -247,6 +247,15 @@ class BodyFigurePainter extends CustomPainter {
       quiet ? 0.0 : 0.22,
     )!;
     final levels = {for (final id in geometry.muscles.keys) id: _level(id)};
+    // Nét cơ mờ dần theo tỉ lệ mỡ. Ở chế độ chọn nhóm cơ / heat các mảng vẫn
+    // hiện đủ để chọn; chỉ ở chế độ hiển thị mới mờ đi.
+    final soft = geometry.shape.softness.clamp(0.0, 1.0).toDouble();
+    final fat = geometry.shape.belly.clamp(0.0, 1.0).toDouble();
+    double plateAlpha(String id) {
+      if (!quiet) return 1;
+      final core = id == 'abs' || id == 'chest';
+      return 1 - soft * (core ? 0.86 : 0.62);
+    }
 
     // Quầng sáng dưới các mảng đang chọn / đã tập.
     geometry.muscles.forEach((id, path) {
@@ -270,11 +279,16 @@ class BodyFigurePainter extends CustomPainter {
         top = Color.lerp(strong, _white, 0.20)!;
         bottom = Color.lerp(strong, _black, 0.06)!;
       }
+      final k = v > 0 ? 1.0 : plateAlpha(id);
       canvas.drawPath(
         path,
         Paint()
           ..isAntiAlias = true
-          ..shader = _vertical(path.getBounds(), top, bottom),
+          ..shader = _vertical(
+            path.getBounds(),
+            top.withValues(alpha: top.a * k),
+            bottom.withValues(alpha: bottom.a * k),
+          ),
       );
       // Viền sáng mảnh quanh mỗi mảng cơ cho cảm giác nổi khối.
       canvas.drawPath(
@@ -283,17 +297,53 @@ class BodyFigurePainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = px(0.0022, 0.5)
           ..color = (v > 0 ? _white : baseTop).withValues(
-            alpha: v > 0 ? 0.28 : (dark ? 0.25 : 0.65),
+            alpha: (v > 0 ? 0.28 : (dark ? 0.25 : 0.65)) * k,
           ),
       );
     });
+
+    // 2b. Khối bụng tròn: vệt sáng ở giữa + bóng mềm dọc các nếp mỡ.
+    final fatAlpha = ((fat - 0.06) / 0.40).clamp(0.0, 1.0).toDouble();
+    final shade = geometry.bellyShade;
+    if (shade != null && fatAlpha > 0 && quiet) {
+      canvas.drawPath(
+        shade,
+        Paint()
+          ..isAntiAlias = true
+          ..shader = RadialGradient(
+            center: const Alignment(0, -0.25),
+            radius: 0.62,
+            colors: [
+              _white.withValues(alpha: (dark ? 0.10 : 0.55) * fatAlpha),
+              _white.withValues(alpha: 0),
+            ],
+          ).createShader(shade.getBounds()),
+      );
+    }
+    if (fatAlpha > 0) {
+      for (final path in geometry.fatLines) {
+        canvas.drawPath(
+          path,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeCap = StrokeCap.round
+            ..strokeWidth = 0.016
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.007)
+            ..color = (dark ? _black : lineColor).withValues(
+              alpha: (dark ? 0.26 : 0.30) * fatAlpha,
+            ),
+        );
+      }
+    }
 
     // 3. Nét tách múi cơ và nét phụ.
     final crease = Paint()
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeWidth = px(0.0048, 0.8)
-      ..color = Color.lerp(baseTop, baseBottom, 0.4)!;
+      ..color = Color.lerp(baseTop, baseBottom, 0.4)!.withValues(
+        alpha: 1 - soft * (geometry.side == BodySide.front ? 1.0 : 0.65),
+      );
     for (final path in geometry.creases) {
       canvas.drawPath(path, crease);
     }
@@ -301,9 +351,24 @@ class BodyFigurePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeWidth = px(0.0030, 0.6)
-      ..color = Color.lerp(baseTop, baseBottom, 0.4)!.withValues(alpha: 0.45);
+      ..color = Color.lerp(
+        baseTop,
+        baseBottom,
+        0.4,
+      )!.withValues(alpha: 0.45 * (1 - soft));
     for (final path in geometry.softCreases) {
       canvas.drawPath(path, softCrease);
+    }
+    if (fatAlpha > 0) {
+      final fold = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..strokeWidth = px(0.0034, 0.7)
+        ..color = lineColor.withValues(alpha: 0.80 * fatAlpha);
+      for (final path in geometry.fatLines) {
+        canvas.drawPath(path, fold);
+      }
     }
     final line = Paint()
       ..style = PaintingStyle.stroke
