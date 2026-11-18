@@ -60,11 +60,14 @@ class GeminiAiClientTest {
 
     @Test
     void provider_choice() {
-        assertEquals("gemini", AiConfig.choose("gemini", "sk-ant", null));
-        assertEquals("claude", AiConfig.choose("auto", "sk-ant", "g"));
-        assertEquals("gemini", AiConfig.choose("auto", null, "g"));
-        assertEquals("gemini", AiConfig.choose(null, " ", "g"));
-        assertEquals("claude", AiConfig.choose("auto", null, null));
+        assertEquals(List.of("gemini"), AiConfig.choose("gemini", "sk-ant", null, null));
+        assertEquals(List.of("claude"), AiConfig.choose("auto", "sk-ant", "g", "q"));
+        assertEquals(List.of("gemini"), AiConfig.choose("auto", null, "g", null));
+        assertEquals(List.of("gemini"), AiConfig.choose(null, " ", "g", ""));
+        assertEquals(List.of("gemini", "groq"), AiConfig.choose("auto", null, "g", "q"));
+        assertEquals(List.of("groq"), AiConfig.choose("auto", null, null, "q"));
+        assertEquals(List.of("groq"), AiConfig.choose("groq", "sk-ant", "g", "q"));
+        assertEquals(List.of("claude"), AiConfig.choose("auto", null, null, null));
     }
 
     @Test
