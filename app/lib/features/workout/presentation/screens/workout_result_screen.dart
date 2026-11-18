@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_palette.dart';
+import '../../../../core/review/review_prompt.dart';
 import '../../../../core/voice/voice_models.dart';
 import '../../../../core/voice/voice_provider.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -30,19 +31,43 @@ class WorkoutResultScreen extends ConsumerStatefulWidget {
 class _WorkoutResultScreenState extends ConsumerState<WorkoutResultScreen> {
   bool _hasAnnounced = false;
   Timer? _prTimer;
+  Timer? _reviewTimer;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _announceResult();
+      _scheduleReviewPrompt();
     });
   }
 
   @override
   void dispose() {
     _prTimer?.cancel();
+    _reviewTimer?.cancel();
     super.dispose();
+  }
+
+  /// Mời đánh giá trên Google Play sau khi màn chúc mừng đã hiện xong
+  /// (buổi được tính thứ 3 hoặc lần đầu đạt mục tiêu tuần, tối đa một lần).
+  /// Chạy nền, không chặn điều hướng.
+  void _scheduleReviewPrompt() {
+    final result = ref.read(activeWorkoutProvider)?.result;
+    if (result == null) return;
+    final prompt = ref.read(reviewPromptProvider);
+    _reviewTimer = Timer(const Duration(milliseconds: 1800), () {
+      if (!mounted) return;
+      unawaited(
+        prompt.onWorkoutFinished(
+          countsForStreak: result.countsForStreak,
+          duplicate: result.duplicate,
+          weekCompleted: result.week?.completedSessions,
+          weekTarget: result.week?.targetSessions,
+          weekAchieved: result.week?.achieved ?? false,
+        ),
+      );
+    });
   }
 
   void _announceResult() {
