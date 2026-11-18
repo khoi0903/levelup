@@ -53,7 +53,9 @@ public record User(
         List<String> motivationReasons,
         String motivationText,
         List<String> equipment,
-        Instant onboardingCompletedAt
+        Instant onboardingCompletedAt,
+        Integer bodyFatPct,          // 5–50, người dùng tự chọn; số đo thật nằm ở body_measurements
+        List<String> focusMuscles    // chest | back | shoulders | arms | abs | glutes | legs
     ) {}
 
     /**
@@ -63,7 +65,17 @@ public record User(
     public record Injury(String bodyArea, String note, Boolean active, Instant reportedAt,
                          Boolean followUp, String reportedOn, String lastAnswer, String lastAnswerOn) {}
 
-    public record Availability(Integer weekday, String slot) {}
+    /** time: giờ tập riêng "HH:mm" của ngày đó, null thì dùng giờ mặc định của khung (slot). */
+    public record Availability(Integer weekday, String slot, String time) {
+        public Availability(Integer weekday, String slot) {
+            this(weekday, slot, null);
+        }
+
+        /** Giá trị đưa vào Week1PlanBuilder: giờ riêng nếu có, không thì tên khung. */
+        public String slotOrTime() {
+            return time != null ? time : slot;
+        }
+    }
 
     public record NutritionTarget(
         String effectiveFrom, Integer kcal, Integer proteinG, Integer carbsG, Integer fatG,

@@ -9,6 +9,8 @@ import 'package:fitness_app/app/theme.dart';
 import 'package:fitness_app/core/api/api_exceptions.dart';
 import 'package:fitness_app/core/constants/app_strings.dart';
 import 'package:fitness_app/core/widgets/primary_button.dart';
+import 'package:fitness_app/features/body/data/repositories/fake_body_repository.dart';
+import 'package:fitness_app/features/body/presentation/controllers/body_controller.dart';
 import 'package:fitness_app/features/onboarding/data/repositories/fake_onboarding_repository.dart';
 import 'package:fitness_app/features/onboarding/data/repositories/fake_plan_repository.dart';
 import 'package:fitness_app/features/onboarding/presentation/controllers/onboarding_controller.dart';
@@ -263,6 +265,7 @@ void main() {
               onboardingRepositoryProvider.overrideWithValue(
                 FakeOnboardingRepository(),
               ),
+              bodyRepositoryProvider.overrideWithValue(FakeBodyRepository()),
             ],
             child: MaterialApp.router(
               theme: AppTheme.lightTheme,
@@ -295,8 +298,18 @@ void main() {
         await tester.enterText(textFields.at(2), '72'); // weightKg
         await tester.pumpAndSettle();
 
-        // Bấm Tiếp tục sang OB-Training
+        // Bấm Tiếp tục sang màn vóc dáng, chọn một hình
         await tester.tap(find.text(AppStrings.btnContinue));
+        await tester.pumpAndSettle();
+        expect(find.text('Vóc dáng nào giống bạn nhất?'), findsOneWidget);
+        await tester.tap(find.byKey(const ValueKey('body-shape-18')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(AppStrings.btnContinue));
+        await tester.pumpAndSettle();
+
+        // Màn nhóm cơ: bỏ qua sang OB-Training
+        expect(find.text('Nhóm cơ bạn muốn cải thiện'), findsOneWidget);
+        await tester.tap(find.byKey(const ValueKey('ob-focus-skip')));
         await tester.pumpAndSettle();
 
         // 3. Màn OB-Training (3/7)
@@ -355,7 +368,10 @@ void main() {
         expect(find.text(AppStrings.planStep), findsOneWidget);
         expect(find.text(AppStrings.btnContinue), findsOneWidget);
 
-        // Bấm Tiếp tục sang OB-Notify
+        // Bấm Tiếp tục sang màn chỉ số, rồi sang OB-Notify
+        await tester.tap(find.text(AppStrings.btnContinue));
+        await tester.pumpAndSettle();
+        expect(find.text('Chỉ số của bạn'), findsOneWidget);
         await tester.tap(find.text(AppStrings.btnContinue));
         await tester.pumpAndSettle();
 
@@ -363,8 +379,18 @@ void main() {
         expect(find.text(AppStrings.notifyTitle), findsOneWidget);
         expect(find.text(AppStrings.btnEnableNotification), findsOneWidget);
 
-        // Bấm Bật thông báo sang OB-Start
+        // Có thẻ xem trước lời nhắc và nút "Để sau"
+        expect(
+          find.text('Tới giờ tập rồi! Buổi 10 phút hôm nay đã sẵn sàng 💪'),
+          findsOneWidget,
+        );
+        expect(find.text('Để sau'), findsOneWidget);
+
+        // Bấm Bật nhắc nhở sang màn cam kết, rồi sang OB-Start
         await tester.tap(find.text(AppStrings.btnEnableNotification));
+        await tester.pumpAndSettle();
+        expect(find.text('Kế hoạch của bạn đã sẵn sàng'), findsOneWidget);
+        await tester.tap(find.text('Tôi sẽ kiên trì!'));
         await tester.pumpAndSettle();
 
         // 9. Màn OB-Start

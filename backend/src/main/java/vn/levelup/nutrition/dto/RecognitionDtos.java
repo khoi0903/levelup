@@ -5,6 +5,7 @@ import java.util.List;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import vn.levelup.nutrition.model.Food;
 
 /** Request/response của POST /meals/recognize. */
@@ -20,6 +21,12 @@ public final class RecognitionDtos {
         @NotBlank String imageBase64,
         @NotNull @Pattern(regexp = "image/(jpeg|png|webp)") String mediaType,
         @NotNull @Pattern(regexp = "[0-9a-fA-F]{64}") String sha256
+    ) {}
+
+    /** POST /meals/parse: mô tả bữa ăn bằng chữ, ví dụ "2 bát phở bò, 1 ly trà đá". */
+    public record ParseRequest(
+        @NotBlank @Size(min = 1, max = 300) String text,
+        @NotNull @Pattern(regexp = "breakfast|lunch|dinner|snack") String meal
     ) {}
 
     public record RecognitionResponse(String recognitionId, boolean cached, List<Item> items) {}

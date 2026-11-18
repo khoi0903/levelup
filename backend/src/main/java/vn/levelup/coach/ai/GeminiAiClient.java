@@ -82,7 +82,11 @@ public class GeminiAiClient implements AiClient {
                 if (status != 200) {
                     response.body().close();
                     log.warn("Gọi Gemini (stream) lỗi HTTP {} (lần {})", status, attempt);
-                    if (!(status == 429 || status >= 500) || attempt >= 2) {
+                    if (status == 429) {
+                        // Hết lượt (gói miễn phí theo phút/ngày): thử lại chỉ tốn thêm lượt
+                        throw new RateLimitedException("Gemini hết lượt");
+                    }
+                    if (status < 500 || attempt >= 2) {
                         throw new AiUnavailableException("Coach đang bận, thử lại nhé", null);
                     }
                     continue;
@@ -146,7 +150,7 @@ public class GeminiAiClient implements AiClient {
             .header("x-goog-api-key", apiKey)
             .POST(HttpRequest.BodyPublishers.ofString(JSON.writeValueAsString(body), StandardCharsets.UTF_8))
             .build();
-        // Lỗi tạm thời (429, 5xx, mạng) thử lại 1 lần, giống ClaudeAiClient
+        // Lỗi tạm thời (5xx, mạng) thử lại 1 lần; 429 (hết lượt) chuyển sang nhà cung cấp dự phòng
         for (int attempt = 1; ; attempt++) {
             try {
                 HttpResponse<String> response = http().send(request,
@@ -155,9 +159,11 @@ public class GeminiAiClient implements AiClient {
                 if (status == 200) {
                     return parseText(response.body());
                 }
-                boolean retryable = status == 429 || status >= 500;
                 log.warn("Gọi Gemini lỗi HTTP {} (lần {})", status, attempt);
-                if (!retryable || attempt >= 2) {
+                if (status == 429) {
+                    throw new RateLimitedException("Gemini hết lượt");
+                }
+                if (status < 500 || attempt >= 2) {
                     throw new AiUnavailableException("Coach đang bận, thử lại nhé", null);
                 }
             } catch (IOException e) {

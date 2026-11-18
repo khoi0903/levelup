@@ -21,7 +21,12 @@ import '../features/buddies/presentation/screens/buddy_screen.dart';
 import '../features/checkins/presentation/screens/checkin_screen.dart';
 import '../features/coach/presentation/screens/coach_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
+import '../features/body/presentation/screens/body_stats_screen.dart';
 import '../features/onboarding/presentation/screens/ob_body_screen.dart';
+import '../features/onboarding/presentation/screens/ob_commit_screen.dart';
+import '../features/onboarding/presentation/screens/ob_focus_screen.dart';
+import '../features/onboarding/presentation/screens/ob_shape_screen.dart';
+import '../features/onboarding/presentation/screens/ob_stats_screen.dart';
 import '../features/onboarding/presentation/screens/ob_coach_screen.dart';
 import '../features/onboarding/presentation/screens/ob_goal_screen.dart';
 import '../features/onboarding/presentation/screens/ob_notify_screen.dart';
@@ -100,6 +105,10 @@ GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
         initialFoods: state.extra is List<Food>
             ? state.extra! as List<Food>
             : const [],
+        // "Ghi món bằng câu": kết quả AI tách từ câu, lưu như bữa nhận diện
+        initialRecognition: state.extra is Recognition
+            ? state.extra! as Recognition
+            : null,
       ),
     ),
     GoRoute(
@@ -133,6 +142,26 @@ GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
       path: '/onboarding/body',
       name: 'ob_body',
       builder: (context, state) => const ObBodyScreen(),
+    ),
+    GoRoute(
+      path: '/onboarding/shape',
+      name: 'ob_shape',
+      builder: (context, state) => const ObShapeScreen(),
+    ),
+    GoRoute(
+      path: '/onboarding/focus',
+      name: 'ob_focus',
+      builder: (context, state) => const ObFocusScreen(),
+    ),
+    GoRoute(
+      path: '/onboarding/stats',
+      name: 'ob_stats',
+      builder: (context, state) => const ObStatsScreen(),
+    ),
+    GoRoute(
+      path: '/onboarding/commit',
+      name: 'ob_commit',
+      builder: (context, state) => const ObCommitScreen(),
     ),
     GoRoute(
       path: '/onboarding/training',
@@ -274,6 +303,11 @@ GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
       builder: (context, state) => const ReviewScreen(),
     ),
     GoRoute(
+      path: '/body',
+      name: 'body_stats',
+      builder: (context, state) => const BodyStatsScreen(),
+    ),
+    GoRoute(
       path: '/achievements',
       name: 'achievements',
       builder: (context, state) => const AchievementsScreen(),
@@ -304,7 +338,9 @@ GoRouter createAppRouter({String initialLocation = '/'}) => GoRouter(
     GoRoute(
       path: '/workout/extra',
       name: 'workout_extra',
-      builder: (context, state) => const WorkoutExtraScreen(),
+      builder: (context, state) => WorkoutExtraScreen(
+        initialMinutes: int.tryParse(state.uri.queryParameters['minutes'] ?? ''),
+      ),
     ),
     GoRoute(
       path: '/workout/:sessionId',

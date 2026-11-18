@@ -190,16 +190,30 @@ class UserAvailabilitySlot {
   final String
   slot; // early_morning | morning | noon | afternoon | evening | late_evening
 
-  const UserAvailabilitySlot({required this.weekday, required this.slot});
+
+  /// Giờ riêng "HH:mm" cho ngày này, null = giờ mặc định của khung [slot].
+  final String? time;
+
+  const UserAvailabilitySlot({
+    required this.weekday,
+    required this.slot,
+    this.time,
+  });
 
   factory UserAvailabilitySlot.fromJson(Map<String, dynamic> json) {
+    final time = json['time']?.toString();
     return UserAvailabilitySlot(
       weekday: (json['weekday'] as num?)?.toInt() ?? 1,
       slot: json['slot']?.toString() ?? 'evening',
+      time: time == null || time.isEmpty ? null : time,
     );
   }
 
-  Map<String, dynamic> toJson() => {'weekday': weekday, 'slot': slot};
+  Map<String, dynamic> toJson() => {
+    'weekday': weekday,
+    'slot': slot,
+    if (time != null) 'time': time,
+  };
 }
 
 class UserSettings {

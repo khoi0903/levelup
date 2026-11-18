@@ -27,6 +27,21 @@ class ApiNutritionRepository implements NutritionRepository {
     )).data!,
   );
   @override
+  Future<Recognition> parseText(String text, String meal) async =>
+      Recognition.fromJson(
+        (await client.post<Map<String, dynamic>>(
+          '/meals/parse',
+          data: {'text': text.trim(), 'meal': meal},
+          options: Options(receiveTimeout: const Duration(seconds: 90)),
+        )).data!,
+      );
+  @override
+  Future<List<Food>> popular(String meal, {int limit = 8}) async =>
+      (await client.get<List<dynamic>>(
+        '/foods/popular',
+        queryParameters: {'meal': meal, 'limit': limit},
+      )).data!.map((e) => Food.fromJson(e)).toList();
+  @override
   Future<NutritionToday> saveMeal(MealRequest request) async =>
       NutritionToday.fromJson(
         (await client.post<Map<String, dynamic>>(

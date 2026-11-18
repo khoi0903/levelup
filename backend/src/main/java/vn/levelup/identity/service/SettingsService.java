@@ -28,6 +28,8 @@ import vn.levelup.identity.dto.SettingsRequest;
 import vn.levelup.identity.model.User;
 import vn.levelup.nutrition.rules.NutritionCalculator;
 import vn.levelup.shared.util.LocalDates;
+import vn.levelup.training.dto.MeasurementDtos;
+import vn.levelup.training.service.MeasurementService;
 import vn.levelup.training.service.ThisWeekScheduleSync;
 
 
@@ -37,10 +39,12 @@ public class SettingsService {
 
     private final MongoTemplate mongo;
     private final ThisWeekScheduleSync scheduleSync;
+    private final MeasurementService measurements;
 
-    public SettingsService(MongoTemplate mongo, ThisWeekScheduleSync scheduleSync) {
+    public SettingsService(MongoTemplate mongo, ThisWeekScheduleSync scheduleSync, MeasurementService measurements) {
         this.mongo = mongo;
         this.scheduleSync = scheduleSync;
+        this.measurements = measurements;
     }
 
     public void update(User user, SettingsRequest r) {
@@ -71,12 +75,30 @@ public class SettingsService {
         if (r.goal() != null) {
             u.set("profile.goal", r.goal());
         }
-        if (r.goal() != null && p != null && !r.goal().equals(p.goal())) {
-            // Mục tiêu mới: thêm mốc calo có hiệu lực từ hôm nay (giữ lịch sử, không sửa mốc cũ)
-            if (p.heightCm() != null && p.startWeightKg() != null) {
+        if (r.bodyFatPct() != null) {
+            u.set("profile.bodyFatPct", r.bodyFatPct());
+        }
+        if (r.focusMuscles() != null) {
+            u.set("profile.focusMuscles", r.focusMuscles().stream().distinct().toList());
+        }
+        if (r.heightCm() != null) {
+            u.set("profile.heightCm", r.heightCm());
+        }
+        boolean goalChanged = r.goal() != null && p != null && !r.goal().equals(p.goal());
+        boolean bodyChanged = p != null && (r.weightKg() != null
+            || (r.heightCm() != null && !r.heightCm().equals(p.heightCm())));
+        if (goalChanged || bodyChanged) {
+            // Mục tiêu / chiều cao / cân nặng mới: thêm mốc calo có hiệu lực từ hôm nay (giữ lịch sử, không sửa mốc cũ).
+            // Chỉ đổi mục tiêu thì vẫn tính theo cân ban đầu như trước.
+            Double height = r.heightCm() != null ? r.heightCm() : p.heightCm();
+            Double weight = r.weightKg() != null ? r.weightKg()
+                : bodyChanged ? measurements.latestWeightKg(user.id()).orElse(p.startWeightKg())
+                : p.startWeightKg();
+            String goal = r.goal() != null ? r.goal() : p.goal();
+            if (height != null && weight != null && goal != null) {
                 LocalDate today = LocalDates.today(user.timezone(), Clock.systemUTC());
                 u.push("nutritionTargets", NutritionCalculator.compute(
-                    p.gender(), p.birthYear(), p.heightCm(), p.startWeightKg(), r.goal(), today));
+                    p.gender(), p.birthYear(), height, weight, goal, today));
             }
         }
         if (r.availability() != null) {
@@ -88,7 +110,13 @@ public class SettingsService {
             }
             u.set("availability", r.availability().stream()
                 .sorted((a, b) -> Integer.compare(a.weekday(), b.weekday()))
-                .map(s -> new Document("weekday", s.weekday()).append("slot", s.slot()))
+                .map(s -> {
+                    Document d = new Document("weekday", s.weekday()).append("slot", s.slot());
+                    if (s.time() != null) {
+                        d.append("time", s.time());
+                    }
+                    return d;
+                })
                 .toList());
         }
         SettingsRequest.Notifications n = r.notifications();
@@ -108,10 +136,17 @@ public class SettingsService {
             setIfPresent(u, "sharing.photos", s.photos());
             setIfPresent(u, "sharing.meals", s.meals());
         }
-        if (u.getUpdateObject().isEmpty()) {
+        if (u.getUpdateObject().isEmpty() && r.weightKg() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "NOTHING_TO_UPDATE");
         }
-        mongo.updateFirst(Query.query(Criteria.where("_id").is(new ObjectId(user.id()))), u, "users");
+        if (!u.getUpdateObject().isEmpty()) {
+            mongo.updateFirst(Query.query(Criteria.where("_id").is(new ObjectId(user.id()))), u, "users");
+        }
+        if (r.weightKg() != null) {
+            // Cân nặng hiện tại là số đo của hôm nay (gộp với số đã nhập trong ngày), không sửa mốc ban đầu
+            measurements.save(user, new MeasurementDtos.MeasurementRequest(r.weightKg(), null, null, null, null,
+                null, null));
+        }
         if (r.availability() != null) {
             // Lịch rảnh mới áp dụng ngay cho các ngày còn lại của tuần này (tuần sau lập theo lịch mới như cũ)
             scheduleSync.apply(user, r.availability());
@@ -136,7 +171,7 @@ public class SettingsService {
             new Settings.Sharing(sh.getBoolean("weight", false), sh.getBoolean("measurements", false),
                 sh.getBoolean("photos", false), sh.getBoolean("meals", false)),
             slots.stream().map(d -> new User.Availability(
-                d.get("weekday") instanceof Number w ? w.intValue() : null, d.getString("slot"))).toList());
+                d.get("weekday") instanceof Number w ? w.intValue() : null, d.getString("slot"), d.getString("time"))).toList());
     }
 
     /** Huy hiệu đã đạt, mới nhất trước, kèm tên tiếng Việt từ collection achievements. */

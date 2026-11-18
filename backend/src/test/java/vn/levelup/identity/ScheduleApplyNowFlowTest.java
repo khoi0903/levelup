@@ -58,5 +58,16 @@ class ScheduleApplyNowFlowTest extends FlowTestBase {
 
         DocumentContext again = setDays(otherWd, todayWd);       // gửi lại y hệt: không tạo trùng
         assertEquals(1, again.<List<?>>read("$.sessions[?(@.scheduledDate == '" + day + "')]").size());
+
+        // đổi sang giờ riêng cho hôm nay: buổi planned hôm nay đổi giờ theo, cài đặt trả lại giờ riêng
+        call(patch("/me").header("Authorization", token).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"availability\":[{\"weekday\":" + otherWd + ",\"slot\":\"evening\"},{\"weekday\":"
+                + todayWd + ",\"slot\":\"evening\",\"time\":\"21:15\"}]}"), 200);
+        DocumentContext retimed = call(get("/plans/current").header("Authorization", token), 200);
+        assertEquals("21:15", retimed.<List<String>>read("$.sessions[?(@.scheduledDate == '" + day
+            + "')].scheduledTime").getFirst());
+        // giờ sai định dạng bị từ chối
+        call(patch("/me").header("Authorization", token).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"availability\":[{\"weekday\":1,\"slot\":\"evening\",\"time\":\"7h\"}]}"), 400);
     }
 }

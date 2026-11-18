@@ -31,10 +31,20 @@ public record OnboardingRequest(
     @Size(max = 10) List<@Size(max = 40) String> motivationReasons,
     @Size(max = 500) String motivationText,
     @NotNull @Pattern(regexp = "strict|supportive|funny") String coachStyle,
-    String timezone
+    String timezone,
+    /** Tỉ lệ mỡ cơ thể người dùng tự chọn (5–50%), không bắt buộc. */
+    @Min(5) @Max(50) Integer bodyFatPct,
+    /** Nhóm cơ muốn tập trung, không bắt buộc; trùng thì gộp. */
+    @Size(max = 7) List<@Pattern(regexp = "chest|back|shoulders|arms|abs|glutes|legs") String> focusMuscles
 ) {
     public record Slot(
         @NotNull @Min(1) @Max(7) Integer weekday,
-        @NotNull @Pattern(regexp = "early_morning|noon|evening|late_evening") String slot
-    ) {}
+        @NotNull @Pattern(regexp = "early_morning|noon|evening|late_evening") String slot,
+        /** Giờ tập riêng của ngày này "HH:mm", không bắt buộc; có thì thắng giờ mặc định của khung. */
+        @Pattern(regexp = "([01]\\d|2[0-3]):[0-5]\\d") String time
+    ) {
+        public Slot(Integer weekday, String slot) {
+            this(weekday, slot, null);
+        }
+    }
 }

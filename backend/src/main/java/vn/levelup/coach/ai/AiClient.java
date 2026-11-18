@@ -39,4 +39,9 @@ public interface AiClient {
     class AiUnavailableException extends RuntimeException {
         public AiUnavailableException(String message, Throwable cause) { super(message, cause); }
     }
+
+    /** Nhà cung cấp báo hết lượt (HTTP 429): không thử lại cùng nơi, chuyển sang nhà cung cấp dự phòng. */
+    class RateLimitedException extends AiUnavailableException {
+        public RateLimitedException(String message) { super(message, null); }
+    }
 }

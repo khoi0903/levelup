@@ -12,7 +12,9 @@ import '../../../../core/widgets/missing_hint.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../domain/models/onboarding_models.dart';
+import '../../domain/coach_reactions.dart';
 import '../controllers/onboarding_controller.dart';
+import '../widgets/coach_reaction_line.dart';
 
 class ObGoalScreen extends ConsumerStatefulWidget {
   const ObGoalScreen({super.key});
@@ -95,107 +97,75 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
               children: [
                 const OnboardingHeader(currentStep: 1),
                 const SizedBox(height: 20),
-                Text(
-                  AppStrings.goalTitle,
-                  style: TextStyle(
-                    fontSize: 28,
-                    height: 1.25,
-                    fontWeight: FontWeight.w800,
-                    color: context.colors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  AppStrings.goalSubtitle,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: context.colors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Tên hiển thị của bạn',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: context.colors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                GlassCard(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 2,
-                  ),
-                  borderRadius: AppColors.radiusButton,
-                  child: TextField(
-                    controller: _nameController,
-                    onChanged: (val) => controller.setDisplayName(val),
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: context.colors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(vertical: 12),
-                      border: InputBorder.none,
-                      hintText: 'Nhập tên của bạn (vd: Minh)',
-                      hintStyle: TextStyle(
-                        fontSize: 15,
-                        color: context.colors.textSecondary,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
                 Expanded(
-                  child: ListView.separated(
+                  child: ListView(
                     physics: const BouncingScrollPhysics(),
-                    itemCount: goalOptions.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final item = goalOptions[index];
-                      final isSelected = state.goal == item.$1;
-                      return GlassCard(
-                        isSelected: isSelected,
-                        onTap: () => controller.selectGoal(item.$1),
+                    children: [
+                      Text(
+                        AppStrings.goalTitle,
+                        style: TextStyle(
+                          fontSize: 28,
+                          height: 1.25,
+                          fontWeight: FontWeight.w800,
+                          color: context.colors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        AppStrings.goalSubtitle,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: context.colors.textSecondary,
+                        ),
+                      ),
+                      CoachReactionLine(goalReaction(state.goal)),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Tên hiển thị của bạn',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: context.colors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      GlassCard(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 16,
+                          horizontal: 16,
+                          vertical: 2,
                         ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item.$2,
-                                    style: TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w700,
-                                      color: context.colors.textPrimary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    item.$3,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: context.colors.textSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                        borderRadius: AppColors.radiusButton,
+                        child: TextField(
+                          controller: _nameController,
+                          onChanged: (val) => controller.setDisplayName(val),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: context.colors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 12),
+                            border: InputBorder.none,
+                            hintText: 'Nhập tên của bạn (vd: Minh)',
+                            hintStyle: TextStyle(
+                              fontSize: 15,
+                              color: context.colors.textSecondary,
                             ),
-                            const SizedBox(width: 12),
-                            GlassRadio(isSelected: isSelected),
-                          ],
+                          ),
                         ),
-                      );
-                    },
+                      ),
+                      const SizedBox(height: 16),
+                      for (final (i, item) in goalOptions.indexed) ...[
+                        if (i > 0) const SizedBox(height: 12),
+                        _GoalCard(
+                          title: item.$2,
+                          description: item.$3,
+                          isSelected: state.goal == item.$1,
+                          onTap: () => controller.selectGoal(item.$1),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -280,6 +250,58 @@ class _ObGoalScreenState extends ConsumerState<ObGoalScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _GoalCard extends StatelessWidget {
+  const _GoalCard({
+    required this.title,
+    required this.description,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String title;
+  final String description;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      isSelected: isSelected,
+      onTap: onTap,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: context.colors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: context.colors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          GlassRadio(isSelected: isSelected),
+        ],
       ),
     );
   }

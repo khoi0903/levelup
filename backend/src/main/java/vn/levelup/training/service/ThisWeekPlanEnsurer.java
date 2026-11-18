@@ -66,7 +66,7 @@ public class ThisWeekPlanEnsurer {
             }
             Map<Integer, String> availability = new LinkedHashMap<>();
             if (user.availability() != null) {
-                user.availability().forEach(a -> availability.putIfAbsent(a.weekday(), a.slot()));
+                user.availability().forEach(a -> availability.putIfAbsent(a.weekday(), a.slotOrTime()));
             }
             int minutes = user.profile() == null || user.profile().sessionMinutes() == null ? 15
                 : user.profile().sessionMinutes();

@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.IntFunction;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -30,6 +31,7 @@ import vn.levelup.identity.service.PlanAccess;
 import vn.levelup.nutrition.dto.RecognitionDtos;
 import vn.levelup.nutrition.model.Food;
 import vn.levelup.nutrition.rules.FoodMatcher;
+import vn.levelup.nutrition.rules.MealTextRules;
 import vn.levelup.nutrition.rules.NutritionRules;
 import vn.levelup.nutrition.rules.RecognitionParser;
 import vn.levelup.shared.util.LocalDates;
@@ -97,9 +99,33 @@ public class MealRecognitionService {
         if (sha256 == null || !hash.equals(sha256.toLowerCase(Locale.ROOT))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "SHA256_MISMATCH");
         }
+        return run(user, hash, "photo", attempt -> ai.completeWithImage(SYSTEM, attempt == 1 ? PROMPT : RETRY_PROMPT,
+            image, mediaType, MAX_TOKENS));
+    }
+
+    /**
+     * POST /meals/parse: người dùng gõ mô tả bữa ăn ("2 bát phở bò, 1 ly trà đá") → cùng dạng kết quả với ảnh,
+     * để app dùng lại màn sửa bữa và POST /meals (method "photo" + recognitionId). Chung lượt trong ngày,
+     * cache và mã lỗi với ảnh. Không lưu câu người dùng gõ, chỉ lưu "text:" + sha256(câu đã chuẩn hoá).
+     */
+    public RecognitionDtos.RecognitionResponse parseText(User user, String text, String meal) {
+        String normalized = MealTextRules.normalize(text);
+        if (normalized.isEmpty() || normalized.length() > MealTextRules.MAX_LENGTH) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "INVALID_TEXT");
+        }
+        String hash = MealTextRules.HASH_PREFIX
+            + sha256Hex(normalized.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        String prompt = MealTextRules.prompt(text, meal);
+        return run(user, hash, "text", attempt -> ai.complete(MealTextRules.SYSTEM,
+            List.of(AiClient.Message.user(attempt == 1 ? prompt : prompt + MealTextRules.RETRY_SUFFIX)), MAX_TOKENS));
+    }
+
+    /** Phần chung của ảnh và chữ: cache → giữ lượt → gọi AI (thử lại một lần nếu JSON sai) → lưu kết quả đã kiểm tra. */
+    private RecognitionDtos.RecognitionResponse run(User user, String hash, String source,
+                                                    IntFunction<String> askAi) {
         ObjectId userId = new ObjectId(user.id());
 
-        // 1. Cache: ảnh này người dùng đã gửi rồi
+        // 1. Cache: ảnh (hoặc câu) này người dùng đã gửi rồi
         Document cached = mongo.findOne(Query.query(Criteria.where("userId").is(userId).and("imageSha256").is(hash))
             .with(Sort.by(Sort.Direction.DESC, "createdAt")), Document.class, "food_recognitions");
         if (cached != null) {
@@ -123,8 +149,7 @@ public class MealRecognitionService {
             dishes = null;
             while (dishes == null) {
                 attempts++;
-                String raw = ai.completeWithImage(SYSTEM, attempts == 1 ? PROMPT : RETRY_PROMPT, image, mediaType,
-                    MAX_TOKENS);
+                String raw = askAi.apply(attempts);
                 try {
                     dishes = RecognitionParser.parse(raw);
                 } catch (RecognitionParser.InvalidOutputException e) {
@@ -156,6 +181,7 @@ public class MealRecognitionService {
         Document rec = new Document("_id", id)
             .append("userId", userId)
             .append("imageSha256", hash)
+            .append("source", source)
             .append("model", model)
             .append("rawResult", new Document("dishes", stored))
             .append("latencyMs", latencyMs)

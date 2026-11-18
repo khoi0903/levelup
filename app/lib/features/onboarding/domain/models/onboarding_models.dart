@@ -72,12 +72,22 @@ class OnboardingState {
   final List<BodyArea> injuries;
   final List<int> weekdays; // 1 = T2, 7 = CN
   final TimeSlot? timeSlot;
+
+  /// Giờ riêng "HH:mm" theo thứ (1–7), chỉ những ngày người dùng đã đổi.
+  /// Ngày không có thì backend dùng giờ mặc định của [timeSlot].
+  final Map<int, String> dayTimes;
   final int? sessionMinutes;
   final List<String> motivationReasons;
   final String motivationText;
   final CoachStyle? coachStyle;
   final bool buddyInvited;
   final bool pushEnabled;
+
+  /// Tỉ lệ mỡ cơ thể (%) theo vóc dáng đã chọn, null nếu bỏ qua.
+  final int? bodyFatPct;
+
+  /// Nhóm cơ muốn cải thiện: chest, back, shoulders, arms, abs, glutes, legs.
+  final List<String> focusMuscles;
 
   const OnboardingState({
     this.displayName = '',
@@ -93,12 +103,15 @@ class OnboardingState {
     this.injuries = const [],
     this.weekdays = const [],
     this.timeSlot,
+    this.dayTimes = const {},
     this.sessionMinutes,
     this.motivationReasons = const [],
     this.motivationText = '',
     this.coachStyle,
     this.buddyInvited = false,
     this.pushEnabled = true,
+    this.bodyFatPct,
+    this.focusMuscles = const [],
   });
 
   OnboardingState copyWith({
@@ -115,12 +128,16 @@ class OnboardingState {
     List<BodyArea>? injuries,
     List<int>? weekdays,
     TimeSlot? timeSlot,
+    Map<int, String>? dayTimes,
     int? sessionMinutes,
     List<String>? motivationReasons,
     String? motivationText,
     CoachStyle? coachStyle,
     bool? buddyInvited,
     bool? pushEnabled,
+    int? bodyFatPct,
+    bool clearBodyFatPct = false,
+    List<String>? focusMuscles,
   }) {
     return OnboardingState(
       displayName: displayName ?? this.displayName,
@@ -136,12 +153,15 @@ class OnboardingState {
       injuries: injuries ?? this.injuries,
       weekdays: weekdays ?? this.weekdays,
       timeSlot: timeSlot ?? this.timeSlot,
+      dayTimes: dayTimes ?? this.dayTimes,
       sessionMinutes: sessionMinutes ?? this.sessionMinutes,
       motivationReasons: motivationReasons ?? this.motivationReasons,
       motivationText: motivationText ?? this.motivationText,
       coachStyle: coachStyle ?? this.coachStyle,
       buddyInvited: buddyInvited ?? this.buddyInvited,
       pushEnabled: pushEnabled ?? this.pushEnabled,
+      bodyFatPct: clearBodyFatPct ? null : (bodyFatPct ?? this.bodyFatPct),
+      focusMuscles: focusMuscles ?? this.focusMuscles,
     );
   }
 
@@ -181,6 +201,7 @@ class OnboardingState {
     final availabilityList = weekdays.map((day) => {
       'weekday': day,
       'slot': timeSlot!.name,
+      if (dayTimes[day] != null) 'time': dayTimes[day],
     }).toList();
 
     return {
@@ -201,6 +222,8 @@ class OnboardingState {
       if (motivationText.trim().isNotEmpty) 'motivationText': motivationText.trim(),
       'coachStyle': coachStyle!.name,
       'timezone': 'Asia/Ho_Chi_Minh',
+      if (bodyFatPct != null) 'bodyFatPct': bodyFatPct!.clamp(5, 50),
+      if (focusMuscles.isNotEmpty) 'focusMuscles': focusMuscles,
     };
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/models/nutrition_models.dart';
 import '../controllers/nutrition_controller.dart';
+import '../widgets/food_detail_sheet.dart';
 import '../widgets/nutrition_widgets.dart';
 
 Future<Food?> selectFood(BuildContext context, {String initialQuery = ''}) =>
@@ -90,6 +91,17 @@ class _FoodSearchScreenState extends ConsumerState<FoodSearchScreen> {
                               itemBuilder: (context, i) {
                                 final food = foods[i];
                                 return ListTile(
+                                  leading: IconButton(
+                                    tooltip: 'Chi tiết ${food.nameVi}',
+                                    icon: const Icon(Icons.info_outline),
+                                    onPressed: () => showFoodDetailSheet(
+                                      context,
+                                      name: food.nameVi,
+                                      macros: food.macros,
+                                      grams: food.servingGrams,
+                                      servingDesc: food.servingDesc,
+                                    ),
+                                  ),
                                   title: Text(food.nameVi),
                                   subtitle: Text(
                                     '${food.servingDesc} • ${food.servingGrams.round()} g • ${food.macros.kcal.round()} kcal',

@@ -252,7 +252,7 @@ class ObPlanScreen extends ConsumerWidget {
                                       isDark: false,
                                       onPressed: () {
                                         controller.setBuddyInvited(false);
-                                        context.push('/onboarding/notify');
+                                        context.push('/onboarding/stats');
                                       },
                                     ),
                                   ),
@@ -268,7 +268,7 @@ class ObPlanScreen extends ConsumerWidget {
                 ),
                 PrimaryButton(
                   label: AppStrings.btnContinue,
-                  onPressed: () => context.push('/onboarding/notify'),
+                  onPressed: () => context.push('/onboarding/stats'),
                 ),
               ],
             ),

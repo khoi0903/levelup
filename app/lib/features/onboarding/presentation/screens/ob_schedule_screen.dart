@@ -5,19 +5,37 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_palette.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/widgets/day_times_editor.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/onboarding_header.dart';
 import '../../../../core/widgets/missing_hint.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../domain/models/onboarding_models.dart';
+import '../../domain/coach_reactions.dart';
 import '../controllers/onboarding_controller.dart';
+import '../widgets/coach_reaction_line.dart';
 
-class ObScheduleScreen extends ConsumerWidget {
-  const ObScheduleScreen({super.key});
+class ObScheduleScreen extends ConsumerStatefulWidget {
+  const ObScheduleScreen({super.key, this.dayTimesInitiallyExpanded = false});
+
+  /// Mở sẵn phần "Giờ riêng từng ngày" (dùng cho ảnh xem trước).
+  final bool dayTimesInitiallyExpanded;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ObScheduleScreen> createState() => _ObScheduleScreenState();
+}
+
+class _ObScheduleScreenState extends ConsumerState<ObScheduleScreen> {
+  /// Mục vừa chạm, để câu coach đi theo đúng mục đó.
+  ScheduleField? _last;
+
+  void _touch(ScheduleField field) {
+    if (_last != field) setState(() => _last = field);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(onboardingControllerProvider);
     final controller = ref.read(onboardingControllerProvider.notifier);
 
@@ -84,6 +102,7 @@ class ObScheduleScreen extends ConsumerWidget {
                     color: context.colors.textPrimary,
                   ),
                 ),
+                CoachReactionLine(scheduleReaction(state, last: _last)),
                 const SizedBox(height: 16),
                 Expanded(
                   child: SingleChildScrollView(
@@ -111,7 +130,10 @@ class ObScheduleScreen extends ConsumerWidget {
                                 ),
                                 child: GlassCard(
                                   isSelected: isSelected,
-                                  onTap: () => controller.toggleWeekday(day.$1),
+                                  onTap: () {
+                                    _touch(ScheduleField.days);
+                                    controller.toggleWeekday(day.$1);
+                                  },
                                   borderRadius: 14,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 12,
@@ -147,48 +169,75 @@ class ObScheduleScreen extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        GridView.count(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
-                          childAspectRatio: 1.85,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          children: timeSlots.map((slot) {
-                            final isSelected = state.timeSlot == slot.$1;
-                            return GlassCard(
-                              isSelected: isSelected,
-                              onTap: () => controller.setTimeSlot(slot.$1),
-                              borderRadius: AppColors.radiusButton,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 10,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    slot.$2,
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      color: context.colors.textPrimary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 3),
-                                  Text(
-                                    slot.$3,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: context.colors.textSecondary,
+                        // Hai hàng, mỗi hàng hai thẻ cao bằng nhau; thẻ tự cao
+                        // lên khi chữ phóng to nên không bị tràn.
+                        for (var row = 0; row < timeSlots.length; row += 2) ...[
+                          if (row > 0) const SizedBox(height: 10),
+                          IntrinsicHeight(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                for (final slot in timeSlots.sublist(
+                                  row,
+                                  row + 2,
+                                )) ...[
+                                  if (slot != timeSlots[row])
+                                    const SizedBox(width: 10),
+                                  Expanded(
+                                    child: GlassCard(
+                                      isSelected: state.timeSlot == slot.$1,
+                                      onTap: () {
+                                        _touch(ScheduleField.slot);
+                                        controller.setTimeSlot(slot.$1);
+                                      },
+                                      borderRadius: AppColors.radiusButton,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 20,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            slot.$2,
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w700,
+                                              color: context.colors.textPrimary,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            slot.$3,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color:
+                                                  context.colors.textSecondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ],
-                              ),
-                            );
-                          }).toList(),
-                        ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        if (state.weekdays.isNotEmpty &&
+                            state.timeSlot != null) ...[
+                          const SizedBox(height: 12),
+                          DayTimesEditor(
+                            weekdays: state.weekdays,
+                            slot: state.timeSlot!.name,
+                            times: state.dayTimes,
+                            onChanged: controller.setDayTime,
+                            initiallyExpanded: widget.dayTimesInitiallyExpanded,
+                          ),
+                        ],
                         const SizedBox(height: 20),
 
                         // 3. Mỗi buổi bao lâu
@@ -211,8 +260,10 @@ class ObScheduleScreen extends ConsumerWidget {
                                 ),
                                 child: GlassCard(
                                   isSelected: isSelected,
-                                  onTap: () =>
-                                      controller.setSessionMinutes(dur.$1),
+                                  onTap: () {
+                                    _touch(ScheduleField.minutes);
+                                    controller.setSessionMinutes(dur.$1);
+                                  },
                                   borderRadius: 14,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 12,

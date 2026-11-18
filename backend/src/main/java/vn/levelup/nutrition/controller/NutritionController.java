@@ -23,6 +23,7 @@ import vn.levelup.nutrition.rules.FoodMatcher;
 import vn.levelup.nutrition.service.FoodCatalog;
 import vn.levelup.nutrition.service.MealRecognitionService;
 import vn.levelup.nutrition.service.NutritionService;
+import vn.levelup.nutrition.service.PopularFoodService;
 
 @RestController
 public class NutritionController {
@@ -34,9 +35,11 @@ public class NutritionController {
     private final NutritionService nutrition;
     private final FoodCatalog foods;
     private final CurrentUserService currentUser;
+    private final PopularFoodService popular;
 
     public NutritionController(MealRecognitionService recognition, NutritionService nutrition, FoodCatalog foods,
-                               CurrentUserService currentUser) {
+                               CurrentUserService currentUser, PopularFoodService popular) {
+        this.popular = popular;
         this.recognition = recognition;
         this.nutrition = nutrition;
         this.foods = foods;
@@ -77,6 +80,27 @@ public class NutritionController {
             throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "IMAGE_TOO_LARGE");
         }
         return recognition.recognize(user, image.getBytes(), image.getContentType(), sha256);
+    }
+
+    /**
+     * Nhận diện món từ câu người dùng gõ ("2 bát phở bò, 1 ly trà đá"). Trả cùng dạng với /meals/recognize:
+     * app mở màn sửa bữa rồi lưu bằng POST /meals với method "photo" + recognitionId. Dùng chung lượt
+     * trong ngày với ảnh; cùng câu gửi lại thì cached = true, không trừ lượt.
+     * Lỗi: 400 INVALID_TEXT, 429 PHOTO_LIMIT_REACHED, 503 AI_UNAVAILABLE (không trừ lượt), 502 AI_BAD_OUTPUT.
+     */
+    @PostMapping("/meals/parse")
+    public RecognitionDtos.RecognitionResponse parse(@Valid @RequestBody RecognitionDtos.ParseRequest r) {
+        return recognition.parseText(currentUser.require(), r.text(), r.meal());
+    }
+
+    /**
+     * Món gợi ý nhanh cho một bữa (breakfast | lunch | dinner | snack): món người dùng ghi nhiều nhất cho bữa đó
+     * trong 30 ngày trước, rồi tới danh sách món Việt phổ biến của bữa; không trùng. limit mặc định 8, tối đa 20.
+     */
+    @GetMapping("/foods/popular")
+    public List<RecognitionDtos.FoodView> popular(@RequestParam("meal") String meal,
+                                                  @RequestParam(name = "limit", defaultValue = "8") int limit) {
+        return popular.popular(currentUser.require(), meal, limit);
     }
 
     /** Tìm món trong kho để nhập tay: tối đa 20 món, gõ không dấu cũng được. */

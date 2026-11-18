@@ -14,7 +14,9 @@ import '../../../buddies/presentation/controllers/buddy_controller.dart';
 import '../../../home/presentation/controllers/home_controller.dart';
 import '../../../streak/presentation/controllers/streak_controller.dart';
 import '../../domain/models/onboarding_models.dart';
+import '../../domain/coach_reactions.dart';
 import '../controllers/onboarding_controller.dart';
+import '../widgets/coach_reaction_line.dart';
 
 class ObCoachScreen extends ConsumerStatefulWidget {
   const ObCoachScreen({super.key});
@@ -123,6 +125,7 @@ class _ObCoachScreenState extends ConsumerState<ObCoachScreen> {
                     color: context.colors.textSecondary,
                   ),
                 ),
+                CoachReactionLine(coachStyleReaction(state.coachStyle)),
                 const SizedBox(height: 16),
                 Expanded(
                   child: ListView.separated(

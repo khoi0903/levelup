@@ -26,3 +26,10 @@ final foodSearchProvider = FutureProvider.autoDispose
           ? Future.value([])
           : ref.watch(nutritionRepositoryProvider).search(query),
     );
+
+/// Món phổ biến theo bữa; lỗi hay rỗng thì màn sửa bữa chỉ ẩn hàng gợi ý.
+final popularFoodsProvider = FutureProvider.autoDispose
+    .family<List<Food>, String>((ref, meal) {
+      ref.cacheFor(const Duration(minutes: 10));
+      return ref.watch(nutritionRepositoryProvider).popular(meal);
+    });

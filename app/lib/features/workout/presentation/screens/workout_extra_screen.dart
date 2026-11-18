@@ -21,7 +21,10 @@ import '../widgets/workout_widgets.dart';
 /// - Tập lại buổi hôm nay (nếu có buổi hoàn thành trong lịch)
 /// - Tự chọn bài tập (tìm kiếm không dấu, lọc nhóm cơ, chỉnh hiệp và số lần/giây)
 class WorkoutExtraScreen extends ConsumerStatefulWidget {
-  const WorkoutExtraScreen({super.key});
+  const WorkoutExtraScreen({super.key, this.initialMinutes});
+
+  /// Thời lượng chọn sẵn (vd 5 khi bấm "Chỉ có 5 phút" ở màn chính lúc hôm nay không còn buổi trong lịch).
+  final int? initialMinutes;
 
   @override
   ConsumerState<WorkoutExtraScreen> createState() => _WorkoutExtraScreenState();
@@ -34,7 +37,7 @@ class _WorkoutExtraScreenState extends ConsumerState<WorkoutExtraScreen>
 
   String _searchQuery = '';
   String _selectedMuscleFilter = 'all';
-  int? _selectedDuration;
+  late int? _selectedDuration = widget.initialMinutes;
 
   // Lưu cấu hình bài tập tự chọn: exerciseId -> {sets, reps, durationSec}
   final Map<String, ({int sets, int? reps, int? durationSec})>

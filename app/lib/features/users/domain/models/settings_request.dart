@@ -76,6 +76,14 @@ class SettingsRequest {
   final SharingUpdate? sharing;
   final String? location;
   final List<String>? equipment;
+  final double? heightCm;
+  final double? weightKg;
+
+  /// Tỉ lệ mỡ cơ thể 5..50 (%).
+  final int? bodyFatPct;
+
+  /// Tập con của chest, back, shoulders, arms, abs, glutes, legs.
+  final List<String>? focusMuscles;
 
   const SettingsRequest({
     this.displayName,
@@ -88,6 +96,10 @@ class SettingsRequest {
     this.sharing,
     this.location,
     this.equipment,
+    this.heightCm,
+    this.weightKg,
+    this.bodyFatPct,
+    this.focusMuscles,
   });
 
   Map<String, dynamic> toJson() => {
@@ -103,5 +115,9 @@ class SettingsRequest {
     if (sharing != null && !sharing!.isEmpty) 'sharing': sharing!.toJson(),
     if (location != null) 'location': location,
     if (equipment != null) 'equipment': equipment,
+    if (heightCm != null) 'heightCm': heightCm,
+    if (weightKg != null) 'weightKg': weightKg,
+    if (bodyFatPct != null) 'bodyFatPct': bodyFatPct,
+    if (focusMuscles != null) 'focusMuscles': focusMuscles,
   };
 }

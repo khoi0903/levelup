@@ -11,9 +11,13 @@ import 'core/constants/app_strings.dart';
 import 'core/constants/auth_constants.dart';
 import 'features/notifications/presentation/controllers/notifications_controller.dart';
 import 'features/auth/presentation/controllers/auth_controller.dart';
+import 'features/body/presentation/widgets/anatomy_license.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Giấy phép MIT của hình giải phẫu dùng trong bản đồ cơ.
+  registerAnatomyArtLicense();
 
   // Khởi tạo Firebase nếu không chạy ở chế độ dev
   if (!AuthConstants.isDevMode) {
@@ -29,7 +33,9 @@ Future<void> main() async {
   runApp(
     ProviderScope(
       overrides: [
-        themeModeProvider.overrideWith((ref) => ThemeModeNotifier(savedThemeMode)),
+        themeModeProvider.overrideWith(
+          (ref) => ThemeModeNotifier(savedThemeMode),
+        ),
         // Xử lý khi nhận mã lỗi 401 từ backend: tự động đăng xuất và về màn đăng nhập
         unauthorizedHandlerProvider.overrideWith((ref) {
           return () async {

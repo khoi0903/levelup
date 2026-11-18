@@ -54,7 +54,9 @@ coll("users", {
         motivationReasons: { bsonType: "array", items: { bsonType: "string" } },
         motivationText: { bsonType: "string" },       // AI dùng lại khi người dùng nản
         equipment:      { bsonType: "array", items: { bsonType: "string" } },
-        onboardingCompletedAt: { bsonType: "date" }
+        onboardingCompletedAt: { bsonType: "date" },
+        bodyFatPct:     { bsonType: "number", minimum: 5, maximum: 50 },   // người dùng tự chọn; số đo thật ở body_measurements
+        focusMuscles:   { bsonType: "array", items: { enum: ["chest", "back", "shoulders", "arms", "abs", "glutes", "legs"] } }
       }
     },
     injuries: {                                       // lọc bài tập
@@ -451,6 +453,7 @@ dbx.meal_logs.createIndex({ userId: 1, localDate: 1 });
 coll("food_recognitions", {
   bsonType: "object", required: ["userId", "imageSha256", "model", "rawResult", "createdAt"],
   properties: { userId: { bsonType: "objectId" }, imageSha256: { bsonType: "string" }, model: { bsonType: "string" },
+                source: { enum: ["photo", "text"] },    // "text": POST /meals/parse, imageSha256 = "text:" + sha256(câu đã chuẩn hoá)
                 rawResult: { bsonType: "object" }, latencyMs: { bsonType: "number" },
                 costUsd: { bsonType: "number" }, createdAt: { bsonType: "date" } }
 });
