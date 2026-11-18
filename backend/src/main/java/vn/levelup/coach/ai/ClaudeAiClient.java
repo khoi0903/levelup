@@ -73,8 +73,8 @@ public class ClaudeAiClient implements AiClient {
             .maxTokens(maxTokens)
             .system(system);
         // Câu trả lời ngắn cho người dùng: effort thấp đủ dùng, nhanh và rẻ.
-        // Haiku 4.5 (LEVELUP_AI_MODEL=claude-haiku-4-5, rẻ cho dev) không nhận tham số effort.
-        if (!model.startsWith("claude-haiku")) {
+        // Haiku 4.5 không nhận tham số effort; Haiku 5.5 nhận (mặc định medium, nên đặt low).
+        if (!model.startsWith("claude-haiku-4")) {
             b.outputConfig(OutputConfig.builder().effort(OutputConfig.Effort.LOW).build());
         }
         return b;
