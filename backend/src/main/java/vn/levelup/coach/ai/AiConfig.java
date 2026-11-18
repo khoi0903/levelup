@@ -27,17 +27,23 @@ public class AiConfig {
                       @Value("${levelup.ai.model:claude-opus-5-5}") String claudeModel,
                       @Value("${levelup.ai.gemini-model:gemini-3.5-flash}") String geminiModel,
                       @Value("${levelup.ai.groq-model:openai/gpt-oss-120b}") String groqModel,
-                      @Value("${levelup.ai.timeout-seconds:20}") int timeoutSeconds) {
+                      @Value("${levelup.ai.timeout-seconds:20}") int timeoutSeconds,
+                      @Value("${levelup.ai.fallback-timeout-seconds:10}") int fallbackTimeoutSeconds) {
         String gemini = System.getenv("GEMINI_API_KEY");
         String groq = System.getenv("GROQ_API_KEY");
         List<String> chosen = choose(provider, System.getenv("ANTHROPIC_API_KEY"), gemini, groq);
         log.info("AI provider: {}", String.join(" -> ", chosen));
-        List<FallbackAiClient.Named> clients = chosen.stream().map(name -> new FallbackAiClient.Named(name,
-            switch (name) {
-                case "gemini" -> new GeminiAiClient(gemini, geminiModel, timeoutSeconds);
-                case "groq" -> new GroqAiClient(groq, groqModel, timeoutSeconds);
-                default -> new ClaudeAiClient(claudeModel, timeoutSeconds);
-            })).toList();
+        // Có nơi dự phòng phía sau thì nơi trước chờ ngắn hơn, để người dùng không đợi lâu khi nó chậm
+        List<FallbackAiClient.Named> clients = new ArrayList<>();
+        for (int i = 0; i < chosen.size(); i++) {
+            String name = chosen.get(i);
+            int timeout = i < chosen.size() - 1 ? fallbackTimeoutSeconds : timeoutSeconds;
+            clients.add(new FallbackAiClient.Named(name, switch (name) {
+                case "gemini" -> new GeminiAiClient(gemini, geminiModel, timeout);
+                case "groq" -> new GroqAiClient(groq, groqModel, timeout);
+                default -> new ClaudeAiClient(claudeModel, timeout);
+            }));
+        }
         return clients.size() == 1 ? clients.getFirst().client()
             : new FallbackAiClient(clients, Clock.systemUTC());
     }
