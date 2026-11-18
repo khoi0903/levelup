@@ -114,11 +114,20 @@ public class GroqAiClient implements AiClient {
 
     static String parseText(String responseBody) {
         JsonNode content = JSON.readTree(responseBody).path("choices").path(0).path("message").path("content");
-        String text = content.isString() ? content.asString().strip() : "";
+        String text = content.isString() ? plain(content.asString()).strip() : "";
         if (text.isEmpty()) {
             throw new AiUnavailableException("Groq không trả nội dung", null);
         }
         return text;
+    }
+
+    /**
+     * App hiện chữ thường, không hiểu markdown: bỏ dấu in đậm/nghiêng (**, __) và dấu tiêu đề (#)
+     * mà model của Groq hay thêm, giữ nguyên danh sách đánh số và gạch đầu dòng.
+     */
+    static String plain(String text) {
+        return text.replace("**", "").replace("__", "")
+            .replaceAll("(?m)^#{1,6}\\s+", "");
     }
 
     private HttpClient http() {

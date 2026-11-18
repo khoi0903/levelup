@@ -138,5 +138,7 @@ class FallbackAiClientTest {
             List.of(java.util.Map.of("message", java.util.Map.of("role", "assistant", "content", " Chào bạn ")))));
         assertEquals("Chào bạn", GroqAiClient.parseText(json));
         assertThrows(AiClient.AiUnavailableException.class, () -> GroqAiClient.parseText("{\"choices\":[]}"));
+        assertEquals("Gợi ý:\n1. Nâng hông - 2 hiệp\n- Plank 30 giây",
+            GroqAiClient.plain("### Gợi ý:\n1. **Nâng hông** - 2 hiệp\n- __Plank__ 30 giây"));
     }
 }

@@ -41,6 +41,8 @@ levelup:
     gemini-model: ${LEVELUP_GEMINI_MODEL:gemini-3.5-flash}
     groq-model: ${LEVELUP_GROQ_MODEL:openai/gpt-oss-120b}
     timeout-seconds: 20
+    # Có nhà cung cấp dự phòng phía sau thì nơi trước chỉ chờ chừng này giây
+    fallback-timeout-seconds: 10
   jobs:
     # Header X-Job-Secret của POST /jobs/tick; để trống thì endpoint luôn trả 403
     secret: ${JOB_SECRET:}
