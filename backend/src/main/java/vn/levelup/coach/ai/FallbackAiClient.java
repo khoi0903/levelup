@@ -13,13 +13,16 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Gọi lần lượt nhiều nhà cung cấp (ví dụ Gemini rồi Groq): nơi đầu lỗi thì thử nơi sau.
- * Nơi nào báo hết lượt (429) thì bỏ qua nó trong {@link #COOLDOWN} để không tốn thêm lượt gọi thừa.
+ * Nơi nào báo hết lượt (429) thì bỏ qua nó trong {@link #COOLDOWN} để không tốn thêm lượt gọi thừa;
+ * quá tải (503) hoặc quá giờ chờ thì bỏ qua trong {@link #DOWN_COOLDOWN} để người dùng không phải chờ lại.
  * Tất cả đều lỗi thì ném lỗi cuối, nơi gọi dùng luật cố định như trước.
  */
 public class FallbackAiClient implements AiClient {
 
     private static final Logger log = LoggerFactory.getLogger(FallbackAiClient.class);
     static final Duration COOLDOWN = Duration.ofMinutes(10);
+    /** Quá tải hoặc quá giờ chờ: nghỉ ngắn hơn hết lượt, vì thường hồi lại nhanh. */
+    static final Duration DOWN_COOLDOWN = Duration.ofMinutes(2);
 
     /** name: tên để ghi log ("gemini", "groq"). */
     public record Named(String name, AiClient client) {}
@@ -77,6 +80,11 @@ public class FallbackAiClient implements AiClient {
             } catch (RateLimitedException e) {
                 resting.put(n.name(), now.plus(COOLDOWN));
                 log.info("AI {} hết lượt, tạm dùng nhà cung cấp sau trong {} phút", n.name(), COOLDOWN.toMinutes());
+                last = e;
+            } catch (ProviderDownException e) {
+                resting.put(n.name(), now.plus(DOWN_COOLDOWN));
+                log.info("AI {} quá tải hoặc chậm, tạm dùng nhà cung cấp sau trong {} phút", n.name(),
+                    DOWN_COOLDOWN.toMinutes());
                 last = e;
             } catch (AiUnavailableException e) {
                 last = e;

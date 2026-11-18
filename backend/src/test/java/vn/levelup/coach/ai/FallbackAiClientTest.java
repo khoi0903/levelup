@@ -70,6 +70,26 @@ class FallbackAiClientTest {
     }
 
     @Test
+    void qua_tai_hoac_qua_gio_thi_nghi_ngan() {
+        Fake gemini = new Fake(true, () -> { throw new AiClient.ProviderDownException("503", null); });
+        Fake groq = new Fake(true, () -> "groq");
+        Instant[] now = {Instant.parse("2026-11-18T07:00:00Z")};
+        Clock clock = new Clock() {
+            public java.time.ZoneId getZone() { return ZoneOffset.UTC; }
+            public Clock withZone(java.time.ZoneId z) { return this; }
+            public Instant instant() { return now[0]; }
+        };
+        FallbackAiClient ai = new FallbackAiClient(List.of(
+            new FallbackAiClient.Named("gemini", gemini), new FallbackAiClient.Named("groq", groq)), clock);
+        assertEquals("groq", ai.complete("s", HI, 100));
+        assertEquals("groq", ai.complete("s", HI, 100));
+        assertEquals(1, gemini.calls.get(), "đang nghỉ: không chờ Gemini lần nữa");
+        now[0] = now[0].plus(FallbackAiClient.DOWN_COOLDOWN).plusSeconds(1);
+        ai.complete("s", HI, 100);
+        assertEquals(2, gemini.calls.get(), "hết thời gian nghỉ ngắn thì thử lại Gemini");
+    }
+
+    @Test
     void loi_thuong_khong_bat_nghi_va_het_noi_thi_nem_loi() {
         Fake gemini = new Fake(true, () -> { throw new AiClient.AiUnavailableException("500", null); });
         Fake groq = new Fake(true, () -> { throw new AiClient.AiUnavailableException("500", null); });

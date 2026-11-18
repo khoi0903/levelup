@@ -86,6 +86,9 @@ public class GeminiAiClient implements AiClient {
                         // Hết lượt (gói miễn phí theo phút/ngày): thử lại chỉ tốn thêm lượt
                         throw new RateLimitedException("Gemini hết lượt");
                     }
+                    if (status == 503) {
+                        throw new ProviderDownException("Gemini quá tải", null);
+                    }
                     if (status < 500 || attempt >= 2) {
                         throw new AiUnavailableException("Coach đang bận, thử lại nhé", null);
                     }
@@ -104,6 +107,10 @@ public class GeminiAiClient implements AiClient {
                     throw new AiUnavailableException("Gemini không trả nội dung (stream)", null);
                 }
                 return all.toString();
+            } catch (java.net.http.HttpTimeoutException e) {
+                // Quá giờ chờ: thử lại thường cũng chậm, người dùng đã đợi 20 giây rồi
+                log.warn("Gọi Gemini (stream) quá giờ chờ: {}", e.getMessage());
+                throw new ProviderDownException("Gemini quá giờ chờ", e);
             } catch (IOException | UncheckedIOException e) {
                 log.warn("Gọi Gemini (stream) lỗi mạng (lần {}): {}", attempt, e.getMessage());
                 if (!all.isEmpty() || attempt >= 2) {
@@ -163,9 +170,15 @@ public class GeminiAiClient implements AiClient {
                 if (status == 429) {
                     throw new RateLimitedException("Gemini hết lượt");
                 }
+                if (status == 503) {
+                    throw new ProviderDownException("Gemini quá tải", null);
+                }
                 if (status < 500 || attempt >= 2) {
                     throw new AiUnavailableException("Coach đang bận, thử lại nhé", null);
                 }
+            } catch (java.net.http.HttpTimeoutException e) {
+                log.warn("Gọi Gemini quá giờ chờ: {}", e.getMessage());
+                throw new ProviderDownException("Gemini quá giờ chờ", e);
             } catch (IOException e) {
                 log.warn("Gọi Gemini lỗi mạng (lần {}): {}", attempt, e.getMessage());
                 if (attempt >= 2) {

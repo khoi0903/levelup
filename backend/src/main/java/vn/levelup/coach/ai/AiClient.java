@@ -44,4 +44,9 @@ public interface AiClient {
     class RateLimitedException extends AiUnavailableException {
         public RateLimitedException(String message) { super(message, null); }
     }
+
+    /** Nhà cung cấp quá tải (503) hoặc quá giờ chờ: không thử lại cùng nơi, chuyển ngay sang nơi dự phòng. */
+    class ProviderDownException extends AiUnavailableException {
+        public ProviderDownException(String message, Throwable cause) { super(message, cause); }
+    }
 }
