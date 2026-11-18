@@ -493,11 +493,22 @@ class BodySideToggle extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: c.border),
       ),
+      // Màn hẹp + chữ to: thu nhỏ nhãn thay vì tràn ngang.
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          item(BodySide.front, 'Mặt trước'),
-          item(BodySide.back, 'Mặt sau'),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: item(BodySide.front, 'Mặt trước'),
+            ),
+          ),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: item(BodySide.back, 'Mặt sau'),
+            ),
+          ),
         ],
       ),
     );

@@ -139,8 +139,6 @@ void main() {
     expect(_coachText(tester), startsWith('Tập tại nhà, không cần dụng cụ.'));
   });
 
-  // Màn "Tập luyện" không có ở đây: hình chọn chỗ đau (body_figure.dart)
-  // đã tràn ngang ở 320 px từ trước, không thuộc phần thay đổi này.
   group('không tràn ở 320 px, chữ 1.3', () {
     const size = Size(320, 640);
 
@@ -183,6 +181,17 @@ void main() {
         },
       );
       expect(find.text('Chủ Nhật'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('tập luyện (hình chọn chỗ đau)', (tester) async {
+      await _pump(
+        tester,
+        const ObTrainingScreen(),
+        size: size,
+        textScale: 1.3,
+      );
+      expect(find.byKey(const ValueKey('pain-map-figure')), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });
