@@ -12,13 +12,27 @@ import '../../../../core/widgets/selection_chip.dart';
 import '../../../body/domain/models/body_shape.dart';
 import '../../../body/presentation/widgets/body_figure.dart';
 import '../../domain/models/onboarding_models.dart';
+import '../../domain/coach_reactions.dart';
 import '../controllers/onboarding_controller.dart';
+import '../widgets/coach_reaction_line.dart';
 
-class ObTrainingScreen extends ConsumerWidget {
+class ObTrainingScreen extends ConsumerStatefulWidget {
   const ObTrainingScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ObTrainingScreen> createState() => _ObTrainingScreenState();
+}
+
+class _ObTrainingScreenState extends ConsumerState<ObTrainingScreen> {
+  /// Mục vừa chạm, để câu coach đi theo đúng mục đó.
+  TrainingField? _last;
+
+  void _touch(TrainingField field) {
+    if (_last != field) setState(() => _last = field);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(onboardingControllerProvider);
     final controller = ref.read(onboardingControllerProvider.notifier);
 
@@ -73,6 +87,7 @@ class ObTrainingScreen extends ConsumerWidget {
                     color: context.colors.textPrimary,
                   ),
                 ),
+                CoachReactionLine(trainingReaction(state, last: _last)),
                 const SizedBox(height: 16),
                 Expanded(
                   child: SingleChildScrollView(
@@ -97,9 +112,10 @@ class ObTrainingScreen extends ConsumerWidget {
                             return SelectionChip(
                               label: item.$2,
                               isSelected: state.experience == item.$1,
-                              onTap: () => controller.updateTraining(
-                                experience: item.$1,
-                              ),
+                              onTap: () {
+                                _touch(TrainingField.experience);
+                                controller.updateTraining(experience: item.$1);
+                              },
                             );
                           }).toList(),
                         ),
@@ -122,8 +138,10 @@ class ObTrainingScreen extends ConsumerWidget {
                             return SelectionChip(
                               label: item.$2,
                               isSelected: state.location == item.$1,
-                              onTap: () =>
-                                  controller.updateTraining(location: item.$1),
+                              onTap: () {
+                                _touch(TrainingField.location);
+                                controller.updateTraining(location: item.$1);
+                              },
                             );
                           }).toList(),
                         ),
@@ -165,6 +183,7 @@ class ObTrainingScreen extends ConsumerWidget {
                               label: item.$2,
                               isSelected: isSelected,
                               onTap: () {
+                                _touch(TrainingField.equipment);
                                 if (isNone) {
                                   controller.clearEquipment();
                                 } else {
@@ -198,10 +217,16 @@ class ObTrainingScreen extends ConsumerWidget {
                           child: PainMapPicker(
                             shape: bodyShape,
                             selected: {for (final i in state.injuries) i.name},
-                            onToggle: (id) => controller.toggleInjury(
-                              BodyArea.values.byName(id),
-                            ),
-                            onClear: controller.clearInjuries,
+                            onToggle: (id) {
+                              _touch(TrainingField.injuries);
+                              controller.toggleInjury(
+                                BodyArea.values.byName(id),
+                              );
+                            },
+                            onClear: () {
+                              _touch(TrainingField.injuries);
+                              controller.clearInjuries();
+                            },
                           ),
                         ),
                         const SizedBox(height: 8),

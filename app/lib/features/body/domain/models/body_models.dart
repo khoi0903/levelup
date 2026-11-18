@@ -3,6 +3,20 @@ import 'body_shape.dart';
 double? _d(Object? v) => v is num ? v.toDouble() : null;
 int? _i(Object? v) => v is num ? v.round() : null;
 
+/// Ngưỡng BMI châu Á, giống backend (BodyRules): 18.5 / 23 / 25.
+const double kBmiUnderweightBelow = 18.5;
+const double kBmiNormalBelow = 23;
+const double kBmiOverweightBelow = 25;
+
+/// underweight | normal | overweight | obese, null nếu chưa có BMI.
+String? bmiCategoryFor(double? bmi) {
+  if (bmi == null || bmi <= 0) return null;
+  if (bmi < kBmiUnderweightBelow) return 'underweight';
+  if (bmi < kBmiNormalBelow) return 'normal';
+  if (bmi < kBmiOverweightBelow) return 'overweight';
+  return 'obese';
+}
+
 /// GET /me/body: chỉ số cơ thể. Trường nào cũng có thể null.
 class BodyStats {
   const BodyStats({

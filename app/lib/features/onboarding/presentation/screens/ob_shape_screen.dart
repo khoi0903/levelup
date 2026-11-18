@@ -10,7 +10,9 @@ import '../../../../core/widgets/primary_button.dart';
 import '../../../body/domain/models/body_shape.dart';
 import '../../../body/presentation/widgets/body_figure.dart';
 import '../../domain/models/onboarding_models.dart';
+import '../../domain/coach_reactions.dart';
 import '../controllers/onboarding_controller.dart';
+import '../widgets/coach_reaction_line.dart';
 
 /// "Vóc dáng nào giống bạn nhất?": 5 hình theo chiều cao, cân nặng, giới tính
 /// đã nhập. Bỏ qua được (backend tự ước tính tỉ lệ mỡ).
@@ -51,6 +53,7 @@ class ObShapeScreen extends ConsumerWidget {
                     color: c.textSecondary,
                   ),
                 ),
+                CoachReactionLine(shapeReaction(state.bodyFatPct)),
                 const SizedBox(height: 20),
                 Expanded(
                   child: SingleChildScrollView(

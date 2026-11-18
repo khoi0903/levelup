@@ -15,6 +15,7 @@ import '../../../../core/constants/app_palette.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/error_messages.dart';
 import '../../../../core/widgets/app_skeleton.dart';
+import '../../../../core/widgets/day_times_editor.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/primary_button.dart';
@@ -86,6 +87,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final Set<int> _activeWeekdays = {};
   String _slot = 'evening';
 
+  /// Giờ riêng theo thứ, chỉ những ngày đã đổi khỏi giờ mặc định của khung.
+  final Map<int, String> _dayTimes = {};
+
   Timer? _scheduleDebounceTimer;
   bool _isSavingSchedule = false;
 
@@ -129,8 +133,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _shareMeals = sharing.meals;
 
     _activeWeekdays.clear();
+    _dayTimes.clear();
     for (final slot in me.settings.availability) {
       _activeWeekdays.add(slot.weekday);
+      if (slot.time != null) _dayTimes[slot.weekday] = slot.time!;
     }
     if (me.settings.availability.isNotEmpty) {
       _slot = me.settings.availability.first.slot;
@@ -235,11 +241,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (_activeWeekdays.isEmpty) return;
     setState(() => _isSavingSchedule = true);
     final availabilityList = _activeWeekdays.map((w) {
-      return UserAvailabilitySlot(weekday: w, slot: _slot);
+      return UserAvailabilitySlot(weekday: w, slot: _slot, time: _dayTimes[w]);
     }).toList()..sort((a, b) => a.weekday.compareTo(b.weekday));
 
     final oldWeekdays = Set<int>.from(_activeWeekdays);
     final oldSlot = _slot;
+    final oldDayTimes = Map<int, String>.from(_dayTimes);
 
     final success = await ref
         .read(settingsControllerProvider.notifier)
@@ -251,6 +258,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           _activeWeekdays.clear();
           _activeWeekdays.addAll(oldWeekdays);
           _slot = oldSlot;
+          _dayTimes
+            ..clear()
+            ..addAll(oldDayTimes);
         });
       }
     }
@@ -750,6 +760,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         const SizedBox(height: 8),
         _buildSlotSelector(),
+        const SizedBox(height: 10),
+        DayTimesEditor(
+          weekdays: _activeWeekdays.toList(),
+          slot: _slot,
+          times: _dayTimes,
+          onChanged: (day, time) {
+            setState(() {
+              if (time == null) {
+                _dayTimes.remove(day);
+              } else {
+                _dayTimes[day] = time;
+              }
+            });
+            _triggerScheduleAutosave();
+          },
+        ),
         const SizedBox(height: 12),
         PrimaryButton(
           key: const ValueKey('save-schedule-button'),
@@ -1340,6 +1366,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   if (isSelected) {
                     if (_activeWeekdays.length > 1) {
                       _activeWeekdays.remove(weekday);
+                      _dayTimes.remove(weekday);
                     }
                   } else {
                     _activeWeekdays.add(weekday);

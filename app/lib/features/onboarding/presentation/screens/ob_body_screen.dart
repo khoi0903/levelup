@@ -11,8 +11,10 @@ import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/onboarding_header.dart';
 import '../../../../core/widgets/missing_hint.dart';
 import '../../../../core/widgets/primary_button.dart';
+import '../../../body/domain/models/body_shape.dart';
 import '../../domain/models/onboarding_models.dart';
 import '../controllers/onboarding_controller.dart';
+import '../widgets/bmi_live_scale.dart';
 
 class ObBodyScreen extends ConsumerStatefulWidget {
   const ObBodyScreen({super.key});
@@ -214,6 +216,10 @@ class _ObBodyScreenState extends ConsumerState<ObBodyScreen> {
                             ),
                           ],
                         ),
+                        if (isBodyValid) ...[
+                          const SizedBox(height: 16),
+                          BmiLiveScale(bmi: computeBmi(height, startWeight)!),
+                        ],
                         if (goalWeight != null && estimatedWeeks != null) ...[
                           const SizedBox(height: 16),
                           GlassCard(
@@ -296,7 +302,9 @@ class _GenderButton extends StatelessWidget {
           style: TextStyle(
             fontSize: 15,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected ? context.colors.accentLink : context.colors.textPrimary,
+            color: isSelected
+                ? context.colors.accentLink
+                : context.colors.textPrimary,
           ),
         ),
       ),

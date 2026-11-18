@@ -61,6 +61,7 @@ class OnboardingController extends StateNotifier<OnboardingState> {
       injuries: state.injuries,
       weekdays: state.weekdays,
       timeSlot: state.timeSlot,
+      dayTimes: state.dayTimes,
       sessionMinutes: state.sessionMinutes,
       motivationReasons: state.motivationReasons,
       motivationText: state.motivationText,
@@ -135,7 +136,20 @@ class OnboardingController extends StateNotifier<OnboardingState> {
       list.add(day);
     }
     list.sort();
-    state = state.copyWith(weekdays: list);
+    final times = Map<int, String>.from(state.dayTimes)
+      ..removeWhere((d, _) => !list.contains(d));
+    state = state.copyWith(weekdays: list, dayTimes: times);
+  }
+
+  /// Đặt giờ riêng cho một ngày ("HH:mm"), null = dùng giờ mặc định của khung.
+  void setDayTime(int weekday, String? time) {
+    final times = Map<int, String>.from(state.dayTimes);
+    if (time == null) {
+      times.remove(weekday);
+    } else {
+      times[weekday] = time;
+    }
+    state = state.copyWith(dayTimes: times);
   }
 
   void setTimeSlot(TimeSlot slot) {

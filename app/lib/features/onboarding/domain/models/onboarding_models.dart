@@ -72,6 +72,10 @@ class OnboardingState {
   final List<BodyArea> injuries;
   final List<int> weekdays; // 1 = T2, 7 = CN
   final TimeSlot? timeSlot;
+
+  /// Giờ riêng "HH:mm" theo thứ (1–7), chỉ những ngày người dùng đã đổi.
+  /// Ngày không có thì backend dùng giờ mặc định của [timeSlot].
+  final Map<int, String> dayTimes;
   final int? sessionMinutes;
   final List<String> motivationReasons;
   final String motivationText;
@@ -99,6 +103,7 @@ class OnboardingState {
     this.injuries = const [],
     this.weekdays = const [],
     this.timeSlot,
+    this.dayTimes = const {},
     this.sessionMinutes,
     this.motivationReasons = const [],
     this.motivationText = '',
@@ -123,6 +128,7 @@ class OnboardingState {
     List<BodyArea>? injuries,
     List<int>? weekdays,
     TimeSlot? timeSlot,
+    Map<int, String>? dayTimes,
     int? sessionMinutes,
     List<String>? motivationReasons,
     String? motivationText,
@@ -147,6 +153,7 @@ class OnboardingState {
       injuries: injuries ?? this.injuries,
       weekdays: weekdays ?? this.weekdays,
       timeSlot: timeSlot ?? this.timeSlot,
+      dayTimes: dayTimes ?? this.dayTimes,
       sessionMinutes: sessionMinutes ?? this.sessionMinutes,
       motivationReasons: motivationReasons ?? this.motivationReasons,
       motivationText: motivationText ?? this.motivationText,
@@ -194,6 +201,7 @@ class OnboardingState {
     final availabilityList = weekdays.map((day) => {
       'weekday': day,
       'slot': timeSlot!.name,
+      if (dayTimes[day] != null) 'time': dayTimes[day],
     }).toList();
 
     return {

@@ -9,7 +9,9 @@ import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/onboarding_header.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/selection_chip.dart';
+import '../../domain/coach_reactions.dart';
 import '../controllers/onboarding_controller.dart';
+import '../widgets/coach_reaction_line.dart';
 
 class ObWhyScreen extends ConsumerStatefulWidget {
   const ObWhyScreen({super.key});
@@ -75,6 +77,9 @@ class _ObWhyScreenState extends ConsumerState<ObWhyScreen> {
                     height: 1.5,
                     color: context.colors.textSecondary,
                   ),
+                ),
+                CoachReactionLine(
+                  whyReaction(state.motivationReasons, state.motivationText),
                 ),
                 const SizedBox(height: 16),
                 Expanded(

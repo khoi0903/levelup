@@ -10,7 +10,9 @@ import '../../../../core/widgets/primary_button.dart';
 import '../../../body/domain/models/body_shape.dart';
 import '../../../body/presentation/widgets/body_figure.dart';
 import '../../domain/models/onboarding_models.dart';
+import '../../domain/coach_reactions.dart';
 import '../controllers/onboarding_controller.dart';
+import '../widgets/coach_reaction_line.dart';
 
 /// "Nhóm cơ bạn muốn cải thiện": chạm trên hình hoặc chọn chip. Bỏ qua được.
 class ObFocusScreen extends ConsumerWidget {
@@ -50,6 +52,7 @@ class ObFocusScreen extends ConsumerWidget {
                     color: c.textSecondary,
                   ),
                 ),
+                CoachReactionLine(focusReaction(state.focusMuscles)),
                 const SizedBox(height: 16),
                 Expanded(
                   child: SingleChildScrollView(
