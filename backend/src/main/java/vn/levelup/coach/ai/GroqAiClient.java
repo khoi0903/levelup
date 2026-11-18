@@ -68,9 +68,15 @@ public class GroqAiClient implements AiClient {
                 if (status == 429) {
                     throw new RateLimitedException("Groq hết lượt");
                 }
+                if (status == 503) {
+                    throw new ProviderDownException("Groq quá tải", null);
+                }
                 if (status < 500 || attempt >= 2) {
                     throw new AiUnavailableException("Coach đang bận, thử lại nhé", null);
                 }
+            } catch (java.net.http.HttpTimeoutException e) {
+                log.warn("Gọi Groq quá giờ chờ: {}", e.getMessage());
+                throw new ProviderDownException("Groq quá giờ chờ", e);
             } catch (IOException e) {
                 log.warn("Gọi Groq lỗi mạng (lần {}): {}", attempt, e.getMessage());
                 if (attempt >= 2) {
