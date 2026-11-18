@@ -61,7 +61,7 @@ public class OnboardingService {
         Map<Integer, String> availability = new LinkedHashMap<>();
         r.availability().stream()
             .sorted((a, b) -> a.weekday().compareTo(b.weekday()))
-            .forEach(s -> availability.putIfAbsent(s.weekday(), s.slot()));
+            .forEach(s -> availability.putIfAbsent(s.weekday(), s.time() != null ? s.time() : s.slot()));
 
         User.Profile profile = new User.Profile(r.goal(), r.gender(), r.birthYear(), r.heightCm(), r.weightKg(),
             r.goalWeightKg(), r.experience(), r.location(), r.sessionMinutes(), r.coachStyle(),
@@ -77,8 +77,12 @@ public class OnboardingService {
             .set("timezone", zone.getId())
             .set("profile", profile)
             .set("injuries", injuries)
-            .set("availability", availability.entrySet().stream()
-                .map(e -> new User.Availability(e.getKey(), e.getValue())).toList())
+            .set("availability", r.availability().stream()
+                .sorted((a, b) -> a.weekday().compareTo(b.weekday()))
+                .filter(s -> availability.containsKey(s.weekday()))
+                .collect(Collectors.toMap(OnboardingRequest.Slot::weekday, s -> s,
+                    (a, b) -> a, LinkedHashMap::new)).values().stream()
+                .map(s -> new User.Availability(s.weekday(), s.slot(), s.time())).toList())
             .set("lastActiveAt", now)
             .push("nutritionTargets", target)
             .setOnInsert("authUid", uid)

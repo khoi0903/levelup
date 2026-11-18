@@ -110,7 +110,13 @@ public class SettingsService {
             }
             u.set("availability", r.availability().stream()
                 .sorted((a, b) -> Integer.compare(a.weekday(), b.weekday()))
-                .map(s -> new Document("weekday", s.weekday()).append("slot", s.slot()))
+                .map(s -> {
+                    Document d = new Document("weekday", s.weekday()).append("slot", s.slot());
+                    if (s.time() != null) {
+                        d.append("time", s.time());
+                    }
+                    return d;
+                })
                 .toList());
         }
         SettingsRequest.Notifications n = r.notifications();
@@ -165,7 +171,7 @@ public class SettingsService {
             new Settings.Sharing(sh.getBoolean("weight", false), sh.getBoolean("measurements", false),
                 sh.getBoolean("photos", false), sh.getBoolean("meals", false)),
             slots.stream().map(d -> new User.Availability(
-                d.get("weekday") instanceof Number w ? w.intValue() : null, d.getString("slot"))).toList());
+                d.get("weekday") instanceof Number w ? w.intValue() : null, d.getString("slot"), d.getString("time"))).toList());
     }
 
     /** Huy hiệu đã đạt, mới nhất trước, kèm tên tiếng Việt từ collection achievements. */

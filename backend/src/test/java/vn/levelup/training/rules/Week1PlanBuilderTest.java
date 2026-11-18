@@ -106,4 +106,18 @@ class Week1PlanBuilderTest {
         assertTrue(Week1PlanBuilder.itemsFor("Toàn thân", 15, library).stream()
             .noneMatch(it -> mobility.contains(it.exerciseId().toHexString())));
     }
+
+    @Test
+    void gio_rieng_tung_ngay_thang_gio_mac_dinh_cua_khung() {
+        assertEquals("07:15", Week1PlanBuilder.timeFor("07:15"));
+        assertEquals("18:30", Week1PlanBuilder.timeFor("evening"));
+        assertEquals("06:00", Week1PlanBuilder.timeFor("early_morning"));
+        assertEquals("18:30", Week1PlanBuilder.timeFor("25:00"));          // giờ sai: về buổi tối
+        Map<Integer, String> mixed = new LinkedHashMap<>();
+        mixed.put(1, "05:45");
+        mixed.put(3, "noon");
+        Week1PlanBuilder.Draft d = Week1PlanBuilder.build(LocalDate.parse("2026-10-05"), mixed, 15, LIBRARY);
+        assertEquals("05:45", d.sessions().get(0).scheduledTime());
+        assertEquals("12:00", d.sessions().get(1).scheduledTime());
+    }
 }

@@ -83,7 +83,8 @@ public class RestartWeekService {
         Map<Integer, String> availability = new LinkedHashMap<>();
         for (Document slot : user.getList("availability", Document.class, List.of())) {
             if (slot.get("weekday") instanceof Number w && slot.getString("slot") != null) {
-                availability.putIfAbsent(w.intValue(), slot.getString("slot"));
+                availability.putIfAbsent(w.intValue(),
+                    slot.getString("time") != null ? slot.getString("time") : slot.getString("slot"));
             }
         }
         Set<String> equipment = new HashSet<>(profile.getList("equipment", String.class, List.of()));

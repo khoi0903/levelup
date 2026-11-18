@@ -57,7 +57,7 @@ public class ThisWeekScheduleSync {
             return;
         }
         Map<Integer, String> wanted = new HashMap<>();
-        availability.forEach(s -> wanted.put(s.weekday(), s.slot()));
+        availability.forEach(s -> wanted.put(s.weekday(), s.time() != null ? s.time() : s.slot()));
         List<TrainingPlan.Session> sessions = plan.sessions() == null ? List.of() : plan.sessions();
 
         // 1. Bỏ buổi planned từ hôm nay trở đi ở ngày không còn trong lịch
@@ -92,7 +92,20 @@ public class ThisWeekScheduleSync {
                 .append("status", "planned")
                 .append("items", items.stream().map(PlanSessionService::itemDocument).toList()));
         }
-        if (removed.isEmpty() && added.isEmpty()) {
+        // 3. Đổi giờ các buổi planned còn lại (từ hôm nay) nếu giờ của ngày đó đã đổi
+        Map<ObjectId, String> retimed = new HashMap<>();
+        for (TrainingPlan.Session s : sessions) {
+            LocalDate date = LocalDate.parse(s.scheduledDate());
+            String slot = wanted.get(date.getDayOfWeek().getValue());
+            if (slot == null || !"planned".equals(s.status()) || date.isBefore(today) || removed.contains(s.id())) {
+                continue;
+            }
+            String time = Week1PlanBuilder.timeFor(slot);
+            if (!time.equals(s.scheduledTime())) {
+                retimed.put(s.id(), time);
+            }
+        }
+        if (removed.isEmpty() && added.isEmpty() && retimed.isEmpty()) {
             return;
         }
 
@@ -105,12 +118,16 @@ public class ThisWeekScheduleSync {
         if (!added.isEmpty()) {
             mongo.updateFirst(mine, new Update().push("sessions").each(added.toArray()), TrainingPlan.class);
         }
+        retimed.forEach((id, time) -> mongo.updateFirst(
+            Query.query(Criteria.where("_id").is(new ObjectId(plan.id())).and("userId").is(userId)
+                .and("sessions._id").is(id)),
+            Update.update("sessions.$.scheduledTime", time), TrainingPlan.class));
         int target = Math.max(1, Math.min(7, sessions.size() - removed.size() + added.size()));
         mongo.updateFirst(mine, Update.update("targetSessions", target), TrainingPlan.class);
         mongo.updateFirst(Query.query(Criteria.where("userId").is(userId).and("weekStart").is(weekStart.toString())),
             Update.update("targetSessions", target), "weekly_streaks");
-        log.info("[schedule-sync] user={} week={} thêm {} buổi, bỏ {} buổi, chỉ tiêu {}", user.id(), weekStart,
-            added.size(), removed.size(), target);
+        log.info("[schedule-sync] user={} week={} thêm {} buổi, bỏ {} buổi, đổi giờ {} buổi, chỉ tiêu {}", user.id(),
+            weekStart, added.size(), removed.size(), retimed.size(), target);
     }
 
     private List<Exercise> safeExercises(User user, ObjectId userId) {

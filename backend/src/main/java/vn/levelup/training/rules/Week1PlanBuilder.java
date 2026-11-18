@@ -65,7 +65,7 @@ public final class Week1PlanBuilder {
         List<TrainingPlan.Session> sessions = new ArrayList<>();
         for (int i = 0; i < dates.size(); i++) {
             LocalDate date = dates.get(i);
-            String time = SLOT_TIME.get(days.get(date.getDayOfWeek().getValue()));
+            String time = timeFor(days.get(date.getDayOfWeek().getValue()));
             sessions.add(new TrainingPlan.Session(
                 new ObjectId(), date.toString(), time, TITLES[i % TITLES.length], minutes,
                 "normal", "planned", pickItems(easyFirst, FOCUS.get(i % FOCUS.size()), exercisesPerSession)));
@@ -89,9 +89,15 @@ public final class Week1PlanBuilder {
         return pickItems(easyFirst, focus, count);
     }
 
-    /** Giờ tập theo khung giờ rảnh (early_morning, noon, evening, late_evening); khung lạ thì buổi tối. */
-    public static String timeFor(String slot) {
-        return SLOT_TIME.getOrDefault(slot, SLOT_TIME.get("evening"));
+    /**
+     * Giờ tập: giờ riêng "HH:mm" thì dùng luôn, còn lại theo khung giờ rảnh
+     * (early_morning, noon, evening, late_evening); khung lạ thì buổi tối.
+     */
+    public static String timeFor(String slotOrTime) {
+        if (slotOrTime != null && slotOrTime.matches("([01]\\d|2[0-3]):[0-5]\\d")) {
+            return slotOrTime;
+        }
+        return SLOT_TIME.getOrDefault(slotOrTime, SLOT_TIME.get("evening"));
     }
 
     /** Tên buổi chuẩn theo thứ tự trong tuần (xoay vòng). */

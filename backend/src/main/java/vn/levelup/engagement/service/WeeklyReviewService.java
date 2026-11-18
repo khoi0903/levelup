@@ -211,7 +211,7 @@ public class WeeklyReviewService implements WeekClosedListener {
             // Tuần này chưa có kế hoạch: lập như tuần đầu, từ Thứ Hai tuần sau
             Map<Integer, String> availability = new LinkedHashMap<>();
             if (user.availability() != null) {
-                user.availability().forEach(a -> availability.putIfAbsent(a.weekday(), a.slot()));
+                user.availability().forEach(a -> availability.putIfAbsent(a.weekday(), a.slotOrTime()));
             }
             int minutes = p == null || p.sessionMinutes() == null ? ReviewRules.DEFAULT_MINUTES : p.sessionMinutes();
             sessions = Week1PlanBuilder.build(next, availability, minutes, safe).sessions();
